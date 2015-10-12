@@ -916,6 +916,11 @@
             name="Quick Assist - Refine Formal Members"/>
       <command
             categoryId="com.redhat.ceylon.eclipse.ui"
+            description="Refine inherited formal members"
+            id="com.redhat.ceylon.eclipse.ui.action.refineEqualsHash"
+            name="Quick Assist - Refine Equals and Hash"/>
+      <command
+            categoryId="com.redhat.ceylon.eclipse.ui"
             description="Add initializer parameters"
             id="com.redhat.ceylon.eclipse.ui.action.addParameterList"
             name="Quick Assist - Add Parameter List"/>
@@ -1057,6 +1062,9 @@
       <handler
             class="com.redhat.ceylon.eclipse.code.correct.RefineFormalMembersHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.refineFormalMembers"/>
+      <handler
+            class="com.redhat.ceylon.eclipse.code.correct.RefineEqualsHashHandler"
+            commandId="com.redhat.ceylon.eclipse.ui.action.refineEqualsHash"/>
       <handler
             class="com.redhat.ceylon.eclipse.code.correct.AddConstructorHandler"
             commandId="com.redhat.ceylon.eclipse.ui.action.addConstructor"/>
@@ -1257,6 +1265,11 @@
             sequence="M1+2 F"
             contextId="com.redhat.ceylon.eclipse.ui.context"
             commandId="com.redhat.ceylon.eclipse.ui.action.refineFormalMembers"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+2 H"
+            contextId="com.redhat.ceylon.eclipse.ui.context"
+            commandId="com.redhat.ceylon.eclipse.ui.action.refineEqualsHash"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
             sequence="M1+2 I"

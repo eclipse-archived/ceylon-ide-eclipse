@@ -83,6 +83,7 @@ import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addParent
 import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addReverseOperatorProposal;
 import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addSwapBinaryOperandsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.PrintProposal.addPrintProposal;
+import static com.redhat.ceylon.eclipse.code.correct.RefineEqualsHashProposal.addRefineEqualsHashProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RefineFormalMembersProposal.addRefineFormalMembersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAliasProposal.addRemoveAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAnnotionProposal.addMakeContainerNonfinalProposal;
@@ -1206,6 +1207,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addThrowsAnnotationProposal(proposals, statement, rootNode, file, doc);            
             
             addRefineFormalMembersProposal(proposals, node, rootNode, false);
+            addRefineEqualsHashProposal(proposals, node, rootNode);
             
             addConvertToVerbatimProposal(proposals, file, rootNode, node, doc);
             addConvertFromVerbatimProposal(proposals, file, rootNode, node, doc);

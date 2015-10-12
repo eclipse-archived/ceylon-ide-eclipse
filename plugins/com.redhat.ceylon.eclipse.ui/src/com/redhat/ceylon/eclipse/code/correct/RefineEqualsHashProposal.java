@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
-import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.FORMAL_REFINEMENT;
+import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.DEFAULT_REFINEMENT;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
@@ -12,6 +12,7 @@ import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -43,13 +44,11 @@ import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Reference;
 import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
-class RefineFormalMembersProposal 
+class RefineEqualsHashProposal 
         implements ICompletionProposal,
                    ICompletionProposalExtension6 {
 
@@ -57,7 +56,7 @@ class RefineFormalMembersProposal
     private final String description;
     private Node node;
     
-    public RefineFormalMembersProposal(Node node, 
+    public RefineEqualsHashProposal(Node node, 
             Tree.CompilationUnit rootNode,
             String description) {
         this.node = node;
@@ -72,7 +71,7 @@ class RefineFormalMembersProposal
 
     @Override
     public Image getImage() {
-        return FORMAL_REFINEMENT;
+        return DEFAULT_REFINEMENT;
     }
 
     @Override
@@ -84,7 +83,7 @@ class RefineFormalMembersProposal
     public StyledString getStyledDisplayString() {
         String hint = 
                 CorrectionUtil.shortcut(
-                        "com.redhat.ceylon.eclipse.ui.action.refineFormalMembers");
+                        "com.redhat.ceylon.eclipse.ui.action.refineEqualsHash");
         return Highlights.styleProposal(getDisplayString(), false)
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }
@@ -192,45 +191,18 @@ class RefineFormalMembersProposal
                     node.getScope();
         Unit unit = node.getUnit();
         Set<String> ambiguousNames = new HashSet<String>();
-        //TODO: does not return unrefined overloaded  
-        //      versions of a method with one overlaad
-        //      already refined
-        Collection<DeclarationWithProximity> proposals = 
-                ci.getMatchingMemberDeclarations(unit, ci, "", 0)
-                    .values();
-        for (DeclarationWithProximity dwp: proposals) {
-            Declaration dec = dwp.getDeclaration();
+        Declaration equals = 
+                ci.getMember("equals", null, false);
+        Declaration hash = 
+                ci.getMember("hash", null, false);
+        for (Declaration dec: Arrays.asList(equals, hash)) {
             for (Declaration d: overloads(dec)) {
                 try {
-                    if (d.isFormal() && 
-                            ci.isInheritedFromSupertype(d)) {
+                    if (ci.isInheritedFromSupertype(d)) {
                         appendRefinementText(isInterface, 
                                 indent, result, ci, unit, d);
                         importSignatureTypes(d, rootNode, already);
                         ambiguousNames.add(d.getName());
-                    }
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        for (TypeDeclaration superType: 
-                ci.getSupertypeDeclarations()) {
-            for (Declaration m: superType.getMembers()) {
-                try {
-                    if (m.getName()!=null && m.isShared()) {
-                        Declaration r = 
-                                ci.getMember(m.getName(), 
-                                        null, false);
-                        if ((r==null || 
-                                !r.refines(m) && 
-                                !r.getContainer().equals(ci)) && 
-                                ambiguousNames.add(m.getName())) {
-                            appendRefinementText(isInterface, 
-                                    indent, result, ci, unit, m);
-                            importSignatureTypes(m, rootNode, already);
-                        }
                     }
                 }
                 catch (Exception e) {
@@ -275,12 +247,11 @@ class RefineFormalMembersProposal
             .append(indent);
     }
     
-    static void addRefineFormalMembersProposal(
+    static void addRefineEqualsHashProposal(
             Collection<ICompletionProposal> proposals, 
-            Node n, Tree.CompilationUnit rootNode, 
-            boolean ambiguousError) {
+            Node n, Tree.CompilationUnit rootNode) {
         for (ICompletionProposal p: proposals) {
-            if (p instanceof RefineFormalMembersProposal) {
+            if (p instanceof RefineEqualsHashProposal) {
                 return;
             }
         }
@@ -314,11 +285,8 @@ class RefineFormalMembersProposal
                 else {
                     name = "'" + name + "'";
                 }
-                String desc = 
-                        ambiguousError ?
-                            "Refine inherited ambiguous and formal members of " + name:
-                            "Refine inherited formal members of " + name;
-                proposals.add(new RefineFormalMembersProposal(node, rootNode, desc));
+                String desc = "Refine 'equals()' and 'hash' of " + name;
+                proposals.add(new RefineEqualsHashProposal(node, rootNode, desc));
             }
         }
     }
