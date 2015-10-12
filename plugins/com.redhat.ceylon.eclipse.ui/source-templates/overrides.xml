@@ -28,6 +28,7 @@
     <remove module="org.eclipse.e4.ui.workbench.addons.swt"/>
     <remove module="org.eclipse.e4.ui.workbench.swt"/>
     <remove module="org.eclipse.e4.ui.workbench3"/>
+    <remove module="org.eclipse.e4.ui.services"/>
     <remove module="org.eclipse.emf.ecore"/>
     <remove module="org.eclipse.equinox.p2.engine"/>
     <remove module="org.eclipse.equinox.p2.metadata"/>
