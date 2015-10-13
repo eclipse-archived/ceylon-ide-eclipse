@@ -10,7 +10,7 @@ public class CeylonWorkingSetSorter extends WorkingSetSorter {
         if (e1 instanceof IProject && e2 instanceof IProject) {
             String e1String = ((IProject) e1).getName();
             String e2String = ((IProject) e2).getName();
-            return e1String.compareTo(e2String);
+            return e1String.compareToIgnoreCase(e2String);
         }
         return super.compare(viewer, e1, e2);
     }
