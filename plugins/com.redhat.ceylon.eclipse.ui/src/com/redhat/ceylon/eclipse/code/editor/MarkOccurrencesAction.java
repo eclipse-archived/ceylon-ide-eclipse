@@ -444,20 +444,21 @@ public class MarkOccurrencesAction
     }
 
     private Position[] convertRefNodesToPositions(List<Node> refs) {
-        Position[] positions = 
-                new Position[refs.size()];
-        int i= 0;
+        List<Position> positions = new ArrayList<>(refs.size());
         for (Iterator<Node> iter=refs.iterator(); 
                 iter.hasNext(); 
-                i++) {
+                ) {
             Node node = iter.next();
             Node identifyingNode = getIdentifyingNode(node);
-            positions[i] = 
-                    new Position(
+            if (identifyingNode != null) {
+                
+            }
+            positions.add(new Position(
                             identifyingNode.getStartIndex(), 
-                            identifyingNode.getDistance());
+                            identifyingNode.getDistance()));
         }
-        return positions;
+        Position[] result = new Position[positions.size()];
+        return positions.toArray(result);
     }
 
     private Tree.CompilationUnit getCompilationUnit() {
