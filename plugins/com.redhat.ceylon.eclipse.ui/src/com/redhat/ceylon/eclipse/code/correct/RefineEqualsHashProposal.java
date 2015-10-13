@@ -4,12 +4,9 @@ import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinem
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.DEFAULT_REFINEMENT;
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
+import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.Arrays;
@@ -167,10 +164,10 @@ class RefineEqualsHashProposal
                 body.getStatements();
         String indent;
 //        String bodyIndent = getIndent(body, document);
-        String bodyIndent = getIndent(node, document);
-        String delim = getDefaultLineDelimiter(document);
+        String bodyIndent = indents().getIndent(node, document);
+        String delim = indents().getDefaultLineDelimiter(document);
         if (statements.isEmpty()) {
-            indent = delim + bodyIndent + getDefaultIndent();
+            indent = delim + bodyIndent + indents().getDefaultIndent();
             if (offset<0) {
                 offset = body.getStartIndex()+1;
             }
@@ -178,7 +175,7 @@ class RefineEqualsHashProposal
         else {
             Tree.Statement statement = 
                     statements.get(statements.size()-1);
-            indent = delim + getIndent(statement, document);
+            indent = delim + indents().getIndent(statement, document);
             if (offset<0) {
                 offset = statement.getEndIndex();
             }
@@ -201,7 +198,7 @@ class RefineEqualsHashProposal
                     if (ci.isInheritedFromSupertype(d)) {
                         appendRefinementText(isInterface, 
                                 indent, result, ci, unit, d);
-                        importSignatureTypes(d, rootNode, already);
+                        importProposals().importSignatureTypes(d, rootNode, already);
                         ambiguousNames.add(d.getName());
                     }
                 }
@@ -221,7 +218,7 @@ class RefineEqualsHashProposal
         catch (BadLocationException e) {
             e.printStackTrace();
         }
-        applyImports(change, already, rootNode, document);
+        importProposals().applyImports(change, already, rootNode, document);
         change.addEdit(new InsertEdit(offset, result.toString()));
         change.initializeValidationData(null);
         try {
