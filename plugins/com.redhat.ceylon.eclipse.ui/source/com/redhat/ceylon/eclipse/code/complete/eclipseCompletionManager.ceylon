@@ -38,7 +38,8 @@ import com.redhat.ceylon.eclipse.util {
 }
 import com.redhat.ceylon.ide.common.completion {
     IdeCompletionManager,
-    isModuleDescriptor
+    isModuleDescriptor,
+    anonFunctionHeader
 }
 import com.redhat.ceylon.ide.common.util {
     escaping,
@@ -274,14 +275,12 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     }
     
     shared actual ICompletionProposal newAnonFunctionProposal(Integer _offset, Type? requiredType,
-        Unit unit, String _text, String header, Boolean isVoid) {
+        Unit unit, String _text, String header, Boolean isVoid, Integer selectionStart, Integer selectionLength) {
         
         value largeCorrectionImage = CeylonLabelProvider.getDecoratedImage(CeylonResources.\iCEYLON_CORRECTION, 0, false);
         return object extends CompletionProposal(_offset, "", largeCorrectionImage, _text, _text) {
             shared actual Point getSelection(IDocument document) {
-                value foo = if (isVoid) then _text.size - 1 else (_text.firstInclusion("nothing") else 0);
-                value bar = if (isVoid) then 0 else "nothing".size;
-                return Point(_offset + foo, bar);
+                return Point(selectionStart, selectionLength);
             }
         };
     }
@@ -300,8 +299,8 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     }
     
     shared actual ICompletionProposal newProgramElementReferenceCompletion(Integer offset, String prefix,
-        Declaration dec, Unit? u, Reference? pr, Scope scope, CeylonParseController cpc, Boolean isMember)
-            => EclipseInvocationCompletionProposal(offset, prefix, dec.getName(u), escaping.escapeName(dec, u),
+        String name, String desc, Declaration dec, Reference? pr, Scope scope, CeylonParseController cpc, Boolean isMember)
+            => EclipseInvocationCompletionProposal(offset, prefix, name, desc,
         dec, dec.reference, scope, cpc, true, false, false, isMember, null, this);
     
     shared actual ICompletionProposal newBasicCompletionProposal(Integer offset, String prefix,
@@ -410,11 +409,11 @@ shared class EclipseCompletionManager(CeylonEditor editor)
                         //TODO: should reuse logic for adjusting tokens
                         //      from CeylonContentProposer!!
                         Integer? start = al.startIndex?.intValue();
-                        Integer? stop = al.stopIndex?.intValue();
+                        Integer? stop = al.endIndex?.intValue();
                         if (exists start, exists stop, offset > start) {
                             variable String string = "";
                             if (offset > stop) {
-                                string = viewer.document.get(stop + 1, offset - stop - 1);
+                                string = viewer.document.get(stop, offset - stop - 1);
                             }
                             if (string.trimmed.empty) {
                                 assert (is Tree.MemberOrTypeExpression mte = that.primary);
