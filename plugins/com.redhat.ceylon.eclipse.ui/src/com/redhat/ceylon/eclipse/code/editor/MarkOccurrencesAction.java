@@ -451,11 +451,10 @@ public class MarkOccurrencesAction
             Node node = iter.next();
             Node identifyingNode = getIdentifyingNode(node);
             if (identifyingNode != null) {
-                
+                positions.add(new Position(
+                        identifyingNode.getStartIndex(), 
+                        identifyingNode.getDistance()));
             }
-            positions.add(new Position(
-                            identifyingNode.getStartIndex(), 
-                            identifyingNode.getDistance()));
         }
         Position[] result = new Position[positions.size()];
         return positions.toArray(result);
