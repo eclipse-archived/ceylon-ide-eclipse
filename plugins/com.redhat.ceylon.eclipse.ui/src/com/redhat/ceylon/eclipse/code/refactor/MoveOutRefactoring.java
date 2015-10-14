@@ -25,18 +25,19 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
@@ -48,6 +49,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     
     private Tree.Declaration declaration;
     private boolean makeShared=true;
+    private boolean leaveDelegate=false;
     private String newName;
 
     public MoveOutRefactoring(IEditorPart editor) {
@@ -103,6 +105,10 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     public String getName() {
         return "Move Out";
     }
+    
+    public boolean isMethod() {
+        return declaration instanceof Tree.AnyMethod;
+    }
 
     public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
             throws CoreException, OperationCanceledException {
@@ -150,7 +156,9 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                         addSharedAnnotations(pufc, owner);
                     }
                 }
-                fixInvocations(dec, pu.getCompilationUnit(), pufc);
+                if (!leaveDelegate) {
+                    fixInvocations(dec, pu.getCompilationUnit(), pufc);
+                }
                 if (pufc.getEdit().hasChildren()) {
                     cc.add(pufc);
                 }
@@ -171,10 +179,11 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         return cc;
     }
 
-    private StringBuilder renderText(Tree.TypeDeclaration owner, 
+    private String renderText(Tree.TypeDeclaration owner, 
             String indent, String originalIndent, String delim) {
-        String qtype = owner.getDeclarationModel().getType()
-                .asSourceCodeString(declaration.getUnit());
+        String qtype = 
+                owner.getDeclarationModel().getType()
+                    .asSourceCodeString(declaration.getUnit());
         StringBuilder sb = new StringBuilder();
         if (declaration instanceof Tree.AnyMethod) {
             Tree.AnyMethod md = (Tree.AnyMethod) declaration;
@@ -248,18 +257,89 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                         cd.getClassBody());
             }
         }
-        return sb;
+        return sb.toString();
     }
 
     private void move(Tree.TypeDeclaration owner, TextChange tfc) {
         String indent = getIndent(owner, document);
         String originalIndent = getIndent(declaration, document);
         String delim = getDefaultLineDelimiter(document);
-        StringBuilder sb = renderText(owner, indent, originalIndent, delim);
+        String text = renderText(owner, indent, originalIndent, delim);
         tfc.addEdit(new InsertEdit(owner.getEndIndex(), 
-                delim+indent+delim+indent+sb));
-        tfc.addEdit(new DeleteEdit(declaration.getStartIndex(), 
-                declaration.getDistance()));
+                delim+indent+delim+indent+text));
+        if (leaveDelegate) {
+            leaveOriginal(tfc);
+        }
+        else {
+            tfc.addEdit(new DeleteEdit(declaration.getStartIndex(), 
+                    declaration.getDistance()));
+        }
+    }
+
+    private void leaveOriginal(TextChange tfc) {
+        StringBuilder params = new StringBuilder();
+        String outer;
+        Declaration dec = declaration.getDeclarationModel();
+        ClassOrInterface container = 
+                (ClassOrInterface) dec.getContainer();
+        if (container.isToplevel()) {
+            outer = "package.";
+        }
+        else if (container.isClassOrInterfaceMember()) {
+            outer = "outer.";
+        }
+        else {
+            outer = ""; //let the user deal with it!
+        }
+        String semi = ";";
+        Node body;
+        Tree.ParameterList parameterList;
+        if (declaration instanceof Tree.AnyMethod) {
+            Tree.AnyMethod m = 
+                    (Tree.AnyMethod) declaration;
+            parameterList = m.getParameterLists().get(0);
+            if (declaration instanceof Tree.MethodDeclaration) {
+                Tree.MethodDeclaration md = 
+                        (Tree.MethodDeclaration) declaration;
+                body = md.getSpecifierExpression();
+                semi = "";
+            }
+            else if (declaration instanceof Tree.MethodDefinition) {
+                Tree.MethodDefinition md = 
+                        (Tree.MethodDefinition) declaration;
+                body = md.getBlock();
+            }
+            else {
+                return; //impossible!
+            }
+        }
+        /*else if (declaration instanceof Tree.AnyClass) {
+            Tree.AnyClass m = 
+                    (Tree.AnyClass) declaration;
+            parameterList = m.getParameterList();
+            if (declaration instanceof Tree.ClassDefinition) {
+                Tree.ClassDefinition md = 
+                        (Tree.ClassDefinition) declaration;
+                body = md.getClassBody();
+            }
+            else {
+                return; //impossible!
+            }
+        }*/
+        else {
+            return; //impossible!
+        }
+        for (Tree.Parameter parameter: parameterList.getParameters()) {
+            params.append(parameter.getParameterModel().getName())
+                  .append(", ");
+        }
+        params.append("this");
+        tfc.addEdit(new ReplaceEdit(
+                body.getStartIndex(), 
+                body.getDistance(), 
+                "=> " + outer + 
+                dec.getName() + 
+                "(" + params + ")" + semi));
     }
 
     private void addSharedAnnotations(final TextChange tfc,
@@ -317,8 +397,8 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         return paramName;
     }
 
-    private void fixInvocations(final Declaration dec, CompilationUnit cu,
-            final TextChange tc) {
+    private void fixInvocations(final Declaration dec, 
+            Tree.CompilationUnit cu, final TextChange tc) {
         new Visitor() {
             
             public void visit(Tree.QualifiedType that) {
@@ -332,26 +412,36 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             
             public void visit(Tree.InvocationExpression that) {
                 super.visit(that);
-                Tree.PositionalArgumentList pal = that.getPositionalArgumentList();
-                Tree.NamedArgumentList nal = that.getNamedArgumentList();
-                if (that.getPrimary() instanceof Tree.BaseMemberOrTypeExpression) {
+                Tree.PositionalArgumentList pal = 
+                        that.getPositionalArgumentList();
+                Tree.NamedArgumentList nal = 
+                        that.getNamedArgumentList();
+                Tree.Primary primary = that.getPrimary();
+                if (primary instanceof Tree.BaseMemberOrTypeExpression) {
                     Tree.BaseMemberOrTypeExpression bmte = 
-                            (Tree.BaseMemberOrTypeExpression) that.getPrimary();
+                            (Tree.BaseMemberOrTypeExpression) 
+                                primary;
                     if (bmte.getDeclaration().equals(dec)) {
                         if (pal!=null) {
-                            String arg = pal.getPositionalArguments().isEmpty() ? 
-                                    "this" : ", this";
+                            String arg = 
+                                    pal.getPositionalArguments()
+                                        .isEmpty() ? 
+                                            "this" : ", this";
                             tc.addEdit(new InsertEdit(pal.getEndIndex()-1, arg));
                         }
                         if (nal!=null) {
                             try {
-                                IDocument doc = tc.getCurrentDocument(null);
-                                String arg = namedArgIndent(nal, doc) + 
-                                        newName + " = this;";
-                                List<Tree.NamedArgument> args = nal.getNamedArguments();
-                                int offset = args.isEmpty() ? 
-                                        nal.getStartIndex()+1 : 
-                                        args.get(args.size()-1).getEndIndex();
+                                IDocument doc = 
+                                        tc.getCurrentDocument(null);
+                                String arg = 
+                                        namedArgIndent(nal, doc) + 
+                                            newName + " = this;";
+                                List<Tree.NamedArgument> args = 
+                                        nal.getNamedArguments();
+                                int offset = 
+                                        args.isEmpty() ? 
+                                            nal.getStartIndex()+1 : 
+                                            args.get(args.size()-1).getEndIndex();
                                 tc.addEdit(new InsertEdit(offset, arg));
                             }
                             catch (CoreException e) {
@@ -360,25 +450,31 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                         }
                     }
                 }
-                if (that.getPrimary() instanceof Tree.QualifiedMemberOrTypeExpression) {
+                if (primary instanceof Tree.QualifiedMemberOrTypeExpression) {
                     Tree.QualifiedMemberOrTypeExpression qmte = 
-                            (Tree.QualifiedMemberOrTypeExpression) that.getPrimary();
+                            (Tree.QualifiedMemberOrTypeExpression) 
+                                primary;
                     if (qmte.getDeclaration().equals(dec)) {
                         Tree.Primary p = qmte.getPrimary();
                         String pt = MoveOutRefactoring.this.toString(p);
                         tc.addEdit(new DeleteEdit(p.getStartIndex(), 
                                 qmte.getIdentifier().getStartIndex()-p.getStartIndex()));
                         if (pal!=null) {
-                            String arg = pal.getPositionalArguments().isEmpty() ? 
-                                    pt : ", " + pt;
+                            String arg = 
+                                    pal.getPositionalArguments()
+                                        .isEmpty() ? 
+                                            pt : ", " + pt;
                             tc.addEdit(new InsertEdit(pal.getEndIndex()-1, arg));
                         }
                         if (nal!=null) {
                             try {
-                                IDocument doc = tc.getCurrentDocument(null);
-                                String arg = namedArgIndent(nal, doc) + 
-                                        newName + " = " + pt + ";";
-                                List<Tree.NamedArgument> args = nal.getNamedArguments();
+                                IDocument doc = 
+                                        tc.getCurrentDocument(null);
+                                String arg = 
+                                        namedArgIndent(nal, doc) + 
+                                            newName + " = " + pt + ";";
+                                List<Tree.NamedArgument> args = 
+                                        nal.getNamedArguments();
                                 int offset = args.isEmpty() ? 
                                         nal.getStartIndex()+1 : 
                                         args.get(args.size()-1).getEndIndex();
@@ -392,7 +488,8 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                 }
             }
 
-            private String namedArgIndent(Tree.NamedArgumentList nal,
+            private String namedArgIndent(
+                    Tree.NamedArgumentList nal,
                     IDocument doc) {
                 return getDefaultLineDelimiter(doc) + 
                         getIndent(nal, doc) + 
@@ -402,7 +499,8 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         }.visit(cu);
     }
 
-    private void appendAnnotations(StringBuilder sb, Tree.Declaration d, TypeDeclaration od) {
+    private void appendAnnotations(StringBuilder sb, 
+            Tree.Declaration d, TypeDeclaration od) {
         if (!d.getAnnotationList().getAnnotations().isEmpty()) {
             String annotations = toString(d.getAnnotationList());
             if (!od.isShared()) {
@@ -423,25 +521,28 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         }
     }
 
-    private void appendClause(String indent, String delim, StringBuilder sb,
-            Node clause) {
+    private void appendClause(String indent, String delim, 
+            StringBuilder sb, Node clause) {
         sb.append(delim).append(indent)
             .append(getDefaultIndent())
             .append(getDefaultIndent())
             .append(toString(clause));
     }
 
-    private void appendBody(final Scope container, String indent, String originalIndent, 
+    private void appendBody(final Scope container, 
+            String indent, String originalIndent, 
             String delim, StringBuilder sb, final Node body) {
 //        sb.append(" {");
 //        for (final Tree.Statement st: block.getStatements()) {
-            final StringBuilder stb = new StringBuilder(toString(body));
+            final StringBuilder stb = 
+                    new StringBuilder(toString(body));
             body.visit(new Visitor() {
                 int offset = 0;
                 @Override
                 public void visit(Tree.BaseMemberOrTypeExpression that) {
                     super.visit(that);
-                    if (that.getDeclaration().getContainer().equals(container)) {
+                    if (that.getDeclaration().getContainer()
+                            .equals(container)) {
                         int start = that.getStartIndex()-body.getStartIndex()+offset;
                         stb.insert(start, newName + ".");
                         offset+=newName.length()+1;
@@ -453,7 +554,9 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                     Tree.Primary p = that.getPrimary();
                     int start = p.getStartIndex()-body.getStartIndex()+offset;
                     int len = p.getDistance();
-                    boolean isClass = declaration.getDeclarationModel() instanceof Class;
+                    boolean isClass = 
+                            declaration.getDeclarationModel() 
+                                instanceof Class;
                     if (p instanceof Tree.This && !isClass) {
                         stb.replace(start, start+len, newName);
                         offset+=newName.length()-len;
@@ -479,6 +582,10 @@ public class MoveOutRefactoring extends AbstractRefactoring {
 
     public void setMakeShared() {
         makeShared=!makeShared;
+    }
+    
+    public void setLeaveDelegate() {
+        leaveDelegate = !leaveDelegate;
     }
 
     void setNewName(String name) {
