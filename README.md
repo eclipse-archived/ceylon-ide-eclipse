@@ -68,7 +68,7 @@ _If you want to have an up-to-date version of the Ceylon IDE based on the lastes
 
         mvn clean install -DskipTests
    
-11.  The directory `site/target/repository` now contains an update site you can install from. The update process is decribed at http://ceylon-lang.org/documentation/1.1/ide/install/ but use the path to this directory instead of the stable web repository. 
+11.  The directory `site/target/repository` now contains an update site you can install from. The update process is decribed at http://ceylon-lang.org/documentation/1.2/ide/install/ but use the path to this directory instead of the stable web repository. 
 
 ## Building inside Eclipse
 
