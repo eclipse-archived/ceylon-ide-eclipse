@@ -2761,6 +2761,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             };
         }.stopOnErrors(false);
         try {
+            for (File srcdir : js_srcdir) {
+                jsc.addSrcDirectory(srcdir);
+            }
         	jsc.setSourceFiles(sources);
             jsc.setResourceFiles(resources);
             if (!jsc.generate()) {
