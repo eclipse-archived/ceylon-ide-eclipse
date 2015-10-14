@@ -55,6 +55,8 @@ import org.eclipse.ltk.core.refactoring.IUndoManager;
 import org.eclipse.ltk.core.refactoring.RefactoringCore;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.search.ui.ISearchResultPage;
+import org.eclipse.search2.internal.ui.SearchView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyEvent;
@@ -68,6 +70,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -176,6 +179,20 @@ public class EditorUtil {
                 window.getActivePage();
         }
         catch (IllegalStateException ise) {
+            return null;
+        }
+    }
+    
+    public static ISearchResultPage getCurrentSearchResultPage() {
+        IWorkbenchPage activePage = getActivePage();
+        IWorkbenchPart part = 
+                activePage==null ? null :
+                    activePage.getActivePart();
+        if (part instanceof SearchView) {
+            SearchView searchView = (SearchView) part;
+            return searchView.getActivePage();
+        }
+        else {
             return null;
         }
     }
