@@ -182,7 +182,8 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
             Declaration headerDeclaration = 
                     getNativeHeader(containerToSearchHeaderIn, 
                             dec.getName());
-            if (! headerDeclaration.isNative()) return null;
+            if (headerDeclaration == null 
+                    || ! headerDeclaration.isNative()) return null;
             if (Backend.None.equals(backend)) {
                 referenceable = headerDeclaration;
             } else {
