@@ -144,6 +144,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.TreeUtil;
 import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.compiler.typechecker.util.WarningSuppressionVisitor;
@@ -2329,10 +2330,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                 for (Module module : typeChecker.getContext().getModules().getListOfModules()) {
                                     if (module instanceof JDTModule) {
                                         JDTModule jdtModule = (JDTModule) module;
-                                        if (jdtModule.isCeylonArchive()) {
+                                        if (jdtModule.isCeylonArchive()
+                                                && TreeUtil.isForBackend(jdtModule.getNativeBackend(), Backend.JavaScript)) {
                                             List<ModuleImport> importedModuleImports = new ArrayList<>();
                                             for(ModuleImport moduleImport : moduleSourceMapper.retrieveModuleImports(jdtModule)) {
-                                                if (! Backend.Java.nativeAnnotation.equals(moduleImport.getNativeBackend())) {
+                                                if (TreeUtil.isForBackend(moduleImport.getNativeBackend(), Backend.JavaScript)) {
                                                     importedModuleImports.add(moduleImport);
                                                 }
                                             }
