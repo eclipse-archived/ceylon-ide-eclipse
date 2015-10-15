@@ -1,5 +1,10 @@
 package com.redhat.ceylon.eclipse.core.model;
 
+import java.lang.ref.SoftReference;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
@@ -27,39 +32,81 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 
 public class CeylonToJavaMatcher {
-    private Declaration ceylonDeclaration = null;
-    private final ITypeRoot typeRoot;
-    private final ASTParser parser;
+    private static class ResolvedElements {
+        public ResolvedElements(
+                IJavaElement[] modelElements,
+                IBinding[] bindings) {
+            this.modelElements = modelElements;
+            this.bindings= bindings;
+        }
+        public IJavaElement[] modelElements;
+        public IBinding[] bindings;
+    }
     
-    public CeylonToJavaMatcher(IJavaModelAware unit) {
-        typeRoot = unit.getTypeRoot();
-        parser = ASTParser.newParser(AST.JLS4);
+    private ITypeRoot typeRoot = null;
+    private SoftReference<ResolvedElements> resolvedElementsRef = new SoftReference<>(null);
+    
+    public CeylonToJavaMatcher(ITypeRoot typeRoot) {
+        this.typeRoot = typeRoot;
     }
 
-    public IJavaElement searchInClass(Declaration ceylonDeclaration) {
-        try {
-            this.ceylonDeclaration = ceylonDeclaration;
-            return visit(typeRoot.getPrimaryElement());
-        } catch(Exception e) {
-            e.printStackTrace();
+    private synchronized ResolvedElements resolveUnitElements(IProgressMonitor monitor) {
+        ResolvedElements resolvedElements = resolvedElementsRef.get();
+        if (resolvedElements == null) {
+            ASTParser parser = ASTParser.newParser(AST.JLS4);
+            parser.setProject(typeRoot.getJavaProject());
+            List<IJavaElement> list = new LinkedList<>();
+            traverseModel(typeRoot.getPrimaryElement(), list);
+            IJavaElement[] modelElements = new IJavaElement[list.size()];
+            modelElements = list.toArray(modelElements);
+            IBinding[] bindings = parser.createBindings(modelElements, monitor);
+            if (bindings != null && bindings.length == modelElements.length) {
+                resolvedElements = new ResolvedElements(modelElements, bindings);
+                resolvedElementsRef = new SoftReference<>(resolvedElements);
+            }
         }
+        return resolvedElements;
+    }
+    
+    public IJavaElement searchInClass(Declaration ceylonDeclaration, IProgressMonitor monitor) {
+            ResolvedElements resolvedElements = resolveUnitElements(monitor);
+            for (IJavaElement javaElement : resolvedElements.modelElements) {
+                IJavaElement result = null;
+                try {
+                    if (javaElement instanceof IType) {
+                        result = declarationMatchesIType(ceylonDeclaration, (IType)javaElement, resolvedElements);
+                    }
+                    if (javaElement instanceof IMethod) {
+                        result = declarationMatchesIMethod(ceylonDeclaration, (IMethod)javaElement, resolvedElements);
+                    }
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+                if (result != null) {
+                    return result;
+                }
+            }
         return null;
     }
     
-    private IJavaElement visit(IJavaElement element) {
-        if (element instanceof IType) {
-            return visit((IType) element);
-        }
-        if (element instanceof IMethod) {
-            return visit((IMethod) element);
+    private void traverseModel(IJavaElement element, List<IJavaElement> elements) {
+        if (element instanceof IType ||
+                element instanceof IMethod) {
+            elements.add(element);
         }
         if (element instanceof IParent) {
-            return visit((IParent) element);
+            IParent parent = (IParent) element;
+            try {
+                for (IJavaElement child : parent.getChildren()) {
+                    traverseModel(child, elements);
+                }
+            } catch (JavaModelException e) {
+                e.printStackTrace();
+            }
         }
-        return null;
     }
     
-    private IJavaElement visit(IType javaType) {
+    private IJavaElement declarationMatchesIType(Declaration ceylonDeclaration, IType javaType, ResolvedElements resolvedElements) {
         IBindingProvider mirror = null;
         if (ceylonDeclaration instanceof LazyClass) {
             LazyClass lazyClass = (LazyClass) ceylonDeclaration;
@@ -91,7 +138,7 @@ public class CeylonToJavaMatcher {
             if (container instanceof LazyValue) {
                 mirror = (IBindingProvider) ((LazyValue) container).classMirror; 
             }
-            if (declarationMatched(javaType, mirror) != null) {
+            if (declarationMatched(javaType, mirror, resolvedElements) != null) {
                 try {
                     for (IMethod javaMethod : javaType.getMethods()) {
                         if (javaMethod.getElementName().equals(javaBeanValue.getGetterName())) {
@@ -103,7 +150,7 @@ public class CeylonToJavaMatcher {
                     e.printStackTrace();
                 }
             }
-            return visit((IParent)javaType);
+            return null;
         }
         if (ceylonDeclaration instanceof FieldValue) {
             FieldValue fieldValue = ((FieldValue) ceylonDeclaration);
@@ -117,7 +164,7 @@ public class CeylonToJavaMatcher {
             if (container instanceof LazyValue) {
                 mirror = (IBindingProvider) ((LazyValue) container).classMirror; 
             }
-            if (declarationMatched(javaType, mirror) != null) {
+            if (declarationMatched(javaType, mirror, resolvedElements) != null) {
                 try {
                     for (IField javaField : javaType.getFields()) {
                         if (javaField.getElementName().equals(fieldValue.getRealName())) {
@@ -129,17 +176,13 @@ public class CeylonToJavaMatcher {
                     e.printStackTrace();
                 }
             }
-            return visit((IParent)javaType);
+            return null;
         }
         
-        IJavaElement result = declarationMatched(javaType, mirror);
-        if (result != null) {
-            return result;
-        }
-        return visit((IParent)javaType);
+        return declarationMatched(javaType, mirror, resolvedElements);
     }
     
-    private IJavaElement visit(IMethod javaMethod) {
+    private IJavaElement declarationMatchesIMethod(Declaration ceylonDeclaration, IMethod javaMethod, ResolvedElements resolvedElements) {
         IBindingProvider mirror = null;
         
         if (ceylonDeclaration instanceof LazyFunction) {
@@ -148,47 +191,40 @@ public class CeylonToJavaMatcher {
         if (ceylonDeclaration instanceof JavaMethod) {
             mirror = (IBindingProvider) ((JavaMethod) ceylonDeclaration).mirror;
         }
-        IJavaElement result = declarationMatched(javaMethod, mirror);
-        if (result != null) {
-            return result;
-        }
-
-        return visit((IParent)javaMethod);
+        return declarationMatched(javaMethod, mirror, resolvedElements);
     }
     
-    private IJavaElement visit(IParent parent) {
-        try {
-            for (IJavaElement child : parent.getChildren()) {
-                IJavaElement elementFound = visit(child);
-                if (elementFound != null) {
-                    return elementFound;
+    private IJavaElement declarationMatched(
+            IJavaElement javaElement,
+            IBindingProvider mirror, 
+            ResolvedElements resolvedElements) {
+        if (mirror != null && resolvedElements != null) {
+            IJavaElement[] modelElements = resolvedElements.modelElements;
+            IBinding[] bindings = resolvedElements.bindings;
+            int javaElementIndex = -1;
+            for (int i = 0; i<modelElements.length; i++) {
+                if (modelElements[i] == javaElement) {
+                    javaElementIndex = i;
+                    break;
                 }
             }
-        } catch (JavaModelException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-    
-    private IJavaElement declarationMatched(IJavaElement javaElement,
-            IBindingProvider mirror) {
-        if (mirror != null) { 
-            parser.setProject(typeRoot.getJavaProject());
-            IBinding[] bindings = parser.createBindings(new IJavaElement[] { javaElement }, null);
-            if (bindings.length > 0 && bindings[0] != null) {
-                if (mirror instanceof JDTMethod && bindings[0] instanceof ITypeBinding) {
-                    // Case of a constructor : let's go to the constructor and not to the type.
-                    ITypeBinding typeBinding = (ITypeBinding) bindings[0];
-                    for (IMethodBinding methodBinding : typeBinding.getDeclaredMethods()) {
-//                        if (methodBinding.isConstructor()) {
-                    	if (CharOperation.equals(methodBinding.getKey().toCharArray(), mirror.getBindingKey())) {
-                    		return methodBinding.getJavaElement();
-                    	}
-//                        }
+            if (javaElementIndex >=0) {
+                IBinding binding = bindings[javaElementIndex];
+                if (binding != null) {
+                    if (mirror instanceof JDTMethod && binding instanceof ITypeBinding) {
+                        // Case of a constructor : let's go to the constructor and not to the type.
+                        ITypeBinding typeBinding = (ITypeBinding) binding;
+                        for (IMethodBinding methodBinding : typeBinding.getDeclaredMethods()) {
+//                            if (methodBinding.isConstructor()) {
+                            if (CharOperation.equals(methodBinding.getKey().toCharArray(), mirror.getBindingKey())) {
+                                return methodBinding.getJavaElement();
+                            }
+//                            }
+                        }
                     }
-                }
-                if (CharOperation.equals(bindings[0].getKey().toCharArray(), mirror.getBindingKey())) {
-                    return javaElement;
+                    if (CharOperation.equals(binding.getKey().toCharArray(), mirror.getBindingKey())) {
+                        return javaElement;
+                    }
                 }
             }
         }

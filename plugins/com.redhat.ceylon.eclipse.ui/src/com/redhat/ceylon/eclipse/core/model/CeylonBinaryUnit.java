@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.core.model;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IJavaElement;
 
@@ -14,10 +15,12 @@ import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
     
     IClassFile classFileElement;
+    CeylonToJavaMatcher ceylonToJavaMatcher;
     
     public CeylonBinaryUnit(IClassFile typeRoot, String fileName, String relativePath, String fullPath, Package pkg) {
         super();
         this.classFileElement = typeRoot;
+        ceylonToJavaMatcher = new CeylonToJavaMatcher(typeRoot);
         setFilename(fileName);
         setRelativePath(relativePath);
         setFullPath(fullPath);
@@ -111,10 +114,14 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
     }
     
     @Override
-    public IJavaElement toJavaElement(Declaration ceylonDeclaration) {
-        return new CeylonToJavaMatcher(this).searchInClass(ceylonDeclaration);
+    public IJavaElement toJavaElement(Declaration ceylonDeclaration, IProgressMonitor monitor) {
+        return ceylonToJavaMatcher.searchInClass(ceylonDeclaration, monitor);
     }
 
+    @Override
+    public IJavaElement toJavaElement(Declaration ceylonDeclaration) {
+        return ceylonToJavaMatcher.searchInClass(ceylonDeclaration, null);
+    }
 
     @Override
     public String getCeylonFileName() {
