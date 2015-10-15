@@ -19,21 +19,27 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Value;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.Indents;
+import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
+import com.redhat.ceylon.model.typechecker.model.Interface;
+import com.redhat.ceylon.model.typechecker.model.Parameter;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.model.typechecker.model.Value;
 
 public class MakeReceiverRefactoring extends AbstractRefactoring {
+    
+    private boolean leaveDelegate = false;
     
     private final class MoveVisitor extends Visitor {
         private final TypeDeclaration newOwner;
@@ -170,6 +176,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         @Override
         public void visit(Tree.InvocationExpression that) {
             super.visit(that);
+            if (leaveDelegate) return;
             Tree.Primary p = that.getPrimary();
             if (p instanceof Tree.BaseMemberOrTypeExpression) {
                 Declaration d = ((Tree.BaseMemberOrTypeExpression) p).getDeclaration();
@@ -252,7 +259,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         }
         
     }
-    
+
     public MakeReceiverRefactoring(IEditorPart editor) {
         super(editor);
     }
@@ -310,7 +317,12 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                 IDocument doc = pufc.getCurrentDocument(null);
                 pufc.setEdit(new MultiTextEdit());
                 if (fun.getUnit().equals(pu.getUnit())) {
-                    deleteOld(pufc, fun);
+                    if (leaveDelegate) {
+                        leaveOriginal(pufc, fun, param);
+                    }
+                    else {
+                        deleteOld(pufc, fun);
+                    }
                 }
                 new MoveVisitor(target, doc, param, fun, defaultArg, pufc)
                         .visit(pu.getCompilationUnit());
@@ -322,7 +334,12 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         if (searchInEditor()) {
             final TextChange tfc = newLocalChange();
             tfc.setEdit(new MultiTextEdit());
-            deleteOld(tfc, fun);
+            if (leaveDelegate) {
+                leaveOriginal(tfc, fun, param);
+            }
+            else {
+                deleteOld(tfc, fun);
+            }
             new MoveVisitor(target, document, param, fun, defaultArg, tfc)
                     .visit(rootNode);
             cc.add(tfc);
@@ -332,9 +349,79 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         return cc;
     }
 
+    private void leaveOriginal(TextChange tfc, 
+            Tree.Declaration declaration, Value param) {
+        StringBuilder params = new StringBuilder();
+        Declaration dec = declaration.getDeclarationModel();
+        String outer = param.getName() + ".";
+        String semi = ";";
+        Node body;
+        Tree.ParameterList parameterList;
+        if (declaration instanceof Tree.AnyMethod) {
+            Tree.AnyMethod m = 
+                    (Tree.AnyMethod) declaration;
+            parameterList = m.getParameterLists().get(0);
+            if (declaration instanceof Tree.MethodDeclaration) {
+                Tree.MethodDeclaration md = 
+                        (Tree.MethodDeclaration) declaration;
+                body = md.getSpecifierExpression();
+                semi = "";
+            }
+            else if (declaration instanceof Tree.MethodDefinition) {
+                Tree.MethodDefinition md = 
+                        (Tree.MethodDefinition) declaration;
+                body = md.getBlock();
+            }
+            else {
+                return; //impossible!
+            }
+        }
+        /*else if (declaration instanceof Tree.AnyClass) {
+            Tree.AnyClass m = 
+                    (Tree.AnyClass) declaration;
+            parameterList = m.getParameterList();
+            if (declaration instanceof Tree.ClassDefinition) {
+                Tree.ClassDefinition md = 
+                        (Tree.ClassDefinition) declaration;
+                body = md.getClassBody();
+            }
+            else {
+                return; //impossible!
+            }
+        }*/
+        else {
+            return; //impossible!
+        }
+        for (Tree.Parameter parameter: parameterList.getParameters()) {
+            Parameter p = parameter.getParameterModel();
+            FunctionOrValue model = p.getModel();
+            if (model==null || !model.equals(param)) {
+                if (params.length()>0) {
+                    params.append(", ");
+                }
+                params.append(p.getName());
+            }
+        }
+        tfc.addEdit(new ReplaceEdit(
+                body.getStartIndex(), 
+                body.getDistance(), 
+                "=> " + outer + 
+                dec.getName() + 
+                "(" + params + ")" + semi));
+    }
+    
     private void deleteOld(final TextChange tfc, final Tree.Declaration fun) {
         tfc.addEdit(new DeleteEdit(fun.getStartIndex(), 
                 fun.getDistance()));
+    }
+
+    public void setLeaveDelegate() {
+        leaveDelegate = !leaveDelegate;
+    }
+
+    public boolean isMethod() {
+        Value dec = ((Tree.AttributeDeclaration) node).getDeclarationModel();
+        return dec.getContainer() instanceof Function;
     }
     
 }

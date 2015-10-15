@@ -169,7 +169,9 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             TextChange tfc = newLocalChange();
             tfc.setEdit(new MultiTextEdit());
             move(owner, tfc);
-            fixInvocations(dec, rootNode, tfc);
+            if (!leaveDelegate) {
+                fixInvocations(dec, rootNode, tfc);
+            }
             cc.add(tfc);
             if (makeShared) {
                 addSharedAnnotations(tfc, owner);
