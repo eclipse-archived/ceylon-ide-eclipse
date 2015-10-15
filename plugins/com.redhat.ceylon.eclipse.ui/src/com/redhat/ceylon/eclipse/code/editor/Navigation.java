@@ -19,6 +19,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
@@ -409,6 +410,11 @@ public class Navigation {
 
     public static IJavaElement getJavaElement(Declaration declaration)
             throws JavaModelException {
+        return getJavaElement(declaration, null);
+    }
+
+    public static IJavaElement getJavaElement(Declaration declaration, IProgressMonitor monitor)
+            throws JavaModelException {
         if (declaration instanceof Function && declaration.isAnnotation()) {
             Function fun = (Function) declaration;
             declaration = fun.getTypeDeclaration();
@@ -417,7 +423,7 @@ public class Navigation {
             final IJavaModelAware javaModelAware = 
                     (IJavaModelAware) 
                         declaration.getUnit();
-            return javaModelAware.toJavaElement(declaration);
+            return javaModelAware.toJavaElement(declaration, monitor);
         }
         return null;
     }
