@@ -25,6 +25,7 @@ import com.redhat.ceylon.model.typechecker.model.Value;
 
 class ControlStructureCompletionProposal extends CompletionProposal {
     
+    @Deprecated
     static void addForProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, Declaration d) {
@@ -52,6 +53,7 @@ class ControlStructureCompletionProposal extends CompletionProposal {
         }
     }
 
+    @Deprecated
     static void addIfExistsProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, Declaration d) {
@@ -71,6 +73,7 @@ class ControlStructureCompletionProposal extends CompletionProposal {
         }
     }
 
+    @Deprecated
     static void addAssertExistsProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, Declaration d) {
@@ -90,6 +93,7 @@ class ControlStructureCompletionProposal extends CompletionProposal {
         }
     }
 
+    @Deprecated
     static void addIfNonemptyProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, Declaration d) {
@@ -109,6 +113,7 @@ class ControlStructureCompletionProposal extends CompletionProposal {
         }
     }
     
+    @Deprecated
     static void addAssertNonemptyProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, Declaration d) {
@@ -128,6 +133,7 @@ class ControlStructureCompletionProposal extends CompletionProposal {
         }
     }
     
+    @Deprecated
     static void addTryProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, Declaration d) {
@@ -148,6 +154,7 @@ class ControlStructureCompletionProposal extends CompletionProposal {
         }
     }
     
+    @Deprecated
     static void addSwitchProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             DeclarationWithProximity dwp, Declaration d, Node node, 

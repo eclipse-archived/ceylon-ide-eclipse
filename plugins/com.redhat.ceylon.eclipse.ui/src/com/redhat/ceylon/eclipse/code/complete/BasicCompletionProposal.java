@@ -16,6 +16,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
 class BasicCompletionProposal extends CompletionProposal {
     
+    @Deprecated
     static void addImportProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             Declaration dec, Scope scope) {
@@ -23,6 +24,7 @@ class BasicCompletionProposal extends CompletionProposal {
                 dec.getName(), escapeName(dec), dec, cpc));
     }
 
+    @Deprecated
     static void addDocLinkProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             Declaration dec, Scope scope) {

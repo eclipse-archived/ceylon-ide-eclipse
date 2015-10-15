@@ -18,6 +18,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
+@Deprecated
 public class MemberNameCompletions {
     
     static void addMemberNameProposals(final int offset,

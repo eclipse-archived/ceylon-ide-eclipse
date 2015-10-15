@@ -261,9 +261,11 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     }
     
     shared actual ICompletionProposal newRefinementCompletionProposal(Integer offset, String prefix, Reference? pr,
-        String desc, String text, CeylonParseController cmp, Declaration dec, Scope scope) {
+        String desc, String text, CeylonParseController cmp, Declaration dec,
+        Scope scope, Boolean fullType, Boolean explicitReturnType) {
         
-        return RefinementCompletionProposal(offset, prefix, pr, desc, text, cmp, dec, scope, false, true);
+        return RefinementCompletionProposal(offset, prefix, pr, desc, text, cmp, dec,
+            scope, fullType, explicitReturnType);
     }
     
     shared actual ICompletionProposal newMemberNameCompletionProposal(Integer offset, String prefix, String name, String unquotedName) {
@@ -283,19 +285,6 @@ shared class EclipseCompletionManager(CeylonEditor editor)
                 return Point(selectionStart, selectionLength);
             }
         };
-    }
-    
-    shared actual ICompletionProposal newNamedArgumentProposal(Integer offset, String prefix, Reference? pr,
-        String desc, String text, CeylonParseController cpc, Declaration dec, Scope scope) {
-        
-        return RefinementCompletionProposal(offset, prefix, pr, desc, text, cpc, dec, scope, true, false);
-    }
-    
-    shared actual ICompletionProposal newInlineFunctionProposal(Integer offset, String prefix, Reference? pr,
-        String desc, String text, CeylonParseController cpc, Declaration dec, Scope scope) {
-        
-        return RefinementCompletionProposal(offset, prefix, pr, desc, text, cpc,
-            dec, scope, false, false);
     }
     
     shared actual ICompletionProposal newProgramElementReferenceCompletion(Integer offset, String prefix,

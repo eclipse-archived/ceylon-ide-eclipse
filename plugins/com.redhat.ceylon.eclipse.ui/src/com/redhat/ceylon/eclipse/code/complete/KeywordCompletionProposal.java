@@ -47,6 +47,7 @@ public class KeywordCompletionProposal extends CompletionProposal {
             new LinkedHashSet<String>(Arrays.asList("assert", "let",
                     "while", "for", "if", "switch", "case", "catch"));
     
+    @Deprecated
     static void addKeywordProposals(CeylonParseController cpc, int offset, 
             String prefix, List<ICompletionProposal> result, Node node,
             OccurrenceLocation ol, boolean postfix, int previousTokenType) {
@@ -130,6 +131,7 @@ public class KeywordCompletionProposal extends CompletionProposal {
                         Highlights.KW_STYLER));
     }
     
+    @Deprecated
     static void addKeywordProposal(int offset, String prefix, 
             List<ICompletionProposal> result, String keyword) {
         result.add(new KeywordCompletionProposal(offset, prefix, keyword));

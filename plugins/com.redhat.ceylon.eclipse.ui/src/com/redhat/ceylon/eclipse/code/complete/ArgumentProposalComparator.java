@@ -7,6 +7,7 @@ import java.util.Comparator;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 
+@Deprecated
 final class ArgumentProposalComparator 
         implements Comparator<DeclarationWithProximity> {
     private final String exactName;

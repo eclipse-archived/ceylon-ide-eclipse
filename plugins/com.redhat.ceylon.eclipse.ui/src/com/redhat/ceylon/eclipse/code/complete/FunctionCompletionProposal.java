@@ -26,6 +26,7 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
+@Deprecated
 final class FunctionCompletionProposal extends
         CompletionProposal {
     

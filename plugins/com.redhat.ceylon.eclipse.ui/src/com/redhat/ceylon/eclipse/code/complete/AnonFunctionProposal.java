@@ -12,8 +12,10 @@ import org.eclipse.swt.graphics.Point;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
+@Deprecated
 class AnonFunctionProposal {
 
+    @Deprecated
     static void addAnonFunctionProposal(int offset, 
             Type requiredType, 
             List<ICompletionProposal> result, 
