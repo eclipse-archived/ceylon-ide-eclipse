@@ -534,52 +534,55 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     private void appendBody(final Scope container, 
             String indent, String originalIndent, 
             String delim, StringBuilder sb, final Node body) {
-//        sb.append(" {");
-//        for (final Tree.Statement st: block.getStatements()) {
-            final StringBuilder stb = 
-                    new StringBuilder(toString(body));
-            body.visit(new Visitor() {
-                int offset = 0;
-                @Override
-                public void visit(Tree.BaseMemberOrTypeExpression that) {
-                    super.visit(that);
-                    if (that.getDeclaration().getContainer()
-                            .equals(container)) {
-                        int start = that.getStartIndex()-body.getStartIndex()+offset;
-                        stb.insert(start, newName + ".");
-                        offset+=newName.length()+1;
-                    }
+        final StringBuilder stb = 
+                new StringBuilder(toString(body));
+        body.visit(new Visitor() {
+            int offset = 0;
+            private int startIndex(Node that) {
+                return that.getStartIndex()
+                        - body.getStartIndex() 
+                        + offset;
+            }
+            @Override
+            public void visit(Tree.BaseMemberOrTypeExpression that) {
+                super.visit(that);
+                if (that.getDeclaration().getContainer()
+                        .equals(container)) {
+                    int start = startIndex(that);
+                    stb.insert(start, newName + ".");
+                    offset+=newName.length()+1;
                 }
-                @Override
-                public void visit(Tree.QualifiedMemberOrTypeExpression that) {
-                    super.visit(that);
-                    Tree.Primary p = that.getPrimary();
-                    int start = p.getStartIndex()-body.getStartIndex()+offset;
-                    int len = p.getDistance();
-                    boolean isClass = 
-                            declaration.getDeclarationModel() 
-                                instanceof Class;
-                    if (p instanceof Tree.This && !isClass) {
-                        stb.replace(start, start+len, newName);
-                        offset+=newName.length()-len;
-                    }
-                    if (p instanceof Tree.Outer) {
-                        if (isClass) {
-                            stb.replace(start, start+5, newName);
-                            offset-=5+newName.length();
-                        }
-                        else {
-                            stb.replace(start, start+5, "this");
-                            offset-=1;
-                        }
-                    }
+            }
+            @Override
+            public void visit(Tree.This that) {
+                super.visit(that);
+                int start = startIndex(that);
+                boolean isClass =
+                        declaration.getDeclarationModel()
+                        instanceof Class;
+                if (!isClass) {
+                    stb.replace(start, start+4, newName);
+                    offset+=newName.length()-4;
                 }
-            });
-//            sb.append(delim).append(indent)
-//                .append(getDefaultIndent())
-            sb.append(stb.toString().replaceAll(delim+originalIndent, delim+indent));
-//        }
-//        sb.append(delim).append(indent).append("}");
+            }
+            @Override
+            public void visit(Tree.Outer that) {
+                super.visit(that);
+                int start = startIndex(that);
+                boolean isClass = 
+                        declaration.getDeclarationModel() 
+                        instanceof Class;
+                if (isClass) {
+                    stb.replace(start, start+5, newName);
+                    offset+=newName.length()-5;
+                }
+                else {
+                    stb.replace(start, start+5, "this");
+                    offset+=4-5;
+                }
+            }
+        });
+        sb.append(stb.toString().replaceAll(delim+originalIndent, delim+indent));
     }
 
     public void setMakeShared() {
