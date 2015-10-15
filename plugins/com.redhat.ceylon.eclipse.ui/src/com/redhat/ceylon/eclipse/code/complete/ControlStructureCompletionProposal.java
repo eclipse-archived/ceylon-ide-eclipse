@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.swt.graphics.Point;
@@ -195,11 +196,15 @@ class ControlStructureCompletionProposal extends CompletionProposal {
         this.cpc = cpc;
         this.declaration = dec;
     }
-    
+
     public String getAdditionalProposalInfo() {
-        return getDocumentationFor(cpc, declaration);    
+        return getAdditionalProposalInfo(null);
     }
 
+    public String getAdditionalProposalInfo(IProgressMonitor monitor) {
+        return getDocumentationFor(cpc, declaration, monitor);
+    }
+    
     @Override
     public Point getSelection(IDocument document) {
         int loc = text.indexOf('}');

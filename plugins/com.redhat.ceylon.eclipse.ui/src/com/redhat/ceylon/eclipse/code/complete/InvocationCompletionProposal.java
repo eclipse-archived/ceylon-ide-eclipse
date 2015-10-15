@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -873,10 +874,14 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
         return comma;
     }
-    
+
     public String getAdditionalProposalInfo() {
+        return getAdditionalProposalInfo(null);
+    }
+
+    public String getAdditionalProposalInfo(IProgressMonitor monitor) {
         return getDocumentationFor(cpc, declaration, 
-                producedReference);    
+                producedReference, monitor);
     }
     
     public void enterLinkedMode(IDocument document, 

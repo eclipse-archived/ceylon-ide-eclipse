@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 
 import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -50,7 +51,10 @@ class BasicCompletionProposal extends CompletionProposal {
     }
     
     public String getAdditionalProposalInfo() {
-        return getDocumentationFor(cpc, declaration);    
+        return getAdditionalProposalInfo(null);
     }
 
+    public String getAdditionalProposalInfo(IProgressMonitor monitor) {
+        return getDocumentationFor(cpc, declaration, monitor);
+    }
 }

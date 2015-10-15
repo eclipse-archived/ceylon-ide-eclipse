@@ -56,6 +56,7 @@ import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
@@ -422,7 +423,7 @@ public class DocumentationHover extends SourceInfoHover {
                 Referenceable model = 
                         getReferencedDeclaration(node);
                 return getDocumentationHoverText(model, 
-                        editor, node);
+                        editor, node, null);
             }
         }
         else {
@@ -861,13 +862,13 @@ public class DocumentationHover extends SourceInfoHover {
      */
     public static String getDocumentationHoverText(
             Referenceable model, CeylonEditor editor, 
-            Node node) {
+            Node node, IProgressMonitor monitor) {
         CeylonParseController parseController = 
                 editor.getParseController();
         if (model instanceof Declaration) {
             Declaration dec = (Declaration) model;
             return getDocumentationFor(parseController, dec, 
-                    node, null);
+                    node, null, null);
         }
         else if (model instanceof Package) {
             Package dec = (Package) model;
@@ -1290,19 +1291,20 @@ public class DocumentationHover extends SourceInfoHover {
 
     public static String getDocumentationFor(
             CeylonParseController controller, 
-            Declaration dec) {
-        return getDocumentationFor(controller, dec, null, null);
+            Declaration dec,
+            IProgressMonitor monitor) {
+        return getDocumentationFor(controller, dec, null, null, monitor);
     }
     
     public static String getDocumentationFor(
             CeylonParseController controller, 
-            Declaration dec, Reference pr) {
-        return getDocumentationFor(controller, dec, null, pr);
+            Declaration dec, Reference pr, IProgressMonitor monitor) {
+        return getDocumentationFor(controller, dec, null, pr, monitor);
     }
     
     private static String getDocumentationFor(
             CeylonParseController controller, 
-            Declaration dec, Node node, Reference pr) {
+            Declaration dec, Node node, Reference pr, IProgressMonitor monitor) {
         if (dec==null) return null;
         if (dec instanceof FunctionOrValue) {
             FunctionOrValue value = (FunctionOrValue) dec;
@@ -1324,7 +1326,7 @@ public class DocumentationHover extends SourceInfoHover {
         if (!(dec instanceof NothingType)) {
             addPackageInfo(dec, buffer);
         }
-        boolean hasDoc = addDoc(dec, node, buffer);
+        boolean hasDoc = addDoc(dec, node, buffer, monitor);
         addRefinementInfo(dec, node, buffer, hasDoc, unit); //TODO: use the pr to get the qualifying type??
         addReturnType(dec, buffer, node, pr, obj, unit);
         addParameters(controller, dec, node, pr, buffer, unit);
@@ -1726,7 +1728,7 @@ public class DocumentationHover extends SourceInfoHover {
     }
 
     private static boolean addDoc(Declaration dec, 
-            Node node, StringBuilder buffer) {
+            Node node, StringBuilder buffer, IProgressMonitor monitor) {
         boolean hasDoc = false;
         Node rn = getReferencedNode(dec);
         if (rn instanceof Tree.Declaration) {
@@ -1747,7 +1749,7 @@ public class DocumentationHover extends SourceInfoHover {
                     buffer);
         }
         else {
-            appendJavadoc(dec, buffer);
+            appendJavadoc(dec, buffer, monitor);
         }
         return hasDoc;
     }
@@ -2134,9 +2136,9 @@ public class DocumentationHover extends SourceInfoHover {
     }
 
     private static void appendJavadoc(Declaration model,
-            StringBuilder buffer) {
+            StringBuilder buffer, IProgressMonitor monitor) {
         try {
-            appendJavadoc(getJavaElement(model), buffer);
+            appendJavadoc(getJavaElement(model, monitor), buffer);
         }
         catch (JavaModelException jme) {
             jme.printStackTrace();

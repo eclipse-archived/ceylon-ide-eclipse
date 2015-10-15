@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -478,7 +479,13 @@ class ParametersCompletionProposal extends CompletionProposal {
         return comma;
     }
     
+    @Override
     public String getAdditionalProposalInfo() {
+        return getAdditionalProposalInfo(null);
+    }
+    
+    @Override
+    public String getAdditionalProposalInfo(IProgressMonitor monitor) {
         return null;    
     }
     

@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -327,8 +328,14 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         return change;
     }
 
+    @Override
     public String getAdditionalProposalInfo() {
-        return getDocumentationFor(cpc, declaration);    
+        return getAdditionalProposalInfo(null);
+    }
+    
+    @Override
+    public String getAdditionalProposalInfo(IProgressMonitor monitor) {
+        return getDocumentationFor(cpc, declaration, monitor);
     }
     
     public void enterLinkedMode(IDocument document) {

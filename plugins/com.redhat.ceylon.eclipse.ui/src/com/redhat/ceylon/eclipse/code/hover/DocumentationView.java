@@ -172,7 +172,7 @@ public class DocumentationView extends ViewPart {
             if (target!=null) {
                 String html = 
                         getDocumentationHoverText(target, 
-                                editor, null);
+                                editor, null, null);
                 if (html!=null) {
                     control.setText(html);
                     info = new CeylonBrowserInput(info, target, html);

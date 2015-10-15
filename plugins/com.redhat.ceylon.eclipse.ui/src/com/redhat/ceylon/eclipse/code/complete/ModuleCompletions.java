@@ -176,8 +176,14 @@ public class ModuleCompletions {
             }
         }
         
+
         @Override
         public String getAdditionalProposalInfo() {
+            return getAdditionalProposalInfo(null);
+        }
+        
+        @Override
+        public String getAdditionalProposalInfo(IProgressMonitor monitor) {
             Scope scope = node.getScope();
             Unit unit = node.getUnit();
             return JDKUtils.isJDKModule(name) ?
@@ -203,9 +209,14 @@ public class ModuleCompletions {
                     versioned.substring(len));
             this.name = name;
         }
-
+        
         @Override
         public String getAdditionalProposalInfo() {
+            return getAdditionalProposalInfo(null);
+        }
+
+        @Override
+        public String getAdditionalProposalInfo(IProgressMonitor monitor) {
             return getDocumentationForModule(name, JDKUtils.jdk.version, 
                     "This module forms part of the Java SDK.",
                     null, null);

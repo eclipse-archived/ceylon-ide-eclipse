@@ -93,6 +93,11 @@ public class PackageCompletions {
 
         @Override
         public String getAdditionalProposalInfo() {
+            return getAdditionalProposalInfo(null);
+        }
+        
+        @Override
+        public String getAdditionalProposalInfo(IProgressMonitor monitor) {
             return getDocumentationFor(md, version.getVersion(), 
                     fullPackageName,
                     controller.getLastCompilationUnit().getScope(), unit);
@@ -268,6 +273,11 @@ public class PackageCompletions {
 
         @Override
         public String getAdditionalProposalInfo() {
+            return getAdditionalProposalInfo(null);
+        }
+        
+        @Override
+        public String getAdditionalProposalInfo(IProgressMonitor monitor) {
             return getDocumentationFor(controller, candidate);
         }
     }

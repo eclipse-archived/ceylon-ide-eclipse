@@ -1287,7 +1287,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     selection.length==1 &&
                     selection[0] instanceof DeclarationProxy) {
                     browser.setText(getDocumentationFor(null, 
-                            toDeclaration(selection[0])));
+                            toDeclaration(selection[0]), null));
                 }
                 else {
                     if (emptyDoc==null) {
@@ -1387,7 +1387,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             if (target instanceof Declaration) {
                 String text = 
                         getDocumentationFor(null, 
-                                (Declaration) target);
+                                (Declaration) target, null);
                 if (text!=null) browser.setText(text);
             }
             if (target instanceof Package) {
