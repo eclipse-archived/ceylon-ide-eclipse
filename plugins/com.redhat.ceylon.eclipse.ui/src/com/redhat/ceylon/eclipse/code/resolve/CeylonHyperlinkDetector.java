@@ -65,7 +65,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                             " \u2014 " +
                             (Backend.None.equals(supportedBackend) ? 
                                     "native header" :
-                                        supportedBackend.name() + 
+                                        supportedBackend.name + 
                                         " backend implementation"));
         }
 
