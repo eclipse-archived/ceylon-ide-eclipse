@@ -65,7 +65,7 @@ class EclipseImportedModulePackageProposal(Integer offset, String prefix, String
     
     shared actual Image image => CeylonResources.\iPACKAGE;
     
-    shared actual ICompletionProposal newReplacementCompletionResult(Declaration d, Point selection, LinkedModeModel lm) {
+    shared actual ICompletionProposal newPackageMemberCompletionProposal(Declaration d, Point selection, LinkedModeModel lm) {
         return object satisfies ICompletionProposal {
             shared actual Point? getSelection(IDocument document) {
                 return null;

@@ -18,3 +18,11 @@ public interface IEclipseCompletionProposal extends ICompletionProposal,
 
     void apply(ITextViewer viewer, char trigger, int stateMask, int offset);
 }
+
+interface IEclipseCompletionProposal2And6 extends ICompletionProposal,
+        ICompletionProposalExtension2, ICompletionProposalExtension6 {
+
+    void apply(IDocument document);
+
+    void apply(ITextViewer viewer, char trigger, int stateMask, int offset);
+}

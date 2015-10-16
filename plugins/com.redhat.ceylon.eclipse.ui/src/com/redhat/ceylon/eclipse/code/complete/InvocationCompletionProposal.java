@@ -104,6 +104,7 @@ class InvocationCompletionProposal extends CompletionProposal {
     
     private static final List<Type> NO_TYPES = Collections.<Type>emptyList();
 
+    @Deprecated
     static void addProgramElementReferenceProposal(
             int offset, String prefix,
             CeylonParseController controller,
@@ -117,6 +118,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                 true, false, false, false, isMember, null));
     }
     
+    @Deprecated
     static void addReferenceProposal(
             int offset, String prefix,
             final CeylonParseController controller,
@@ -162,6 +164,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
     
+    @Deprecated
     static void addSecondLevelProposal(
             int offset, String prefix, 
             CeylonParseController controller, 
@@ -227,6 +230,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
 
+    @Deprecated
     private static void addSecondLevelProposal(
             int offset, String prefix,
             CeylonParseController controller, 
@@ -264,6 +268,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
     
+    @Deprecated
     static void addInvocationProposals(
             int offset, String prefix, 
             CeylonParseController controller,
@@ -391,7 +396,8 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
     
-    final class NestedCompletionProposal 
+    @Deprecated
+    final class NestedCompletionProposal
             implements ICompletionProposal, 
                        ICompletionProposalExtension2,
                        ICompletionProposalExtension6 {
@@ -574,7 +580,8 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
 
-    final class NestedLiteralCompletionProposal 
+    @Deprecated
+    final class NestedLiteralCompletionProposal
             implements ICompletionProposal, 
                        ICompletionProposalExtension2,
                        ICompletionProposalExtension6 {
@@ -705,6 +712,7 @@ class InvocationCompletionProposal extends CompletionProposal {
     private Declaration qualifyingValue;
     private boolean inheritance;
 
+    @Deprecated
     InvocationCompletionProposal(
             int offset, String prefix,
             String desc, String text,
@@ -732,6 +740,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         this.qualifyingValue = qualifyingValue;
     }
 
+    @Deprecated
     protected boolean isProposalMatching(String currentPrefix, String text){
         if(super.isProposalMatching(currentPrefix, text))
             return true;
@@ -747,6 +756,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         return cpc.getLastCompilationUnit().getUnit();
     }
 
+    @Deprecated
     private DocumentChange createChange(IDocument document)
             throws BadLocationException {
         DocumentChange change = 
@@ -786,6 +796,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
 
+    @Deprecated
     private void activeLinkedMode(IDocument document) {
         if (declaration instanceof Generic) {
             Generic generic = (Generic) declaration;
@@ -844,11 +855,13 @@ class InvocationCompletionProposal extends CompletionProposal {
         return new Point(start, len);
     }
     
+    @Deprecated
     protected int getCompletionPosition(int first, int next) {
         return text.substring(first, first+next-1)
                 .lastIndexOf(' ') + 1;
     }
 
+    @Deprecated
     protected int getFirstPosition() {
         int index;
         if (namedInvocation) {
@@ -863,7 +876,8 @@ class InvocationCompletionProposal extends CompletionProposal {
         return index+1;
     }
     
-    public int getNextPosition(IDocument document, 
+    @Deprecated
+    public int getNextPosition(IDocument document,
             int lastOffset) {
         int loc = offset-prefix.length();
         int comma = -1;
@@ -898,6 +912,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         return comma;
     }
 
+    @Deprecated
     public String getAdditionalProposalInfo() {
         return getAdditionalProposalInfo(null);
     }
@@ -907,7 +922,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                 producedReference, monitor);
     }
     
-    public void enterLinkedMode(IDocument document, 
+    @Deprecated
+    public void enterLinkedMode(IDocument document,
             List<Parameter> params, 
             List<TypeParameter> typeParams) {
         boolean proposeTypeArguments = params==null;
@@ -983,6 +999,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
 
+    @Deprecated
     private void addValueArgumentProposals(
             Parameter param, int loc, int first,
             List<ICompletionProposal> props, 
@@ -1044,6 +1061,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
 
+    @Deprecated
     private void addValueArgumentProposal(
             Parameter p, int loc,
             List<ICompletionProposal> props, 
@@ -1169,6 +1187,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
 
+    @Deprecated
     protected static boolean withinBounds(TypeDeclaration td, Type t) {
         if (td instanceof TypeParameter) { 
             TypeParameter tp = (TypeParameter) td;
@@ -1179,6 +1198,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
     }
 
+    @Deprecated
     private void addTypeArgumentProposals(
             TypeParameter tp,
             final int loc, int first,

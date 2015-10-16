@@ -52,7 +52,7 @@ interface EclipseCompletionProposal
     shared formal variable String? currentPrefix;
     
     shared actual String displayString => description;
-    shared actual String? additionalProposalInfo => null;
+    shared default actual String? additionalProposalInfo => null;
     shared default actual Boolean autoInsertable => true;
     shared default Boolean qualifiedNameIsPath => false;
     
@@ -66,7 +66,7 @@ interface EclipseCompletionProposal
         return result;
     }
     
-    shared actual IContextInformation? contextInformation => null;
+    shared default actual IContextInformation? contextInformation => null;
         
     shared default actual void apply(IDocument doc) {
     }
@@ -86,10 +86,14 @@ interface EclipseCompletionProposal
             return false;
         }
         currentPrefix = getCurrentPrefix(document, offset);
-        return if (exists pr = currentPrefix) then ModelUtil.isNameMatching(pr, text) else false;
+        return if (exists pr = currentPrefix) then isProposalMatching(pr, text) else false;
 
     }
     
+    shared default Boolean isProposalMatching(variable String currentPrefix, variable String text) {
+        return ModelUtil.isNameMatching(currentPrefix, text);
+    }
+
     String? getCurrentPrefix(IDocument document, Integer offset) {
         try {
             variable Integer start = this.offset - prefix.size;

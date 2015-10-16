@@ -138,12 +138,15 @@ shared class EclipseCompletionManager(CeylonEditor editor)
         lastOffset = offset;
         lastOffsetAcrossSessions = offset;
         class Runnable() satisfies IRunnableWithProgress {
-            shared variable ICompletionProposal[] _contentProposals = [];
+            shared variable ICompletionProposal?[] _contentProposals = [];
             
             shared actual void run(IProgressMonitor monitor) {
                 monitor.beginTask("Preparing completions...", IProgressMonitor.\iUNKNOWN);
                 CeylonParseController controller = editor.parseController;
-                _contentProposals = getEclipseContentProposals(controller, offset, viewer, secondLevel, returnedParamInfo, monitor);
+                
+                _contentProposals = if (secondLevel)
+                    then CeylonCompletionProcessor(editor).getContentProposals(controller, offset, viewer, false, returnedParamInfo, monitor).array.sequence()
+                    else getEclipseContentProposals(controller, offset, viewer, secondLevel, returnedParamInfo, monitor);
                 if (_contentProposals.size == 1, is ParameterInfo pi = _contentProposals.get(0)) {
                     returnedParamInfo = true;
                 }
@@ -188,43 +191,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
             => EditorUtil.preferences.getBoolean(CeylonPreferenceInitializer.\iPARAMETER_TYPES_IN_COMPLETIONS);
     
     shared actual ICompletionProposal newParametersCompletionProposal(Integer offset,
-        Type type, JList<Type> argTypes,
-        Node node, CeylonParseController cpc) {
-        
-        value unit = node.unit;
-        
-        value cd = unit.callableDeclaration;
-        value paramTypes = showParameterTypes;
-        value desc = StringBuilder();
-        value text = StringBuilder();
-        
-        desc.append("(");
-        text.append("(");
-        
-        for (i in 0 .. argTypes.size()) {
-            variable Type argType = argTypes.get(i);
-            if (desc.size > 1) { desc.append(", "); }
-            if (text.size > 1) { text.append(", "); }
-            
-            if (argType.classOrInterface, argType.declaration.equals(cd)) {
-                value anon = anonFunctionHeader(argType, unit);
-                text.append(anon).append(" => ");
-                desc.append(anon).append(" => ");
-                argType = unit.getCallableReturnType(argType);
-                argTypes.set(i, argType);
-            } else if (paramTypes) {
-                desc.append(argType.asString(unit))
-                    .append(" ");
-            }
-            
-            value name = if (argType.classOrInterface || argType.typeParameter)
-            then escaping.toInitialLowercase(argType.declaration.getName(unit))
-            else "arg";
-            text.append(name);
-            desc.append(name);
-        }
-        text.append(")");
-        desc.append(")");
+        String prefix, String desc, String text, JList<Type> argTypes, Node node, Unit unit) {
         
         return ParametersCompletionProposal(offset,
             desc.string, text.string,
@@ -238,26 +205,13 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     
     shared actual String getDocumentSubstring(IDocument doc, Integer start, Integer length) => doc.get(start, length);
     
-    shared actual ICompletionProposal newPositionalInvocationCompletion(Integer offset, String prefix,
+    shared actual ICompletionProposal newInvocationCompletion(Integer offset, String prefix,
         String desc, String text, Declaration dec, Reference? pr, Scope scope, CeylonParseController cpc,
-        Boolean isMember, String? typeArgs, Boolean includeDefaulted, Declaration? qualifyingDec) {
+        Boolean includeDefaulted, Boolean positionalInvocation, Boolean namedInvocation, 
+        Boolean qualified, Declaration? qualifyingDec) {
         
-        return EclipseInvocationCompletionProposal(offset, prefix, desc, text, dec, pr, scope, cpc, includeDefaulted,
-            true, false, isMember, qualifyingDec, this);
-    }
-    
-    shared actual ICompletionProposal newNamedInvocationCompletion(Integer offset, String prefix,
-        String desc, String text, Declaration dec, Reference? pr, Scope scope, CeylonParseController cpc,
-        Boolean isMember, String? typeArgs, Boolean includeDefaulted) {
-        
-        return EclipseInvocationCompletionProposal(offset, prefix, desc, text, dec, pr, scope, cpc, includeDefaulted,
-            false, true, isMember, null, this);
-    }
-    
-    shared actual ICompletionProposal newReferenceCompletion(Integer offset, String prefix, String desc, String text,
-        Declaration dec, Unit u, Reference? pr, Scope scope, CeylonParseController cpc, Boolean isMember, Boolean includeTypeArgs) {
-        
-        return EclipseInvocationCompletionProposal(offset, prefix, desc, text, dec, pr, scope, cpc, true, false, false, isMember, null, this);
+        return EclipseInvocationCompletionProposal(offset, prefix, desc, text, dec, pr, scope, cpc,
+            includeDefaulted, positionalInvocation, namedInvocation, qualified, qualifyingDec, this);
     }
     
     shared actual ICompletionProposal newRefinementCompletionProposal(Integer offset, String prefix, Reference? pr,
@@ -286,12 +240,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
             }
         };
     }
-    
-    shared actual ICompletionProposal newProgramElementReferenceCompletion(Integer offset, String prefix,
-        String name, String desc, Declaration dec, Reference? pr, Scope scope, CeylonParseController cpc, Boolean isMember)
-            => EclipseInvocationCompletionProposal(offset, prefix, name, desc,
-        dec, dec.reference, scope, cpc, true, false, false, isMember, null, this);
-    
+
     shared actual ICompletionProposal newBasicCompletionProposal(Integer offset, String prefix,
         String text, String escapedText, Declaration decl, CeylonParseController cpc)
             => BasicCompletionProposal(offset, prefix, text, escapedText, decl, cpc);
@@ -345,8 +294,8 @@ shared class EclipseCompletionManager(CeylonEditor editor)
             => EditorUtil.preferences.getBoolean(CeylonPreferenceInitializer.\iLINKED_MODE_ARGUMENTS);
     
     shared actual ICompletionProposal newModuleProposal(Integer offset, String prefix, Integer len, 
-        String versioned, ModuleSearchResult.ModuleDetails mod,
-        Boolean withBody, ModuleVersionDetails version, String name, Node node)
+        String versioned, ModuleSearchResult.ModuleDetails mod, Boolean withBody,
+        ModuleVersionDetails version, String name, Node node, CeylonParseController cpc)
             => ModuleCompletions.ModuleProposal(offset, prefix, len, versioned, mod, withBody, version, name, node);
     
     shared actual ICompletionProposal newModuleDescriptorProposal(Integer offset, String prefix, String desc,
@@ -371,13 +320,6 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     shared actual ICompletionProposal newControlStructureCompletionProposal(Integer offset, String prefix,
         String desc, String text, Declaration dec, CeylonParseController cpc)
              => ControlStructureCompletionProposal(offset, prefix, desc, text, dec, cpc);
-
-    shared actual ICompletionProposal newNestedLiteralCompletionProposal(String val, Integer loc, Integer index)
-            => nothing; // TODO
-    
-    shared actual ICompletionProposal newNestedCompletionProposal(Declaration dec, Declaration? qualifier, Integer loc,
-        Integer index, Boolean basic, String op)
-            => nothing; // TODO
 
     shared actual ICompletionProposal newTypeProposal(Integer offset, Type? type, String text, String desc, Tree.CompilationUnit rootNode) {
         return nothing; // TODO

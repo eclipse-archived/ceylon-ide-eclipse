@@ -51,11 +51,13 @@ public class ModuleCompletions {
     
     static final class ModuleDescriptorProposal extends CompletionProposal {
         int selectionStart = -1;
-        int selectionStop = -1;
+        int selectionLength = -1;
 
         ModuleDescriptorProposal(int offset, String prefix, String desc, String text,
-                int selectionStart, int selectionStop) {
+                int selectionStart, int selectionLength) {
             super(offset, prefix, MODULE, desc, text);
+            this.selectionStart = selectionStart;
+            this.selectionLength = selectionLength;
         }
 
         @Deprecated
@@ -68,8 +70,8 @@ public class ModuleCompletions {
 
         @Override
         public Point getSelection(IDocument document) {
-            if (selectionStart > 0 && selectionStop > 0) {
-                return new Point(selectionStart, selectionStop);
+            if (selectionStart > 0 && selectionLength > 0) {
+                return new Point(selectionStart, selectionLength);
             } else {
                 return new Point(offset - prefix.length() + text.indexOf('\"')+1, 5);
             }
@@ -265,20 +267,22 @@ public class ModuleCompletions {
     {
         JDK_MODULE_VERSION_SET.add(JDKUtils.jdk.version);
     }
-    
+
+    @Deprecated
     static void addModuleCompletions(
             CeylonParseController controller,
-            int offset, String prefix, 
-            Tree.ImportPath path, Node node, 
-            List<ICompletionProposal> result, 
+            int offset, String prefix,
+            Tree.ImportPath path, Node node,
+            List<ICompletionProposal> result,
             boolean withBody,
             IProgressMonitor monitor) {
         String fullPath = fullPath(offset, prefix, path);
-        addModuleCompletions(offset, prefix, node, result, 
-                fullPath.length(), fullPath+prefix, 
+        addModuleCompletions(offset, prefix, node, result,
+                fullPath.length(), fullPath+prefix,
                 controller, withBody, monitor);
     }
 
+    @Deprecated
     private static void addModuleCompletions(
             int offset,  String prefix, Node node,
             List<ICompletionProposal> result,
@@ -292,7 +296,7 @@ public class ModuleCompletions {
                         (JDKUtils.getJDKModuleNames())) {
                 if (name.startsWith(pfp) &&
                         !moduleAlreadyImported(controller, name)) {
-                    result.add(new JDKModuleProposal(offset, 
+                    result.add(new JDKModuleProposal(offset,
                             prefix, len,
                             getModuleString(withBody, name,
                                     JDKUtils.jdk.version),
@@ -328,11 +332,11 @@ public class ModuleCompletions {
                         if (getPreferences()
                                 .getBoolean(LINKED_MODE_ARGUMENTS)) {
                             result.add(new ModuleProposal(
-                                    offset, prefix, len, 
+                                    offset, prefix, len,
                                     getModuleString(
                                             withBody, name,
                                             module.getLastVersion()
-                                                .getVersion()), 
+                                                .getVersion()),
                                     module, withBody,
                                     module.getLastVersion(),
                                     name, node));
@@ -341,11 +345,11 @@ public class ModuleCompletions {
                             for (final ModuleVersionDetails version: 
                                 module.getVersions().descendingSet()) {
                                 result.add(new ModuleProposal(
-                                        offset, prefix, len, 
+                                        offset, prefix, len,
                                         getModuleString(
                                                 withBody, name,
-                                                version.getVersion()), 
-                                        module, withBody, 
+                                                version.getVersion()),
+                                        module, withBody,
                                         version, name, node));
                             }
                         }
@@ -355,6 +359,7 @@ public class ModuleCompletions {
         }
     }
 
+    @Deprecated
     private static boolean moduleAlreadyImported(
             CeylonParseController cpc, String mod) {
         if (mod.equals(Module.LANGUAGE_MODULE_NAME)) {
@@ -384,7 +389,8 @@ public class ModuleCompletions {
         return false;
     }
 
-    private static String getModuleString(boolean withBody, 
+    @Deprecated
+    private static String getModuleString(boolean withBody,
             String name, String version) {
         if (!name.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$")) {
             name = '"' + name + '"';
@@ -392,6 +398,7 @@ public class ModuleCompletions {
         return withBody ? name + " \"" + version + "\";" : name;
     }
 
+    @Deprecated
     static void addModuleDescriptorCompletion(
             CeylonParseController cpc,
             int offset, String prefix,
