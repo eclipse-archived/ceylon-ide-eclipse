@@ -48,7 +48,6 @@ interface EclipseCompletionProposal
                 & CommonCompletionProposal<IDocument,Point> {
     
     shared variable formal Boolean toggleOverwriteInternal;
-    shared variable formal Integer length;
     shared formal variable String? currentPrefix;
     
     shared actual String displayString => description;

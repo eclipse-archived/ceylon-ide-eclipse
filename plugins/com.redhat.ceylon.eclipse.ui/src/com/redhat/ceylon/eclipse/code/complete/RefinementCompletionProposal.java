@@ -121,6 +121,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     public static Image FORMAL_REFINEMENT =
             imageRegistry().get(CEYLON_FORMAL_REFINEMENT);
     
+    @Deprecated
     static void addRefinementProposal(int offset,
             Declaration dec, ClassOrInterface ci,
             Node node, Scope scope, String prefix,
@@ -141,6 +142,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 cpc, dec, scope, false, true));
     }
     
+    @Deprecated
     static void addNamedArgumentProposal(int offset,
             String prefix,
             CeylonParseController cpc,
@@ -157,6 +159,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 cpc, dec, scope, true, false));
     }
 
+    @Deprecated
     static void addInlineFunctionProposal(int offset,
             Declaration dec, Scope scope, Node node,
             String prefix, CeylonParseController cpc,
@@ -179,13 +182,15 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         }
     }
 
+    @Deprecated
     public static Reference getRefinedProducedReference(
             Scope scope, Declaration d) {
         return refinedProducedReference(
                 scope.getDeclaringType(d), d);
     }
 
-    public static Reference getRefinedProducedReference(
+    @Deprecated
+   public static Reference getRefinedProducedReference(
             Type superType, Declaration d) {
         if (superType.isIntersection()) {
             for (Type pt: superType.getSatisfiedTypes()) {
@@ -207,6 +212,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         }
     }
     
+    @Deprecated
     private static Reference refinedProducedReference(
             Type outerType, Declaration d) {
         List<Type> params = new ArrayList<Type>();
@@ -448,7 +454,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 if (vt!=null && !vt.isNothing() &&
                     (isTypeParamInBounds(td, vt) ||
                             vt.isSubtypeOf(type))) {
-                    props.add(new NestedCompletionProposal(d, loc));
+                    props.add(new NestedCompletionProposal(d, loc, getUnit()));
                 }
             }
             if (d instanceof Function &&
@@ -463,7 +469,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 if (mt!=null && !mt.isNothing() &&
                     (isTypeParamInBounds(td, mt) ||
                             mt.isSubtypeOf(type))) {
-                    props.add(new NestedCompletionProposal(d, loc));
+                    props.add(new NestedCompletionProposal(d, loc, getUnit()));
                 }
             }
             if (d instanceof Class) {
@@ -481,13 +487,13 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                                         .equals(type.getDeclaration()) ||
                                     ct.isSubtypeOf(type))) {
                         if (clazz.getParameterList()!=null) {
-                            props.add(new NestedCompletionProposal(d, loc));
+                            props.add(new NestedCompletionProposal(d, loc, getUnit()));
                         }
                         for (Declaration m: clazz.getMembers()) {
                             if (m instanceof Constructor &&
                                     m.isShared() &&
                                     m.getName()!=null) {
-                                props.add(new NestedCompletionProposal(m, loc));
+                                props.add(new NestedCompletionProposal(m, loc, getUnit()));
                             }
                         }
                     }
@@ -508,17 +514,19 @@ public final class RefinementCompletionProposal extends CompletionProposal {
 
     //TODO: this class is a big copy/paste of
     //     InitializerProposal.NestedCompletionProposal
-    final class NestedCompletionProposal
+    static final class NestedCompletionProposal
             implements ICompletionProposal,
                        ICompletionProposalExtension2,
                        ICompletionProposalExtension6 {
         
         private final Declaration dec;
         private final int offset;
+        private Unit unit;
         
-        public NestedCompletionProposal(Declaration dec, int offset) {
+        public NestedCompletionProposal(Declaration dec, int offset, Unit unit) {
             this.dec = dec;
             this.offset = offset;
+            this.unit = unit;
         }
 
         @Override
@@ -571,7 +579,6 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         
         private String getText(boolean description) {
             StringBuilder sb = new StringBuilder();
-            Unit unit = getUnit();
             sb.append(getProposedName(null, dec, unit));
             if (dec instanceof Functional) {
                 appendPositionalArgs(dec, unit,
@@ -618,14 +625,14 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         private boolean isContentValid(String content) {
             String filter = content.trim().toLowerCase();
             return ModelUtil.isNameMatching(content, dec) ||
-                    getProposedName(null, dec, getUnit())
+                    getProposedName(null, dec, unit)
                         .toLowerCase()
                         .startsWith(filter);
         }
 
     }
 
-    private final class NestedLiteralCompletionProposal
+    static final class NestedLiteralCompletionProposal
             implements ICompletionProposal,
                        ICompletionProposalExtension2,
                        ICompletionProposalExtension6 {
@@ -633,7 +640,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         private final String value;
         private final int offset;
 
-        private NestedLiteralCompletionProposal(String value, int offset) {
+        public NestedLiteralCompletionProposal(String value, int offset) {
             this.offset = offset;
             this.value = value;
         }

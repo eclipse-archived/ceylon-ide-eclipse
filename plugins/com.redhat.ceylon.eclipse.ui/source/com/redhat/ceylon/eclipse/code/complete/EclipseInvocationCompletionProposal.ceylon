@@ -83,7 +83,7 @@ import com.redhat.ceylon.eclipse.code.hover {
     DocumentationHover
 }
 
-class EclipseInvocationCompletionProposal(Integer offset, String prefix, 
+class EclipseInvocationCompletionProposal(Integer _offset, String prefix, 
             String description, String text, Declaration dec,
             Reference? producedReference, Scope scope, 
             CeylonParseController cpc, Boolean includeDefaulted,
@@ -92,12 +92,11 @@ class EclipseInvocationCompletionProposal(Integer offset, String prefix,
             EclipseCompletionManager completionManager)
         extends InvocationCompletionProposal<CeylonParseController, IProject, ICompletionProposal, IFile,
                 IDocument, InsertEdit, TextEdit, TextChange, Point, LinkedModeModel>
-                (offset, prefix, description, text, dec, producedReference, scope, cpc.lastCompilationUnit,
+                (_offset, prefix, description, text, dec, producedReference, scope, cpc.lastCompilationUnit,
     includeDefaulted, positionalInvocation, namedInvocation, qualified, qualifyingValue, completionManager)
         satisfies EclipseDocumentChanges & EclipseCompletionProposal {
     
     shared actual variable String? currentPrefix = prefix;
-    shared actual variable Integer length = prefix.size;
     shared actual variable Boolean toggleOverwriteInternal = false;
 
     shared actual ImportProposals<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange> importProposals

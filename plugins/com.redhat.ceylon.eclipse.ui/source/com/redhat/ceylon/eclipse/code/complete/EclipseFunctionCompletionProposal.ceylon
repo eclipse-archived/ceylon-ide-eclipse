@@ -60,7 +60,6 @@ class EclipseFunctionCompletionProposal
         satisfies EclipseDocumentChanges & EclipseCompletionProposal {
     
     shared actual variable String? currentPrefix = prefix;
-    shared actual variable Integer length = prefix.size;
     shared actual variable Boolean toggleOverwriteInternal = false;
 
     shared actual ImportProposals<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange> importProposals

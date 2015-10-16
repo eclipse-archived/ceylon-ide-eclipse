@@ -55,7 +55,6 @@ class EclipseImportedModulePackageProposal(Integer offset, String prefix, String
                 satisfies EclipseDocumentChanges & EclipseCompletionProposal{
 
     shared actual variable String? currentPrefix = prefix;
-    shared actual variable Integer length = prefix.size;
     shared actual variable Boolean toggleOverwriteInternal = false;
     shared actual Boolean toggleOverwrite => toggleOverwriteInternal;
     shared actual ImportProposals<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange> importProposals
@@ -64,6 +63,8 @@ class EclipseImportedModulePackageProposal(Integer offset, String prefix, String
     shared actual Boolean qualifiedNameIsPath => true;
     
     shared actual Image image => CeylonResources.\iPACKAGE;
+    
+    shared actual void apply(IDocument doc) => applyInternal(doc);
     
     shared actual ICompletionProposal newPackageMemberCompletionProposal(Declaration d, Point selection, LinkedModeModel lm) {
         return object satisfies ICompletionProposal {
