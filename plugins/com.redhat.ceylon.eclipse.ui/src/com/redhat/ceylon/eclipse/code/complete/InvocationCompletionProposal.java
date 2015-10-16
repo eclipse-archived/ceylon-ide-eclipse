@@ -39,6 +39,7 @@ import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.SATISFIES;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_ALIAS;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getContainingClassOrInterface;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 
 import java.util.ArrayList;
@@ -76,6 +77,7 @@ import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
@@ -984,6 +986,15 @@ class InvocationCompletionProposal extends CompletionProposal {
             if (dwp.getProximity()<=1) {
                 addValueArgumentProposal(param, loc, props, 
                         index, last, type, unit, dwp, null);
+            }
+        }
+        //this
+        ClassOrInterface ci = 
+                getContainingClassOrInterface(scope);
+        if (ci!=null) {
+            if (ci.getType().isSubtypeOf(type)) {
+                props.add(new NestedLiteralCompletionProposal(
+                        "this", loc, index));
             }
         }
         //literals

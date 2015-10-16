@@ -23,6 +23,7 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.addLinkedPosition;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.installLinkedMode;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getContainingClassOrInterface;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,6 +56,7 @@ import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Function;
@@ -551,6 +553,14 @@ class ParametersCompletionProposal extends CompletionProposal {
             if (dwp.getProximity()<=1) {
                 addValueArgumentProposal(loc, props, index, 
                         type, unit, dwp, null);
+            }
+        }
+        ClassOrInterface ci = 
+                getContainingClassOrInterface(scope);
+        if (ci!=null) {
+            if (ci.getType().isSubtypeOf(type)) {
+                props.add(new NestedLiteralCompletionProposal(
+                        "this", loc, index));
             }
         }
         for (String value: 
