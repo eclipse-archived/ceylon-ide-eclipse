@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.util;
 
+import java.lang.reflect.Field;
+
+import org.eclipse.jface.internal.text.link.contentassist.ContentAssistant2;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IEditingSupport;
@@ -17,6 +20,7 @@ import com.redhat.ceylon.eclipse.code.editor.AbstractLinkedModeListener;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.editor.FocusEditingSupport;
+import com.redhat.ceylon.eclipse.code.hover.CeylonInformationControlCreator;
 
 public class LinkedMode {
     
@@ -25,6 +29,18 @@ public class LinkedMode {
         public ExitFlags doExit(LinkedModeModel model, VerifyEvent event,
                 int offset, int length) {
             return null;
+        }
+    }
+    
+    private static Field field;
+    static {
+        try {
+            field = LinkedModeUI.class.getDeclaredField("fAssistant");
+            field.setAccessible(true);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            field = null;
         }
     }
     
@@ -40,6 +56,18 @@ public class LinkedMode {
         editor.setLinkedMode(linkedModeModel, linkedModeOwner);
         CeylonSourceViewer viewer = editor.getCeylonSourceViewer();
         EditorLinkedModeUI ui = new EditorLinkedModeUI(linkedModeModel, viewer);
+        if (field!=null) {
+            ContentAssistant2 ca2 = new ContentAssistant2();
+            CeylonInformationControlCreator creator = 
+                    new CeylonInformationControlCreator(editor, null);
+            ca2.setInformationControlCreator(creator);
+            try {
+                field.set(ui, ca2);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         if (exitPosition>=0 && exitSequenceNumber>=0) {
             ui.setExitPosition(viewer, exitPosition, 0, exitSequenceNumber);
         }

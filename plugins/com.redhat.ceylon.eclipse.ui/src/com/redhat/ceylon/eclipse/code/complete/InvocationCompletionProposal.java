@@ -397,7 +397,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
 
         public String getAdditionalProposalInfo() {
-            return null;
+            return getDocumentationFor(cpc, dec, null, null);
         }
 
         @Override
