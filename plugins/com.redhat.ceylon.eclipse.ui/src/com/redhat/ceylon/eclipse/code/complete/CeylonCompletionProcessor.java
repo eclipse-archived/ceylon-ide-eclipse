@@ -72,7 +72,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_COMPLETION_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FILTERS;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getOccurrenceLocation;
@@ -142,6 +141,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
@@ -459,7 +459,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
 
     public char[] getCompletionProposalAutoActivationCharacters() {
-        return getPreferences()
+        return CeylonPlugin.getPreferences()
                 .getString(AUTO_ACTIVATION_CHARS)
                 .toCharArray();
     }
@@ -676,7 +676,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
 
     private List<Pattern> getProposalFilters() {
         List<Pattern> filters = new ArrayList<Pattern>();
-        IPreferenceStore preferences = getPreferences();
+        IPreferenceStore preferences = CeylonPlugin.getPreferences();
         parseFilters(filters, 
                 preferences.getString(FILTERS));
         if (preferences.getBoolean(ENABLE_COMPLETION_FILTERS)) {

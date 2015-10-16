@@ -28,7 +28,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DEFAULT_REFINE
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_FORMAL_REFINEMENT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
@@ -302,7 +301,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         catch (BadLocationException e) {
             e.printStackTrace();
         }
-        if (getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
+        if (CeylonPlugin.getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
             enterLinkedMode(document);
         }
     }

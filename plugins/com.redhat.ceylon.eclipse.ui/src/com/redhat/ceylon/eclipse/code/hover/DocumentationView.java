@@ -6,7 +6,6 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getHoverTe
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static java.lang.Integer.parseInt;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
@@ -140,7 +139,7 @@ public class DocumentationView extends ViewPart {
                 updateWithCurrentEditor();
             }
         };
-        getPreferences()
+        CeylonPlugin.getPreferences()
             .addPropertyChangeListener(propertyChangeListener);
         getWorkbench().getThemeManager()
             .addPropertyChangeListener(propertyChangeListener);
@@ -276,7 +275,7 @@ public class DocumentationView extends ViewPart {
     @Override
     public void dispose() {
         instance = null;
-        getPreferences()
+        CeylonPlugin.getPreferences()
             .removePropertyChangeListener(propertyChangeListener);
         getWorkbench().getThemeManager()
             .removePropertyChangeListener(propertyChangeListener);

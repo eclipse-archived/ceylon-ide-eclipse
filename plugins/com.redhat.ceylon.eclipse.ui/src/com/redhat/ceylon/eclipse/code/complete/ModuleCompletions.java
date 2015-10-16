@@ -38,6 +38,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
@@ -118,7 +119,7 @@ public class ModuleCompletions {
         public void apply(IDocument document) {
             super.apply(document);
             if (withBody && //module.getVersions().size()>1 && //TODO: put this back in when sure it works
-                    EditorUtil.getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
+                    CeylonPlugin.getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
                 final LinkedModeModel linkedModeModel = new LinkedModeModel();
                 final Point selection = getSelection(document);
                 List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
@@ -276,7 +277,7 @@ public class ModuleCompletions {
                     final String name = module.getName();
                     if (!name.equals(Module.DEFAULT_MODULE_NAME) && 
                             !moduleAlreadyImported(cpc, name)) {
-                        if (EditorUtil.getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
+                        if (CeylonPlugin.getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
                             result.add(new ModuleProposal(offset, prefix, len, 
                                     getModuleString(withBody, name, 
                                             module.getLastVersion().getVersion()), 

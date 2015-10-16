@@ -23,7 +23,6 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonSaveActionsPreferencePage 
         extends FieldEditorPreferencePage 
@@ -64,7 +63,7 @@ public class CeylonSaveActionsPreferencePage
     
     @Override
     public void init(IWorkbench workbench) {
-        setPreferenceStore(EditorUtil.getPreferences());
+        setPreferenceStore(CeylonPlugin.getPreferences());
     }
     
     @Override
@@ -141,7 +140,7 @@ public class CeylonSaveActionsPreferencePage
     public void dispose() {
         super.dispose();
         if (listener!=null) {
-            EditorUtil.getPreferences().removePropertyChangeListener(listener);
+            CeylonPlugin.getPreferences().removePropertyChangeListener(listener);
         }
     }
 

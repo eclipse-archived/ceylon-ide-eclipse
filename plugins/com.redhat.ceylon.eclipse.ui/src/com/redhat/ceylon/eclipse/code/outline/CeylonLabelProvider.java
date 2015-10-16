@@ -8,7 +8,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModule;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Highlights.ARROW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
@@ -68,6 +67,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.ErrorCollectionVisitor;
 import com.redhat.ceylon.eclipse.util.Highlights;
@@ -603,7 +603,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     private static void appendPostfixType(
             Tree.TypedDeclaration td, StyledString label) {
-        if (getPreferences()
+        if (CeylonPlugin.getPreferences()
                 .getBoolean(RETURN_TYPES_IN_OUTLINES)) {
             Tree.Type type = td.getType();
             if (type!=null && 
@@ -964,7 +964,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     private static void parameters(Tree.ParameterList pl, 
             StyledString label) {
-        IPreferenceStore prefs = getPreferences();
+        IPreferenceStore prefs = CeylonPlugin.getPreferences();
         boolean names = 
                 prefs.getBoolean(PARAMS_IN_OUTLINES);
         boolean types = 
@@ -1036,7 +1036,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     
     private static void parameters(Tree.TypeParameterList tpl, 
             StyledString label) {
-        if (getPreferences()
+        if (CeylonPlugin.getPreferences()
                 .getBoolean(TYPE_PARAMS_IN_OUTLINES)) {
             if (tpl!=null &&
                     !tpl.getTypeParameterDeclarations()

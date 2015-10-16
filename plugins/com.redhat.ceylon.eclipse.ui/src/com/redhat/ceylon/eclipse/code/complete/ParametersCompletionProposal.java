@@ -20,7 +20,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.addLinkedPosition;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.installLinkedMode;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getContainingClassOrInterface;
@@ -417,7 +416,7 @@ class ParametersCompletionProposal extends CompletionProposal {
         catch (BadLocationException e) {
             e.printStackTrace();
         }
-        if (getPreferences()
+        if (CeylonPlugin.getPreferences()
                 .getBoolean(LINKED_MODE_ARGUMENTS)) {
             enterLinkedMode(document);
         }
@@ -619,7 +618,7 @@ class ParametersCompletionProposal extends CompletionProposal {
                             ""));
                 }
                 if (qualifier==null && 
-                        getPreferences()
+                        CeylonPlugin.getPreferences()
                             .getBoolean(CHAIN_LINKED_MODE_ARGUMENTS)) {
                     Collection<DeclarationWithProximity> members = 
                             value.getTypeDeclaration()
@@ -718,7 +717,7 @@ class ParametersCompletionProposal extends CompletionProposal {
                     final List<Type> argTypes = 
                             unit.getCallableArgumentTypes(type);
                     boolean paramTypes = 
-                            getPreferences()
+                            CeylonPlugin.getPreferences()
                                 .getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
                     final StringBuilder desc = new StringBuilder();
                     final StringBuilder text = new StringBuilder();

@@ -15,7 +15,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_ESCAPE_QUOTED;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_IMPORTS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.SUB_WORD_NAVIGATION;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
@@ -41,7 +40,6 @@ import org.eclipse.ui.editors.text.EditorsUI;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonEditorPreferencePage 
         extends FieldEditorPreferencePage 
@@ -126,7 +124,7 @@ public class CeylonEditorPreferencePage
     
     @Override
     public void init(IWorkbench workbench) {
-        setPreferenceStore(getPreferences());
+        setPreferenceStore(CeylonPlugin.getPreferences());
         CeylonEditor.initializeBrackMatcherPreferences();
     }
     
@@ -461,7 +459,7 @@ public class CeylonEditorPreferencePage
     public void dispose() {
         super.dispose();
         if (listener!=null) {
-            EditorUtil.getPreferences().removePropertyChangeListener(listener);
+            CeylonPlugin.getPreferences().removePropertyChangeListener(listener);
         }
     }
 

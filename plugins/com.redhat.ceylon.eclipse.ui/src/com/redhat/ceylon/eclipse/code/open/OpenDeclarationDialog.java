@@ -21,7 +21,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_MODULE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_PACKAGE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static com.redhat.ceylon.model.cmr.JDKUtils.isJDKModule;
 import static com.redhat.ceylon.model.cmr.JDKUtils.isOracleJDKModule;
@@ -593,7 +592,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     }
 
     private StyledString label(Declaration dec) {
-        IPreferenceStore prefs = getPreferences();
+        IPreferenceStore prefs = CeylonPlugin.getPreferences();
         StyledString label = 
                 getQualifiedDescriptionFor(dec,
                     prefs.getBoolean(TYPE_PARAMS_IN_DIALOGS),
@@ -1036,7 +1035,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     }
 
     protected String getFilterListAsString(String preference) {
-        return getPreferences().getString(preference);
+        return CeylonPlugin.getPreferences().getString(preference);
     }
     
     private Filters filters = new Filters() {

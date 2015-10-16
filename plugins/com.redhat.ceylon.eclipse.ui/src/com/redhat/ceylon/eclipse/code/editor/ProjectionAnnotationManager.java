@@ -34,7 +34,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class ProjectionAnnotationManager implements TreeLifecycleListener, IProjectionListener{
     
@@ -289,7 +289,7 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
         final boolean autofoldImports;
         final boolean autofoldComments;
         if (firstTime) {
-            IPreferenceStore store = EditorUtil.getPreferences();
+            IPreferenceStore store = CeylonPlugin.getPreferences();
             autofoldImports = store.getBoolean(AUTO_FOLD_IMPORTS);
             autofoldComments = store.getBoolean(AUTO_FOLD_COMMENTS);
             firstTime = false;

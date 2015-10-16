@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.preferences;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_EXTRACT;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME_SELECT;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -19,7 +18,6 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class CeylonRefactoringPreferencePage 
         extends FieldEditorPreferencePage 
@@ -54,7 +52,7 @@ public class CeylonRefactoringPreferencePage
     
     @Override
     public void init(IWorkbench workbench) {
-        setPreferenceStore(getPreferences());
+        setPreferenceStore(CeylonPlugin.getPreferences());
         CeylonEditor.initializeBrackMatcherPreferences();
     }
     
@@ -157,7 +155,7 @@ public class CeylonRefactoringPreferencePage
     public void dispose() {
         super.dispose();
         if (listener!=null) {
-            EditorUtil.getPreferences().removePropertyChangeListener(listener);
+            CeylonPlugin.getPreferences().removePropertyChangeListener(listener);
         }
     }
 

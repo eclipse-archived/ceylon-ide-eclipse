@@ -43,7 +43,6 @@ import org.eclipse.jface.bindings.keys.IKeyLookup;
 import org.eclipse.jface.bindings.keys.KeyLookupFactory;
 import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.bindings.keys.KeyStroke;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRewriteTarget;
@@ -98,7 +97,6 @@ import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class EditorUtil {
@@ -204,15 +202,6 @@ public class EditorUtil {
         if (activeWindow != null) {
             return activeWindow.getShell();
         } else {
-            return null;
-        }
-    }
-
-    public static IPreferenceStore getPreferences() {
-        try {
-            return CeylonPlugin.getInstance().getPreferenceStore();
-        }
-        catch (Exception e) {
             return null;
         }
     }

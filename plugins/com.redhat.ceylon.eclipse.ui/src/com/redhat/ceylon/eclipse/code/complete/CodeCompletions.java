@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getDefaultV
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.appendTypeName;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.Highlights.ANN_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.ARROW_STYLER;
@@ -26,6 +25,7 @@ import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.swt.graphics.Font;
 
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
@@ -400,7 +400,7 @@ public class CodeCompletions {
     public static StyledString getQualifiedDescriptionFor(
             Declaration d) {
         return getQualifiedDescriptionFor(d, true, true, true,
-                getPreferences()
+                CeylonPlugin.getPreferences()
                     .getBoolean(RETURN_TYPES_IN_OUTLINES));
     }
     
@@ -488,7 +488,7 @@ public class CodeCompletions {
             appendTypeParameters(d, result, true);
             appendParametersDescription(d, result, true, true);
             if (d instanceof TypedDeclaration) {
-                if (getPreferences()
+                if (CeylonPlugin.getPreferences()
                         .getBoolean(RETURN_TYPES_IN_OUTLINES)) {
                     TypedDeclaration td = 
                             (TypedDeclaration) d;
@@ -547,7 +547,7 @@ public class CodeCompletions {
             else {
                 boolean paramTypes = 
                         descriptionOnly && 
-                        getPreferences()
+                        CeylonPlugin.getPreferences()
                             .getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
                 result.append("(");
                 for (Parameter p: params) {
@@ -647,7 +647,7 @@ public class CodeCompletions {
             else {
                 boolean paramTypes = 
                         descriptionOnly && 
-                        getPreferences()
+                        CeylonPlugin.getPreferences()
                             .getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
                 result.append(" { ");
                 for (Parameter p: params) {

@@ -4,9 +4,9 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
 import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER;
+
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -39,6 +39,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -132,6 +133,9 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     @Override
     public void start(BundleContext context) 
             throws Exception {
+        super.start(context);
+        this.bundleContext = context;
+
         javaSourceArchiveCacheDirectory = 
                 new File(getStateLocation().toFile(), 
                         "JavaSourceArchiveCache");
@@ -141,21 +145,10 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         ceylonRepository = 
                 getCeylonPluginRepository(
                         ceylonRepositoryProperty);
-        super.start(context);
-        this.bundleContext = context;
         addResourceFilterPreference();
         
         final IWorkspace workspace = getWorkspace();
         IWorkspaceRoot root = workspace.getRoot();
-        for (IProject project: root.getProjects()) {
-            if (project.isAccessible() && 
-                    CeylonNature.isEnabled(project)) {
-                ceylonModel().addProject(project);
-            }
-        }
-        
-        registerProjectOpenCloseListener();
-        CeylonEncodingSynchronizer.getInstance().install();
 
         Job registerCeylonModules = 
                 new Job("Load the Ceylon Metamodel for plugin dependencies") {
@@ -167,6 +160,16 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         registerCeylonModules.setRule(root);
         registerCeylonModules.schedule();
         
+        for (IProject project: root.getProjects()) {
+            if (project.isAccessible() && 
+                    CeylonNature.isEnabled(project)) {
+                ceylonModel().addProject(project);
+            }
+        }
+        
+        registerProjectOpenCloseListener();
+        CeylonEncodingSynchronizer.getInstance().install();
+
         Job refreshExternalSourceArchiveManager = 
                 new Job("Refresh External Ceylon Source Archives") {
             protected IStatus run(IProgressMonitor monitor) {
@@ -395,7 +398,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     @Override
     protected void initializeImageRegistry(ImageRegistry reg) {
         
-        if (getPreferences().getBoolean(ALTERNATE_ICONS)) {
+        if (CeylonPlugin.getPreferences().getBoolean(ALTERNATE_ICONS)) {
             reg.put(CEYLON_OBJECT, image("anonymousClass.png"));
             reg.put(CEYLON_LOCAL_OBJECT, image("anonymousClass.png"));
             reg.put(CEYLON_CONSTRUCTOR, image("classInitializer.png"));
@@ -601,6 +604,15 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 
     public File getJavaSourceArchiveCacheDirectory() {
         return javaSourceArchiveCacheDirectory;
+    }
+
+    public static IPreferenceStore getPreferences() {
+        try {
+            return getInstance().getPreferenceStore();
+        }
+        catch (Exception e) {
+            return null;
+        }
     }
 
     public static ImageRegistry imageRegistry() {

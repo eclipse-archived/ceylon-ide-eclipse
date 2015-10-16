@@ -28,7 +28,6 @@ import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.getJdiProducedType
 import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.producedTypeFromTypeDescriptor;
 import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.toModelProducedType;
 import static com.redhat.ceylon.eclipse.core.debug.hover.CeylonDebugHover.jdiVariableForTypeParameter;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATIONS;
 import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATION_STRINGS;
 import static com.redhat.ceylon.eclipse.util.Highlights.CHARS;
@@ -91,6 +90,7 @@ import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.Class;
@@ -743,7 +743,7 @@ public class DocumentationHover extends SourceInfoHover {
         }
         else if (obj instanceof Declaration) {
             Declaration dec = (Declaration) obj;
-            if (getPreferences().getBoolean(ALTERNATE_ICONS)) {
+            if (CeylonPlugin.getPreferences().getBoolean(ALTERNATE_ICONS)) {
                 if (dec instanceof Class) {
                     if (dec.isAnonymous()) {
                         return "anonymousClass.png";

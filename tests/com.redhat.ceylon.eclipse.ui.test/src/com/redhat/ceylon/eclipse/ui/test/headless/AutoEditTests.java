@@ -20,7 +20,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonAutoEditStrategy;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class AutoEditTests {
  
@@ -33,7 +33,7 @@ public class AutoEditTests {
             CLOSE_ANGLES,
             CLOSE_PARENS,
             CLOSE_BRACKETS};
-        IPreferenceStore store = EditorUtil.getPreferences();
+        IPreferenceStore store = CeylonPlugin.getPreferences();
         for (String closeSetting : FENCES) {
             store.setValue(closeSetting, true);
             store.setDefault(closeSetting, true);

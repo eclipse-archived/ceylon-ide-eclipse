@@ -13,7 +13,6 @@ package com.redhat.ceylon.eclipse.code.wizard;
 
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_PROJECT_TYPE;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.jdt.core.JavaCore.newContainerEntry;
 import static org.eclipse.jdt.core.JavaCore.newSourceEntry;
 import static org.eclipse.swt.layout.GridData.FILL_HORIZONTAL;
@@ -96,6 +95,8 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.WorkingSetConfigurationBlock;
+
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
  * The first page of the New Java Project wizard. This page is typically used in combination with
@@ -1152,7 +1153,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
     public void init(IStructuredSelection selection, IWorkbenchPart activePart) {
         setWorkingSets(getSelectedWorkingSet(selection, activePart));
         defaultProjectType = 
-                getPreferences()
+                CeylonPlugin.getPreferences()
                     .getString(DEFAULT_PROJECT_TYPE);
         compileJava = defaultProjectType.contains("jvm");
         compileJs = defaultProjectType.contains("js");
@@ -1312,7 +1313,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
      * @return returns the source class path entries for the new project
      */
     public IClasspathEntry[] getSourceClasspathEntries() {
-        String defaultSourceFolderName = getPreferences().getString(DEFAULT_SOURCE_FOLDER);
+        String defaultSourceFolderName = CeylonPlugin.getPreferences().getString(DEFAULT_SOURCE_FOLDER);
         IPath folderPath= new Path(getProjectName()).makeAbsolute();
         return new IClasspathEntry[] { newSourceEntry(folderPath.append(defaultSourceFolderName)) };
     }

@@ -32,7 +32,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.SUB_WORD_NAVIGATION;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
@@ -548,7 +547,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         @Override
         public void run() {
             // Check whether we are in a java code partition and the preference is enabled
-            if (!getPreferences()
+            if (!CeylonPlugin.getPreferences()
                     .getBoolean(SUB_WORD_NAVIGATION)) {
                 super.run();
                 return;
@@ -813,7 +812,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         public void run() {
             // Check whether we are in a java code partition 
             // and the preference is enabled
-            if (!getPreferences()
+            if (!CeylonPlugin.getPreferences()
                     .getBoolean(SUB_WORD_NAVIGATION)) {
                 super.run();
                 return;
@@ -1524,7 +1523,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         }*/
         projectionSupport.install();
 
-        IPreferenceStore store = getPreferences();
+        IPreferenceStore store = CeylonPlugin.getPreferences();
         store.setDefault(EDITOR_FOLDING_ENABLED, true);
         if (store.getBoolean(EDITOR_FOLDING_ENABLED)) {
             sourceViewer.doOperation(ProjectionViewer.TOGGLE);
@@ -1576,7 +1575,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
                 handlePreferenceStoreChanged(event);
             }
         };
-        getPreferences()
+        CeylonPlugin.getPreferences()
             .addPropertyChangeListener(
                     propertyChangeListener);
         super.initializeEditor();
@@ -1602,7 +1601,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
             annotationUpdater = null;
         }
         if (propertyChangeListener!=null) {
-            getPreferences()
+            CeylonPlugin.getPreferences()
                 .removePropertyChangeListener(
                         propertyChangeListener);
             propertyChangeListener = null;
@@ -1814,7 +1813,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
     public void doSave(IProgressMonitor progressMonitor) {
         CeylonSourceViewer viewer = getCeylonSourceViewer();
         IDocument doc = viewer.getDocument();
-        IPreferenceStore prefs = getPreferences();
+        IPreferenceStore prefs = CeylonPlugin.getPreferences();
         boolean normalizeWs = 
                 prefs.getBoolean(NORMALIZE_WS) &&
                 EditorsUI.getPreferenceStore()

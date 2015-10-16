@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME_SELECT;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
 import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
@@ -19,6 +18,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Escaping;
 
@@ -35,7 +35,7 @@ public final class AliasLinkedMode
     }
     
     public static boolean useLinkedMode() {
-        return getPreferences()
+        return CeylonPlugin.getPreferences()
                 .getBoolean(LINKED_MODE_RENAME);
     }
     
@@ -221,7 +221,7 @@ public final class AliasLinkedMode
                     throws BadLocationException {
         super.enterLinkedMode(document, 
                 exitSequenceNumber, exitPosition);
-        if (!EditorUtil.getPreferences()
+        if (!CeylonPlugin.getPreferences()
                 .getBoolean(LINKED_MODE_RENAME_SELECT)) {
             // by default, full word is selected; restore original selection
             editor.getCeylonSourceViewer()

@@ -23,7 +23,6 @@ import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchy
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_CORRECT_INDENTATION;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_ESCAPE_QUOTED;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_IMPORTS;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.getTokenStrictlyContainingOffset;
 import static java.lang.Character.isWhitespace;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
@@ -76,6 +75,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Import;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -412,7 +412,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     
                     try {
                         boolean startOfLine = isStartOfLine(offset, doc);
-                        IPreferenceStore prefs = getPreferences();
+                        IPreferenceStore prefs = CeylonPlugin.getPreferences();
                         try {
                             MultiTextEdit edit = new MultiTextEdit();
                             if (!quoted && imports!=null &&

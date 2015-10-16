@@ -17,7 +17,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PROJECT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.UNIT_MODE;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.jface.action.IAction.AS_CHECK_BOX;
 import static org.eclipse.search.ui.IContextMenuConstants.GROUP_VIEWER_SETUP;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
@@ -79,7 +78,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
                 viewer.refresh();
             }
         };
-        getPreferences()
+        CeylonPlugin.getPreferences()
             .addPropertyChangeListener(
                     propertyChangeListener);
         getWorkbench().getThemeManager()
@@ -91,7 +90,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     public void dispose() {
         super.dispose();
         if (propertyChangeListener!=null) {
-            getPreferences()
+            CeylonPlugin.getPreferences()
                 .removePropertyChangeListener(
                         propertyChangeListener);
             getWorkbench().getThemeManager()
@@ -357,7 +356,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     public void makeContributions(IMenuManager menuManager,
             IToolBarManager toolBarManager, 
             IStatusLineManager statusLineManager) {
-        final IPreferenceStore prefs = getPreferences();
+        final IPreferenceStore prefs = CeylonPlugin.getPreferences();
         final Action showLocAction = 
                 new Action("Show Full Paths", AS_CHECK_BOX) {
             @Override

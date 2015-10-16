@@ -20,7 +20,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.HISTORY;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TYPE_MODE;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
@@ -173,7 +172,7 @@ public class HierarchyView extends ViewPart {
                 tableViewer.refresh();
             }
         };
-        getPreferences()
+        CeylonPlugin.getPreferences()
             .addPropertyChangeListener(propertyChangeListener);
         getWorkbench().getThemeManager()
             .addPropertyChangeListener(propertyChangeListener);
@@ -183,7 +182,7 @@ public class HierarchyView extends ViewPart {
     public void dispose() {
         super.dispose();
         if (propertyChangeListener!=null) {
-            getPreferences()
+            CeylonPlugin.getPreferences()
                 .removePropertyChangeListener(propertyChangeListener);
             getWorkbench().getThemeManager()
                 .removePropertyChangeListener(propertyChangeListener);
@@ -583,7 +582,7 @@ public class HierarchyView extends ViewPart {
             public void run() {
                 boolean checked = isChecked();
                 contentProvider.setExcludeJDK(checked);
-                getPreferences()
+                CeylonPlugin.getPreferences()
                     .setValue(EXCLUDE_JDK, checked);
                 update();
             }
@@ -597,7 +596,7 @@ public class HierarchyView extends ViewPart {
             public void run() {
                 boolean checked = isChecked();
                 contentProvider.setExcludeOracleJDK(checked);
-                getPreferences()
+                CeylonPlugin.getPreferences()
                     .setValue(EXCLUDE_ORACLE_JDK, checked);
                 update();
             }
@@ -677,7 +676,7 @@ public class HierarchyView extends ViewPart {
         tree.setLayoutData(gd);
         viewForm.setContent(tree);
         treeViewer = new TreeViewer(tree);
-        IPreferenceStore preferences = getPreferences();
+        IPreferenceStore preferences = CeylonPlugin.getPreferences();
         preferences.setDefault(EXCLUDE_ORACLE_JDK, true);
         contentProvider = 
                 new CeylonHierarchyContentProvider(getSite(), 

@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 
 import org.eclipse.core.runtime.Assert;
@@ -80,7 +79,7 @@ public class CompletionProposal implements ICompletionProposal,
     }
 
     public int length(IDocument document) {
-        String overwrite = getPreferences().getString(COMPLETION);
+        String overwrite = CeylonPlugin.getPreferences().getString(COMPLETION);
         if ("overwrite".equals(overwrite)!=toggleOverwrite) {
             int length = prefix.length();
             try {

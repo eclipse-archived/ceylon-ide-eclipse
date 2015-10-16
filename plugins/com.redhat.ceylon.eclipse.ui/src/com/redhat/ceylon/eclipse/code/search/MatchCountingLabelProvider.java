@@ -1,12 +1,12 @@
 package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FULL_LOC_SEARCH_RESULTS;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.search.ui.text.AbstractTextSearchViewPage.FLAG_LAYOUT_FLAT;
 
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.search.ui.text.AbstractTextSearchViewPage;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
 
 final class MatchCountingLabelProvider extends SearchResultsLabelProvider {
@@ -24,7 +24,7 @@ final class MatchCountingLabelProvider extends SearchResultsLabelProvider {
     
     @Override
     boolean appendSourceLocation() {
-        return getPreferences()
+        return CeylonPlugin.getPreferences()
                 .getBoolean(FULL_LOC_SEARCH_RESULTS);
     }
 

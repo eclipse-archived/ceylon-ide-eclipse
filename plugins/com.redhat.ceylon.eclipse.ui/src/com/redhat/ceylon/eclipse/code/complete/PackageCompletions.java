@@ -10,7 +10,6 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageNam
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getCompletionFont;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapePackageName;
 import static com.redhat.ceylon.eclipse.util.Highlights.MEMBER_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
@@ -48,6 +47,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
@@ -234,7 +234,7 @@ public class PackageCompletions {
         public void apply(IDocument document) {
             super.apply(document);
             if (withBody && 
-                    getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
+                    CeylonPlugin.getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
                 final LinkedModeModel linkedModeModel = new LinkedModeModel();
                 final Point selection = getSelection(document);
                 List<ICompletionProposal> proposals = 

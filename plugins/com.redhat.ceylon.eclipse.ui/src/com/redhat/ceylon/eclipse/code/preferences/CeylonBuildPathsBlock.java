@@ -16,7 +16,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.ide.common.util.toCeylonStringIterable_.toCeylonStringIterable;
 import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
 
@@ -133,8 +132,8 @@ import com.redhat.ceylon.common.config.CeylonConfigFinder;
 import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.core.model.modelJ2C;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 import com.redhat.ceylon.ide.common.model.resourceDirectoriesFromCeylonConfig_;
@@ -800,7 +799,7 @@ public class CeylonBuildPathsBlock {
 					newFolderNames, newResourcePath);
         }
         else {
-            String defaultResourceFolderName = EditorUtil.getPreferences().getString(DEFAULT_RESOURCE_FOLDER);
+            String defaultResourceFolderName = CeylonPlugin.getPreferences().getString(DEFAULT_RESOURCE_FOLDER);
             IFolder defaultResourceFolder = fCurrJProject.getProject().getFolder(defaultResourceFolderName);
             newResourcePath.add(new CPListElement(fCurrJProject, 
                     IClasspathEntry.CPE_SOURCE, 
@@ -1049,7 +1048,7 @@ public class CeylonBuildPathsBlock {
         List<CPListElement> list= new ArrayList<CPListElement>();
         IResource srcFolder;
         IPreferenceStore store= PreferenceConstants.getPreferenceStore();
-        String sourceFolderName= getPreferences().getString(DEFAULT_SOURCE_FOLDER);
+        String sourceFolderName= CeylonPlugin.getPreferences().getString(DEFAULT_SOURCE_FOLDER);
         if (store.getBoolean(PreferenceConstants.SRCBIN_FOLDERS_IN_NEWPROJ) && sourceFolderName.length() > 0) {
             srcFolder= jproj.getProject().getFolder(sourceFolderName);
         } else {

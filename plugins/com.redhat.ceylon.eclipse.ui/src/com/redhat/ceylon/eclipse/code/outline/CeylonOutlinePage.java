@@ -20,7 +20,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.EXPAND_ALL;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.HIDE_PRIVATE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.SORT_ALPHA;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
@@ -111,7 +110,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
                 treeViewer.refresh();
             }
         };
-        getPreferences()
+        CeylonPlugin.getPreferences()
             .addPropertyChangeListener(propertyChangeListener);
         getWorkbench().getThemeManager()
             .addPropertyChangeListener(propertyChangeListener);
@@ -276,7 +275,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             labelProvider = null;
         }
         if (propertyChangeListener!=null) {
-            getPreferences()
+            CeylonPlugin.getPreferences()
                 .removePropertyChangeListener(propertyChangeListener);
             getWorkbench().getThemeManager()
                 .removePropertyChangeListener(propertyChangeListener);
@@ -399,7 +398,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             this.setImageDescriptor(ALPHA); 
             
             boolean checked = 
-                    getPreferences()
+                    CeylonPlugin.getPreferences()
                         .getBoolean(SORT_BY_NAME);
             valueChanged(checked, false);
         }
@@ -431,7 +430,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             });
 
             if (store) {
-                getPreferences()
+                CeylonPlugin.getPreferences()
                     .setValue(SORT_BY_NAME, on);
             }
         }
@@ -462,7 +461,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             setImageDescriptor(PUBLIC); 
             
             boolean checked = 
-                    getPreferences()
+                    CeylonPlugin.getPreferences()
                         .getBoolean(HIDE_NON_SHARED);
             valueChanged(checked, false);
         }
@@ -492,7 +491,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             });
             
             if (store) {
-                getPreferences()
+                CeylonPlugin.getPreferences()
                     .setValue(HIDE_NON_SHARED, on);
             }
         }
@@ -589,7 +588,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         OutlineNodeVisitor(int offset) {
             this.offset = offset;
             hideNonshared = 
-                    getPreferences()
+                    CeylonPlugin.getPreferences()
                         .getBoolean(HIDE_NON_SHARED);
         }
         List<CeylonOutlineNode> result = 

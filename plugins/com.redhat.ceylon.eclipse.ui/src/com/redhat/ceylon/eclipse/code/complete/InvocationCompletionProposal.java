@@ -31,7 +31,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.addLinkedPosition;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.installLinkedMode;
@@ -278,7 +277,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                 List<Parameter> ps = 
                         parameterList.getParameters();
                 String inexactMatches = 
-                        getPreferences()
+                        CeylonPlugin.getPreferences()
                             .getString(INEXACT_MATCHES);
                 boolean exact = 
                         prefixWithoutTypeArgs(prefix, typeArgs)
@@ -759,7 +758,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         catch (BadLocationException e) {
             e.printStackTrace();
         }
-        if (getPreferences()
+        if (CeylonPlugin.getPreferences()
                 .getBoolean(LINKED_MODE_ARGUMENTS)) {
             activeLinkedMode(document);
         }
@@ -1058,7 +1057,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                             d, qdec, loc, index, false, op));
                 }
                 if (qualifier==null && 
-                        getPreferences()
+                        CeylonPlugin.getPreferences()
                             .getBoolean(CHAIN_LINKED_MODE_ARGUMENTS)) {
                     Collection<DeclarationWithProximity> members = 
                             value.getTypeDeclaration()
