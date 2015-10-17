@@ -11,6 +11,9 @@ import com.redhat.ceylon.cmr.api {
     ModuleVersionDetails,
     ModuleSearchResult
 }
+import com.redhat.ceylon.compiler.typechecker.context {
+    PhasedUnit
+}
 import com.redhat.ceylon.compiler.typechecker.tree {
     Node,
     Tree,
@@ -38,11 +41,9 @@ import com.redhat.ceylon.eclipse.util {
 }
 import com.redhat.ceylon.ide.common.completion {
     IdeCompletionManager,
-    isModuleDescriptor,
-    anonFunctionHeader
+    isModuleDescriptor
 }
 import com.redhat.ceylon.ide.common.util {
-    escaping,
     Indents
 }
 import com.redhat.ceylon.model.typechecker.model {
@@ -95,9 +96,6 @@ import org.eclipse.swt.graphics {
 }
 import org.eclipse.ui {
     PlatformUI
-}
-import com.redhat.ceylon.compiler.typechecker.context {
-    PhasedUnit
 }
 
 EclipseCompletionManager dummyInstance = EclipseCompletionManager(CeylonEditor());
@@ -186,10 +184,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     shared actual String errorMessage => "No completions available";
     
     shared actual Indents<IDocument> indents => EclipseIndents.indents();
-    
-    shared actual Boolean addParameterTypesInCompletions
-            => EditorUtil.preferences.getBoolean(CeylonPreferenceInitializer.\iPARAMETER_TYPES_IN_COMPLETIONS);
-    
+        
     shared actual ICompletionProposal newParametersCompletionProposal(Integer offset,
         String prefix, String desc, String text, JList<Type> argTypes, Node node, Unit unit) {
         
@@ -197,12 +192,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
             desc.string, text.string,
             argTypes, node.scope, unit);
     }
-    
-    shared actual Boolean showParameterTypes
-            => EditorUtil.preferences.getBoolean(CeylonPreferenceInitializer.\iPARAMETER_TYPES_IN_COMPLETIONS);
-    
-    shared actual String inexactMatches => EditorUtil.preferences.getString(CeylonPreferenceInitializer.\iINEXACT_MATCHES);
-    
+        
     shared actual String getDocumentSubstring(IDocument doc, Integer start, Integer length) => doc.get(start, length);
     
     shared actual ICompletionProposal newInvocationCompletion(Integer offset, String prefix,
@@ -289,9 +279,6 @@ shared class EclipseCompletionManager(CeylonEditor editor)
         return PackageCompletions.QueriedModulePackageProposal(offset, prefix,
             memberPackageSubname, withBody, fullPackageName, controller, version, unit, md);
     }
-    
-    shared actual Boolean supportsLinkedModeInArguments
-            => EditorUtil.preferences.getBoolean(CeylonPreferenceInitializer.\iLINKED_MODE_ARGUMENTS);
     
     shared actual ICompletionProposal newModuleProposal(Integer offset, String prefix, Integer len, 
         String versioned, ModuleSearchResult.ModuleDetails mod, Boolean withBody,

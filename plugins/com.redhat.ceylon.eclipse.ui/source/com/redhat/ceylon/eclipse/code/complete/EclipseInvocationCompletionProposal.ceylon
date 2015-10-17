@@ -107,7 +107,7 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
         createChange(change, doc).perform(NullProgressMonitor());
         
         if (EditorUtil.preferences.getBoolean(CeylonPreferenceInitializer.\iLINKED_MODE_ARGUMENTS)) {
-            activeLinkedMode(doc);
+            activeLinkedMode(doc, cpc);
         }
     }
     

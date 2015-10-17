@@ -23,7 +23,8 @@ import com.redhat.ceylon.model.typechecker.model {
 }
 
 import org.eclipse.core.resources {
-    IFile
+    IFile,
+    IProject
 }
 import org.eclipse.jface.text {
     IDocument
@@ -50,8 +51,8 @@ import org.eclipse.text.edits {
 
 class EclipseImportedModulePackageProposal(Integer offset, String prefix, String memberPackageSubname, Boolean withBody,
                 String fullPackageName, CeylonParseController controller, Package candidate)
-                extends ImportedModulePackageProposal<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, Point, LinkedModeModel>
-                (offset, prefix, memberPackageSubname, withBody, fullPackageName, candidate)
+                extends ImportedModulePackageProposal<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange,Point,LinkedModeModel,CeylonParseController,IProject>
+                (offset, prefix, memberPackageSubname, withBody, fullPackageName, candidate, controller)
                 satisfies EclipseDocumentChanges & EclipseCompletionProposal{
 
     shared actual variable String? currentPrefix = prefix;

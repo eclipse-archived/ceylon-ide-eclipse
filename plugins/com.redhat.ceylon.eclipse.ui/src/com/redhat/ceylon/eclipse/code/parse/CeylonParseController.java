@@ -6,6 +6,12 @@ import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.F
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.LEXICAL_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CHAIN_LINKED_MODE_ARGUMENTS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_COMPLETION_FILTERS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INEXACT_MATCHES;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.allClasspathContainersInitialized;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getInterpolatedCeylonSystemRepo;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
@@ -17,6 +23,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.isTheSourceArchiveProject;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.toFullPath;
 import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static java.util.Arrays.asList;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.core.runtime.jobs.Job.getJobManager;
@@ -73,6 +80,7 @@ import com.redhat.ceylon.compiler.typechecker.util.WarningSuppressionVisitor;
 import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler.Stager;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
+import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem;
@@ -87,9 +95,10 @@ import com.redhat.ceylon.eclipse.core.vfs.SourceCodeVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.TemporaryFile;
 import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EclipseLogger;
+import com.redhat.ceylon.eclipse.util.EclipseLogger;import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.settings.CompletionOptions;
 import com.redhat.ceylon.ide.common.typechecker.LocalAnalysisResult;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Modules;
@@ -874,5 +883,19 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument,IPro
     @Override
     public CeylonProject<IProject> getCeylonProject() {
         return ceylonModel().getProject(project);
+    }
+
+    @Override
+    public CompletionOptions getOptions() {
+        CompletionOptions options = new CompletionOptions();
+        
+        options.setParameterTypesInCompletion(getPreferences().getBoolean(PARAMETER_TYPES_IN_COMPLETIONS));
+        options.setInexactMatches(getPreferences().getString(INEXACT_MATCHES));
+        options.setCompletionMode(getPreferences().getString(COMPLETION));
+        options.setLinkedModeArguments(getPreferences().getBoolean(LINKED_MODE_ARGUMENTS));
+        options.setChainLinkedModeArguments(getPreferences().getBoolean(CHAIN_LINKED_MODE_ARGUMENTS));
+        options.setEnableCompletionFilters(getPreferences().getBoolean(ENABLE_COMPLETION_FILTERS));
+
+        return options;
     }    
 }
