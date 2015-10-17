@@ -75,7 +75,7 @@ _If you want to have an up-to-date version of the Ceylon IDE based on the lastes
 _This method implies some **additional complexity**, and is only useful if you want to debug the Ceylon IDE plugin._
 
 **_Prelimiary remark_**: Now, parts of the Ceylon IDE project itself are written in Ceylon. Thus, in order to develop the Ceylon IDE plugin, you must have a previous version of the plugin installed in your
-main Eclipse (preferably build with Maven, or downloaded from the update site).
+main Eclipse (preferably built with Maven, or downloaded from the update site).
 
 1.  Make sure that `ant` (latest version) can be run on the command line.
 
