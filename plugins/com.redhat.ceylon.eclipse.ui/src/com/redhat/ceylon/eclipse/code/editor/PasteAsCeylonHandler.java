@@ -17,7 +17,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
@@ -32,6 +34,7 @@ import com.redhat.ceylon.eclipse.code.refactor.AbstractHandler;
 import com.redhat.ceylon.eclipse.code.style.CeylonStyle;
 import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.StringBuilderWriter;
 import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
 import com.redhat.ceylon.ide.common.model.JavaToCeylonConverterConfig;
@@ -191,6 +194,32 @@ public class PasteAsCeylonHandler extends AbstractHandler {
                 editor.getCeylonSourceViewer()
                     .getDocument();
         
+        // get initial indentation
+        int indentation = 0;
+        ITextSelection selection = getSelection(editor);
+        if (selection!=null) {
+            try {
+                IRegion region = doc.getLineInformation(selection.getStartLine());
+                String line = doc.get(region.getOffset(), region.getLength());
+                char[] chars = line.toCharArray();
+                loop: for (int i=0; i<chars.length; i++) {
+                    switch (chars[i]) {
+                    case '\t':
+                        indentation += Indents.getIndentSpaces();
+                        break;
+                    case ' ':
+                        indentation += 1;
+                        break;
+                    default:
+                        break loop;
+                    }
+                }
+                indentation /= Indents.getIndentSpaces();
+            } catch (BadLocationException e) {
+                indentation = 0;
+            }
+        }
+        
         StringBuilder builder = 
                 new StringBuilder(ceylonCode.length());
 	    NewlineFixingStringStream stream = 
@@ -213,7 +242,7 @@ public class PasteAsCeylonHandler extends AbstractHandler {
 	                                CeylonStyle.getEclipseWsOptions(doc))),
 	                new StringBuilderWriter(builder),
 	                //new BufferedTokenStream(lexer),
-	                null, 0);
+	                null, indentation);
 	    }
 	    catch (Exception e1) {
 	        e1.printStackTrace();
