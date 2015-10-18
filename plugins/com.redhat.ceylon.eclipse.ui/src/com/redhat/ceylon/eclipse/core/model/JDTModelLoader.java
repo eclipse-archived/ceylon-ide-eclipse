@@ -1643,28 +1643,28 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     @Override
-    protected LazyValue makeToplevelAttribute(ClassMirror classMirror) {
+    protected LazyValue makeToplevelAttribute(ClassMirror classMirror, boolean isNativeHeader) {
         if (classMirror instanceof SourceClass) {
             return (LazyValue) (((SourceClass) classMirror).getModelDeclaration());
         }
-        return super.makeToplevelAttribute(classMirror);
+        return super.makeToplevelAttribute(classMirror, isNativeHeader);
     }
 
     @Override
-    protected LazyFunction makeToplevelMethod(ClassMirror classMirror) {
+    protected LazyFunction makeToplevelMethod(ClassMirror classMirror, boolean isNativeHeader) {
         if (classMirror instanceof SourceClass) {
             return (LazyFunction) (((SourceClass) classMirror).getModelDeclaration());
         }
-        return super.makeToplevelMethod(classMirror);
+        return super.makeToplevelMethod(classMirror, isNativeHeader);
     }
 
     @Override
     protected LazyClass makeLazyClass(ClassMirror classMirror, Class superClass,
-            MethodMirror constructor) {
+            MethodMirror constructor, boolean isNativeHeader) {
         if (classMirror instanceof SourceClass) {
             return (LazyClass) (((SourceClass) classMirror).getModelDeclaration());
         }
-        return super.makeLazyClass(classMirror, superClass, constructor);
+        return super.makeLazyClass(classMirror, superClass, constructor, isNativeHeader);
     }
 
     @Override
