@@ -1668,11 +1668,11 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     @Override
-    protected LazyInterface makeLazyInterface(ClassMirror classMirror) {
+    protected LazyInterface makeLazyInterface(ClassMirror classMirror, boolean isNativeHeader) {
         if (classMirror instanceof SourceClass) {
             return (LazyInterface) ((SourceClass) classMirror).getModelDeclaration();
         }
-        return super.makeLazyInterface(classMirror);
+        return super.makeLazyInterface(classMirror, isNativeHeader);
     }
     
     public TypeFactory getTypeFactory() {
