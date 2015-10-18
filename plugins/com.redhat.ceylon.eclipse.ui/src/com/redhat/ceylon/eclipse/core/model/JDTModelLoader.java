@@ -1643,36 +1643,36 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     @Override
-    protected LazyValue makeToplevelAttribute(ClassMirror classMirror, boolean isNativeHeader) {
+    protected LazyValue makeToplevelAttribute(ClassMirror classMirror) {
         if (classMirror instanceof SourceClass) {
             return (LazyValue) (((SourceClass) classMirror).getModelDeclaration());
         }
-        return super.makeToplevelAttribute(classMirror, isNativeHeader);
+        return super.makeToplevelAttribute(classMirror);
     }
 
     @Override
-    protected LazyFunction makeToplevelMethod(ClassMirror classMirror, boolean isNativeHeader) {
+    protected LazyFunction makeToplevelMethod(ClassMirror classMirror) {
         if (classMirror instanceof SourceClass) {
             return (LazyFunction) (((SourceClass) classMirror).getModelDeclaration());
         }
-        return super.makeToplevelMethod(classMirror, isNativeHeader);
+        return super.makeToplevelMethod(classMirror);
     }
 
     @Override
     protected LazyClass makeLazyClass(ClassMirror classMirror, Class superClass,
-            MethodMirror constructor, boolean isNativeHeader) {
+            MethodMirror constructor) {
         if (classMirror instanceof SourceClass) {
             return (LazyClass) (((SourceClass) classMirror).getModelDeclaration());
         }
-        return super.makeLazyClass(classMirror, superClass, constructor, isNativeHeader);
+        return super.makeLazyClass(classMirror, superClass, constructor);
     }
 
     @Override
-    protected LazyInterface makeLazyInterface(ClassMirror classMirror, boolean isNativeHeader) {
+    protected LazyInterface makeLazyInterface(ClassMirror classMirror) {
         if (classMirror instanceof SourceClass) {
             return (LazyInterface) ((SourceClass) classMirror).getModelDeclaration();
         }
-        return super.makeLazyInterface(classMirror, isNativeHeader);
+        return super.makeLazyInterface(classMirror);
     }
     
     public TypeFactory getTypeFactory() {
