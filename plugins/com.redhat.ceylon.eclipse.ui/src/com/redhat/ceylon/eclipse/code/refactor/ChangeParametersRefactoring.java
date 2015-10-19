@@ -379,7 +379,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             List<CommonToken> tokens) {
         tfc.setEdit(new MultiTextEdit());
         if (declaration != null) {
-            refactorArgumentLists(tfc, root);
+            refactorArgumentLists(tfc, root, tokens);
             refactorDeclarations(tfc, root, tokens);
             refactorReferences(tfc, root);
         }
@@ -438,7 +438,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     super.visit(that);
                     Tree.Identifier id = that.getIdentifier();
                     if (id!=null &&
-                            isReference(that.getDeclarationModel(), 
+                            isReference(
+                                    that.getDeclarationModel(), 
                                     id.getText())) {
                         nodes.add(that);
                     }
@@ -448,8 +449,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     return isSameParameter(param, p);
                 }
                 @Override
-                protected boolean isReference(Declaration ref,
-                        String id) {
+                protected boolean isReference(
+                        Declaration ref, String id) {
                     if (ref.isParameter()) {
                         FunctionOrValue fov = 
                                 (FunctionOrValue) ref;
@@ -468,7 +469,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     Tree.Identifier id = 
                             (Tree.Identifier) idn;
                     if (!id.getText().equals(newName)) {
-                        tfc.addEdit(new ReplaceEdit(id.getStartIndex(), 
+                        tfc.addEdit(new ReplaceEdit(
+                                id.getStartIndex(), 
                                 id.getDistance(), 
                                 newName));
                     }
@@ -478,7 +480,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
     }
 
     private void refactorDeclarations(TextChange tfc,
-            Tree.CompilationUnit root, List<CommonToken> tokens) {
+            Tree.CompilationUnit root, 
+            List<CommonToken> tokens) {
         
         FindRefinementsVisitor frv = 
                 new FindRefinementsVisitor(declaration);
@@ -531,7 +534,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         }
     }
     
-    private static boolean isSameParameter(Parameter x, Parameter y) {
+    private static boolean isSameParameter
+            (Parameter x, Parameter y) {
         if (x==null || y==null) return false;
         Declaration xd = x.getDeclaration();
         Declaration yd = y.getDeclaration();
@@ -547,7 +551,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
     }
 
     private void refactorArgumentLists(TextChange tfc,
-            Tree.CompilationUnit root) {
+            Tree.CompilationUnit root, 
+            List<CommonToken> tokens) {
                 
         FindInvocationsVisitor fiv = 
                 new FindInvocationsVisitor(declaration);
@@ -572,7 +577,8 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 if (nap != null) {
                     boolean found = false;
                     for (int i=0; i<defaulted.size(); i++) {
-                        Parameter p = parameters.get(order.get(i));
+                        Parameter p = 
+                                parameters.get(order.get(i));
                         if (isSameParameter(p,nap)) {
                             found = true;
                             break;
