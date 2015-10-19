@@ -223,6 +223,7 @@ public class JDTClass implements ClassMirror, IBindingProvider {
     private List<TypeParameterMirror> typeParams;
     private List<FieldMirror> fields;
     private String qualifiedName;
+    private String flatName;
     private String simpleName;
     private boolean superClassSet = false;
     private List<ClassMirror> innerClasses;
@@ -267,6 +268,10 @@ public class JDTClass implements ClassMirror, IBindingProvider {
         pkg = new JDTPackage(klass.getPackage());
         simpleName = new String(klass.sourceName());
         qualifiedName = JDTUtils.getFullyQualifiedName(klass);
+        flatName = JDTUtils.getFlatName(klass);
+        if (flatName.equals(qualifiedName)) {
+            flatName = qualifiedName;
+        }
         modifiers = klass.modifiers;
         isLocalType = klass.isLocalType();
         isBinary = klass.isBinaryBinding();
@@ -355,8 +360,7 @@ public class JDTClass implements ClassMirror, IBindingProvider {
 
     @Override
     public String getFlatName() {
-        // this should only make a difference if we care about local declarations
-        return getQualifiedName();
+        return flatName;
     }
 
     @Override
