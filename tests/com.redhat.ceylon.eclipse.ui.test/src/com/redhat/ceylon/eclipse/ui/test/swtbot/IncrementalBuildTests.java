@@ -180,6 +180,14 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
    }
 
    @Test
+   public void removeAndRestore_CeylonInterface_InSameProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(mainProject, 
+               "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
+               "CeylonTopLevelInterface_Main_Ceylon_Project", "Z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type declaration does not exist: 'CeylonTopLevelInterface_Main_Ceylon_Project'")));
+   }
+
+   @Test
    public void removeAndRestore_CeylonToplevelObject_InSameProject() throws InterruptedException, CoreException {
        changeAndRestoreDeclaration(mainProject, 
                "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
@@ -244,6 +252,14 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
    }
 
    @Test
+   public void removeAndRestore_CeylonInterface_Method_InSameProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(mainProject, 
+               "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
+               "interfaceMethod", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: 'interfaceMethod'")));
+   }
+
+   @Test
    public void removeAndRestore_CeylonClass_Attribute_InSameProject() throws InterruptedException, CoreException {
        changeAndRestoreDeclaration(mainProject, 
                "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
@@ -252,11 +268,27 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
    }
 
    @Test
+   public void removeAndRestore_CeylonInterface_Attribute_InSameProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(mainProject, 
+               "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
+               "interfaceAttribute", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: 'interfaceAttribute'")));
+   }
+
+   @Test
    public void removeAndRestore_CeylonClass_InnerClass_InSameProject() throws InterruptedException, CoreException {
        changeAndRestoreDeclaration(mainProject, 
                "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
                "InnerClass", "Z_", 
                stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: 'InnerClass'")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonInterface_InnerClass_InSameProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(mainProject, 
+               "src/usedModule/CeylonDeclarations_Main_Ceylon_Project.ceylon", 
+               "InterfaceClass", "Z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: 'InterfaceClass'")));
    }
 
    @Test
@@ -274,6 +306,14 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
                "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
                "CeylonTopLevelClass_Referenced_Ceylon_Project", "Z_", 
                stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: 'CeylonTopLevelClass_Referenced_Ceylon_Project'")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonInterface_InReferencedProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(referencedCeylonProject, 
+               "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
+               "CeylonTopLevelInterface_Referenced_Ceylon_Project", "Z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type declaration does not exist: 'CeylonTopLevelInterface_Referenced_Ceylon_Project'")));
    }
 
    @Test
@@ -333,6 +373,14 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
    }
 
    @Test
+   public void removeAndRestore_CeylonInterface_Method_InReferencedProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(referencedCeylonProject, 
+               "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
+               "interfaceMethod", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: 'interfaceMethod'")));
+   }
+
+   @Test
    public void removeAndRestore_CeylonClass_Attribute_InReferencedProject() throws InterruptedException, CoreException {
        changeAndRestoreDeclaration(referencedCeylonProject, 
                "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
@@ -341,11 +389,27 @@ public class IncrementalBuildTests extends AbstractMultiProjectTest {
    }
 
    @Test
+   public void removeAndRestore_CeylonInterface_Attribute_InReferencedProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(referencedCeylonProject, 
+               "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
+               "interfaceAttribute", "z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "method or attribute does not exist: 'interfaceAttribute'")));
+   }
+
+   @Test
    public void removeAndRestore_CeylonClass_InnerClass_InReferencedProject() throws InterruptedException, CoreException {
        changeAndRestoreDeclaration(referencedCeylonProject, 
                "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
                "InnerClass", "Z_", 
                stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: 'InnerClass'")));
+   }
+
+   @Test
+   public void removeAndRestore_CeylonClass_InnerInterface_InReferencedProject() throws InterruptedException, CoreException {
+       changeAndRestoreDeclaration(referencedCeylonProject, 
+               "src/referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
+               "InterfaceClass", "Z_", 
+               stringContainsInOrder(Arrays.asList("src/mainModule/run.ceylon", "type does not exist: 'InterfaceClass'")));
    }
 
    @Test

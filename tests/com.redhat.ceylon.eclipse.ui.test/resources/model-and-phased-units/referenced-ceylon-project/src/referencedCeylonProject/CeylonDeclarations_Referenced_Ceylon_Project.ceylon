@@ -5,6 +5,16 @@ shared class CeylonTopLevelClass_Referenced_Ceylon_Project() {
     shared object obj {}
 }
 
+shared interface CeylonTopLevelInterface_Referenced_Ceylon_Project {
+    shared void interfaceMethod(String argument) {}
+    shared String interfaceAttribute => string;
+    shared class InterfaceClass(Object o) {}
+}
+
+shared class CeylonTopLevelInterfaceImplementation_Referenced_Ceylon_Project() 
+    satisfies CeylonTopLevelInterface_Referenced_Ceylon_Project {
+}
+
 shared void ceylonTopLevelMethod_Referenced_Ceylon_Project() {
 }
 
