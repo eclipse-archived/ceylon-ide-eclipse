@@ -184,7 +184,8 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                         model.appliedReference(null, 
                                 Collections.<Type>emptyList());
                 Type fullType = ref.getFullType();
-                appendTypeName(styledString, fullType);
+                appendTypeName(styledString, fullType,
+                        model.getUnit());
                 cell.setImage(getImageForDeclaration(
                         fullType.getDeclaration()));
                 cell.setText(styledString.toString());

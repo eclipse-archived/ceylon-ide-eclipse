@@ -80,6 +80,7 @@ import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.NothingType;
 import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeAlias;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
@@ -612,7 +613,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 Type tm = type.getTypeModel();
                 if (!isTypeUnknown(tm)) {
                     label.append(" ∊ ");
-                    appendTypeName(label, tm, ARROW_STYLER);
+                    appendTypeName(label, tm, td.getUnit(), 
+                            ARROW_STYLER);
                 }
             }
         }
@@ -926,6 +928,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
             Type tm = type.getTypeModel();
             if (tm!=null && !isTypeUnknown(tm)) {
+                Unit unit = node.getUnit();
                 if (type instanceof Tree.SequencedType) {
                     Tree.SequencedType st = 
                             (Tree.SequencedType) type;
@@ -933,12 +936,12 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                             type.getUnit()
                                 .getIteratedType(tm);
                     if (itm!=null) {
-                        appendTypeName(result, itm);
+                        appendTypeName(result, itm, unit);
                         result.append(st.getAtLeastOne()?"+":"*");
                         return result;
                     }
                 }
-                appendTypeName(result, tm);
+                appendTypeName(result, tm, unit);
                 return result;
             }
         }
@@ -1009,13 +1012,14 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                         else if (p instanceof Tree.InitializerParameter) {
                             Tree.InitializerParameter ip = 
                                     (Tree.InitializerParameter) p;
-                            if (p.getParameterModel()!=null &&
-                                    p.getParameterModel()
-                                        .getType()!=null) {
+                            Parameter model = 
+                                    p.getParameterModel();
+                            if (model!=null &&
+                                    model.getType()!=null) {
                                 if (types) {
                                     appendTypeName(label, 
-                                            p.getParameterModel()
-                                                .getType());
+                                            model.getType(),
+                                            pl.getUnit());
                                 }
                                 if (types && names) {
                                     label.append(' ');
@@ -1090,14 +1094,23 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
 
     public static void appendTypeName(StyledString result, 
             Type type) {
-        appendTypeName(result, type, TYPE_STYLER);
+        appendTypeName(result, type, null, TYPE_STYLER);
     }
     
     public static void appendTypeName(StyledString result, 
-            Type type, 
-            Styler styler) {
+            Type type, Unit unit) {
+        appendTypeName(result, type, unit, TYPE_STYLER);
+    }
+    
+    public static void appendTypeName(StyledString result, 
+            Type type, Styler styler) {
+        appendTypeName(result, type, null, styler);
+    }
+    
+    public static void appendTypeName(StyledString result, 
+            Type type, Unit unit, Styler styler) {
         try {
-            String typeName = type.asString();
+            String typeName = type.asString(unit);
             StringTokenizer tokens = 
                     new StringTokenizer(typeName,
                             "|&?[]{}*+=-<>(),. ",true);
