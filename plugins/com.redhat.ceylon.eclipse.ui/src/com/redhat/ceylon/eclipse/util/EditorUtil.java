@@ -126,7 +126,8 @@ public class EditorUtil {
 
     public static IFile getFile(IEditorInput input) {
         if (input instanceof IFileEditorInput) {
-            return ((IFileEditorInput) input).getFile();
+            IFileEditorInput fei = (IFileEditorInput) input;
+            return fei.getFile();
         }
         else {
             return null;
@@ -134,10 +135,11 @@ public class EditorUtil {
     }
 
     public static IFile getFile(IEditorPart editor) {
-        if (editor!=null && 
-                editor.getEditorInput() instanceof FileEditorInput) {
-            FileEditorInput input = (FileEditorInput) editor.getEditorInput();
-            if (input!=null) {
+        if (editor!=null) {
+            IEditorInput editorInput = editor.getEditorInput();
+            if (editorInput instanceof FileEditorInput) {
+                FileEditorInput input = 
+                        (FileEditorInput) editorInput;
                 return input.getFile();
             }
         }
