@@ -393,6 +393,10 @@ public class JDTClass implements ClassMirror, IBindingProvider {
         return (this.modifiers & (ClassFileConstants.AccPublic | ClassFileConstants.AccProtected | ClassFileConstants.AccPrivate)) == 0;
     }
     
+    public boolean isDeprecated() {
+        return (this.modifiers & ClassFileConstants.AccDeprecated) != 0;
+    }
+    
     private void doWithBindings(final ActionOnClassBinding action) {
         if (!JDTModelLoader.doWithReferenceBinding(type, bindingRef.get(), action)) {
             JDTModelLoader.doWithResolvedType(type, new ActionOnResolvedType() {

@@ -482,6 +482,10 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         return (this.modifiers & ClassFileConstants.AccPrivate) != 0;
     }
 
+    public boolean isDeprecated() {
+        return (this.modifiers & ClassFileConstants.AccDeprecated) != 0;
+    }
+    
     @Override
     public boolean isDeclaredVoid() {
         return isDeclaredVoid;
