@@ -129,7 +129,7 @@ import com.redhat.ceylon.compiler.java.tools.LanguageCompiler;
 import com.redhat.ceylon.compiler.java.util.RepositoryLister;
 import com.redhat.ceylon.compiler.js.JsCompiler;
 import com.redhat.ceylon.compiler.js.util.Options;
-import com.redhat.ceylon.compiler.loader.ModelLoaderFactory;
+import com.redhat.ceylon.compiler.java.loader.ModelLoaderFactory;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;

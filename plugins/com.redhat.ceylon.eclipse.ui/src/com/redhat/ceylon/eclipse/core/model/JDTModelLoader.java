@@ -105,7 +105,7 @@ import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.loader.AnnotationLoader;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.util.Util;
-import com.redhat.ceylon.compiler.loader.SourceDeclarationVisitor;
+import com.redhat.ceylon.compiler.java.loader.SourceDeclarationVisitor;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
