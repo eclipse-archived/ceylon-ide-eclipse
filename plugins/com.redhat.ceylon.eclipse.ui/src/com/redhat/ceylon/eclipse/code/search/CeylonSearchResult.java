@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.ui.javaeditor.IClassFileEditorInput;
@@ -93,13 +94,16 @@ public class CeylonSearchResult
     public Match[] getMatchesForSourceArchive(
             SourceArchiveEditorInput input) {
         List<Match> matches = new ArrayList<Match>();
-        String path = input.getPath().toOSString();
-        for (Object element: this.getElements()) {
-            if (element instanceof CeylonElement) {
-                CeylonElement ce = (CeylonElement) element;
-                VirtualFile file = ce.getVirtualFile();
-                if (path.equals(file.getPath())) {
-                    matches.addAll(asList(getMatches(element)));
+        IPath inputPath = input.getPath();
+        if (inputPath!=null) { //the file could have been deleted
+            String path = inputPath.toOSString();
+            for (Object element: this.getElements()) {
+                if (element instanceof CeylonElement) {
+                    CeylonElement ce = (CeylonElement) element;
+                    VirtualFile file = ce.getVirtualFile();
+                    if (path.equals(file.getPath())) {
+                        matches.addAll(asList(getMatches(element)));
+                    }
                 }
             }
         }
