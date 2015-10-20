@@ -51,7 +51,7 @@ public class JDTUtils {
         if (packageName != CharOperation.NO_CHAR) {
             builder.append(packageName).append('.');
         }
-        return builder.append(type.qualifiedSourceName().toString().replace('.', '$')).toString();
+        return builder.append(new String(type.qualifiedSourceName()).replace('.', '$')).toString();
     }
     
     public static String getFullyQualifiedName(TypeBinding type) {

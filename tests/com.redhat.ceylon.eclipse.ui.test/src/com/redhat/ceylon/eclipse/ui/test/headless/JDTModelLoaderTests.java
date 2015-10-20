@@ -230,5 +230,12 @@ public class JDTModelLoaderTests extends ModelLoaderTests {
     @Ignore
     @Override
     public void compareNativeRuntimeWithJavaRuntime() {
-    }    
+    }
+    
+    @Test
+    @Ignore
+    @Override
+    public void ceylonDeprecated(){
+    }
+
 }
