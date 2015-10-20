@@ -95,6 +95,7 @@
         </ceylon-compile>
     </target>
     <target name="test" depends="compile-tests" unless="${skipTests}">
+        <!--
         <ceylon-test
             executable="${ceylon.executable}"
             verbose="${ceylon.verbosity}"
@@ -106,6 +107,7 @@
             </moduleset>
             <reposet refid="repos"/>
         </ceylon-test>
+        -->
     </target>
 
     <property name="moduleFileFolder" value="${basedir}/generated-source/com/redhat/ceylon/eclipseDependencies/"/>
