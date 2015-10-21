@@ -70,8 +70,14 @@ public class FormatterPreferences {
         case FORMATTER_space_AroundImportAliasEqualsSign:
             ret = booleanString(options.getSpaceAroundImportAliasEqualsSign());
             break;
-        case FORMATTER_space_AfterTypeArgOrParamListComma:
-            ret = booleanString(options.getSpaceAfterTypeArgOrParamListComma());
+        case FORMATTER_space_AfterTypeParamListComma:
+            ret = booleanString(options.getSpaceAfterTypeParamListComma());
+            break;
+        case FORMATTER_space_AfterTypeArgListComma:
+            ret = booleanString(options.getSpaceAfterTypeArgListComma());
+            break;
+        case FORMATTER_space_AroundTypeParamListEqualsSign:
+            ret = booleanString(options.getSpaceAroundTypeParamListEqualsSign());
             break;
         case FORMATTER_space_BeforeSequenceEnumerationClosingBrace:
             ret = booleanString(options
@@ -274,8 +280,14 @@ public class FormatterPreferences {
         case FORMATTER_space_AroundImportAliasEqualsSign:
             options.setSpaceAroundImportAliasEqualsSign(ceylonBoolean(value));
             break;
-        case FORMATTER_space_AfterTypeArgOrParamListComma:
-            options.setSpaceAfterTypeArgOrParamListComma(ceylonBoolean(value));
+        case FORMATTER_space_AfterTypeParamListComma:
+            options.setSpaceAfterTypeParamListComma(ceylonBoolean(value));
+            break;
+        case FORMATTER_space_AfterTypeArgListComma:
+            options.setSpaceAfterTypeArgListComma(ceylonBoolean(value));
+            break;
+        case FORMATTER_space_AroundTypeParamListEqualsSign:
+            options.setSpaceAroundTypeParamListEqualsSign(ceylonBoolean(value));
             break;
         case FORMATTER_space_BeforeSequenceEnumerationClosingBrace:
             options.setSpaceBeforeSequenceEnumerationClosingBrace(ceylonBoolean(value));
