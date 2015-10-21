@@ -73,7 +73,10 @@ public class FormatterTabSpace extends FormatterTabPage {
             + "    }\n"
             + "    print({ \"Here\", \"have\", \"an\", \"iterable\", \"enumeration\" });\n"
             + "    value hollowCubeVol = w*h*d - iW*iH*iD;\n"
-            + "}\n";
+            + "}\n"
+            + "\n"
+            + "void printTypeArgs<Param1=Anything, Param2=Nothing>()\n"
+            + "        => print(`Param1`.string + \" \" + `Param2`.string);\n";
 
     private CeylonPreview ceylonPreview;
 
