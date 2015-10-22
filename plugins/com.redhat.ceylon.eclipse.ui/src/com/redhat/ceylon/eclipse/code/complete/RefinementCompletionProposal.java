@@ -395,6 +395,10 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         Type type = getType();
         if (type==null) return;
         Unit unit = getUnit();
+        //nothing:
+        props.add(new NestedCompletionProposal(
+                unit.getLanguageModuleDeclaration("nothing"), 
+                loc));
         //this:
         ClassOrInterface ci = 
                 getContainingClassOrInterface(scope);

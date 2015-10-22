@@ -1382,7 +1382,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 FunctionOrValue m = (FunctionOrValue) dec;
                 for (Declaration d: overloads(dec)) {
                     if (isRefinementProposable(d, ol, scope) &&
-                            t.isSubtypeOf(m.getType())) {
+                            isReturnType(t, m, node)) {
                         try {
                             int start = node.getStartIndex();
                             String pfx = 
@@ -1399,6 +1399,29 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 }
             }
         }
+    }
+
+    private static final List<Type> NO_TYPES = Collections.<Type>emptyList();
+    
+    private static boolean isReturnType(Type t, FunctionOrValue m, Node node) {
+        if (t.isSubtypeOf(m.getType())) {
+            return true;
+        }
+        if (node instanceof Tree.TypedDeclaration) {
+            Tree.TypedDeclaration td = (Tree.TypedDeclaration) node;
+            Scope container = td.getDeclarationModel().getContainer();
+            if (container instanceof ClassOrInterface) {
+                ClassOrInterface ci = (ClassOrInterface) container;
+                Type type = 
+                        ci.getType()
+                            .getTypedMember(m, NO_TYPES)
+                            .getType();
+                if (t.isSubtypeOf(type)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static boolean noParametersFollow(CommonToken nextToken) {
