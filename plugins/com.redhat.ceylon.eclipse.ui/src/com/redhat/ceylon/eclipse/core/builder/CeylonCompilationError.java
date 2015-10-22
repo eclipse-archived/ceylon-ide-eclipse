@@ -160,7 +160,7 @@ public class CeylonCompilationError implements Diagnostic<JavaFileObject> {
         if (token!=null) {
             endOffset = errorNode.getEndIndex();
         }
-        return endOffset;
+        return endOffset - 1;
     }
 
     @Override
