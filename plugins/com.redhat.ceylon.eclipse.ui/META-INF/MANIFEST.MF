@@ -6,7 +6,7 @@ Bundle-Version: 1.2.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Localization: plugin
 Require-Bundle: ceylon.bootstrap;bundle-version="1.2.0",
- com.github.rjeschke.txtmark;bundle-version="0.11.0",
+ com.github.rjeschke.txtmark;bundle-version="0.13.0",
  org.antlr.runtime;bundle-version="3.4.0",
  org.antlr.antlr4-runtime-osgi;bundle-version="4.5.1",
  ceylon.runtime;bundle-version="1.2.0";visibility:=reexport,
