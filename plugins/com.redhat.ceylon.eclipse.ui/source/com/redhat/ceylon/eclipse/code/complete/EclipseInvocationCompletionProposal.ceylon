@@ -9,6 +9,9 @@ import com.redhat.ceylon.eclipse.code.correct {
     EclipseDocumentChanges,
     eclipseImportProposals
 }
+import com.redhat.ceylon.eclipse.code.hover {
+    DocumentationHover
+}
 import com.redhat.ceylon.eclipse.code.outline {
     CeylonLabelProvider
 }
@@ -23,7 +26,6 @@ import com.redhat.ceylon.eclipse.ui {
     CeylonResources
 }
 import com.redhat.ceylon.eclipse.util {
-    EditorUtil,
     Highlights
 }
 import com.redhat.ceylon.ide.common.completion {
@@ -79,9 +81,6 @@ import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
 }
-import com.redhat.ceylon.eclipse.code.hover {
-    DocumentationHover
-}
 
 class EclipseInvocationCompletionProposal(Integer _offset, String prefix, 
             String description, String text, Declaration dec,
@@ -106,7 +105,7 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
         value change = DocumentChange("Complete Invocation", doc);
         createChange(change, doc).perform(NullProgressMonitor());
         
-        if (EditorUtil.preferences.getBoolean(CeylonPreferenceInitializer.\iLINKED_MODE_ARGUMENTS)) {
+        if (CeylonPlugin.preferences.getBoolean(CeylonPreferenceInitializer.\iLINKED_MODE_ARGUMENTS)) {
             activeLinkedMode(doc, cpc);
         }
     }
@@ -130,7 +129,7 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
     
     shared actual String? additionalProposalInfo
             => DocumentationHover.getDocumentationFor(cpc, dec, 
-                producedReference);
+                producedReference, NullProgressMonitor());
 
     shared actual IContextInformation? contextInformation {
         if (namedInvocation || positionalInvocation) {

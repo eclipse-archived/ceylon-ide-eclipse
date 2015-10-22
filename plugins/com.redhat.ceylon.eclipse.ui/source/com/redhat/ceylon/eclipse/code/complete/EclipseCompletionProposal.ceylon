@@ -1,3 +1,28 @@
+import ceylon.interop.java {
+    javaString
+}
+
+import com.redhat.ceylon.eclipse.code.preferences {
+    CeylonPreferenceInitializer
+}
+import com.redhat.ceylon.eclipse.ui {
+    CeylonPlugin
+}
+import com.redhat.ceylon.eclipse.util {
+    Highlights
+}
+import com.redhat.ceylon.ide.common.completion {
+    CommonCompletionProposal
+}
+import com.redhat.ceylon.model.typechecker.model {
+    ModelUtil
+}
+
+import java.lang {
+    CharSequence,
+    JCharacter=Character
+}
+
 import org.eclipse.jface.text {
     ITextViewer,
     IDocument,
@@ -5,40 +30,17 @@ import org.eclipse.jface.text {
     BadLocationException,
     IInformationControlCreator
 }
-import org.eclipse.swt {
-    SWT
+import org.eclipse.jface.text.contentassist {
+    IContextInformation
 }
 import org.eclipse.jface.viewers {
     StyledString
 }
-import com.redhat.ceylon.eclipse.util {
-    Highlights,
-    EditorUtil
-}
-import com.redhat.ceylon.eclipse.ui {
-    CeylonPlugin
-}
-import org.eclipse.jface.text.contentassist {
-    IContextInformation
-}
-import com.redhat.ceylon.model.typechecker.model {
-    ModelUtil
-}
-import com.redhat.ceylon.ide.common.completion {
-    CommonCompletionProposal
-}
-import java.lang {
-    CharSequence,
-    JCharacter=Character
-}
-import ceylon.interop.java {
-    javaString
+import org.eclipse.swt {
+    SWT
 }
 import org.eclipse.swt.graphics {
     Point
-}
-import com.redhat.ceylon.eclipse.code.preferences {
-    CeylonPreferenceInitializer
 }
 
 // see CompletionProposal
@@ -114,7 +116,7 @@ interface EclipseCompletionProposal
     
     shared actual Point getSelection(IDocument document) => getSelectionInternal(document);
     
-    shared actual String completionMode => EditorUtil.preferences.getString(CeylonPreferenceInitializer.\iCOMPLETION);
+    shared actual String completionMode => CeylonPlugin.preferences.getString(CeylonPreferenceInitializer.\iCOMPLETION);
     
     shared actual JCharacter getDocChar(IDocument doc, Integer offset) => JCharacter(doc.getChar(offset));
     

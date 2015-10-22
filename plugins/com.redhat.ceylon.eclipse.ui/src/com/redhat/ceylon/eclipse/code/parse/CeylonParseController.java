@@ -23,7 +23,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.isTheSourceArchiveProject;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.toFullPath;
 import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getPreferences;
 import static java.util.Arrays.asList;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.core.runtime.jobs.Job.getJobManager;

@@ -32,7 +32,8 @@ import com.redhat.ceylon.eclipse.code.preferences {
     CeylonPreferenceInitializer
 }
 import com.redhat.ceylon.eclipse.ui {
-    CeylonResources
+    CeylonResources,
+    CeylonPlugin
 }
 import com.redhat.ceylon.eclipse.util {
     EditorUtil,
@@ -113,7 +114,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     value noCompletions = createJavaObjectArray<ICompletionProposal>({});
     
     shared actual CharArray completionProposalAutoActivationCharacters =
-            javaString(EditorUtil.preferences.getString(CeylonPreferenceInitializer.\iAUTO_ACTIVATION_CHARS)).toCharArray();
+            javaString(CeylonPlugin.preferences.getString(CeylonPreferenceInitializer.\iAUTO_ACTIVATION_CHARS)).toCharArray();
     
     shared actual CharArray contextInformationAutoActivationCharacters = javaString(",(;{").toCharArray();
     
@@ -237,7 +238,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     
     shared actual List<Pattern> proposalFilters {
         value filters = ArrayList<Pattern>();
-        value preferences = EditorUtil.preferences;
+        value preferences = CeylonPlugin.preferences;
         parseFilters(filters, preferences.getString(CeylonPreferenceInitializer.\iFILTERS));
         if (preferences.getBoolean(CeylonPreferenceInitializer.\iENABLE_COMPLETION_FILTERS)) {
             parseFilters(filters, preferences.getString(CeylonPreferenceInitializer.\iCOMPLETION_FILTERS));

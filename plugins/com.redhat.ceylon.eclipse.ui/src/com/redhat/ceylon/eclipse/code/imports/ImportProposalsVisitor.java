@@ -10,6 +10,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
+@Deprecated
 final class ImportProposalsVisitor extends Visitor {
     private final CompilationUnit cu;
     private final List<Declaration> proposals;
