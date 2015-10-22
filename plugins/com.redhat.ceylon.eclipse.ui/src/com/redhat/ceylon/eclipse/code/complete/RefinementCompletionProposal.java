@@ -101,7 +101,12 @@ public final class RefinementCompletionProposal extends CompletionProposal {
 
         @Override
         public Image getImage() {
-            return getImageForDeclaration(declaration);
+            if (declaration instanceof TypedDeclaration) {
+                return getImageForDeclaration(getType().getDeclaration());
+            }
+            else {
+                return null;
+            }
         }
 
         @Override
