@@ -59,7 +59,7 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
 class InitializerProposal extends CorrectionProposal {
-
+    
     private final class NestedCompletionProposal 
             implements ICompletionProposal, 
                        ICompletionProposalExtension2,
@@ -335,9 +335,13 @@ class InitializerProposal extends CorrectionProposal {
         super.apply(document);
         int lenAfter = document.getLength();
         
+        Point point = super.getSelection(document);
+        if (point==null) return;
+        
+        editor.selectAndReveal(point.x, point.y);
+        
         //TODO: preference to disable linked mode?
         if (lenAfter>lenBefore && editor!=null) {
-            Point point = super.getSelection(document);
             if (point.y>0) {
                 LinkedModeModel linkedModeModel = 
                         new LinkedModeModel();
@@ -365,9 +369,6 @@ class InitializerProposal extends CorrectionProposal {
                         e.printStackTrace();
                     }
                 }
-            }
-            else {
-                editor.selectAndReveal(point.x, point.y);
             }
         }
     }
