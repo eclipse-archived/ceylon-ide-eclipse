@@ -111,6 +111,7 @@ import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
 import com.redhat.ceylon.common.Backend;
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.common.config.CeylonConfig;
 import com.redhat.ceylon.common.config.DefaultToolOptions;
@@ -2331,10 +2332,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                     if (module instanceof JDTModule) {
                                         JDTModule jdtModule = (JDTModule) module;
                                         if (jdtModule.isCeylonArchive()
-                                                && TreeUtil.isForBackend(jdtModule.getNativeBackend(), Backend.JavaScript)) {
+                                                && TreeUtil.isForBackend(jdtModule.getNativeBackends(), Backend.JavaScript.asSet())) {
                                             List<ModuleImport> importedModuleImports = new ArrayList<>();
                                             for(ModuleImport moduleImport : moduleSourceMapper.retrieveModuleImports(jdtModule)) {
-                                                if (TreeUtil.isForBackend(moduleImport.getNativeBackend(), Backend.JavaScript)) {
+                                                if (TreeUtil.isForBackend(moduleImport.getNativeBackends(), Backend.JavaScript.asSet())) {
                                                     importedModuleImports.add(moduleImport);
                                                 }
                                             }
@@ -2607,12 +2608,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         List<File> javaScriptResources = new ArrayList<File>();
         for (IFile file : filesToCompile) {
     	    Module module = getModule(file);
-    	    String nativeBakend = null; 
+    	    Backends nativeBackends = null;
     	    if (module != null) {
-    	        nativeBakend = module.getNativeBackend();
+    	        nativeBackends = module.getNativeBackends();
     	    }
-    	    if (nativeBakend == null 
-    	            || nativeBakend.equals(Backend.Java.nativeAnnotation)) {
+    	    if (nativeBackends == null
+    	            || nativeBackends.supports(Backend.Java.asSet())) {
                 if (isInSourceFolder(file)) {
                     if(isCeylon(file) || isJava(file)) {
                         forJavaBackend.add(file.getLocation().toFile());
@@ -2631,12 +2632,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (compileToJs(project)) {
             for (IFile file : getProjectFiles(project)) {
                 Module module = getModule(file);
-                String nativeBakend = null; 
+                Backends nativeBakends = null;
                 if (module != null) {
-                    nativeBakend = module.getNativeBackend();
+                    nativeBakends = module.getNativeBackends();
                 }
-                if (nativeBakend == null 
-                        || nativeBakend.equals(Backend.JavaScript.nativeAnnotation)) {
+                if (nativeBakends == null
+                        || nativeBakends.supports(Backend.JavaScript.asSet())) {
                     if (isInSourceFolder(file)) {
                         if(isCeylon(file) || isJavascript(file)) {
                             forJavascriptBackend.add(file.getLocation().toFile());

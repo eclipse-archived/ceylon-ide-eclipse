@@ -44,6 +44,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 
+import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -203,10 +204,10 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
             List<Declaration> declarations = phasedUnit.getDeclarations();
             for (Declaration d : declarations) {
                 if (d.isNative()) {
-                    if (Objects.equals(configTypeId, LAUNCH_CONFIG_TYPE) && !Objects.equals(d.getNativeBackend(), "jvm")) {
+                    if (Objects.equals(configTypeId, LAUNCH_CONFIG_TYPE) && !d.getNativeBackends().supports(Backend.Java.asSet())) {
                         continue;
                     }
-                    if (Objects.equals(configTypeId, LAUNCH_CONFIG_TYPE_JS) && !Objects.equals(d.getNativeBackend(), "js")) {
+                    if (Objects.equals(configTypeId, LAUNCH_CONFIG_TYPE_JS) && !d.getNativeBackends().supports(Backend.JavaScript.asSet())) {
                         continue;
                     }
                 }

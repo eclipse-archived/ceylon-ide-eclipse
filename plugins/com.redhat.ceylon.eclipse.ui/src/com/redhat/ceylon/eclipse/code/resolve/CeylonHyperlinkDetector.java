@@ -14,7 +14,7 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
-import com.redhat.ceylon.common.Backend;
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -58,14 +58,14 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
 
         @Override
         public String getHyperlinkText() {
-            Backend supportedBackend = supportedBackend();
-            return "Ceylon Declaration" + 
-                    (supportedBackend == null ? 
-                            "" : 
+            Backends supportedBackends = supportedBackends();
+            return "Ceylon Declaration" +
+                    (supportedBackends.none() ?
+                            "" :
                             " \u2014 " +
-                            (Backend.None.equals(supportedBackend) ? 
+                            (Backends.HEADER.equals(supportedBackends) ?
                                     "native header" :
-                                        supportedBackend.name + 
+                                        supportedBackends +
                                         " backend implementation"));
         }
 
@@ -104,19 +104,19 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                         Declaration dec = 
                                 (Declaration) 
                                     referenceable;
-                        Backend supportedBackend = supportedBackend();
+                        Backends supportedBackends = supportedBackends();
                         if (dec.isNative()) {
-                            if (supportedBackend==null) {
+                            if (supportedBackends.none()) {
                                 return null;
                             }
                             else {
                                 referenceable = 
                                         resolveNative(referenceable, 
-                                                dec, supportedBackend);
+                                                dec, supportedBackends);
                             }
                         }
                         else {
-                            if (supportedBackend!=null) {
+                            if (!supportedBackends.none()) {
                                 return null;
                             }
                         }
@@ -135,7 +135,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
 
     private Referenceable resolveNative(
             Referenceable referenceable, 
-            Declaration dec, Backend backend) {
+            Declaration dec, Backends backends) {
         Unit unit = dec.getUnit();
         Scope containerToSearchHeaderIn = null;
         if (unit instanceof CeylonBinaryUnit) {
@@ -184,20 +184,20 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                             dec.getName());
             if (headerDeclaration == null 
                     || ! headerDeclaration.isNative()) return null;
-            if (Backend.None.equals(backend)) {
+            if (Backends.HEADER.equals(backends)) {
                 referenceable = headerDeclaration;
             } else {
                 if (headerDeclaration != null) {
                     referenceable = 
                             getNativeDeclaration(headerDeclaration, 
-                                    supportedBackend());
+                                    supportedBackends());
                 }
             }
         }
         return referenceable;
     }
 
-    public Backend supportedBackend() {
-        return null;
+    public Backends supportedBackends() {
+        return Backends.NONE;
     }
 }

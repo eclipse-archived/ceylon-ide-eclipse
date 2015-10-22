@@ -66,6 +66,8 @@ import org.eclipse.jdt.internal.core.PackageFragment;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.common.Backend;
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnitMap;
 import com.redhat.ceylon.compiler.typechecker.io.ClosableVirtualFile;
@@ -909,8 +911,6 @@ public class JDTModule extends LazyModule {
         return p;
     }
 
-    private static final Set<String> JVM_BACKEND = Collections.singleton("jvm");
-
     @SuppressWarnings("unchecked")
     private ExternalPhasedUnit buildPhasedUnitForBinaryUnit(String sourceUnitFullPath) {
         if (sourceArchivePath == null || sourceUnitFullPath == null) {
@@ -951,8 +951,8 @@ public class JDTModule extends LazyModule {
                             List<CommonToken> tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
                             tokens.addAll(tokenStream.getTokens());
                             SingleSourceUnitPackage proxyPackage = new SingleSourceUnitPackage(pkg, ceylonSourceUnitFullPath) {
-                                public Set<String> getScopedBackends() {
-                                    return JVM_BACKEND;
+                                public Backends getScopedBackends() {
+                                    return Backend.Java.asSet();
                                 };
                             };
                             if(originalProject == null) {

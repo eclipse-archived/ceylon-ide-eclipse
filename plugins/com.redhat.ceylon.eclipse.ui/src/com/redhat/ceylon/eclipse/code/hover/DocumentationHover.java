@@ -77,6 +77,7 @@ import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Configuration.Builder;
 import com.github.rjeschke.txtmark.Processor;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -1354,14 +1355,14 @@ public class DocumentationHover extends SourceInfoHover {
         }
         if (isVariable(dec)) buf.append("variable&nbsp;");
         if (dec.isNative()) buf.append("native");
-        String nativeBackend = dec.getNativeBackend();
-        if (nativeBackend!=null && !nativeBackend.isEmpty()) {
+        Backends nativeBackends = dec.getNativeBackends();
+        if (!nativeBackends.none()) {
             String color = 
                     toHex(getCurrentThemeColor(ANNOTATION_STRINGS));
             buf.append("(<span style='color:")
                 .append(color)
                 .append("'>\"")
-                .append(nativeBackend)
+                .append(nativeBackends.toString())
                 .append("\"</span>)");
         }
         if (dec.isNative()) buf.append("&nbsp;");

@@ -145,7 +145,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                                     }
                                 }
                                 
-                                Declaration javaOverload = ModelUtil.getNativeDeclaration(dec, Backend.Java);
+                                Declaration javaOverload = ModelUtil.getNativeDeclaration(dec, Backend.Java.asSet());
                                 if (javaOverload != null) {
                                     if (javaOverload.getUnit() instanceof IJavaModelAware) {
                                         dec = javaOverload;

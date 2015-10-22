@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 
+import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.model.typechecker.model.Annotation;
 import com.redhat.ceylon.model.typechecker.model.Class;
@@ -327,10 +328,10 @@ public class CeylonTestUtil {
 
     public static boolean checkNativeBackend(Module module, String launchConfigType) {
         if (module.isNative()) {
-            if (Objects.equals(launchConfigType, LAUNCH_CONFIG_TYPE) && !Objects.equals(module.getNativeBackend(), "jvm")) {
+            if (Objects.equals(launchConfigType, LAUNCH_CONFIG_TYPE) && !module.getNativeBackends().supports(Backend.Java.asSet())) {
                 return false;
             }
-            if (Objects.equals(launchConfigType, LAUNCH_CONFIG_TYPE_JS) && !Objects.equals(module.getNativeBackend(), "js")) {
+            if (Objects.equals(launchConfigType, LAUNCH_CONFIG_TYPE_JS) && !module.getNativeBackends().supports(Backend.JavaScript.asSet())) {
                 return false;
             }
         }

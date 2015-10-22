@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
 import com.redhat.ceylon.common.Backend;
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 
@@ -12,7 +13,7 @@ public class CeylonJavaBackendHyperlinkDetector extends CeylonHyperlinkDetector 
     }
 
     @Override
-    public Backend supportedBackend() {
-        return Backend.Java;
+    public Backends supportedBackends() {
+        return Backend.Java.asSet();
     }
 }

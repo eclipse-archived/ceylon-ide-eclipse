@@ -22,7 +22,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 
-import com.redhat.ceylon.common.Backend;
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
@@ -294,7 +294,7 @@ public class Nodes {
                                 List<Declaration> overloads = headerDeclaration.getOverloads();
                                 if (overloads != null) {
                                     for (Declaration overload : overloads) {
-                                        if (Backend.None.nativeAnnotation.equals(overload.getNativeBackend())) {
+                                        if (Backends.HEADER.equals(overload.getNativeBackends())) {
                                             model = overload;
                                             foundTheCeylonDeclaration = true;
                                             break;
