@@ -114,14 +114,15 @@ class InvocationCompletionProposal extends CompletionProposal {
                 offset, prefix,
                 dec.getName(unit), escapeName(dec, unit),
                 dec, dec.getReference(), scope, controller, 
-                true, false, false, isMember, null));
+                true, false, false, false, isMember, null));
     }
     
     static void addReferenceProposal(
             int offset, String prefix, 
             final CeylonParseController controller, 
             List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Scope scope, boolean isMember, 
+            DeclarationWithProximity dwp, 
+            Scope scope, boolean isMember, 
             Reference pr, OccurrenceLocation ol) {
         Unit unit = controller.getLastCompilationUnit().getUnit();
         Declaration dec = dwp.getDeclaration();
@@ -132,7 +133,9 @@ class InvocationCompletionProposal extends CompletionProposal {
                     getDescriptionFor(dwp, unit, true),
                     getTextFor(dec, unit), 
                     dec, pr, scope, controller, 
-                    true, false, false, 
+                    true, false, false,
+                    ol==OccurrenceLocation.EXTENDS || 
+                    ol==OccurrenceLocation.SATISFIES,
                     isMember, null));
             Generic g = (Generic) dec;
             if (g.getTypeParameters().isEmpty()) {
@@ -153,7 +156,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                     getDescriptionFor(dwp, unit, false),
                     escapeName(dec, unit), 
                     dec, pr, scope, controller, 
-                    true, false, false, 
+                    true, false, false, false, 
                     isMember, null));
         }
     }
@@ -250,7 +253,10 @@ class InvocationCompletionProposal extends CompletionProposal {
                             m, ol, ptr, unit, false, null);
             result.add(new InvocationCompletionProposal(
                     offset, prefix, desc, text, m, ptr, scope, 
-                    controller, true, true, false, true, dec));
+                    controller, true, true, false,
+                    ol==OccurrenceLocation.EXTENDS || 
+                    ol==OccurrenceLocation.SATISFIES,
+                    true, dec));
         }
     }
     
@@ -290,6 +296,9 @@ class InvocationCompletionProposal extends CompletionProposal {
                 boolean named = 
                         exact ||
                         "both".equals(inexactMatches);
+                boolean inheritance = 
+                        ol==OccurrenceLocation.EXTENDS || 
+                        ol==OccurrenceLocation.SATISFIES;
                 if (positional && 
                         parameterList.isPositionalParametersSupported() &&
                         (!isAbstract || 
@@ -308,7 +317,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                                         typeArgs);
                         result.add(new InvocationCompletionProposal(
                                 offset, prefix, desc, text, dec, pr, scope, 
-                                controller, false, true, false, isMember, null));
+                                controller, false, true, false, 
+                                inheritance, isMember, null));
                     }
                     String desc = 
                             getPositionalInvocationDescriptionFor(
@@ -320,7 +330,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                                     typeArgs);
                     result.add(new InvocationCompletionProposal(
                             offset, prefix, desc, text, dec, pr, scope, 
-                            controller, true, true, false, isMember, null));
+                            controller, true, true, false, 
+                            inheritance, isMember, null));
                 }
                 if (named && 
                         parameterList.isNamedParametersSupported() &&
@@ -342,7 +353,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                                         typeArgs);
                         result.add(new InvocationCompletionProposal(
                                 offset, prefix, desc, text, dec, pr, scope, 
-                                controller, false, false, true, isMember, null));
+                                controller, false, false, true, 
+                                inheritance, isMember, null));
                     }
                     if (!ps.isEmpty()) {
                         String desc = 
@@ -355,7 +367,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                                         typeArgs);
                         result.add(new InvocationCompletionProposal(
                                 offset, prefix, desc, text, dec, pr, scope, 
-                                controller, true, false, true, isMember, null));
+                                controller, true, false, true, 
+                                inheritance, isMember, null));
                     }
                 }
             }
@@ -685,6 +698,7 @@ class InvocationCompletionProposal extends CompletionProposal {
     private final boolean positionalInvocation;
     private final boolean qualified;
     private Declaration qualifyingValue;
+    private boolean inheritance;
     
     private InvocationCompletionProposal(
             int offset, String prefix, 
@@ -695,7 +709,8 @@ class InvocationCompletionProposal extends CompletionProposal {
             CeylonParseController controller, 
             boolean includeDefaulted,
             boolean positionalInvocation, 
-            boolean namedInvocation, 
+            boolean namedInvocation,
+            boolean inheritance,
             boolean qualified, 
             Declaration qualifyingValue) {
         super(offset, prefix, getImageForDeclaration(dec), 
@@ -707,6 +722,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         this.includeDefaulted = includeDefaulted;
         this.namedInvocation = namedInvocation;
         this.positionalInvocation = positionalInvocation;
+        this.inheritance = inheritance;
         this.qualified = qualified;
         this.qualifyingValue = qualifyingValue;
     }
@@ -1173,7 +1189,9 @@ class InvocationCompletionProposal extends CompletionProposal {
                             continue;
                         }
                     }
-                    if (isInBounds(tp.getSatisfiedTypes(), t)) {
+                    if (tp.isSelfType() ? 
+                            inheritance && scope.equals(td) : 
+                            isInBounds(tp.getSatisfiedTypes(), t)) {
                         props.add(new NestedCompletionProposal(
                                 dec, null, loc, index, true, ""));
                     }
@@ -1219,7 +1237,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                 boolean namedInvocation) {
             super(offset, "", "show parameters", "", dec, 
                     producedReference, scope, cpc, true, 
-                    true, namedInvocation, false, null);
+                    true, namedInvocation, false, false, 
+                    null);
         }
         @Override
         boolean isParameterInfo() {
