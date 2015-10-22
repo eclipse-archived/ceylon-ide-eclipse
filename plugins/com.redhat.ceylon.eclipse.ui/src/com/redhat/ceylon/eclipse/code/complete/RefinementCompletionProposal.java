@@ -24,12 +24,17 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDeco
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getRefinementIcon;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getCompletionFont;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getPreferences;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DEFAULT_REFINEMENT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_FORMAL_REFINEMENT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getContainingClassOrInterface;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 
 import java.util.ArrayList;
@@ -59,8 +64,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.model.typechecker.model.Class;
@@ -75,7 +78,7 @@ import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
+import com.redhat.ceylon.model.typechecker.model.NothingType;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.Reference;
 import com.redhat.ceylon.model.typechecker.model.Scope;
@@ -116,12 +119,10 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     }
 
     public static Image DEFAULT_REFINEMENT = 
-            CeylonPlugin.imageRegistry()
-                .get(CEYLON_DEFAULT_REFINEMENT);
+            imageRegistry().get(CEYLON_DEFAULT_REFINEMENT);
 
     public static Image FORMAL_REFINEMENT = 
-            CeylonPlugin.imageRegistry()
-                .get(CEYLON_FORMAL_REFINEMENT);
+            imageRegistry().get(CEYLON_FORMAL_REFINEMENT);
     
     static void addRefinementProposal(int offset, 
             Declaration dec, ClassOrInterface ci, 
@@ -252,7 +253,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     public StyledString getStyledDisplayString() {
         StyledString result = new StyledString();
         String string = getDisplayString();
-        Font font = CeylonPlugin.getCompletionFont();
+        Font font = getCompletionFont();
         if (string.startsWith("shared actual ")) {
             result.append(string.substring(0,14), 
             		new Highlights.FontStyler(font,
@@ -301,12 +302,12 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     @Override
     public void apply(IDocument document) {
         try {
-            EditorUtil.performChange(createChange(document));;
+            performChange(createChange(document));;
         }
         catch (BadLocationException e) {
             e.printStackTrace();
         }
-        if (CeylonPlugin.getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
+        if (getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
             enterLinkedMode(document);
         }
     }
@@ -394,11 +395,22 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         Type type = getType();
         if (type==null) return;
         Unit unit = getUnit();
+        //this:
+        ClassOrInterface ci = 
+                getContainingClassOrInterface(scope);
+        if (ci!=null) {
+            if (ci.getType().isSubtypeOf(type)) {
+                props.add(new NestedLiteralCompletionProposal(
+                        "this", loc));
+            }
+        }
+        //literals:
         for (String value: 
                 getAssignableLiterals(type, unit)) {
             props.add(new NestedLiteralCompletionProposal(
                         value, loc));
         }
+        //declarations
         TypeDeclaration td = type.getDeclaration();
         for (DeclarationWithProximity dwp: 
                 getSortedProposedValues(scope, unit)) {
@@ -409,16 +421,20 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 continue;
             }
             Declaration d = dwp.getDeclaration();
-            final String name = d.getName();
+            if (d instanceof NothingType) {
+                return;
+            }
+            String name = d.getName();
             String[] split = prefix.split("\\s+");
             if (split.length>0 && 
                     name.equals(split[split.length-1])) {
                 continue;
             }
-            Package pack = d.getUnit().getPackage();
+            String pname = 
+                    d.getUnit().getPackage()
+                        .getNameAsString();
             boolean inLanguageModule = 
-                    pack.getNameAsString()
-                        .equals(Module.LANGUAGE_MODULE_NAME);
+                    pname.equals(Module.LANGUAGE_MODULE_NAME);
             if (d instanceof Value && 
                     !d.equals(declaration)) {
                 Value value = (Value) d;
@@ -538,7 +554,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             StyledString result = new StyledString();
             Highlights.styleFragment(result, 
                     getDisplayString(), false, null, 
-                    CeylonPlugin.getCompletionFont());
+                    getCompletionFont());
             return result;
         }
 
@@ -648,7 +664,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             StyledString result = new StyledString();
             Highlights.styleFragment(result, 
                     getDisplayString(), false, null, 
-                    CeylonPlugin.getCompletionFont());
+                    getCompletionFont());
             return result;
         }
         

@@ -12,6 +12,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getCompletionFont;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
@@ -39,7 +40,6 @@ import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.model.typechecker.model.Class;
@@ -104,7 +104,7 @@ class InitializerProposal extends CorrectionProposal {
             StyledString result = new StyledString();
             Highlights.styleFragment(result, 
                     getDisplayString(), false, null, 
-                    CeylonPlugin.getCompletionFont());
+                    getCompletionFont());
             return result;
         }
 
@@ -218,7 +218,7 @@ class InitializerProposal extends CorrectionProposal {
             StyledString result = new StyledString();
             Highlights.styleFragment(result, 
                     getDisplayString(), false, null, 
-                    CeylonPlugin.getCompletionFont());
+                    getCompletionFont());
             return result;
         }
         

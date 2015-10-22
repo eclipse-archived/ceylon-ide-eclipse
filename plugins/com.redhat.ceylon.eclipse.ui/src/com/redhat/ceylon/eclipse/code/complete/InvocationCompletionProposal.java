@@ -29,8 +29,11 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImag
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CHAIN_LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INEXACT_MATCHES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getCompletionFont;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getPreferences;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.addLinkedPosition;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.installLinkedMode;
@@ -70,8 +73,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
@@ -277,7 +278,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                 List<Parameter> ps = 
                         parameterList.getParameters();
                 String inexactMatches = 
-                        CeylonPlugin.getPreferences()
+                        getPreferences()
                             .getString(INEXACT_MATCHES);
                 boolean exact = 
                         prefixWithoutTypeArgs(prefix, typeArgs)
@@ -485,7 +486,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             StyledString result = new StyledString();
             Highlights.styleFragment(result, 
                     getDisplayString(), false, null, 
-                    CeylonPlugin.getCompletionFont());
+                    getCompletionFont());
             return result;
         }
 
@@ -617,7 +618,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             StyledString result = new StyledString();
             Highlights.styleFragment(result, 
                     getDisplayString(), false, null, 
-                    CeylonPlugin.getCompletionFont());
+                    getCompletionFont());
             return result;
         }
         
@@ -753,12 +754,12 @@ class InvocationCompletionProposal extends CompletionProposal {
     @Override
     public void apply(IDocument document) {
         try {
-            EditorUtil.performChange(createChange(document));
+            performChange(createChange(document));
         }
         catch (BadLocationException e) {
             e.printStackTrace();
         }
-        if (CeylonPlugin.getPreferences()
+        if (getPreferences()
                 .getBoolean(LINKED_MODE_ARGUMENTS)) {
             activeLinkedMode(document);
         }
@@ -1057,7 +1058,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                             d, qdec, loc, index, false, op));
                 }
                 if (qualifier==null && 
-                        CeylonPlugin.getPreferences()
+                        getPreferences()
                             .getBoolean(CHAIN_LINKED_MODE_ARGUMENTS)) {
                     Collection<DeclarationWithProximity> members = 
                             value.getTypeDeclaration()
