@@ -1356,7 +1356,7 @@ public class DocumentationHover extends SourceInfoHover {
         if (isVariable(dec)) buf.append("variable&nbsp;");
         if (dec.isNative()) buf.append("native");
         Backends nativeBackends = dec.getNativeBackends();
-        if (!nativeBackends.none()) {
+        if (!nativeBackends.none() && !Backends.HEADER.equals(nativeBackends)) {
             String color = 
                     toHex(getCurrentThemeColor(ANNOTATION_STRINGS));
             buf.append("(<span style='color:")

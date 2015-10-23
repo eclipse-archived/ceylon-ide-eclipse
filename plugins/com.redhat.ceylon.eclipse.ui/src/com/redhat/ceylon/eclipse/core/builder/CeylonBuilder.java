@@ -2612,7 +2612,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     	    if (module != null) {
     	        nativeBackends = module.getNativeBackends();
     	    }
-    	    if (nativeBackends == null
+    	    if (nativeBackends.none()
     	            || nativeBackends.supports(Backend.Java.asSet())) {
                 if (isInSourceFolder(file)) {
                     if(isCeylon(file) || isJava(file)) {
@@ -2632,12 +2632,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (compileToJs(project)) {
             for (IFile file : getProjectFiles(project)) {
                 Module module = getModule(file);
-                Backends nativeBakends = null;
+                Backends nativeBackends = null;
                 if (module != null) {
-                    nativeBakends = module.getNativeBackends();
+                    nativeBackends = module.getNativeBackends();
                 }
-                if (nativeBakends == null
-                        || nativeBakends.supports(Backend.JavaScript.asSet())) {
+                if (nativeBackends.none()
+                        || nativeBackends.supports(Backend.JavaScript.asSet())) {
                     if (isInSourceFolder(file)) {
                         if(isCeylon(file) || isJavascript(file)) {
                             forJavascriptBackend.add(file.getLocation().toFile());
