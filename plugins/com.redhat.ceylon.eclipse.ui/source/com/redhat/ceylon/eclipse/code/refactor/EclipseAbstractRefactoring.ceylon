@@ -11,16 +11,6 @@ import com.redhat.ceylon.eclipse.code.editor {
 import com.redhat.ceylon.eclipse.core.builder {
     CeylonBuilder
 }
-import com.redhat.ceylon.eclipse.core.model {
-    CrossProjectSourceFile,
-    CrossProjectBinaryUnit,
-    IResourceAware,
-    EditedSourceFile,
-    ProjectSourceFile
-}
-import com.redhat.ceylon.eclipse.core.typechecker {
-    ProjectPhasedUnit
-}
 import com.redhat.ceylon.eclipse.util {
     EditorUtil,
     Nodes

@@ -1,12 +1,14 @@
 import com.redhat.ceylon.ide.common.model {
     CeylonProject,
-	CeylonProjects,
-    ModuleDependencies
+    ModuleDependencies,
+    CeylonProjectConfig,
+    ModelAliases
 }
 import org.eclipse.core.resources {
     IProject, IResource,
     IFolder,
-    IContainer
+    IContainer,
+    IFile
 }
 import java.io {
     File
@@ -38,14 +40,12 @@ import ceylon.interop.java {
 import com.redhat.ceylon.common {
     Constants
 }
-import org.eclipse.jdt.internal.compiler.ast {
-    Javadoc
-}
 import org.eclipse.jdt.core {
     JavaCore
 }
 
-shared class EclipseCeylonProject(ideArtifact) extends CeylonProject<IProject>() {
+shared class EclipseCeylonProject(ideArtifact) 
+        extends CeylonProject<IProject, IResource, IFolder, IFile>() {
     shared actual IProject ideArtifact;
 
     shared actual File rootDirectory => ideArtifact.location.toFile();
@@ -138,8 +138,8 @@ shared class EclipseCeylonProject(ideArtifact) extends CeylonProject<IProject>()
     }
 
     shared actual Boolean synchronizedWithConfiguration {
-        value config = configuration;
-        function sameFolders({String*} configFolders, {IFolder*} eclipseFolders, String defaultEclipsePath)
+        CeylonProjectConfig config = configuration;
+        Boolean sameFolders({String*} configFolders, {IFolder*} eclipseFolders, String defaultEclipsePath)
             => HashSet<String> {
                 * configFolders.map((p)
                     => Path.fromOSString(p).string)
@@ -170,7 +170,8 @@ shared class EclipseCeylonProject(ideArtifact) extends CeylonProject<IProject>()
             }
         };
     }
-    shared actual CeylonProjects<IProject> model => ceylonModel;
+    
+    shared actual CeylonProjectsAlias model => ceylonModel;
     
     shared actual Boolean nativeProjectIsAccessible => ideArtifact.accessible;
 

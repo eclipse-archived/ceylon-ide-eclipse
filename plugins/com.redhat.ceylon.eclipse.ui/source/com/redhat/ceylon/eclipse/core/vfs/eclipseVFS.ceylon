@@ -26,30 +26,9 @@ import org.eclipse.core.runtime {
     IPath,
     CoreException
 }
-
-shared object eclipseVFS {
-    shared ResourceVirtualFile<IResource, IFolder, IFile> createVirtualResource(IResource resource) {
-         assert (is IFolder | IFile resource);
-         if (is IFolder resource) {
-             return IFolderVirtualFile(resource);
-         }
-         else {
-             return IFileVirtualFile(resource);
-         }
-     }
-
-    shared FileVirtualFile<IResource, IFolder, IFile> createVirtualFile(IFile file)
-             => IFileVirtualFile(file);
-
-    shared FileVirtualFile<IResource, IFolder, IFile> createVirtualFileFromProject(IProject project, IPath path)
-            => IFileVirtualFile.fromProject(project, path);
-
-    shared FolderVirtualFile<IResource, IFolder, IFile> createVirtualFolder(IFolder folder)
-             => IFolderVirtualFile(folder);
-
-    shared FolderVirtualFile<IResource, IFolder, IFile> createVirtualFolderFromProject(IProject project, IPath path)
-            => IFolderVirtualFile.fromProject(project, path);
- }
+import com.redhat.ceylon.eclipse.core.model {
+    ceylonModel
+}
 
 shared interface IResourceVirtualFile {
     shared formal IProject project;
@@ -83,7 +62,7 @@ shared class IFolderVirtualFile
         try {
             for (childResource in nativeResource.members().iterable) {
                 assert (exists childResource);
-                children.add(eclipseVFS.createVirtualResource(childResource));
+                children.add(ceylonModel.vfs.createVirtualResource(childResource));
             }
         } catch (CoreException e) {
             e.printStackTrace();
