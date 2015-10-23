@@ -76,12 +76,11 @@ class CreateTypeParameterProposal extends CorrectionProposal {
             int loc = getConstraintLoc(decNode);
             if (loc>=0) {
                 String text = constraints;
-                String string;
                 try {
                     IRegion li = 
                             doc.getLineInformationOfOffset(loc);
                     int start = li.getOffset();
-                    string = doc.get(start, loc-start);
+                    String string = doc.get(start, loc-start);
                     if (!string.trim().isEmpty()) {
                         text = 
                             getDefaultLineDelimiter(doc) + 
