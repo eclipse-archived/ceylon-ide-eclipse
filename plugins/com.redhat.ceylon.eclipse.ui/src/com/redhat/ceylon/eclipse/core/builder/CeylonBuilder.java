@@ -2332,10 +2332,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                     if (module instanceof JDTModule) {
                                         JDTModule jdtModule = (JDTModule) module;
                                         if (jdtModule.isCeylonArchive()
-                                                && TreeUtil.isForBackend(jdtModule.getNativeBackends(), Backend.JavaScript.asSet())) {
+                                                && ModelUtil.isForBackend(jdtModule.getNativeBackends(), Backend.JavaScript.asSet())) {
                                             List<ModuleImport> importedModuleImports = new ArrayList<>();
                                             for(ModuleImport moduleImport : moduleSourceMapper.retrieveModuleImports(jdtModule)) {
-                                                if (TreeUtil.isForBackend(moduleImport.getNativeBackends(), Backend.JavaScript.asSet())) {
+                                                if (ModelUtil.isForBackend(moduleImport.getNativeBackends(), Backend.JavaScript.asSet())) {
                                                     importedModuleImports.add(moduleImport);
                                                 }
                                             }
