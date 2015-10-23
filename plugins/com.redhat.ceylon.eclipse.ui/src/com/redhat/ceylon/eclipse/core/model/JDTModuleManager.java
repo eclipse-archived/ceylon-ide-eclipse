@@ -339,7 +339,7 @@ public class JDTModuleManager extends LazyModuleManager {
         // manager even for the JS backend.
         // TODO At some point we'll need an actual module manager for the
         // JS backend and an IDE that can somehow merge the two when needed
-        Backends backends = Backends.NONE;
+        Backends backends = Backends.ANY;
         if (javaProject != null) {
             if (CeylonBuilder.compileToJava(javaProject.getProject())) {
                 backends = backends.merged(Backend.Java);

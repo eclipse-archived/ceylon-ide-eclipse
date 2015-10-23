@@ -63,7 +63,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                     (supportedBackends.none() ?
                             "" :
                             " \u2014 " +
-                            (Backends.HEADER.equals(supportedBackends) ?
+                            (supportedBackends.header() ?
                                     "native header" :
                                         supportedBackends +
                                         " backend implementation"));
@@ -184,7 +184,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                             dec.getName());
             if (headerDeclaration == null 
                     || ! headerDeclaration.isNative()) return null;
-            if (Backends.HEADER.equals(backends)) {
+            if (backends.header()) {
                 referenceable = headerDeclaration;
             } else {
                 if (headerDeclaration != null) {
@@ -198,6 +198,6 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
     }
 
     public Backends supportedBackends() {
-        return Backends.NONE;
+        return Backends.ANY;
     }
 }

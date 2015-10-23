@@ -294,7 +294,7 @@ public class Nodes {
                                 List<Declaration> overloads = headerDeclaration.getOverloads();
                                 if (overloads != null) {
                                     for (Declaration overload : overloads) {
-                                        if (Backends.HEADER.equals(overload.getNativeBackends())) {
+                                        if (overload.getNativeBackends().header()) {
                                             model = overload;
                                             foundTheCeylonDeclaration = true;
                                             break;
