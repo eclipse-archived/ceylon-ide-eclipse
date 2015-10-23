@@ -18,7 +18,9 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -73,12 +75,25 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         if (constraints!=null) {
             int loc = getConstraintLoc(decNode);
             if (loc>=0) {
-                String text = 
-                        getDefaultLineDelimiter(doc) + 
-                        getIndent(decNode, doc) + 
-                        getDefaultIndent() + 
-                        getDefaultIndent() +
-                        constraints;
+                String text = constraints;
+                String string;
+                try {
+                    IRegion li = 
+                            doc.getLineInformationOfOffset(loc);
+                    int start = li.getOffset();
+                    string = doc.get(start, loc-start);
+                    if (!string.trim().isEmpty()) {
+                        text = 
+                            getDefaultLineDelimiter(doc) + 
+                            getIndent(decNode, doc) + 
+                            getDefaultIndent() + 
+                            getDefaultIndent() +
+                            constraints;
+                    }
+                }
+                catch (BadLocationException e) {
+                    e.printStackTrace();
+                }
                 change.addEdit(new InsertEdit(loc, text));
             }
         }
