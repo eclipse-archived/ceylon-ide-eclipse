@@ -1195,8 +1195,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                             continue;
                         }
                     }
-                    if (tp.isSelfType() ? 
-                            inheritance && scope.equals(td) : 
+                    if (inheritance && tp.isSelfType() ? 
+                            scope.equals(td) : 
                             isInBounds(tp.getSatisfiedTypes(), t)) {
                         props.add(new NestedCompletionProposal(
                                 dec, null, loc, index, true, ""));
