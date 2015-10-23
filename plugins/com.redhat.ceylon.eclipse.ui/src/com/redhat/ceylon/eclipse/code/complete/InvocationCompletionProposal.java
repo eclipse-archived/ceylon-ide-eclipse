@@ -1002,6 +1002,16 @@ class InvocationCompletionProposal extends CompletionProposal {
         List<DeclarationWithProximity> proposals = 
                 getSortedProposedValues(scope, unit, 
                         exactName);
+        //very special case for print()
+        String dname = declaration.getQualifiedNameString();
+        boolean print = "ceylon.language::print".equals(dname);
+        if (print) {
+            for (String value: getAssignableLiterals(
+                    unit.getStringType(), unit)) {
+                props.add(new NestedLiteralCompletionProposal(
+                            value, loc, index));
+            }
+        }
         //stuff defined in the same block, along with
         //stuff with fuzzily-matching name 
         for (DeclarationWithProximity dwp: proposals) {
@@ -1020,9 +1030,11 @@ class InvocationCompletionProposal extends CompletionProposal {
             }
         }
         //literals
-        for (String value: getAssignableLiterals(type, unit)) {
-            props.add(new NestedLiteralCompletionProposal(
-                        value, loc, index));
+        if (!print) {
+            for (String value: getAssignableLiterals(type, unit)) {
+                props.add(new NestedLiteralCompletionProposal(
+                            value, loc, index));
+            }
         }
         //stuff with lower proximity
         for (DeclarationWithProximity dwp: proposals) {

@@ -471,7 +471,7 @@ public class CompletionUtil {
                 return new String[] { "0.0", "1.0", "2.0" };
             }
             else if (dtd.isString()) {
-                return new String[] { "\"\"" };
+                return new String[] { "\"\"", "\"\"\"\"\"\"" };
             }
             else if (dtd.isCharacter()) {
                 return new String[] { "' '", "'\\n'", "'\\t'" };
