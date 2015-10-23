@@ -41,6 +41,7 @@ import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.SATISFIES;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_ALIAS;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.UPPER_BOUND;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getContainingClassOrInterface;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 
@@ -134,8 +135,9 @@ class InvocationCompletionProposal extends CompletionProposal {
                     getTextFor(dec, unit), 
                     dec, pr, scope, controller, 
                     true, false, false,
-                    ol==OccurrenceLocation.EXTENDS || 
-                    ol==OccurrenceLocation.SATISFIES,
+                    ol==UPPER_BOUND || 
+                    ol==EXTENDS || 
+                    ol==SATISFIES,
                     isMember, null));
             Generic g = (Generic) dec;
             if (g.getTypeParameters().isEmpty()) {
@@ -149,7 +151,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                 dec instanceof Class && 
                     ((Class) dec).isAbstract();
         if ((!isAbstract && 
-                ol!=EXTENDS && ol!=SATISFIES && 
+                ol!=EXTENDS && ol!=SATISFIES && ol!=UPPER_BOUND ||
                 ol!=CLASS_ALIAS && ol!=TYPE_ALIAS)) {
             result.add(new InvocationCompletionProposal(
                     offset, prefix,
@@ -168,7 +170,9 @@ class InvocationCompletionProposal extends CompletionProposal {
             Declaration dec, Scope scope, 
             boolean isMember, Reference pr,
             Type requiredType, OccurrenceLocation ol) {
-        Unit unit = controller.getLastCompilationUnit().getUnit();
+        Unit unit = 
+                controller.getLastCompilationUnit()
+                    .getUnit();
         Type type = pr.getType();
         if (type!=null) {
             if (!(dec instanceof Functional) && 
@@ -254,8 +258,9 @@ class InvocationCompletionProposal extends CompletionProposal {
             result.add(new InvocationCompletionProposal(
                     offset, prefix, desc, text, m, ptr, scope, 
                     controller, true, true, false,
-                    ol==OccurrenceLocation.EXTENDS || 
-                    ol==OccurrenceLocation.SATISFIES,
+                    ol==UPPER_BOUND ||
+                    ol==EXTENDS || 
+                    ol==SATISFIES,
                     true, dec));
         }
     }
@@ -297,8 +302,9 @@ class InvocationCompletionProposal extends CompletionProposal {
                         exact ||
                         "both".equals(inexactMatches);
                 boolean inheritance = 
-                        ol==OccurrenceLocation.EXTENDS || 
-                        ol==OccurrenceLocation.SATISFIES;
+                        ol==UPPER_BOUND ||
+                        ol==EXTENDS || 
+                        ol==SATISFIES;
                 if (positional && 
                         parameterList.isPositionalParametersSupported() &&
                         (!isAbstract || 
