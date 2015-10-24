@@ -319,13 +319,15 @@ public class CompletionUtil {
                             return arrow + id.getText();
                         }
                     }
-                    else if (term.getUnit()
-                                .equals(lcu.getUnit())) {
-                        String impl = 
-                                Nodes.toString(term, 
-                                        cpc.getTokens());
-                        if (impl.length()<10) {
-                            return arrow + impl;
+                    else if (term!=null) {
+                        Unit unit = lcu.getUnit();
+                        if (term.getUnit().equals(unit)) {
+                            String impl = 
+                                    Nodes.toString(term, 
+                                            cpc.getTokens());
+                            if (impl.length()<10) {
+                                return arrow + impl;
+                            }
                         }
                     }
                     //don't have the token stream :-/
