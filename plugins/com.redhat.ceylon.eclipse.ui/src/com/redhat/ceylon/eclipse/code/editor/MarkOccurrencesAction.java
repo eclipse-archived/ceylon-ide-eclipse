@@ -136,33 +136,45 @@ public class MarkOccurrencesAction
         public void partOpened(IWorkbenchPart part) {}
     }
 
-    @Override
-    public void caretMoved(CaretEvent event) {
-        if (!activeEditor.isBackgroundParsingPaused() &&
+    private boolean canRecompute() {
+        return !activeEditor.isBackgroundParsingPaused() &&
                 !activeEditor.isBlockSelectionModeEnabled() &&
-                !activeEditor.isInLinkedMode()) {
-            int offset = 
-                    activeEditor.getCeylonSourceViewer()
-                        .widgetOffset2ModelOffset(
-                                event.caretOffset);
-            int length = 0;
-            recomputeAnnotationsForSelection(offset, length, 
-                    document);
-        }
+                !activeEditor.isInLinkedMode();
     }
     
     @Override
+    public void caretMoved(CaretEvent event) {
+        try {
+            if (canRecompute()) {
+                int offset = 
+                        activeEditor.getCeylonSourceViewer()
+                            .widgetOffset2ModelOffset(
+                                    event.caretOffset);
+                recomputeAnnotationsForSelection(offset, 0, 
+                        document);
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public void selectionChanged(SelectionChangedEvent event) {
-        ISelection sel = event.getSelection();
-        if (sel instanceof ITextSelection &&
-                !activeEditor.isBackgroundParsingPaused() &&
-                !activeEditor.isBlockSelectionModeEnabled() &&
-                !activeEditor.isInLinkedMode()) {
-            ITextSelection selection = (ITextSelection) sel;
-            recomputeAnnotationsForSelection(
-                    selection.getOffset(), 
-                    selection.getLength(), 
-                    document);
+        try {
+            ISelection sel = event.getSelection();
+            if (sel instanceof ITextSelection &&
+                    canRecompute()) {
+                ITextSelection selection = 
+                        (ITextSelection) sel;
+                recomputeAnnotationsForSelection(
+                        selection.getOffset(), 
+                        selection.getLength(), 
+                        document);
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
