@@ -26,7 +26,9 @@ public class CrossProjectSourceFile extends ExternalSourceFile implements ICross
 
     @Override
     public IFile getResourceFile() {
-        ProjectPhasedUnit ppu = getPhasedUnit().getOriginalProjectPhasedUnit();
+        ProjectPhasedUnit ppu = 
+                getPhasedUnit()
+                    .getOriginalProjectPhasedUnit();
         return ppu != null ? ppu.getResourceFile() : null;
     }
 

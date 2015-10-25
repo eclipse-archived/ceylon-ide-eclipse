@@ -1412,7 +1412,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         Unit duplicateUnit = duplicateDeclaration.getUnit();
                         if ((duplicateUnit instanceof SourceFile) && 
                             (duplicateUnit instanceof IResourceAware)) {
-                            IFile duplicateDeclFile = ((IResourceAware) duplicateUnit).getResourceFile();
+                            IResourceAware ra = (IResourceAware) duplicateUnit;
+                            IFile duplicateDeclFile = ra.getResourceFile();
                             if (duplicateDeclFile != null && duplicateDeclFile.exists()) {
                                 filesToAddInTypecheck.add(duplicateDeclFile);
                                 filesToAddInCompile.add(duplicateDeclFile);
@@ -2475,7 +2476,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     private static void addProblemAndTaskMarkers(final List<PhasedUnit> units, 
             final IProject project) {
         for (PhasedUnit phasedUnit: units) {
-            IFile file = ((ProjectPhasedUnit)phasedUnit).getResourceFile();
+            ProjectPhasedUnit projectPhasedUnit = (ProjectPhasedUnit) phasedUnit;
+            IFile file = projectPhasedUnit.getResourceFile();
             CompilationUnit compilationUnit = phasedUnit.getCompilationUnit();
             compilationUnit.visit(new WarningSuppressionVisitor<Warning>(Warning.class,
                     getSuppressedWarnings(project)));

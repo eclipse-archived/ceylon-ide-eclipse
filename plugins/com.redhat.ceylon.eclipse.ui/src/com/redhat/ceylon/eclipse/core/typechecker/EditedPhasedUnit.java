@@ -53,8 +53,10 @@ public class EditedPhasedUnit extends ModifiablePhasedUnit {
     
     @Override
     public IFile getResourceFile() {
-        return getOriginalPhasedUnit() == null ? null
-                : getOriginalPhasedUnit().getResourceFile();
+        ProjectPhasedUnit originalPhasedUnit = 
+                getOriginalPhasedUnit();
+        return originalPhasedUnit == null ? null
+                : originalPhasedUnit.getResourceFile();
     }
     
 

@@ -131,8 +131,9 @@ abstract class AbstractRefactoring extends Refactoring {
     }
     
     TextFileChange newTextFileChange(ProjectPhasedUnit pu) {
-        TextFileChange tfc = new TextFileChange(getName(), 
-                pu.getResourceFile());
+        TextFileChange tfc = 
+                new TextFileChange(getName(), 
+                        pu.getResourceFile());
         tfc.setTextType("ceylon");
         return tfc;
     }

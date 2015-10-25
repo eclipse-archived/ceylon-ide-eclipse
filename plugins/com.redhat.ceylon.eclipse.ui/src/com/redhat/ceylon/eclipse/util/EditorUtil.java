@@ -717,8 +717,9 @@ public class EditorUtil {
                                                             relativePath.toString());
                                             if (unit instanceof ProjectPhasedUnit) {
                                                 if (instanceOfIFileVirtualFile(unit.getUnitFile())) {
-                                                    IFile newFile = 
-                                                            ((ProjectPhasedUnit)unit).getResourceFile();
+                                                    ProjectPhasedUnit ppu = 
+                                                            (ProjectPhasedUnit) unit;
+                                                    IFile newFile = ppu.getResourceFile();
                                                     if (newFile.exists() &&
                                                             getRootFolderType(newFile) 
                                                                     == RootFolderType.SOURCE) {

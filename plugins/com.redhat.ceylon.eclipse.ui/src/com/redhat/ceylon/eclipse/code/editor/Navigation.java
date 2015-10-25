@@ -233,12 +233,9 @@ public class Navigation {
         if (unit instanceof IResourceAware) {
             IResourceAware ra = (IResourceAware) unit;
             IFile fileResource = ra.getResourceFile();
-            if (fileResource!=null) {
-                return fileResource.getLocation();
-            }
-            else {
-            	return new Path(unit.getFullPath());
-            }
+            return fileResource!=null ? 
+                    fileResource.getLocation() : 
+                    new Path(unit.getFullPath());
         }
         
         if ((unit instanceof ExternalSourceFile) ||
@@ -246,7 +243,8 @@ public class Navigation {
             CeylonUnit ceylonUnit = (CeylonUnit) unit;
             IdePhasedUnit externalPhasedUnit = 
                     ceylonUnit.getPhasedUnit();
-            VirtualFile file = externalPhasedUnit.getUnitFile();
+            VirtualFile file = 
+                    externalPhasedUnit.getUnitFile();
             return new Path(file.getPath());
         }
         
