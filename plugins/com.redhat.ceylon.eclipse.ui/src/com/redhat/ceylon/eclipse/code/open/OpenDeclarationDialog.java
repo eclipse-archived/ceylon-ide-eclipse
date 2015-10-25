@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -1168,9 +1169,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 unit instanceof JavaCompilationUnit) {
                 IResourceAware sourceFile = 
                         (IResourceAware) unit;
-                return sourceFile.getResourceFile()
-                        .getFullPath()
-                        .toPortableString();
+                IFile ra = sourceFile.getResourceFile();
+                return ra==null ? null :
+                    ra.getFullPath().toPortableString();
             }
             else {
                 JDTModule mod = (JDTModule) module;
