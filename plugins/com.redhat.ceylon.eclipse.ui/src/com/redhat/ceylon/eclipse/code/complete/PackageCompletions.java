@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
@@ -390,9 +391,9 @@ public class PackageCompletions {
                 //}
             }
             if (!found && !unit.getPackage().getNameAsString().isEmpty()) {
+                IProject project = controller.getProject();
                 monitor.subTask("querying module repositories...");
-                ModuleQuery query = 
-                        getModuleQuery("", controller.getProject());
+                ModuleQuery query = getModuleQuery("", project);
                 query.setMemberName(fullPrefix);
                 query.setMemberSearchPackageOnly(true);
                 query.setMemberSearchExact(false);

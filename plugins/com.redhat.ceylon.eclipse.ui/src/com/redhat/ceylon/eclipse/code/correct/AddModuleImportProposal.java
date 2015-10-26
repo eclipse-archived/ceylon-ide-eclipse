@@ -120,8 +120,7 @@ class AddModuleImportProposal
             }
         }
         
-        ModuleQuery query = 
-                getModuleQuery("", project);
+        ModuleQuery query = getModuleQuery("", project);
         query.setMemberName(pkg);
         query.setMemberSearchPackageOnly(true);
         query.setMemberSearchExact(true);
