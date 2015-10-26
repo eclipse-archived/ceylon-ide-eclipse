@@ -8,6 +8,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,7 +84,7 @@ public class Utils {
                 try {
                 	Navigation.gotoLocation(runFile, 0);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    System.err.println(ex);
                 }
             }
         });
@@ -313,6 +314,7 @@ public class Utils {
         private boolean scheduledReentrantBuild = false;
         private List<CeylonBuildSummary> previousBuilds =new ArrayList<>();
         private boolean isReentrant = false;
+        private List<String> errors = null;
         
         private CeylonBuildSummary summaryToFill = this;
 
@@ -395,6 +397,28 @@ public class Utils {
         
         @Override
         protected void endBuild() {
+            errors = new ArrayList<>();
+            if (project != null) {
+                try {
+                    IMarker[] allProblems = project.findMarkers(CeylonBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
+                    for (IMarker marker : allProblems) {
+                        if (marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO) >= IMarker.SEVERITY_ERROR) {
+                            String errorToAdd = marker.getResource().getProjectRelativePath() +
+                                    " (l."+
+                                    marker.getAttribute(IMarker.LINE_NUMBER, 0) +
+                                    ") : " +
+                                    marker.getAttribute(IMarker.MESSAGE, "");
+
+                            errors.add(errorToAdd);
+                        }
+                    }
+                } catch (CoreException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            
+            
             if (summaryToFill == this) {
                 if (reentrantBuildSummary != null) {
                     reentrantBuildSummary.install();
@@ -532,16 +556,8 @@ public class Utils {
             this.previousBuilds = previousBuilds;
         }
         
-        public IMarker[] getMarkers() {
-            IProject p = getProject();
-            if (p != null) {
-                try {
-                    return p.findMarkers(CeylonBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
-                } catch (CoreException e) {
-                    e.printStackTrace();
-                }
-            }
-            return null;
+        public List<String> getErrors() {
+            return errors;
         }
         
         @Override
@@ -573,7 +589,7 @@ public class Utils {
                                 "  Sources To Compile : " + getIncrementalBuildSourcesToCompile() + "\n" +
                                 "  Result Phased Units : " + getIncrementalBuildResultPhasedUnits() + "\n"
                         ) +
-                        "  Error Markers : " + getMarkers() + "\n" +
+                        "  Error Markers : " + getErrors() + "\n" +
                         "  Triggered a reentrant Build : " + didTriggerReentrantBuild() + "\n"
                 );
             if (didTriggerReentrantBuild() && installed) {
@@ -592,11 +608,12 @@ public class Utils {
 
     public static CeylonBuildSummary buildProject(IProject project) throws CoreException,
     InterruptedException {
+        PostBuildListener buildListener = PostBuildListener.instance();
         CeylonBuildSummary summary = new CeylonBuildSummary(project);
         summary.install();
         project.build(IncrementalProjectBuilder.FULL_BUILD, null);
         summary.waitForBuildEnd(60);
-        PostBuildListener.instance().waitForEndOfCurrentBuild(5);
+        buildListener.waitForEndOfCurrentBuild(5);
         return summary;
     }
     
