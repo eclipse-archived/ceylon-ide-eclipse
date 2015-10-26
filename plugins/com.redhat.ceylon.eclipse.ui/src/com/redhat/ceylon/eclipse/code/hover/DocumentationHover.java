@@ -966,7 +966,8 @@ public class DocumentationHover extends SourceInfoHover {
 
     public static String getDocumentationFor(
             CeylonParseController controller, Package pack) {
-        StringBuilder buffer= new StringBuilder();
+        StringBuilder buffer = new StringBuilder();
+        insertPageProlog(buffer, 0, HTML.getStyleSheet());
         addMainPackageDescription(pack, buffer);
         addPackageDocumentation(controller, pack, buffer);
         addAdditionalPackageInfo(buffer, pack);
@@ -1166,6 +1167,7 @@ public class DocumentationHover extends SourceInfoHover {
     public static String getDocumentationFor(
             CeylonParseController controller, Module mod) {
         StringBuilder buffer = new StringBuilder();
+        insertPageProlog(buffer, 0, HTML.getStyleSheet());
         addMainModuleDescription(mod, buffer);
         addAdditionalModuleInfo(buffer, mod);
         addModuleDocumentation(controller, mod, buffer);
@@ -1190,6 +1192,29 @@ public class DocumentationHover extends SourceInfoHover {
 
     private static void addMainModuleDescription(Module mod,
             StringBuilder buffer) {
+        StringBuilder buf = new StringBuilder();
+        if (mod.isNative()) buf.append("native");
+        Backends nativeBackends = mod.getNativeBackends();
+        if (!nativeBackends.none() && !Backends.HEADER.equals(nativeBackends)) {
+            String color = toHex(getCurrentThemeColor(ANNOTATION_STRINGS));
+            buf.append("(<span style='color:")
+                .append(color)
+                .append("'>\"")
+                .append(nativeBackends.toString())
+                .append("\"</span>)");
+        }
+        if (mod.isNative()) buf.append("&nbsp;");
+        if (buf.length()!=0) {
+            String color = toHex(getCurrentThemeColor(ANNOTATIONS));
+            HTML.addImageAndLabel(buffer, null, 
+                    HTML.fileUrl("annotation_obj.gif")
+                        .toExternalForm(), 
+                    16, 16, 
+                    "<tt><span style='font-size:" + 
+                    annotationSize + ";color:" + color + "'>" + 
+                    buf + "</span></tt>", 
+                    20, 4);
+        }
         HTML.addImageAndLabel(buffer, mod, 
                 HTML.fileUrl(getIcon(mod))
                     .toExternalForm(), 
@@ -1299,13 +1324,15 @@ public class DocumentationHover extends SourceInfoHover {
     
     public static String getDocumentationFor(
             CeylonParseController controller, 
-            Declaration dec, Reference pr, IProgressMonitor monitor) {
+            Declaration dec, Reference pr, 
+            IProgressMonitor monitor) {
         return getDocumentationFor(controller, dec, null, pr, monitor);
     }
     
     private static String getDocumentationFor(
             CeylonParseController controller, 
-            Declaration dec, Node node, Reference pr, IProgressMonitor monitor) {
+            Declaration dec, Node node, Reference pr, 
+            IProgressMonitor monitor) {
         if (dec==null) return null;
         if (dec instanceof FunctionOrValue) {
             FunctionOrValue value = (FunctionOrValue) dec;
@@ -1350,15 +1377,15 @@ public class DocumentationHover extends SourceInfoHover {
         if (dec.isActual()) buf.append("actual&nbsp;");
         if (dec.isDefault()) buf.append("default&nbsp;");
         if (dec.isFormal()) buf.append("formal&nbsp;");
-        if (dec instanceof Value && ((Value) dec).isLate()) {
-            buf.append("late&nbsp;");
+        if (dec instanceof Value) {
+            Value value = (Value) dec;
+            if (value.isLate()) buf.append("late&nbsp;");
         }
         if (isVariable(dec)) buf.append("variable&nbsp;");
         if (dec.isNative()) buf.append("native");
         Backends nativeBackends = dec.getNativeBackends();
         if (!nativeBackends.none() && !Backends.HEADER.equals(nativeBackends)) {
-            String color = 
-                    toHex(getCurrentThemeColor(ANNOTATION_STRINGS));
+            String color = toHex(getCurrentThemeColor(ANNOTATION_STRINGS));
             buf.append("(<span style='color:")
                 .append(color)
                 .append("'>\"")
@@ -1381,8 +1408,7 @@ public class DocumentationHover extends SourceInfoHover {
         }
         if (dec.isAnnotation()) buf.append("annotation&nbsp;");
         if (buf.length()!=0) {
-            String color = 
-                    toHex(getCurrentThemeColor(ANNOTATIONS));
+            String color = toHex(getCurrentThemeColor(ANNOTATIONS));
             HTML.addImageAndLabel(buffer, null, 
                     HTML.fileUrl("annotation_obj.gif")
                         .toExternalForm(), 
