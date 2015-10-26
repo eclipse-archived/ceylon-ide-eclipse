@@ -115,7 +115,7 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(PARAM_TYPES_IN_DIALOGS, true);
         store.setDefault(RETURN_TYPES_IN_DIALOGS, false);
         store.setDefault(FULL_LOC_SEARCH_RESULTS, true);
-        store.setDefault(MATCH_HIGHLIGHTING, "bold");
+        store.setDefault(MATCH_HIGHLIGHTING, "color");
         store.setDefault(INACTIVE_FILTERS, COMMON_PACKAGES);
         store.setDefault(INACTIVE_OPEN_FILTERS, COMMON_PACKAGES);
         store.setDefault(INACTIVE_HIERARCHY_FILTERS, COMMON_PACKAGES);
