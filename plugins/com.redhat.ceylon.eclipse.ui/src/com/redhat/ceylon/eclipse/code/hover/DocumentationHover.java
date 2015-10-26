@@ -463,7 +463,7 @@ public class DocumentationHover extends SourceInfoHover {
         return buffer.toString();
     }
     
-    private static String getTypeHoverText(
+    static String getTypeHoverText(
             Node node, String selectedText, 
             IDocument doc, IProject project) {
         Tree.Type type = (Tree.Type) node;
@@ -736,7 +736,7 @@ public class DocumentationHover extends SourceInfoHover {
         return gc;
     }
     
-    private static String getIcon(Object obj) {
+    static String getIcon(Object obj) {
         if (obj instanceof Module) {
             return "jar_l_obj.gif";
         }
@@ -1693,7 +1693,7 @@ public class DocumentationHover extends SourceInfoHover {
         };
     }
     
-    private static TypePrinter PRINTER = printer(true);
+    static TypePrinter PRINTER = printer(true);
     private static TypePrinter VERBOSE_PRINTER = printer(false);
     
     private static String producedTypeLink(Type pt, Unit unit) {
@@ -2136,7 +2136,7 @@ public class DocumentationHover extends SourceInfoHover {
         return liveValue==null ? result : result+liveValue;
     }
 
-    private static String getLiveValue(Declaration dec, Unit unit) {
+    static String getLiveValue(Declaration dec, Unit unit) {
         if (dec instanceof TypeParameter && unit!=null) {
             TypeParameter typeParameter = (TypeParameter) dec;
             JDIStackFrame stackFrame = getFrame();
@@ -2168,7 +2168,7 @@ public class DocumentationHover extends SourceInfoHover {
         return null;
     }
 
-    private static void appendJavadoc(Declaration model,
+    static void appendJavadoc(Declaration model,
             StringBuilder buffer, IProgressMonitor monitor) {
         try {
             appendJavadoc(getJavaElement(model, monitor), buffer);
@@ -2402,7 +2402,7 @@ public class DocumentationHover extends SourceInfoHover {
         }
     }
     
-    private static String markdown(String text, 
+    static String markdown(String text, 
             final Scope linkScope, final Unit unit) {
         if (text == null || text.isEmpty()) {
             return text;

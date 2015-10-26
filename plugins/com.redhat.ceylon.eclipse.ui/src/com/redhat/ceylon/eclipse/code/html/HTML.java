@@ -110,7 +110,8 @@ public class HTML {
                         "font-family: '" + 
                                 monospaceFontData.getName() + "', monospace;" +
                         "font-size: " + monospaceSize + ";") + 
-                "body { padding: 15px; }\n";
+                "body { padding: 15px; }\n" +
+                ".paragraph { margin-top: 10px; }\n";
     }
 
     /**
