@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
+import static com.redhat.ceylon.eclipse.code.preferences.ModuleCategoryNode.getCategoryNodes;
 import static java.util.Collections.emptyMap;
 
 import java.util.HashMap;
@@ -26,10 +27,13 @@ public final class ModuleImportSelectionDialog extends FilteredElementTreeSelect
     @Override
     protected String getElementName(Object element) {
         if (element instanceof ModuleNode) {
-            return ((ModuleNode) element).getName();
+            ModuleNode moduleNode = (ModuleNode) element;
+            return moduleNode.getName();
         }
         else if (element instanceof ModuleVersionNode) {
-            return ((ModuleVersionNode) element).getModule().getName();
+            ModuleVersionNode moduleVersionNode = 
+                    (ModuleVersionNode) element;
+            return moduleVersionNode.getModule().getName();
         }
         return "";
     }
@@ -42,13 +46,19 @@ public final class ModuleImportSelectionDialog extends FilteredElementTreeSelect
     @Override
     protected String getDoc() {
         ModuleVersionNode versionNode;
-        Object selectedElement = ((IStructuredSelection) getTreeViewer().getSelection())
+        IStructuredSelection selection = 
+                (IStructuredSelection) 
+                    getTreeViewer().getSelection();
+        Object selectedElement = selection
                 .getFirstElement();
         if (selectedElement instanceof ModuleNode) {
-            versionNode = ((ModuleNode) selectedElement).getLastVersion();
+            ModuleNode moduleNode = 
+                    (ModuleNode) selectedElement;
+            versionNode = moduleNode.getLastVersion();
         }
         else if (selectedElement instanceof ModuleVersionNode) {
-            versionNode = (ModuleVersionNode) selectedElement;
+            versionNode = 
+                    (ModuleVersionNode) selectedElement;
         }
         else {
             return "";
@@ -56,17 +66,22 @@ public final class ModuleImportSelectionDialog extends FilteredElementTreeSelect
         return ModuleSearchViewPart.getModuleDoc(versionNode);
     }
     
-    static Map<String, String> getAddedModulesWithVersions(Object[] results) {
-        Map<String,String> added = new HashMap<String,String>();
+    static Map<String, ModuleVersionNode> 
+    getAddedModulesWithVersions(Object[] results) {
+        Map<String,ModuleVersionNode> added = 
+                new HashMap<String,ModuleVersionNode>();
         for (Object result: results) {
-            String name; String version;
+            String name; ModuleVersionNode version;
             if (result instanceof ModuleNode) {
-                name = ((ModuleNode) result).getName();
-                version = ((ModuleNode) result).getLastVersion().getVersion();
+                ModuleNode moduleNode = (ModuleNode) result;
+                name = moduleNode.getName();
+                version = moduleNode.getLastVersion();
             }
             else if (result instanceof ModuleVersionNode) {
-                name = ((ModuleVersionNode) result).getModule().getName();
-                version = ((ModuleVersionNode) result).getVersion();
+                ModuleVersionNode moduleVersionNode = 
+                        (ModuleVersionNode) result;
+                name = moduleVersionNode.getModule().getName();
+                version = moduleVersionNode;
             }
             else {
                 continue;
@@ -76,8 +91,10 @@ public final class ModuleImportSelectionDialog extends FilteredElementTreeSelect
         return added;
     }
     
-    public static Map<String,String> selectModules(ModuleImportSelectionDialog dialog, IProject project) {
-        dialog.setInput(ModuleCategoryNode.getCategoryNodes(project));
+    public static Map<String,ModuleVersionNode> 
+    selectModules(ModuleImportSelectionDialog dialog, 
+            IProject project) {
+        dialog.setInput(getCategoryNodes(project));
         dialog.open();
         Object[] results = dialog.getResult();
         if (results==null) {

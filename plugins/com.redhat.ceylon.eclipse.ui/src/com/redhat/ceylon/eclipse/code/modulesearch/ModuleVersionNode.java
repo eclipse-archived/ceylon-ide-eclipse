@@ -2,6 +2,8 @@ package com.redhat.ceylon.eclipse.code.modulesearch;
 
 import java.util.SortedSet;
 
+import com.redhat.ceylon.common.Backends;
+
 public class ModuleVersionNode {
 
     private final ModuleNode module;
@@ -10,6 +12,7 @@ public class ModuleVersionNode {
     private String license;
     private String doc;
     private SortedSet<String> authors;
+    private Backends nativeBackend;
 
     public ModuleVersionNode(ModuleNode module, String version) {
         this.module = module;
@@ -54,6 +57,14 @@ public class ModuleVersionNode {
 
     public void setAuthors(SortedSet<String> authors) {
         this.authors = authors;
+    }
+    
+    public Backends getNativeBackend() {
+        return nativeBackend;
+    }
+    
+    public void setNativeBackend(Backends nativeBackend) {
+        this.nativeBackend = nativeBackend;
     }
     
     public String getAuthorsCommaSeparated() {

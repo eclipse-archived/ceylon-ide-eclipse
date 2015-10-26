@@ -10,13 +10,17 @@ import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 
+import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
+import com.redhat.ceylon.cmr.api.ModuleVersionArtifact;
 import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
 import com.redhat.ceylon.cmr.api.ModuleVersionQuery;
 import com.redhat.ceylon.cmr.api.ModuleVersionResult;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.common.Backend;
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
@@ -169,6 +173,23 @@ public class ModuleSearchManager {
             ModuleNode moduleNode = new ModuleNode(detail.getName(), versionNodes);
             for(ModuleVersionDetails version : detail.getVersions().descendingSet()){
                 ModuleVersionNode versionNode = new ModuleVersionNode(moduleNode, version.getVersion());
+                boolean forJava = false, forJs = false;
+                for (ModuleVersionArtifact moduleVersionArtifact : version.getArtifactTypes()) {
+                    String suffix = moduleVersionArtifact.getSuffix().toLowerCase();
+                    if (suffix.equals(ArtifactContext.CAR) || 
+                        suffix.equals(ArtifactContext.JAR)) {
+                        forJava = true;
+                    }
+                    if (suffix.equals(ArtifactContext.JS)) {
+                        forJs = true;
+                    }
+                }
+                if (forJava && !forJs) {
+                    versionNode.setNativeBackend(Backends.fromAnnotation(Backend.Java.nativeAnnotation));
+                }
+                if (!forJava && forJs) {
+                    versionNode.setNativeBackend(Backends.fromAnnotation(Backend.JavaScript.nativeAnnotation));
+                }
                 if (version.equals(detail.getLastVersion())) {
                     versionNode.setFilled(true);
                     versionNode.setDoc(detail.getDoc());

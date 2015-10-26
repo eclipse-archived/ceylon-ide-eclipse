@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.preferences;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -12,16 +13,18 @@ import java.util.TreeSet;
 
 import org.eclipse.core.resources.IProject;
 
-import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.ModuleImport;
+import com.redhat.ceylon.common.Backend;
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleNode;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchManager;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewContentProvider;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.model.cmr.JDKUtils;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 
 public abstract class ModuleImportContentProvider extends ModuleSearchViewContentProvider {
     
@@ -56,32 +59,37 @@ public abstract class ModuleImportContentProvider extends ModuleSearchViewConten
     private List<ModuleNode> getImportableModuleNodes(Module module, String prefix) {
         if (prefix.equals(".")) {
             List<ModuleNode> list = new ArrayList<ModuleNode>();
-            TreeMap<String, String> map = new TreeMap<String, String>();
+            TreeMap<String, Module> map = new TreeMap<String, Module>();
             for (IProject p: CeylonBuilder.getProjects()) {
                 if (project==null ||
                         compileToJava(p) && compileToJs(p) ||
-                        compileToJava(p) && compileToJava(project) && !compileToJs(project) || 
-                        compileToJs(p) && compileToJs(project) && !compileToJava(project)) {
-                    for (Module m: CeylonBuilder.getProjectDeclaredSourceModules(p)) {
+                        compileToJava(p) && compileToJava(project) || 
+                        compileToJs(p) && compileToJs(project)) {
+                    for (Module m: getProjectDeclaredSourceModules(p)) {
                         if (!excluded(module, m.getNameAsString())) {
-                            map.put(m.getNameAsString(), m.getVersion());
+                            map.put(m.getNameAsString(), m);
                         }
                     }
                 }
             }
-            for (Map.Entry<String, String> entry: map.entrySet()) {
+            for (Map.Entry<String, Module> entry: map.entrySet()) {
                 ModuleNode moduleNode = new ModuleNode(entry.getKey(), new ArrayList<ModuleVersionNode>(1));
-                moduleNode.getVersions().add(new ModuleVersionNode(moduleNode, entry.getValue()));
+                Module m = entry.getValue();
+                ModuleVersionNode moduleVersion = new ModuleVersionNode(moduleNode, m.getVersion());
+                moduleVersion.setNativeBackend(m.getNativeBackends());
+                moduleNode.getVersions().add(moduleVersion);
                 list.add(moduleNode);
             }
             return list;
         }
-        else if (prefix.startsWith("java.")||prefix.equals("java.|javax.")) {
+        else if (prefix.startsWith("java.") || prefix.equals("java.|javax.")) {
             List<ModuleNode> list = new ArrayList<ModuleNode>();
             for (String name: new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
                 if ((prefix.equals("java.|javax.")||name.startsWith(prefix)) && !excluded(module, name)) {
                     ModuleNode moduleNode = new ModuleNode(name, new ArrayList<ModuleVersionNode>(1));
-                    moduleNode.getVersions().add(new ModuleVersionNode(moduleNode, JDKUtils.jdk.version));
+                    ModuleVersionNode versionNode = new ModuleVersionNode(moduleNode, JDKUtils.jdk.version);
+                    versionNode.setNativeBackend(Backends.fromAnnotation(Backend.Java.nativeAnnotation));
+                    moduleNode.getVersions().add(versionNode);
                     list.add(moduleNode);
                 }
             }

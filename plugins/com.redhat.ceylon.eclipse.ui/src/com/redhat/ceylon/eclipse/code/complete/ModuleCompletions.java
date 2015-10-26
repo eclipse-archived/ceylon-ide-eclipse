@@ -6,7 +6,9 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumen
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationForModule;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getPreferences;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
 import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
 
@@ -38,9 +40,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -51,7 +51,8 @@ public class ModuleCompletions {
     
     static final class ModuleDescriptorProposal extends CompletionProposal {
         
-        ModuleDescriptorProposal(int offset, String prefix, String moduleName) {
+        ModuleDescriptorProposal(int offset, 
+                String prefix, String moduleName) {
             super(offset, prefix, MODULE, 
                     "module " + moduleName,
                     "module " + moduleName + " \"1.0.0\" {}");
@@ -77,9 +78,12 @@ public class ModuleCompletions {
         private final String name;
         private Node node;
 
-        ModuleProposal(int offset, String prefix, int len, 
-                String versioned, ModuleDetails module,
-                boolean withBody, ModuleVersionDetails version, 
+        ModuleProposal(int offset, 
+                String prefix, int len, 
+                String versioned, 
+                ModuleDetails module,
+                boolean withBody, 
+                ModuleVersionDetails version, 
                 String name, Node node) {
             super(offset, prefix, MODULE, versioned, 
                     versioned.substring(len));
@@ -105,7 +109,8 @@ public class ModuleCompletions {
         
         @Override
         public Point getSelection(IDocument document) {
-            final int off = offset+versioned.length()-prefix.length()-len;
+            final int off = 
+                    offset+versioned.length()-prefix.length()-len;
             if (withBody) {
                 final int verlen = version.getVersion().length();
                 return new Point(off-verlen-2, verlen);
@@ -119,11 +124,15 @@ public class ModuleCompletions {
         public void apply(IDocument document) {
             super.apply(document);
             if (withBody && //module.getVersions().size()>1 && //TODO: put this back in when sure it works
-                    CeylonPlugin.getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
-                final LinkedModeModel linkedModeModel = new LinkedModeModel();
+                    getPreferences()
+                        .getBoolean(LINKED_MODE_ARGUMENTS)) {
+                final LinkedModeModel linkedModeModel = 
+                        new LinkedModeModel();
                 final Point selection = getSelection(document);
-                List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
-                for (final ModuleVersionDetails d: module.getVersions()) {
+                List<ICompletionProposal> proposals = 
+                        new ArrayList<ICompletionProposal>();
+                for (final ModuleVersionDetails d: 
+                        module.getVersions()) {
                     proposals.add(new ICompletionProposal() {
                         @Override
                         public Point getSelection(IDocument document) {
@@ -152,7 +161,9 @@ public class ModuleCompletions {
                         @Override
                         public void apply(IDocument document) {
                             try {
-                                document.replace(selection.x, selection.y, 
+                                document.replace(
+                                        selection.x, 
+                                        selection.y, 
                                         d.getVersion());
                             }
                             catch (BadLocationException e) {
@@ -163,12 +174,18 @@ public class ModuleCompletions {
                     });
                 }
                 ProposalPosition linkedPosition = 
-                        new ProposalPosition(document, selection.x, selection.y, 0, 
+                        new ProposalPosition(document, 
+                                selection.x, selection.y, 0, 
                                 proposals.toArray(NO_COMPLETIONS));
                 try {
-                    LinkedMode.addLinkedPosition(linkedModeModel, linkedPosition);
-                    LinkedMode.installLinkedMode((CeylonEditor) EditorUtil.getCurrentEditor(), 
-                            document, linkedModeModel, this, new LinkedMode.NullExitPolicy(),
+                    LinkedMode.addLinkedPosition(
+                            linkedModeModel, linkedPosition);
+                    CeylonEditor editor = 
+                            (CeylonEditor) 
+                                getCurrentEditor();
+                    LinkedMode.installLinkedMode(editor, 
+                            document, linkedModeModel, this, 
+                            new LinkedMode.NullExitPolicy(),
                             1, selection.x+selection.y+2);
                 }
                 catch (BadLocationException ble) {
@@ -177,7 +194,6 @@ public class ModuleCompletions {
             }
         }
         
-
         @Override
         public String getAdditionalProposalInfo() {
             return getAdditionalProposalInfo(null);
@@ -188,10 +204,12 @@ public class ModuleCompletions {
             Scope scope = node.getScope();
             Unit unit = node.getUnit();
             return JDKUtils.isJDKModule(name) ?
-                    getDocumentationForModule(name, JDKUtils.jdk.version,
+                    getDocumentationForModule(name, 
+                            JDKUtils.jdk.version,
                             "This module forms part of the Java SDK.",
                             scope, unit) :
-                    getDocumentationFor(module, version.getVersion(), 
+                    getDocumentationFor(module, 
+                            version.getVersion(), 
                             scope, unit);
         }
         
@@ -204,7 +222,8 @@ public class ModuleCompletions {
     static final class JDKModuleProposal extends CompletionProposal {
         private final String name;
 
-        JDKModuleProposal(int offset, String prefix, int len, 
+        JDKModuleProposal(int offset, 
+                String prefix, int len, 
                 String versioned, String name) {
             super(offset, prefix, MODULE, versioned, 
                     versioned.substring(len));
@@ -229,31 +248,42 @@ public class ModuleCompletions {
         }
     }
 
-    private static final SortedSet<String> JDK_MODULE_VERSION_SET = new TreeSet<String>();
+    private static final SortedSet<String> JDK_MODULE_VERSION_SET = 
+            new TreeSet<String>();
     {
         JDK_MODULE_VERSION_SET.add(JDKUtils.jdk.version);
     }
     
-    static void addModuleCompletions(CeylonParseController cpc, 
-            int offset, String prefix, Tree.ImportPath path, Node node, 
-            List<ICompletionProposal> result, boolean withBody,
+    static void addModuleCompletions(
+            CeylonParseController cpc, 
+            int offset, String prefix, 
+            Tree.ImportPath path, Node node, 
+            List<ICompletionProposal> result, 
+            boolean withBody,
             IProgressMonitor monitor) {
         String fullPath = fullPath(offset, prefix, path);
-        addModuleCompletions(offset, prefix, node, result, fullPath.length(), 
-                fullPath+prefix, cpc, withBody, monitor);
+        addModuleCompletions(offset, prefix, node, result, 
+                fullPath.length(), fullPath+prefix, 
+                cpc, withBody, monitor);
     }
 
-    private static void addModuleCompletions(int offset, String prefix, Node node, 
-            List<ICompletionProposal> result, int len, String pfp,
-            CeylonParseController cpc, boolean withBody,
+    private static void addModuleCompletions(int offset, 
+            String prefix, Node node, 
+            List<ICompletionProposal> result, 
+            int len, String pfp, 
+            CeylonParseController cpc, 
+            boolean withBody,
             IProgressMonitor monitor) {
         if (pfp.startsWith("java.")) {
             for (String name: 
-                    new TreeSet<String>(JDKUtils.getJDKModuleNames())) {
+                    new TreeSet<String>
+                        (JDKUtils.getJDKModuleNames())) {
                 if (name.startsWith(pfp) &&
                         !moduleAlreadyImported(cpc, name)) {
-                    result.add(new JDKModuleProposal(offset, prefix, len,
-                            getModuleString(withBody, name, JDKUtils.jdk.version), 
+                    result.add(new JDKModuleProposal(offset, 
+                            prefix, len,
+                            getModuleString(withBody, name, 
+                                    JDKUtils.jdk.version), 
                             name));
                 }
             }
@@ -277,19 +307,26 @@ public class ModuleCompletions {
                     final String name = module.getName();
                     if (!name.equals(Module.DEFAULT_MODULE_NAME) && 
                             !moduleAlreadyImported(cpc, name)) {
-                        if (CeylonPlugin.getPreferences().getBoolean(LINKED_MODE_ARGUMENTS)) {
-                            result.add(new ModuleProposal(offset, prefix, len, 
+                        if (getPreferences()
+                                .getBoolean(LINKED_MODE_ARGUMENTS)) {
+                            result.add(new ModuleProposal(
+                                    offset, prefix, len, 
                                     getModuleString(withBody, name, 
-                                            module.getLastVersion().getVersion()), 
-                                            module, withBody, module.getLastVersion(), 
+                                            module.getLastVersion()
+                                                .getVersion()), 
+                                            module, withBody, 
+                                            module.getLastVersion(), 
                                             name, node));
                         }
                         else {
                             for (final ModuleVersionDetails version: 
                                 module.getVersions().descendingSet()) {
-                                result.add(new ModuleProposal(offset, prefix, len, 
-                                        getModuleString(withBody, name, version.getVersion()), 
-                                        module, withBody, version, name, node));
+                                result.add(new ModuleProposal(
+                                        offset, prefix, len, 
+                                        getModuleString(withBody, name, 
+                                                version.getVersion()), 
+                                        module, withBody, 
+                                        version, name, node));
                             }
                         }
                     }
@@ -298,13 +335,17 @@ public class ModuleCompletions {
         }
     }
 
-    private static boolean moduleAlreadyImported(CeylonParseController cpc, final String mod) {
+    private static boolean moduleAlreadyImported(
+            CeylonParseController cpc, String mod) {
         if (mod.equals(Module.LANGUAGE_MODULE_NAME)) {
             return true;
         }
-        List<Tree.ModuleDescriptor> md = cpc.getParsedRootNode().getModuleDescriptors();
+        List<Tree.ModuleDescriptor> md = 
+                cpc.getParsedRootNode()
+                    .getModuleDescriptors();
         if (!md.isEmpty()) {
-            Tree.ImportModuleList iml = md.get(0).getImportModuleList();
+            Tree.ImportModuleList iml = 
+                    md.get(0).getImportModuleList();
             if (iml!=null) {
                 for (Tree.ImportModule im: iml.getImportModules()) {
                     String path = getImportedName(im);
@@ -331,13 +372,16 @@ public class ModuleCompletions {
         return withBody ? name + " \"" + version + "\";" : name;
     }
 
-    static void addModuleDescriptorCompletion(CeylonParseController cpc, 
-            int offset, String prefix, List<ICompletionProposal> result) {
+    static void addModuleDescriptorCompletion(
+            CeylonParseController cpc, 
+            int offset, String prefix, 
+            List<ICompletionProposal> result) {
         if (!"module".startsWith(prefix)) return; 
         IFile file = cpc.getProject().getFile(cpc.getPath());
         String moduleName = getPackageName(file);
         if (moduleName!=null) {
-            result.add(new ModuleDescriptorProposal(offset, prefix, moduleName));
+            result.add(new ModuleDescriptorProposal(offset, 
+                    prefix, moduleName));
         }
     }
     
