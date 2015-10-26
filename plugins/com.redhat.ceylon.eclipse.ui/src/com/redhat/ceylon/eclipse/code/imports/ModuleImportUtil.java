@@ -194,6 +194,12 @@ public class ModuleImportUtil {
             else {
                 nativeBackend = null;
             }*/
+            Module module = cu.getUnit().getPackage().getModule();
+            Backends moduleBackends = module.getNativeBackends();
+            if (moduleBackends!=null && 
+                    moduleBackends.equals(nativeBackend)) {
+                nativeBackend = null;
+            }
             InsertEdit edit = 
                     createAddEdit(cu, 
                             nativeBackend, name, version, 
