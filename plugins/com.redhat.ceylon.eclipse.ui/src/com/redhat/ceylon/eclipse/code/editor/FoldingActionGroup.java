@@ -33,7 +33,6 @@ import org.eclipse.ui.texteditor.TextOperationAction;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class FoldingActionGroup extends ActionGroup {
     
@@ -103,7 +102,7 @@ public class FoldingActionGroup extends ActionGroup {
         
         fViewer.addProjectionListener(fProjectionListener);
         
-        final IPreferenceStore store= EditorUtil.getPreferences();
+        final IPreferenceStore store= CeylonPlugin.getPreferences();
         fToggle= new PreferenceAction(FoldingMessages.getResourceBundle(), "Projection.Toggle.", IAction.AS_CHECK_BOX) {
             public void run() {
                 store.setValue(EDITOR_FOLDING_ENABLED, !store.getBoolean(EDITOR_FOLDING_ENABLED));

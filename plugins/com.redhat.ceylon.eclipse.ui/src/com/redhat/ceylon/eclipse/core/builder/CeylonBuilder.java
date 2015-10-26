@@ -111,6 +111,7 @@ import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
 import com.redhat.ceylon.common.Backend;
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.common.config.CeylonConfig;
 import com.redhat.ceylon.common.config.DefaultToolOptions;
@@ -129,7 +130,7 @@ import com.redhat.ceylon.compiler.java.tools.LanguageCompiler;
 import com.redhat.ceylon.compiler.java.util.RepositoryLister;
 import com.redhat.ceylon.compiler.js.JsCompiler;
 import com.redhat.ceylon.compiler.js.util.Options;
-import com.redhat.ceylon.compiler.loader.ModelLoaderFactory;
+import com.redhat.ceylon.compiler.java.loader.ModelLoaderFactory;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
@@ -144,6 +145,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.TreeUtil;
 import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.compiler.typechecker.util.WarningSuppressionVisitor;
@@ -1410,7 +1412,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         Unit duplicateUnit = duplicateDeclaration.getUnit();
                         if ((duplicateUnit instanceof SourceFile) && 
                             (duplicateUnit instanceof IResourceAware)) {
-                            IFile duplicateDeclFile = ((IResourceAware) duplicateUnit).getResourceFile();
+                            IResourceAware ra = (IResourceAware) duplicateUnit;
+                            IFile duplicateDeclFile = ra.getResourceFile();
                             if (duplicateDeclFile != null && duplicateDeclFile.exists()) {
                                 filesToAddInTypecheck.add(duplicateDeclFile);
                                 filesToAddInCompile.add(duplicateDeclFile);
@@ -2329,10 +2332,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                 for (Module module : typeChecker.getContext().getModules().getListOfModules()) {
                                     if (module instanceof JDTModule) {
                                         JDTModule jdtModule = (JDTModule) module;
-                                        if (jdtModule.isCeylonArchive()) {
+                                        if (jdtModule.isCeylonArchive()
+                                                && ModelUtil.isForBackend(jdtModule.getNativeBackends(), Backend.JavaScript.asSet())) {
                                             List<ModuleImport> importedModuleImports = new ArrayList<>();
                                             for(ModuleImport moduleImport : moduleSourceMapper.retrieveModuleImports(jdtModule)) {
-                                                if (! Backend.Java.nativeAnnotation.equals(moduleImport.getNativeBackend())) {
+                                                if (ModelUtil.isForBackend(moduleImport.getNativeBackends(), Backend.JavaScript.asSet())) {
                                                     importedModuleImports.add(moduleImport);
                                                 }
                                             }
@@ -2472,7 +2476,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     private static void addProblemAndTaskMarkers(final List<PhasedUnit> units, 
             final IProject project) {
         for (PhasedUnit phasedUnit: units) {
-            IFile file = ((ProjectPhasedUnit)phasedUnit).getResourceFile();
+            ProjectPhasedUnit projectPhasedUnit = (ProjectPhasedUnit) phasedUnit;
+            IFile file = projectPhasedUnit.getResourceFile();
             CompilationUnit compilationUnit = phasedUnit.getCompilationUnit();
             compilationUnit.visit(new WarningSuppressionVisitor<Warning>(Warning.class,
                     getSuppressedWarnings(project)));
@@ -2605,12 +2610,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         List<File> javaScriptResources = new ArrayList<File>();
         for (IFile file : filesToCompile) {
     	    Module module = getModule(file);
-    	    String nativeBakend = null; 
+    	    Backends nativeBackends = null;
     	    if (module != null) {
-    	        nativeBakend = module.getNativeBackend();
+    	        nativeBackends = module.getNativeBackends();
     	    }
-    	    if (nativeBakend == null 
-    	            || nativeBakend.equals(Backend.Java.nativeAnnotation)) {
+    	    if (nativeBackends.none()
+    	            || nativeBackends.supports(Backend.Java.asSet())) {
                 if (isInSourceFolder(file)) {
                     if(isCeylon(file) || isJava(file)) {
                         forJavaBackend.add(file.getLocation().toFile());
@@ -2629,12 +2634,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (compileToJs(project)) {
             for (IFile file : getProjectFiles(project)) {
                 Module module = getModule(file);
-                String nativeBakend = null; 
+                Backends nativeBackends = null;
                 if (module != null) {
-                    nativeBakend = module.getNativeBackend();
+                    nativeBackends = module.getNativeBackends();
                 }
-                if (nativeBakend == null 
-                        || nativeBakend.equals(Backend.JavaScript.nativeAnnotation)) {
+                if (nativeBackends.none()
+                        || nativeBackends.supports(Backend.JavaScript.asSet())) {
                     if (isInSourceFolder(file)) {
                         if(isCeylon(file) || isJavascript(file)) {
                             forJavascriptBackend.add(file.getLocation().toFile());
@@ -2715,6 +2720,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         IProject project = ceylonProject.getIdeArtifact();
         CeylonProjectConfig<IProject> config = ceylonProject.getConfiguration();
         Options jsopts = new Options()
+                .cwd(ceylonProject.getRootDirectory())
                 .outWriter(printWriter)
                 .repos(js_repos)
                 .sourceDirs(js_srcdir)
@@ -3323,14 +3329,36 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         final File modulesOutputDirectory = getCeylonModulesOutputDirectory(project);
         if (modulesOutputDirectory != null) {
             monitor.subTask("Cleaning existing artifacts of project " + project.getName());
-            List<String> extensionsToDelete = Arrays.asList(".jar", ".js", ".car", ".src", ".sha1");
+            final List<String> extensionsToDelete = Arrays.asList(".jar", ".js", ".car", ".src", ".sha1");
+            final List<String> deleteEverything = Arrays.asList(".*");
             new RepositoryLister(extensionsToDelete).list(modulesOutputDirectory, 
                     new RepositoryLister.Actions() {
+
                 @Override
                 public void doWithFile(File path) {
+                    if (path.getName().endsWith(ArtifactContext.CAR)) {
+                        File moduleResourcesDirectory = new File(path.getParentFile(), ArtifactContext.RESOURCES);
+                        if (moduleResourcesDirectory.exists()) {
+                            new RepositoryLister(deleteEverything).list(moduleResourcesDirectory, 
+                                new RepositoryLister.Actions() {
+                                    @Override
+                                    public void doWithFile(File path) {
+                                        path.delete();
+                                    }
+                                    
+                                    @Override
+                                    public void exitDirectory(File path) {
+                                        if (path.list().length == 0) {
+                                            path.delete();
+                                        }
+                                    }
+                            });
+                        }
+                    }
                     path.delete();
                 }
                 
+                @Override
                 public void exitDirectory(File path) {
                     if (path.list().length == 0 && 
                             !path.equals(modulesOutputDirectory)) {
@@ -4180,6 +4208,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         e.printStackTrace();
                     }
                 }
+            }
+            
+            if (fileIsResource) {
+                File resourceFile = new File(
+                        moduleDir, 
+                        "module-resources" + File.separator + relativeFilePath.replace('/', File.separatorChar));
+                resourceFile.delete();
             }
         }
         

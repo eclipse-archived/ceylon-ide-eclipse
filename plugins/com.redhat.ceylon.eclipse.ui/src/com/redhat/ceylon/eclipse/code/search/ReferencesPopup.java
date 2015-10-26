@@ -11,7 +11,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FLAT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.imageRegistry;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 import static java.util.Collections.emptySet;
@@ -156,7 +155,7 @@ public final class ReferencesPopup extends PopupDialog
                 if (!ReferencesPopup.this.treeLayout) {
                     label.append(" \u2014 ", PACKAGE_STYLER)
                         .append(ce.getPackageLabel(), PACKAGE_STYLER);
-                    if (getPreferences()
+                    if (CeylonPlugin.getPreferences()
                             .getBoolean(FULL_LOC_SEARCH_RESULTS)) {
                         label.append(" \u2014 ", COUNTER_STYLER)
                             .append(ce.getPathString(), COUNTER_STYLER);
@@ -1139,7 +1138,7 @@ public final class ReferencesPopup extends PopupDialog
         importsAction.setChecked(includeImports);
         dialogMenu.add(importsAction);
         dialogMenu.add(new Separator());
-        final IPreferenceStore prefs = getPreferences();
+        final IPreferenceStore prefs = CeylonPlugin.getPreferences();
         Action showLocAction = 
                 new Action("Show Full Paths", AS_CHECK_BOX) {
             @Override

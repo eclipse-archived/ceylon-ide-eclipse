@@ -38,9 +38,9 @@ import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getElaps
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getTestStateImage;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -109,9 +109,9 @@ public class TestsPanel extends Composite {
     private RunAction runAction = new RunAction();
     private DebugAction debugAction = new DebugAction();
     private TestRunListenerAdapter testRunListener;
-    private TestElement lastStartedTestElement;
-    private Set<String> lastFinishedPackages = new LinkedHashSet<String>();
-    private Set<TestElement> lastFinishedTestElements = new LinkedHashSet<TestElement>();
+    private Set<TestElement> lastStartedTestElements = new CopyOnWriteArraySet<TestElement>();
+    private Set<String> lastFinishedPackages = new CopyOnWriteArraySet<String>();
+    private Set<TestElement> lastFinishedTestElements = new CopyOnWriteArraySet<TestElement>();
 
     public TestsPanel(TestRunViewPart viewPart, Composite parent) {
         super(parent, SWT.NONE);
@@ -135,7 +135,7 @@ public class TestsPanel extends Composite {
     public void setCurrentTestRun(TestRun currentTestRun) {
         synchronized (TestRun.acquireLock(this.currentTestRun)) {
             this.currentTestRun = currentTestRun;
-            this.lastStartedTestElement = null;
+            this.lastStartedTestElements.clear();
             this.lastFinishedTestElements.clear();
             this.lastFinishedPackages.clear();
         }
@@ -229,7 +229,7 @@ public class TestsPanel extends Composite {
             @Override
             public void testStarted(TestRun testRun, TestElement testElement) {
                 if (currentTestRun == testRun) {
-                    lastStartedTestElement = testElement;
+                    lastStartedTestElements.add(testElement);
                 }
             }
             @Override
@@ -280,11 +280,11 @@ public class TestsPanel extends Composite {
     }
 
     private void automaticRevealLastStarted() {
-        if (currentTestRun != null &&
-                currentTestRun.isRunning() &&
-                lastStartedTestElement != null &&
-                !scrollLockAction.isChecked()) {
-            viewer.reveal(createTreePath(lastStartedTestElement));
+        if (currentTestRun != null && !scrollLockAction.isChecked()) {
+            for (TestElement lastStartedTestElement : lastStartedTestElements) {
+                viewer.reveal(createTreePath(lastStartedTestElement));
+            }
+            lastStartedTestElements.clear();
         }
     }
 
@@ -816,7 +816,7 @@ public class TestsPanel extends Composite {
                     return;
                 }
             }
-            if (isBehindCurrentSelection && next == null && e.getChildren() == null && e.getState().isFailureOrError()) {
+            if (isBehindCurrentSelection && next == null && (e.getChildren() == null || e.getChildren().length == 0) && e.getState().isFailureOrError()) {
                 next = e;
             }
         }
@@ -842,7 +842,7 @@ public class TestsPanel extends Composite {
                     isBeforeCurrentSelection = false;
                 }
 
-                if (isBeforeCurrentSelection && e.getChildren() == null && e.getState().isFailureOrError()) {
+                if (isBeforeCurrentSelection && (e.getChildren() == null || e.getChildren().length == 0) && e.getState().isFailureOrError()) {
                     previous = e;
                 }
             }

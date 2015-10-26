@@ -327,7 +327,7 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
             setImageDescriptor(showDocImage);
             setHoverImageDescriptor(showDocImage);
             
-            setChecked(EditorUtil.getPreferences().getBoolean(IS_CHECKED));
+            setChecked(CeylonPlugin.getPreferences().getBoolean(IS_CHECKED));
             run();
         }
 
@@ -338,7 +338,7 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
             } else {
                 sashForm.setMaximizedControl(moduleTreeViewer.getTree());
             }
-            EditorUtil.getPreferences().setValue(IS_CHECKED, isChecked());
+            CeylonPlugin.getPreferences().setValue(IS_CHECKED, isChecked());
         }
 
     }

@@ -16,7 +16,9 @@ public class CeylonFormatterConstants {
     public static final String FORMATTER_space_BeforeMethodOrClassPositionalArgumentList = "spaceBeforeMethodOrClassPositionalArgumentList";
     public static final String FORMATTER_space_AroundSatisfiesOf = "spaceAroundSatisfiesOf";
     public static final String FORMATTER_space_AroundImportAliasEqualsSign = "spaceAroundImportAliasEqualsSign";
-    public static final String FORMATTER_space_AfterTypeArgOrParamListComma = "spaceAfterTypeArgOrParamListComma";
+    public static final String FORMATTER_space_AfterTypeParamListComma = "spaceAfterTypeParamListComma";
+    public static final String FORMATTER_space_AfterTypeArgListComma = "spaceAfterTypeArgListComma";
+    public static final String FORMATTER_space_AroundTypeParamListEqualsSign = "spaceAroundTypeParamListEqualsSign";
     public static final String FORMATTER_space_BeforeSequenceEnumerationClosingBrace = "spaceBeforeSequenceEnumerationClosingBrace";
     public static final String FORMATTER_space_BeforeParamListOpeningParen = "spaceBeforeParamListOpeningParen";
     public static final String FORMATTER_space_BeforeParamListClosingParen = "spaceBeforeParamListClosingParen";

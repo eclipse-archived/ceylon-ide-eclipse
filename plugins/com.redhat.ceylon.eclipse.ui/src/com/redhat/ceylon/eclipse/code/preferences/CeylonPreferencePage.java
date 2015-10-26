@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_PROJECT_TYPE;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_RESOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import org.eclipse.jface.layout.GridDataFactory;
@@ -44,7 +43,7 @@ public class CeylonPreferencePage
 
     @Override
     public void init(IWorkbench workbench) {
-        setPreferenceStore(getPreferences());
+        setPreferenceStore(CeylonPlugin.getPreferences());
     }
 
     @Override

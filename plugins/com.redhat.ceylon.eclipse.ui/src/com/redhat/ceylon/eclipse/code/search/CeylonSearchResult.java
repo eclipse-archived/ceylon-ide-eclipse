@@ -1,15 +1,16 @@
 package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SEARCH_RESULTS;
+import static java.util.Arrays.asList;
 import static org.eclipse.jdt.core.IJavaElement.CLASS_FILE;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.ui.javaeditor.IClassFileEditorInput;
@@ -24,11 +25,13 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 
+import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.eclipse.code.editor.SourceArchiveEditorInput;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
-public class CeylonSearchResult extends AbstractTextSearchResult
+public class CeylonSearchResult 
+        extends AbstractTextSearchResult
         implements IEditorMatchAdapter, IFileMatchAdapter {
     
     private static final ImageDescriptor IMAGE = 
@@ -72,8 +75,8 @@ public class CeylonSearchResult extends AbstractTextSearchResult
     }
 
     @Override
-    public Match[] computeContainedMatches(AbstractTextSearchResult atsr,
-            IFile file) {
+    public Match[] computeContainedMatches(
+            AbstractTextSearchResult atsr, IFile file) {
         return getMatchesForFile(file);
     }
 
@@ -82,20 +85,25 @@ public class CeylonSearchResult extends AbstractTextSearchResult
         for (Object element: this.getElements()) {
             IFile elementFile = getFile(element);
             if (elementFile!=null && elementFile.equals(file)) {
-                matches.addAll(Arrays.asList(getMatches(element)));
+                matches.addAll(asList(getMatches(element)));
             }
         }
         return matches.toArray(new Match[matches.size()]);
     }
     
-    public Match[] getMatchesForSourceArchive(SourceArchiveEditorInput input) {
+    public Match[] getMatchesForSourceArchive(
+            SourceArchiveEditorInput input) {
         List<Match> matches = new ArrayList<Match>();
-        String path = ((SourceArchiveEditorInput) input).getPath().toOSString();
-        for (Object element: this.getElements()) {
-            if (element instanceof CeylonElement) {
-                String elementPath = ((CeylonElement) element).getVirtualFile().getPath();
-                if (path.equals(elementPath)) {
-                    matches.addAll(Arrays.asList(getMatches(element)));
+        IPath inputPath = input.getPath();
+        if (inputPath!=null) { //the file could have been deleted
+            String path = inputPath.toOSString();
+            for (Object element: this.getElements()) {
+                if (element instanceof CeylonElement) {
+                    CeylonElement ce = (CeylonElement) element;
+                    VirtualFile file = ce.getVirtualFile();
+                    if (path.equals(file.getPath())) {
+                        matches.addAll(asList(getMatches(element)));
+                    }
                 }
             }
         }
@@ -106,31 +114,35 @@ public class CeylonSearchResult extends AbstractTextSearchResult
         List<Match> matches = new ArrayList<Match>();
         for (Object element: this.getElements()) {
             if (element instanceof IJavaElement) {
+                IJavaElement je = (IJavaElement) element;
                 IJavaElement elementClassFile = 
-                        ((IJavaElement) element).getAncestor(CLASS_FILE);
-                if (elementClassFile!=null && elementClassFile.equals(classFile)) {
-                    matches.addAll(Arrays.asList(getMatches(element)));
+                        je.getAncestor(CLASS_FILE);
+                if (elementClassFile!=null && 
+                        elementClassFile.equals(classFile)) {
+                    matches.addAll(asList(getMatches(element)));
                 }
             }
         }
         return matches.toArray(new Match[matches.size()]);
     }
     
-    public Match[] getMatchesForURI(URI uri) {
+    private Match[] getMatchesForURI(URI uri) {
         List<Match> matches = new ArrayList<Match>();
         for (Object element: this.getElements()) {
             if (element instanceof CeylonElement) {
-                String path = ((CeylonElement) element).getVirtualFile().getPath();
-                if (uri.toString().endsWith(path)) {
-                    matches.addAll(Arrays.asList(getMatches(element)));
+                CeylonElement ce = (CeylonElement) element;
+                VirtualFile file = ce.getVirtualFile();
+                if (uri.toString().endsWith(file.getPath())) {
+                    matches.addAll(asList(getMatches(element)));
                 }
             }
             else if (element instanceof IJavaElement) {
-                IResource resource = ((IJavaElement) element).getResource();
+                IJavaElement je = (IJavaElement) element;
+                IResource resource = je.getResource();
                 if (resource!=null) {
-                    String path = resource.getLocationURI().toString();
-                    if (uri.toString().endsWith(path)) {
-                        matches.addAll(Arrays.asList(getMatches(element)));
+                    URI path = resource.getLocationURI();
+                    if (uri.toString().endsWith(path.toString())) {
+                        matches.addAll(asList(getMatches(element)));
                     }
                 }
             }
@@ -144,10 +156,12 @@ public class CeylonSearchResult extends AbstractTextSearchResult
             return (IFile) element;
         }
         else if (element instanceof CeylonElement) {
-            return ((CeylonElement) element).getFile();
+            CeylonElement ce = (CeylonElement) element;
+            return ce.getFile();
         }
         else if (element instanceof IJavaElement) {
-            return (IFile) ((IJavaElement) element).getResource();
+            IJavaElement je = (IJavaElement) element;
+            return (IFile) je.getResource();
         }
         else { 
             return null;
@@ -155,20 +169,27 @@ public class CeylonSearchResult extends AbstractTextSearchResult
     }
 
     @Override
-    public Match[] computeContainedMatches(AbstractTextSearchResult atsr,
+    public Match[] computeContainedMatches(
+            AbstractTextSearchResult atsr, 
             IEditorPart editor) {
         IEditorInput ei = editor.getEditorInput();
         if (ei instanceof SourceArchiveEditorInput) {
-            return getMatchesForSourceArchive((SourceArchiveEditorInput) ei);
+            SourceArchiveEditorInput saei = 
+                    (SourceArchiveEditorInput) ei;
+            return getMatchesForSourceArchive(saei);
         }
         else if (ei instanceof IFileEditorInput) {
             return getMatchesForFile(EditorUtil.getFile(ei));
         }
         else if (ei instanceof FileStoreEditorInput) {
-            return getMatchesForURI(((FileStoreEditorInput) ei).getURI());
+            FileStoreEditorInput fsei = 
+                    (FileStoreEditorInput) ei;
+            return getMatchesForURI(fsei.getURI());
         }
         else if (ei instanceof IClassFileEditorInput) {
-            return getMatchesForClassFile(((IClassFileEditorInput) ei).getClassFile());
+            IClassFileEditorInput cfei = 
+                    (IClassFileEditorInput) ei;
+            return getMatchesForClassFile(cfei.getClassFile());
         }
         else {
             return new Match[0];
@@ -181,17 +202,22 @@ public class CeylonSearchResult extends AbstractTextSearchResult
         Object element = match.getElement();
         if (ei instanceof IFileEditorInput) {
             IFile file = getFile(element);
-            return file!=null && file.equals(EditorUtil.getFile(ei));
+            return file!=null && 
+                    file.equals(EditorUtil.getFile(ei));
         }
         else if (ei instanceof FileStoreEditorInput) {
-            String uri = ((FileStoreEditorInput) ei).getURI().toString();
+            FileStoreEditorInput fsei = 
+                    (FileStoreEditorInput) ei;
+            String uri = fsei.getURI().toString();
             if (element instanceof CeylonElement) {
-                String path = ((CeylonElement) element).getVirtualFile().getPath();
-                return uri.endsWith(path);
+                CeylonElement ce = (CeylonElement) element;
+                VirtualFile file = ce.getVirtualFile();
+                return uri.endsWith(file.getPath());
             }
             else if (element instanceof IJavaElement) {
-                String path = ((IJavaElement) element).getResource().getLocationURI().toString();
-                return uri.endsWith(path);
+                IJavaElement je = (IJavaElement) element;
+                URI path = je.getResource().getLocationURI();
+                return uri.endsWith(path.toString());
             }
             else {
                 return false;
@@ -199,8 +225,11 @@ public class CeylonSearchResult extends AbstractTextSearchResult
         }
         else if (ei instanceof IClassFileEditorInput) {
             if (element instanceof IJavaElement) {
-                IClassFile classFile = ((IClassFileEditorInput) ei).getClassFile();
-                return ((IJavaElement) element).getAncestor(IJavaElement.CLASS_FILE)==classFile;
+                IClassFileEditorInput cfei = 
+                        (IClassFileEditorInput) ei;
+                IJavaElement je = (IJavaElement) element;
+                return je.getAncestor(IJavaElement.CLASS_FILE)
+                            == cfei.getClassFile();
             }
             else {
                 return false;

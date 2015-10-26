@@ -178,6 +178,7 @@ class TypeProposal
         int size = supertypes.size();
         if (kind!=null) size++;
         if (infType.isTypeConstructor() ||
+                infType.isTypeParameter() ||
                 infType.isUnion() || 
                 infType.isIntersection()) {
             size++;
@@ -192,6 +193,7 @@ class TypeProposal
         }
         Unit unit = rootNode.getUnit();
         if (infType.isTypeConstructor() ||
+                infType.isTypeParameter() ||
                 infType.isUnion() || 
                 infType.isIntersection()) {
             proposals[i++] = 

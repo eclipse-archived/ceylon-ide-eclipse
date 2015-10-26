@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.search;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Highlights.ARROW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
@@ -43,6 +42,7 @@ import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.IdeUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 
@@ -191,7 +191,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             IJavaElement je) {
         StyledString styledString = new StyledString();
         String name = je.getElementName();
-        IPreferenceStore prefs = getPreferences();
+        IPreferenceStore prefs = CeylonPlugin.getPreferences();
         if (je instanceof IMethod) {
             IMethod m = (IMethod) je;
             try {

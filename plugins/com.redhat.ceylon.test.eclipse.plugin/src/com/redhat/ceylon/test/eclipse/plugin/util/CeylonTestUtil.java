@@ -15,11 +15,14 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.CEYLON_TEST_MODULE_NAME;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -34,15 +37,16 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 
+import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.model.typechecker.model.Annotation;
+import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ModuleImport;
+import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Value;
@@ -320,6 +324,18 @@ public class CeylonTestUtil {
             }
         }
         return false;
+    }
+
+    public static boolean checkNativeBackend(Module module, String launchConfigType) {
+        if (module.isNative()) {
+            if (Objects.equals(launchConfigType, LAUNCH_CONFIG_TYPE) && !module.getNativeBackends().supports(Backend.Java.asSet())) {
+                return false;
+            }
+            if (Objects.equals(launchConfigType, LAUNCH_CONFIG_TYPE_JS) && !module.getNativeBackends().supports(Backend.JavaScript.asSet())) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

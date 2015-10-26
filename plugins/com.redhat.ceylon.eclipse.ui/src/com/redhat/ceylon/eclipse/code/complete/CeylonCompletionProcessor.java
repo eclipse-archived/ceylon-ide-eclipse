@@ -72,7 +72,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_COMPLETION_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FILTERS;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getOccurrenceLocation;
@@ -142,6 +141,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
@@ -459,7 +459,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
 
     public char[] getCompletionProposalAutoActivationCharacters() {
-        return getPreferences()
+        return CeylonPlugin.getPreferences()
                 .getString(AUTO_ACTIVATION_CHARS)
                 .toCharArray();
     }
@@ -676,7 +676,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
 
     private List<Pattern> getProposalFilters() {
         List<Pattern> filters = new ArrayList<Pattern>();
-        IPreferenceStore preferences = getPreferences();
+        IPreferenceStore preferences = CeylonPlugin.getPreferences();
         parseFilters(filters, 
                 preferences.getString(FILTERS));
         if (preferences.getBoolean(ENABLE_COMPLETION_FILTERS)) {
@@ -1382,7 +1382,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 FunctionOrValue m = (FunctionOrValue) dec;
                 for (Declaration d: overloads(dec)) {
                     if (isRefinementProposable(d, ol, scope) &&
-                            t.isSubtypeOf(m.getType())) {
+                            isReturnType(t, m, node)) {
                         try {
                             int start = node.getStartIndex();
                             String pfx = 
@@ -1399,6 +1399,29 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 }
             }
         }
+    }
+
+    private static final List<Type> NO_TYPES = Collections.<Type>emptyList();
+    
+    private static boolean isReturnType(Type t, FunctionOrValue m, Node node) {
+        if (t.isSubtypeOf(m.getType())) {
+            return true;
+        }
+        if (node instanceof Tree.TypedDeclaration) {
+            Tree.TypedDeclaration td = (Tree.TypedDeclaration) node;
+            Scope container = td.getDeclarationModel().getContainer();
+            if (container instanceof ClassOrInterface) {
+                ClassOrInterface ci = (ClassOrInterface) container;
+                Type type = 
+                        ci.getType()
+                            .getTypedMember(m, NO_TYPES)
+                            .getType();
+                if (t.isSubtypeOf(type)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static boolean noParametersFollow(CommonToken nextToken) {

@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.refactor.RenameRefactoring.getIdentifier;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 
 import java.util.List;
@@ -38,7 +37,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 
@@ -55,7 +54,7 @@ public final class RenameLinkedMode
     }
     
     public static boolean useLinkedMode() {
-        return EditorUtil.getPreferences()
+        return CeylonPlugin.getPreferences()
                 .getBoolean(LINKED_MODE_RENAME);
     }
     
@@ -252,7 +251,7 @@ public final class RenameLinkedMode
         super.enterLinkedMode(document, 
                 exitSequenceNumber, 
                 exitPosition);
-        if (!getPreferences()
+        if (!CeylonPlugin.getPreferences()
                 .getBoolean(LINKED_MODE_RENAME_SELECT)) {
             // by default, full word is selected; restore original selection
             editor.getCeylonSourceViewer()

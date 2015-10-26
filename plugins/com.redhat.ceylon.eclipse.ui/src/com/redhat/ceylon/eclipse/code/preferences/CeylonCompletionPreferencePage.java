@@ -13,7 +13,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INEXACT_MATCHES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import org.eclipse.jface.layout.GridDataFactory;
@@ -86,7 +85,7 @@ public class CeylonCompletionPreferencePage
     
     @Override
     public void init(IWorkbench workbench) {
-        setPreferenceStore(getPreferences());
+        setPreferenceStore(CeylonPlugin.getPreferences());
     }
     
     @Override
@@ -175,7 +174,7 @@ public class CeylonCompletionPreferencePage
         autoActivationDelay.setMaximum(2000);
         autoActivationDelay.load();
         addField(autoActivationDelay);
-        final IPreferenceStore store = getPreferences();
+        final IPreferenceStore store = CeylonPlugin.getPreferences();
         boolean enabled = store.getBoolean(AUTO_ACTIVATION);
         autoActivationChars.setEnabled(enabled, p1);
         autoActivationDelay.setEnabled(enabled, p2);        

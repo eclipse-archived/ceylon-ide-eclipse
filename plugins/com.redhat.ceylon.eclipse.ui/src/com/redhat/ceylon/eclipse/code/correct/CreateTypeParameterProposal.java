@@ -4,7 +4,12 @@ import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.asIntersecti
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
+import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 
 import java.util.Collection;
@@ -13,7 +18,9 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -45,8 +52,10 @@ class CreateTypeParameterProposal extends CorrectionProposal {
     
     private static void addProposal(
             Collection<ICompletionProposal> proposals, 
-            boolean wasNotGeneric, String def, String name, 
-            Image image, Declaration dec, ModifiablePhasedUnit unit, 
+            boolean wasNotGeneric, 
+            String def, String name, 
+            Image image, Declaration dec, 
+            ModifiablePhasedUnit unit, 
             Tree.Declaration decNode, int offset, 
             String constraints) {
         IFile file = unit.getResourceFile();
@@ -54,7 +63,8 @@ class CreateTypeParameterProposal extends CorrectionProposal {
             return;
         }
         TextFileChange change = 
-                new TextFileChange("Add Parameter", file);
+                new TextFileChange("Add Type Parameter", 
+                        file);
         change.setEdit(new MultiTextEdit());
         IDocument doc = getDocument(change);
         HashSet<Declaration> decs = 
@@ -65,10 +75,29 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         if (constraints!=null) {
             int loc = getConstraintLoc(decNode);
             if (loc>=0) {
-                change.addEdit(new InsertEdit(loc, constraints));
+                String text = constraints;
+                try {
+                    IRegion li = 
+                            doc.getLineInformationOfOffset(loc);
+                    int start = li.getOffset();
+                    String string = doc.get(start, loc-start);
+                    if (!string.trim().isEmpty()) {
+                        text = 
+                            getDefaultLineDelimiter(doc) + 
+                            getIndent(decNode, doc) + 
+                            getDefaultIndent() + 
+                            getDefaultIndent() +
+                            constraints;
+                    }
+                }
+                catch (BadLocationException e) {
+                    e.printStackTrace();
+                }
+                change.addEdit(new InsertEdit(loc, text));
             }
         }
-        String desc = "Add type parameter '" + name + "'" + 
+        String desc = 
+                "Add type parameter '" + name + "'" + 
                 " to '" + dec.getName() + "'";
         int off = wasNotGeneric?1:2;
         proposals.add(new CreateTypeParameterProposal(desc, 
@@ -97,20 +126,23 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         else if( decNode instanceof Tree.ClassDeclaration ) {
             Tree.ClassDeclaration classDefinition = 
                     (Tree.ClassDeclaration) decNode;
-            return classDefinition.getClassSpecifier()
-                    .getStartIndex();
+            Tree.ClassSpecifier s = 
+                    classDefinition.getClassSpecifier();
+            return s==null ? decNode.getEndIndex() : s.getStartIndex();
         }
-        else if( decNode instanceof Tree.InterfaceDefinition ) {
+        else if( decNode instanceof Tree.InterfaceDeclaration ) {
             Tree.InterfaceDeclaration interfaceDefinition = 
                     (Tree.InterfaceDeclaration) decNode;
-            return interfaceDefinition.getTypeSpecifier()
-                    .getStartIndex();
+            Tree.TypeSpecifier s = 
+                    interfaceDefinition.getTypeSpecifier();
+            return s==null ? decNode.getEndIndex() : s.getStartIndex();
         }
         else if( decNode instanceof Tree.MethodDeclaration ) {
             Tree.MethodDeclaration methodDefinition = 
                     (Tree.MethodDeclaration) decNode;
-            return methodDefinition.getSpecifierExpression()
-                    .getStartIndex();
+            Tree.SpecifierExpression s = 
+                    methodDefinition.getSpecifierExpression();
+            return s==null ? decNode.getEndIndex() : s.getStartIndex();
         }
         else {
             return -1;
@@ -161,8 +193,17 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         
         Tree.Declaration decl = 
                 findDeclarationWithBody(rootNode, node);
-        Declaration d = decl==null ? null : 
-            decl.getDeclarationModel();
+        if (decl==null) {
+            decl = findDeclaration(rootNode, node);
+            if (!(decl instanceof Tree.AnyMethod ||
+                  decl instanceof Tree.ClassOrInterface)) {
+                decl = getContainer(rootNode, 
+                        decl.getDeclarationModel());
+            }
+        }
+        Declaration d = 
+                decl==null ? null : 
+                    decl.getDeclarationModel();
         if (d == null || d.isActual() ||
                 !(d instanceof Function || 
                   d instanceof ClassOrInterface)) {
@@ -252,10 +293,12 @@ class CreateTypeParameterProposal extends CorrectionProposal {
 
         TypecheckerUnit u = rootNode.getUnit();
         if (u instanceof ModifiableSourceFile) {
-            ModifiableSourceFile cu = (ModifiableSourceFile) u;
+            ModifiableSourceFile cu = 
+                    (ModifiableSourceFile) u;
             addProposal(proposals, paramList==null,
                     paramDef, brokenName, ADD_CORR, 
-                    d, cu.getPhasedUnit(), decl, offset, constraints);
+                    d, cu.getPhasedUnit(), decl, offset, 
+                    constraints);
         }
 
     }

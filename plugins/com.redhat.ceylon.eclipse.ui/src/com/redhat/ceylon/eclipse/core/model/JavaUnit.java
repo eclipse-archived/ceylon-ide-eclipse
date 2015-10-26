@@ -11,7 +11,9 @@ import com.redhat.ceylon.model.typechecker.model.Package;
 
 public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IResourceAware {
     
-    public JavaUnit(String fileName, String relativePath, String fullPath, Package pkg) {
+    public JavaUnit(String fileName, 
+            String relativePath, String fullPath, 
+            Package pkg) {
         setFilename(fileName);
         setRelativePath(relativePath);
         setFullPath(fullPath);
@@ -22,7 +24,9 @@ public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IReso
     public IFile getResourceFile() {
         if (getTypeRoot() != null) {
             try {
-                return (IFile) getTypeRoot().getCorrespondingResource();
+                return (IFile) 
+                        getTypeRoot()
+                            .getCorrespondingResource();
             } catch (JavaModelException e) {
                 e.printStackTrace();
             }
@@ -33,7 +37,10 @@ public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IReso
     @Override
     public IProject getResourceProject() {
         if (getResourceFile() != null) {
-            return (IProject) getTypeRoot().getJavaProject().getProject();
+            return (IProject) 
+                    getTypeRoot()
+                        .getJavaProject()
+                        .getProject();
         }
         return null;
     }
@@ -47,7 +54,10 @@ public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IReso
     public IFolder getResourceRootFolder() {
         if (getResourceFile() != null) {
             try {
-                IPackageFragmentRoot root = (IPackageFragmentRoot) getTypeRoot().getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+                IPackageFragmentRoot root = 
+                        (IPackageFragmentRoot) 
+                            getTypeRoot()
+                                .getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
                 if (root != null) {
                     return (IFolder) root.getCorrespondingResource();
                 }
@@ -63,7 +73,8 @@ public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IReso
         p.removeUnit(this);
         assert (p.getModule() instanceof JDTModule);
         JDTModule module = (JDTModule) p.getModule();
-        for (JDTModule moduleInReferencingProject : module.getModuleInReferencingProjects()) {
+        for (JDTModule moduleInReferencingProject: 
+                module.getModuleInReferencingProjects()) {
         	moduleInReferencingProject.removedOriginalUnit(getRelativePath());
         }
     }

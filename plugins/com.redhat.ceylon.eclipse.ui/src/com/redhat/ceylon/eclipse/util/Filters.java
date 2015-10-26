@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.util;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_OPEN_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.OPEN_FILTERS;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +10,7 @@ import java.util.regex.Pattern;
 
 import org.eclipse.jdt.core.IJavaElement;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -26,7 +26,7 @@ public class Filters {
     }
     
     protected String getFilterListAsString(String preference) {
-        return getPreferences().getString(preference);
+        return CeylonPlugin.getPreferences().getString(preference);
     }
     
     public void initFilters() {
@@ -34,7 +34,7 @@ public class Filters {
         packageFilters = new ArrayList<Pattern>();
         moduleFilters = new ArrayList<Pattern>();
         parseFilters(getFilterListAsString(FILTERS));
-        if (getPreferences().getBoolean(enableExtraFiltersPref())) {
+        if (CeylonPlugin.getPreferences().getBoolean(enableExtraFiltersPref())) {
             parseFilters(getFilterListAsString(extraFiltersPref())); 
         }
     }

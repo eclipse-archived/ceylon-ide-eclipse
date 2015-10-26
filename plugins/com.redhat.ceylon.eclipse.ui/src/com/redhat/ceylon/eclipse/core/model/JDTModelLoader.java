@@ -105,7 +105,7 @@ import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.loader.AnnotationLoader;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.util.Util;
-import com.redhat.ceylon.compiler.loader.SourceDeclarationVisitor;
+import com.redhat.ceylon.compiler.java.loader.SourceDeclarationVisitor;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -123,9 +123,11 @@ import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.model.cmr.ArtifactResult;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.loader.JvmBackendUtil;
+import com.redhat.ceylon.model.loader.LanguageAnnotation;
 import com.redhat.ceylon.model.loader.ModelResolutionException;
 import com.redhat.ceylon.model.loader.Timer;
 import com.redhat.ceylon.model.loader.TypeParser;
+import com.redhat.ceylon.model.loader.mirror.AnnotatedMirror;
 import com.redhat.ceylon.model.loader.mirror.AnnotationMirror;
 import com.redhat.ceylon.model.loader.mirror.ClassMirror;
 import com.redhat.ceylon.model.loader.mirror.MethodMirror;
@@ -1814,4 +1816,16 @@ public class JDTModelLoader extends AbstractModelLoader {
         }
         return null;
     }
+    
+    @Override
+    protected boolean isDeprecated(AnnotatedMirror classMirror){
+        if (classMirror instanceof JDTClass) {
+            return ((JDTClass)classMirror).isDeprecated();
+        }
+        if (classMirror instanceof JDTMethod) {
+            return ((JDTMethod)classMirror).isDeprecated();
+        }
+        return super.isDeprecated(classMirror);
+    }
+    
 }

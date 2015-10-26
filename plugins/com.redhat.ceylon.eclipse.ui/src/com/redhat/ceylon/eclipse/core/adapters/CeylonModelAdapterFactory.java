@@ -20,14 +20,19 @@ public class CeylonModelAdapterFactory implements IAdapterFactory {
         return ADAPTER_LIST;
     }
 
-    public Object getAdapter(Object element, @SuppressWarnings("rawtypes") Class key) {
+    public Object getAdapter(Object element, 
+            @SuppressWarnings("rawtypes") Class key) {
         IUnit unit = (IUnit) element;
 
-        if (IFile.class.equals(key) && unit instanceof IResourceAware) {
-            return ((IResourceAware) unit).getResourceFile();
+        if (IFile.class.equals(key) 
+                && unit instanceof IResourceAware) {
+            IResourceAware ra = (IResourceAware) unit;
+            return ra.getResourceFile();
         }
-        if (IJavaElement.class.equals(key)  && unit instanceof IJavaModelAware) {
-            return ((IJavaModelAware) unit).getTypeRoot();
+        if (IJavaElement.class.equals(key)  
+                && unit instanceof IJavaModelAware) {
+            IJavaModelAware ja = (IJavaModelAware) unit;
+            return ja.getTypeRoot();
         }
         return null;
     }

@@ -68,14 +68,14 @@ _If you want to have an up-to-date version of the Ceylon IDE based on the lastes
 
         mvn clean install -DskipTests
    
-11.  The directory `site/target/repository` now contains an update site you can install from. The update process is decribed at http://ceylon-lang.org/documentation/1.1/ide/install/ but use the path to this directory instead of the stable web repository. 
+11.  The directory `site/target/repository` now contains an update site you can install from. The update process is decribed at http://ceylon-lang.org/documentation/1.2/ide/install/ but use the path to this directory instead of the stable web repository. 
 
 ## Building inside Eclipse
 
 _This method implies some **additional complexity**, and is only useful if you want to debug the Ceylon IDE plugin._
 
 **_Prelimiary remark_**: Now, parts of the Ceylon IDE project itself are written in Ceylon. Thus, in order to develop the Ceylon IDE plugin, you must have a previous version of the plugin installed in your
-main Eclipse (preferably build with Maven, or downloaded from the update site).
+main Eclipse (preferably built with Maven, or downloaded from the update site).
 
 1.  Make sure that `ant` (latest version) can be run on the command line.
 

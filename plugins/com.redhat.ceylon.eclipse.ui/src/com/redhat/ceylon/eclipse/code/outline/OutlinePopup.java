@@ -22,7 +22,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.HIDE_PRIVATE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.SORT_ALPHA;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.imageRegistry;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.triggersBinding;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
@@ -119,7 +118,7 @@ public class OutlinePopup extends TreeViewPopup {
             if (element instanceof CeylonOutlineNode) {
                 if (mode) {
                     boolean includeParameters =
-                            !getPreferences()
+                            !CeylonPlugin.getPreferences()
                                 .getBoolean(PARAMS_IN_OUTLINES);
                     CeylonOutlineNode node = 
                             (CeylonOutlineNode) element;

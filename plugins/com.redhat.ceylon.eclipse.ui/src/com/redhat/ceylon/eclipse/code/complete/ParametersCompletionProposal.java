@@ -20,14 +20,15 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.addLinkedPosition;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.installLinkedMode;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getContainingClassOrInterface;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -54,6 +55,7 @@ import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Function;
@@ -414,7 +416,7 @@ class ParametersCompletionProposal extends CompletionProposal {
         catch (BadLocationException e) {
             e.printStackTrace();
         }
-        if (getPreferences()
+        if (CeylonPlugin.getPreferences()
                 .getBoolean(LINKED_MODE_ARGUMENTS)) {
             enterLinkedMode(document);
         }
@@ -478,7 +480,13 @@ class ParametersCompletionProposal extends CompletionProposal {
         return comma;
     }
     
+    @Override
     public String getAdditionalProposalInfo() {
+        return getAdditionalProposalInfo(null);
+    }
+    
+    @Override
+    public String getAdditionalProposalInfo(IProgressMonitor monitor) {
         return null;    
     }
     
@@ -546,6 +554,14 @@ class ParametersCompletionProposal extends CompletionProposal {
                         type, unit, dwp, null);
             }
         }
+        ClassOrInterface ci = 
+                getContainingClassOrInterface(scope);
+        if (ci!=null) {
+            if (ci.getType().isSubtypeOf(type)) {
+                props.add(new NestedLiteralCompletionProposal(
+                        "this", loc, index));
+            }
+        }
         for (String value: 
                 getAssignableLiterals(type, unit)) {
             props.add(new NestedLiteralCompletionProposal(
@@ -602,7 +618,7 @@ class ParametersCompletionProposal extends CompletionProposal {
                             ""));
                 }
                 if (qualifier==null && 
-                        getPreferences()
+                        CeylonPlugin.getPreferences()
                             .getBoolean(CHAIN_LINKED_MODE_ARGUMENTS)) {
                     Collection<DeclarationWithProximity> members = 
                             value.getTypeDeclaration()
@@ -701,7 +717,7 @@ class ParametersCompletionProposal extends CompletionProposal {
                     final List<Type> argTypes = 
                             unit.getCallableArgumentTypes(type);
                     boolean paramTypes = 
-                            getPreferences()
+                            CeylonPlugin.getPreferences()
                                 .getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
                     final StringBuilder desc = new StringBuilder();
                     final StringBuilder text = new StringBuilder();

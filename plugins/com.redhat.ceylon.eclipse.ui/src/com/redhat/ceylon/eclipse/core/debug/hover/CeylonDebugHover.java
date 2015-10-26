@@ -499,7 +499,7 @@ public class CeylonDebugHover extends SourceInfoHover {
             String text = null;
             Referenceable model = getReferencedDeclaration(node);
             if (model!=null) {
-                text = getDocumentationHoverText(model, editor, node);
+                text = getDocumentationHoverText(model, editor, node, null);
             }
             return new DebugHoverInput(var, text);
         }

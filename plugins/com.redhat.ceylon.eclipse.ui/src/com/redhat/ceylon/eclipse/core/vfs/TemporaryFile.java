@@ -8,12 +8,20 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 
 public class TemporaryFile implements VirtualFile {
     private String path;
+    
     public TemporaryFile() {
         this("");
     }
+
     public TemporaryFile(String path) {
         this.path = path;
     }
+    
+    @Override
+    public boolean exists() {
+        return true;
+    }
+    
     @Override
     public boolean isFolder() {
         return true;

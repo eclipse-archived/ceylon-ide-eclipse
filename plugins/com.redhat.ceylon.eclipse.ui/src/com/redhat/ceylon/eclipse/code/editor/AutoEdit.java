@@ -16,7 +16,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_BRACKETS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_PARENS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_QUOTES;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.getTokenIndexAtCharacter;
 import static com.redhat.ceylon.eclipse.util.Nodes.getTokenIterator;
 import static java.lang.Character.isDigit;
@@ -38,6 +37,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
@@ -176,7 +176,7 @@ class AutoEdit extends Indents {
         String closing = null;
         
         boolean found=false;
-        IPreferenceStore store = getPreferences();
+        IPreferenceStore store = CeylonPlugin.getPreferences();
         for (String[] type: FENCES) {
             if (type[0].equals(current) || 
                     type[1].equals(current)) {
@@ -699,7 +699,7 @@ class AutoEdit extends Indents {
             
             StringBuilder buf = 
                     new StringBuilder(command.text);
-            IPreferenceStore store = getPreferences();
+            IPreferenceStore store = CeylonPlugin.getPreferences();
             boolean closeBrace = store==null || 
                     store.getBoolean(CLOSE_BRACES);
             int end = getEndOfCurrentLine();

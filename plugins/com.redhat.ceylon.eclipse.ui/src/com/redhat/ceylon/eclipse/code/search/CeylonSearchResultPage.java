@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeConten
 import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_PACKAGE;
 import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_PROJECT;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getOutlineFont;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FLAT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FOLDER_MODE;
@@ -16,7 +17,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PROJECT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.UNIT_MODE;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.jface.action.IAction.AS_CHECK_BOX;
 import static org.eclipse.search.ui.IContextMenuConstants.GROUP_VIEWER_SETUP;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
@@ -42,10 +42,14 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.search.ui.text.AbstractTextSearchViewPage;
 import org.eclipse.search.ui.text.Match;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.contexts.IContextActivation;
+import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.texteditor.ITextEditor;
 
@@ -74,7 +78,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
                 viewer.refresh();
             }
         };
-        getPreferences()
+        CeylonPlugin.getPreferences()
             .addPropertyChangeListener(
                     propertyChangeListener);
         getWorkbench().getThemeManager()
@@ -86,7 +90,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     public void dispose() {
         super.dispose();
         if (propertyChangeListener!=null) {
-            getPreferences()
+            CeylonPlugin.getPreferences()
                 .removePropertyChangeListener(
                         propertyChangeListener);
             getWorkbench().getThemeManager()
@@ -114,8 +118,27 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(new MatchCountingLabelProvider(this));
         viewer.setComparator(new CeylonViewerComparator());
+        viewer.getControl().setFont(getOutlineFont());
+        final IContextService contextService = 
+                (IContextService) 
+                    getWorkbench()
+                        .getService(IContextService.class);
         viewer.getControl()
-            .setFont(CeylonPlugin.getOutlineFont());
+                .addFocusListener(new FocusListener() {
+            private IContextActivation activation;
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (activation!=null) {
+                    contextService.deactivateContext(activation);
+                }
+            }
+            @Override
+            public void focusGained(FocusEvent e) {
+                activation = 
+                        contextService.activateContext(
+                                PLUGIN_ID + ".context");
+            }
+        });
     }
 
     @Override
@@ -333,7 +356,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     public void makeContributions(IMenuManager menuManager,
             IToolBarManager toolBarManager, 
             IStatusLineManager statusLineManager) {
-        final IPreferenceStore prefs = getPreferences();
+        final IPreferenceStore prefs = CeylonPlugin.getPreferences();
         final Action showLocAction = 
                 new Action("Show Full Paths", AS_CHECK_BOX) {
             @Override

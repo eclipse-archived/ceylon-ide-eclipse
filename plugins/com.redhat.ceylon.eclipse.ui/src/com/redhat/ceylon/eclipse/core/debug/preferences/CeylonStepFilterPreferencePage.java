@@ -63,7 +63,6 @@ import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.dialogs.SelectionDialog;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 /**
  * The preference page for Ceylon step filtering
@@ -108,7 +107,7 @@ public class CeylonStepFilterPreferencePage
      */
     public CeylonStepFilterPreferencePage() {
         super();
-        setPreferenceStore(EditorUtil.getPreferences());
+        setPreferenceStore(CeylonPlugin.getPreferences());
         setDescription("Preferences relating to debugging Ceylon programs."); 
     }
 

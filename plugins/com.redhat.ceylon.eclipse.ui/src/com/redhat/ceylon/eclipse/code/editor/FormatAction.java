@@ -180,7 +180,11 @@ final class FormatAction extends Action {
                         throw new IllegalStateException("No one should need this");
                     }
                 };
-                final int indentLevel = Indents.getIndent(unit.node, document).length() / Indents.getIndentSpaces();
+                final int indentLevel = Indents
+                        .getIndent(unit.node, document)
+                        .replace("\t", wsOptions.getIndentMode().indent(1))
+                        .length()
+                        / Indents.getIndentSpaces();
                 if (unit != formattingUnits.get(0)) {
                     // add indentation
                     builder.append(wsOptions.getIndentMode().indent(indentLevel));

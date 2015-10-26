@@ -2,10 +2,11 @@ package com.redhat.ceylon.eclipse.code.preferences;
 
 import static com.redhat.ceylon.common.Constants.DEFAULT_RESOURCE_DIR;
 import static com.redhat.ceylon.common.Constants.DEFAULT_SOURCE_DIR;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
+
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
 
@@ -71,7 +72,7 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
 
     @Override
     public void initializeDefaultPreferences() {
-        IPreferenceStore store = getPreferences();
+        IPreferenceStore store = CeylonPlugin.getPreferences();
         store.setDefault(AUTO_INSERT, true);
         store.setDefault(AUTO_INSERT_PREFIX, false);
         store.setDefault(AUTO_ACTIVATION, true);

@@ -77,6 +77,7 @@ import com.redhat.ceylon.model.loader.NamingBase.Prefix;
 import com.redhat.ceylon.model.loader.NamingBase.Suffix;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Modules;
@@ -838,9 +839,20 @@ public class JavaSearch {
             Scope scope = declaration.getContainer();
             while (!(scope instanceof Package)) {
                 if (scope instanceof Declaration) {
-                    ceylonContainingDeclaration = 
-                            (Declaration) scope;
-                    break;
+                    boolean shouldSkip = false;
+                    if (scope instanceof Value) {
+                        Value value = (Value) scope;
+                        if (! value.isShared()
+                                && ! value.isTransient()
+                                && value.getContainer() instanceof FunctionOrValue) {
+                            shouldSkip = true;
+                        }
+                    }
+                    if (!shouldSkip) {
+                        ceylonContainingDeclaration = 
+                                (Declaration) scope;
+                        break;
+                    }
                 }
                 if (scope instanceof Specification) {
                     Specification specification = 

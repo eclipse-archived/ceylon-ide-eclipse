@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.preferences;
 
 
 import static com.redhat.ceylon.eclipse.core.debug.preferences.CreateFilterDialog.showCreateFilterDialog;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.debug.internal.ui.SWTFactory.createPushButton;
 import static org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin.createAllPackagesDialog;
 import static org.eclipse.jdt.internal.debug.ui.JavaDebugOptionsManager.parseList;
@@ -87,7 +86,7 @@ public abstract class FiltersPreferencePage
     
     public FiltersPreferencePage() {
         super(GRID);
-        setPreferenceStore(getPreferences());
+        setPreferenceStore(CeylonPlugin.getPreferences());
     }
     
     protected Group createGroup(int cols, String text) {

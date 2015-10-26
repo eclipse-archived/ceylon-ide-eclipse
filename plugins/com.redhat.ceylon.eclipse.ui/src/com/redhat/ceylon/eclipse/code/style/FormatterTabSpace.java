@@ -3,7 +3,9 @@ package com.redhat.ceylon.eclipse.code.style;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AfterParamListClosingParen;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AfterParamListOpeningParen;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AfterSequenceEnumerationOpeningBrace;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AfterTypeArgOrParamListComma;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AfterTypeParamListComma;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AfterTypeArgListComma;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AroundTypeParamListEqualsSign;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AfterValueIteratorOpeningParenthesis;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AroundImportAliasEqualsSign;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_AroundSatisfiesOf;
@@ -71,7 +73,10 @@ public class FormatterTabSpace extends FormatterTabPage {
             + "    }\n"
             + "    print({ \"Here\", \"have\", \"an\", \"iterable\", \"enumeration\" });\n"
             + "    value hollowCubeVol = w*h*d - iW*iH*iD;\n"
-            + "}\n";
+            + "}\n"
+            + "\n"
+            + "void printTypeArgs<Param1=Anything, Param2=Nothing>()\n"
+            + "        => print(`Param1`.string + \" \" + `Param2`.string);\n";
 
     private CeylonPreview ceylonPreview;
 
@@ -94,8 +99,12 @@ public class FormatterTabSpace extends FormatterTabPage {
                 FORMATTER_space_AroundSatisfiesOf, FALSE_TRUE);
         createCheckboxPref(generalGroup, numColumns, "Spaces around '=' in 'import' alias",
                 FORMATTER_space_AroundImportAliasEqualsSign, FALSE_TRUE);
-        createCheckboxPref(generalGroup, numColumns, "Space after type argument or parameter list comma",
-                FORMATTER_space_AfterTypeArgOrParamListComma, FALSE_TRUE);
+        createCheckboxPref(generalGroup, numColumns, "Space after type parameter list comma",
+                FORMATTER_space_AfterTypeParamListComma, FALSE_TRUE);
+        createCheckboxPref(generalGroup, numColumns, "Space after type argument list comma",
+                FORMATTER_space_AfterTypeArgListComma, FALSE_TRUE);
+        createCheckboxPref(generalGroup, numColumns, "Space around '=' in default type arguments",
+                FORMATTER_space_AroundTypeParamListEqualsSign, FALSE_TRUE);
         createCheckboxPref(generalGroup, numColumns, "Space after control structure keyword ('if', 'for', etc.)",
                 FORMATTER_space_AfterControlStructureKeyword, FALSE_TRUE);
         createCheckboxPref(generalGroup, numColumns, "Force spaces around binary operator",

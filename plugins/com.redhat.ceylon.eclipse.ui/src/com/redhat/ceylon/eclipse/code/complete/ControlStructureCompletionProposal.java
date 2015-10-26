@@ -8,19 +8,21 @@ import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 
 import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
+import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.model.typechecker.model.Unit;
+import com.redhat.ceylon.model.typechecker.model.Value;
 
 class ControlStructureCompletionProposal extends CompletionProposal {
     
@@ -154,16 +156,22 @@ class ControlStructureCompletionProposal extends CompletionProposal {
         if (!dwp.isUnimported()) {
             if (d instanceof Value) {
                 TypedDeclaration v = (TypedDeclaration) d;
-                if (v.getType()!=null &&
-                        v.getType().getCaseTypes()!=null && 
+                Type type = v.getType();
+                if (type!=null &&
+                        type.getCaseTypes()!=null && 
                         !v.isVariable()) {
                     StringBuilder body = new StringBuilder();
                     String indent = getIndent(node, doc);
                     Unit unit = node.getUnit();
-                    for (Type pt: v.getType().getCaseTypes()) {
+                    for (Type pt: type.getCaseTypes()) {
                         body.append(indent).append("case (");
-                        if (pt.getDeclaration().isAnonymous()) {
-                            body.append(pt.getDeclaration().getName(unit));
+                        TypeDeclaration ctd = pt.getDeclaration();
+                        if (ctd.isAnonymous()) {
+                            if (!ctd.isToplevel()) {
+                                TypeDeclaration td = type.getDeclaration();
+                                body.append(td.getName(unit)).append('.');
+                            }
+                            body.append(ctd.getName(unit));
                         }
                         else {
                             body.append("is ")
@@ -195,11 +203,15 @@ class ControlStructureCompletionProposal extends CompletionProposal {
         this.cpc = cpc;
         this.declaration = dec;
     }
-    
+
     public String getAdditionalProposalInfo() {
-        return getDocumentationFor(cpc, declaration);    
+        return getAdditionalProposalInfo(null);
     }
 
+    public String getAdditionalProposalInfo(IProgressMonitor monitor) {
+        return getDocumentationFor(cpc, declaration, monitor);
+    }
+    
     @Override
     public Point getSelection(IDocument document) {
         int loc = text.indexOf('}');

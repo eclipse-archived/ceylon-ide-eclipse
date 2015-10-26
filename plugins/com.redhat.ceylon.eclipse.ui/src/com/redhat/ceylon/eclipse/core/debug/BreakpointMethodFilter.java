@@ -1,21 +1,26 @@
 package com.redhat.ceylon.eclipse.core.debug;
 
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.jdt.core.dom.Message;
 import org.eclipse.jdt.debug.core.IJavaBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaDebugTarget;
+import org.eclipse.jdt.debug.core.IJavaInterfaceType;
 import org.eclipse.jdt.debug.core.IJavaLineBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.internal.debug.core.model.JDIStackFrame;
 
+import com.redhat.ceylon.eclipse.code.editor.ToggleBreakpointAdapter;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIThread;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.sun.jdi.Method;
 
 public class BreakpointMethodFilter implements org.eclipse.jdt.debug.core.IJavaBreakpointListener {
-
+    
     @Override
     public void addingBreakpoint(IJavaDebugTarget target,
             IJavaBreakpoint breakpoint) {
@@ -24,9 +29,21 @@ public class BreakpointMethodFilter implements org.eclipse.jdt.debug.core.IJavaB
     @Override
     public int installingBreakpoint(IJavaDebugTarget target,
             IJavaBreakpoint breakpoint, IJavaType type) {
-//        breakpoint.getMarker().getResource();
-//        breakpoint.getMarker().getAttributes().get("lineNumber");
-        return INSTALL;
+        IMarker marker = breakpoint.getMarker();
+        if (marker != null) {
+            try {
+                if (CeylonPlugin.PLUGIN_ID.equals(marker.getAttribute(ToggleBreakpointAdapter.ORIGIN))) {
+                    if (type instanceof IJavaInterfaceType) {
+                        return DONT_INSTALL;
+                    }
+                    return INSTALL;
+                }
+            } catch (CoreException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        return DONT_CARE;
     }
 
     @Override

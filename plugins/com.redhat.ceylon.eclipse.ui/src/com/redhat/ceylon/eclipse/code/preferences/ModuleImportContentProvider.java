@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IProject;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.common.Backend;
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleNode;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchManager;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewContentProvider;
@@ -75,7 +76,7 @@ public abstract class ModuleImportContentProvider extends ModuleSearchViewConten
                 ModuleNode moduleNode = new ModuleNode(entry.getKey(), new ArrayList<ModuleVersionNode>(1));
                 Module m = entry.getValue();
                 ModuleVersionNode moduleVersion = new ModuleVersionNode(moduleNode, m.getVersion());
-                moduleVersion.setNativeBackend(m.getNativeBackend());
+                moduleVersion.setNativeBackend(m.getNativeBackends());
                 moduleNode.getVersions().add(moduleVersion);
                 list.add(moduleNode);
             }
@@ -87,7 +88,7 @@ public abstract class ModuleImportContentProvider extends ModuleSearchViewConten
                 if ((prefix.equals("java.|javax.")||name.startsWith(prefix)) && !excluded(module, name)) {
                     ModuleNode moduleNode = new ModuleNode(name, new ArrayList<ModuleVersionNode>(1));
                     ModuleVersionNode versionNode = new ModuleVersionNode(moduleNode, JDKUtils.jdk.version);
-                    versionNode.setNativeBackend(Backend.Java.nativeAnnotation);
+                    versionNode.setNativeBackend(Backends.fromAnnotation(Backend.Java.nativeAnnotation));
                     moduleNode.getVersions().add(versionNode);
                     list.add(moduleNode);
                 }

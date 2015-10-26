@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.util;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.MATCH_HIGHLIGHTING;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isJavaIdentifierStart;
 import static java.lang.Character.isLowerCase;
@@ -328,7 +327,7 @@ public class Highlights  {
 	    final Styler fontAndColorStyler = 
 	            new FontStyler(font, colorStyler);
         final String type = 
-                getPreferences()
+                CeylonPlugin.getPreferences()
                     .getString(MATCH_HIGHLIGHTING);
         if ("none".equals(type) || prefix.isEmpty()) {
             result.append(token, fontAndColorStyler);

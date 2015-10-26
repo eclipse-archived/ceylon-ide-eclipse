@@ -12,6 +12,7 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -26,7 +27,8 @@ import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
 
 public class ProjectSourceFile extends ModifiableSourceFile {
-    static private DeltaBuilderFactory deltaBuilderFactory = new DeltaBuilderFactory();
+    static private DeltaBuilderFactory deltaBuilderFactory = 
+            new DeltaBuilderFactory();
     
     public ProjectSourceFile(ProjectPhasedUnit phasedUnit) {
         super(phasedUnit);
@@ -39,36 +41,57 @@ public class ProjectSourceFile extends ModifiableSourceFile {
 
     @Override
     public IProject getResourceProject() {
-        return getPhasedUnit().getResourceProject();
+        ProjectPhasedUnit phasedUnit = getPhasedUnit();
+        return phasedUnit==null ? null :
+            phasedUnit.getResourceProject();
     }
 
     
     @Override
     public IFile getResourceFile() {
-        return getPhasedUnit().getResourceFile();
+        ProjectPhasedUnit phasedUnit = getPhasedUnit();
+        return phasedUnit==null ? null :
+            phasedUnit.getResourceFile();
     }
 
     @Override
     public IFolder getResourceRootFolder() {
-        return getPhasedUnit().getResourceRootFolder();
+        ProjectPhasedUnit phasedUnit = getPhasedUnit();
+        return phasedUnit==null ? null :
+            phasedUnit.getResourceRootFolder();
     }
     
     public CompilationUnitDelta buildDeltaAgainstModel() {
         try {
             final ProjectPhasedUnit modelPhaseUnit = getPhasedUnit();
             if (modelPhaseUnit != null) {
-                final FileVirtualFile<IResource, IFolder, IFile> virtualSrcFile = vfsJ2C.createVirtualFile(modelPhaseUnit.getResourceFile());
-                final FolderVirtualFile<IResource, IFolder, IFile> virtualSrcDir = vfsJ2C.createVirtualFolder(modelPhaseUnit.getResourceRootFolder());
-                final TypeChecker currentTypechecker = modelPhaseUnit.getTypeChecker();
-                final ModuleManager currentModuleManager = currentTypechecker.getPhasedUnits().getModuleManager();
-                final ModuleSourceMapper currentModuleSourceMapper = currentTypechecker.getPhasedUnits().getModuleSourceMapper();
-                Package singleSourceUnitPackage = new SingleSourceUnitPackage(getPackage(), virtualSrcFile.getPath());
-                PhasedUnit lastPhasedUnit = new CeylonSourceParser<PhasedUnit>() {
+                final FileVirtualFile<IResource, IFolder, IFile> 
+                virtualSrcFile = 
+                        vfsJ2C.createVirtualFile(
+                                modelPhaseUnit.getResourceFile());
+                final FolderVirtualFile<IResource, IFolder, IFile> 
+                virtualSrcDir = 
+                        vfsJ2C.createVirtualFolder(
+                                modelPhaseUnit.getResourceRootFolder());
+                final TypeChecker currentTypechecker = 
+                        modelPhaseUnit.getTypeChecker();
+                PhasedUnits phasedUnits = 
+                        currentTypechecker.getPhasedUnits();
+                final ModuleManager currentModuleManager = 
+                        phasedUnits.getModuleManager();
+                final ModuleSourceMapper currentModuleSourceMapper = 
+                        phasedUnits.getModuleSourceMapper();
+                Package singleSourceUnitPackage = 
+                        new SingleSourceUnitPackage(getPackage(), 
+                                virtualSrcFile.getPath());
+                PhasedUnit lastPhasedUnit = 
+                        new CeylonSourceParser<PhasedUnit>() {
                     
                     @Override
                     protected String getCharset() {
                         try {
-                            return modelPhaseUnit.getResourceProject().getDefaultCharset();
+                            return modelPhaseUnit.getResourceProject()
+                                    .getDefaultCharset();
                         }
                         catch (Exception e) {
                             throw new RuntimeException(e);
@@ -77,7 +100,9 @@ public class ProjectSourceFile extends ModifiableSourceFile {
                     
                     @SuppressWarnings("unchecked")
                     @Override
-                    protected PhasedUnit createPhasedUnit(CompilationUnit cu, Package pkg, CommonTokenStream tokenStream) {
+                    protected PhasedUnit createPhasedUnit(
+                            CompilationUnit cu, Package pkg, 
+                            CommonTokenStream tokenStream) {
                         return new PhasedUnit(virtualSrcFile, 
                                 virtualSrcDir, cu, pkg, 
                                 currentModuleManager, 
@@ -109,8 +134,10 @@ public class ProjectSourceFile extends ModifiableSourceFile {
                     UnknownTypeCollector utc = new UnknownTypeCollector();
                     lastPhasedUnit.getCompilationUnit().visit(utc);
 
-                    if (lastPhasedUnit.getCompilationUnit().getErrors().isEmpty()) {
-                        return deltaBuilderFactory.buildDeltas(modelPhaseUnit, lastPhasedUnit);
+                    if (lastPhasedUnit.getCompilationUnit()
+                            .getErrors().isEmpty()) {
+                        return deltaBuilderFactory.buildDeltas(
+                                modelPhaseUnit, lastPhasedUnit);
                     }
                 }
             }

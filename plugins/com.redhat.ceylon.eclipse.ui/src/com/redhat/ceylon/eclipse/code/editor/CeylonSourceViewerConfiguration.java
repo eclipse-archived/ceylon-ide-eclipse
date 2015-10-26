@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_ACTIVATION_DELAY;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT_PREFIX;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.jface.dialogs.DialogSettings.getOrCreateSection;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
@@ -164,7 +163,7 @@ public class CeylonSourceViewerConfiguration
 
     static void configCompletionPopup(
             ContentAssistant contentAssistant) {
-        IPreferenceStore preferenceStore = getPreferences();
+        IPreferenceStore preferenceStore = CeylonPlugin.getPreferences();
         if (preferenceStore!=null) {
             contentAssistant.enableAutoInsert(
                     preferenceStore.getBoolean(AUTO_INSERT));

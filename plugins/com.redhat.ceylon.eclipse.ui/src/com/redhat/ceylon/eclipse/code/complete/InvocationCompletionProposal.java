@@ -29,9 +29,11 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImag
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CHAIN_LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INEXACT_MATCHES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getCompletionFont;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getPreferences;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
 import static com.redhat.ceylon.eclipse.util.Escaping.escapeName;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.addLinkedPosition;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.installLinkedMode;
@@ -39,6 +41,8 @@ import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.SATISFIES;
 import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.TYPE_ALIAS;
+import static com.redhat.ceylon.eclipse.util.OccurrenceLocation.UPPER_BOUND;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getContainingClassOrInterface;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 
 import java.util.ArrayList;
@@ -47,6 +51,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -69,12 +74,11 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
@@ -111,14 +115,15 @@ class InvocationCompletionProposal extends CompletionProposal {
                 offset, prefix,
                 dec.getName(unit), escapeName(dec, unit),
                 dec, dec.getReference(), scope, controller, 
-                true, false, false, isMember, null));
+                true, false, false, false, isMember, null));
     }
     
     static void addReferenceProposal(
             int offset, String prefix, 
             final CeylonParseController controller, 
             List<ICompletionProposal> result, 
-            DeclarationWithProximity dwp, Scope scope, boolean isMember, 
+            DeclarationWithProximity dwp, 
+            Scope scope, boolean isMember, 
             Reference pr, OccurrenceLocation ol) {
         Unit unit = controller.getLastCompilationUnit().getUnit();
         Declaration dec = dwp.getDeclaration();
@@ -129,7 +134,10 @@ class InvocationCompletionProposal extends CompletionProposal {
                     getDescriptionFor(dwp, unit, true),
                     getTextFor(dec, unit), 
                     dec, pr, scope, controller, 
-                    true, false, false, 
+                    true, false, false,
+                    ol==UPPER_BOUND || 
+                    ol==EXTENDS || 
+                    ol==SATISFIES,
                     isMember, null));
             Generic g = (Generic) dec;
             if (g.getTypeParameters().isEmpty()) {
@@ -143,14 +151,14 @@ class InvocationCompletionProposal extends CompletionProposal {
                 dec instanceof Class && 
                     ((Class) dec).isAbstract();
         if ((!isAbstract && 
-                ol!=EXTENDS && ol!=SATISFIES && 
+                ol!=EXTENDS && ol!=SATISFIES && ol!=UPPER_BOUND ||
                 ol!=CLASS_ALIAS && ol!=TYPE_ALIAS)) {
             result.add(new InvocationCompletionProposal(
                     offset, prefix,
                     getDescriptionFor(dwp, unit, false),
                     escapeName(dec, unit), 
                     dec, pr, scope, controller, 
-                    true, false, false, 
+                    true, false, false, false, 
                     isMember, null));
         }
     }
@@ -162,7 +170,9 @@ class InvocationCompletionProposal extends CompletionProposal {
             Declaration dec, Scope scope, 
             boolean isMember, Reference pr,
             Type requiredType, OccurrenceLocation ol) {
-        Unit unit = controller.getLastCompilationUnit().getUnit();
+        Unit unit = 
+                controller.getLastCompilationUnit()
+                    .getUnit();
         Type type = pr.getType();
         if (type!=null) {
             if (!(dec instanceof Functional) && 
@@ -247,7 +257,11 @@ class InvocationCompletionProposal extends CompletionProposal {
                             m, ol, ptr, unit, false, null);
             result.add(new InvocationCompletionProposal(
                     offset, prefix, desc, text, m, ptr, scope, 
-                    controller, true, true, false, true, dec));
+                    controller, true, true, false,
+                    ol==UPPER_BOUND ||
+                    ol==EXTENDS || 
+                    ol==SATISFIES,
+                    true, dec));
         }
     }
     
@@ -287,6 +301,10 @@ class InvocationCompletionProposal extends CompletionProposal {
                 boolean named = 
                         exact ||
                         "both".equals(inexactMatches);
+                boolean inheritance = 
+                        ol==UPPER_BOUND ||
+                        ol==EXTENDS || 
+                        ol==SATISFIES;
                 if (positional && 
                         parameterList.isPositionalParametersSupported() &&
                         (!isAbstract || 
@@ -305,7 +323,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                                         typeArgs);
                         result.add(new InvocationCompletionProposal(
                                 offset, prefix, desc, text, dec, pr, scope, 
-                                controller, false, true, false, isMember, null));
+                                controller, false, true, false, 
+                                inheritance, isMember, null));
                     }
                     String desc = 
                             getPositionalInvocationDescriptionFor(
@@ -317,7 +336,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                                     typeArgs);
                     result.add(new InvocationCompletionProposal(
                             offset, prefix, desc, text, dec, pr, scope, 
-                            controller, true, true, false, isMember, null));
+                            controller, true, true, false, 
+                            inheritance, isMember, null));
                 }
                 if (named && 
                         parameterList.isNamedParametersSupported() &&
@@ -339,7 +359,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                                         typeArgs);
                         result.add(new InvocationCompletionProposal(
                                 offset, prefix, desc, text, dec, pr, scope, 
-                                controller, false, false, true, isMember, null));
+                                controller, false, false, true, 
+                                inheritance, isMember, null));
                     }
                     if (!ps.isEmpty()) {
                         String desc = 
@@ -352,7 +373,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                                         typeArgs);
                         result.add(new InvocationCompletionProposal(
                                 offset, prefix, desc, text, dec, pr, scope, 
-                                controller, true, false, true, isMember, null));
+                                controller, true, false, true, 
+                                inheritance, isMember, null));
                     }
                 }
             }
@@ -483,7 +505,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             StyledString result = new StyledString();
             Highlights.styleFragment(result, 
                     getDisplayString(), false, null, 
-                    CeylonPlugin.getCompletionFont());
+                    getCompletionFont());
             return result;
         }
 
@@ -615,7 +637,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             StyledString result = new StyledString();
             Highlights.styleFragment(result, 
                     getDisplayString(), false, null, 
-                    CeylonPlugin.getCompletionFont());
+                    getCompletionFont());
             return result;
         }
         
@@ -682,6 +704,7 @@ class InvocationCompletionProposal extends CompletionProposal {
     private final boolean positionalInvocation;
     private final boolean qualified;
     private Declaration qualifyingValue;
+    private boolean inheritance;
     
     private InvocationCompletionProposal(
             int offset, String prefix, 
@@ -692,7 +715,8 @@ class InvocationCompletionProposal extends CompletionProposal {
             CeylonParseController controller, 
             boolean includeDefaulted,
             boolean positionalInvocation, 
-            boolean namedInvocation, 
+            boolean namedInvocation,
+            boolean inheritance,
             boolean qualified, 
             Declaration qualifyingValue) {
         super(offset, prefix, getImageForDeclaration(dec), 
@@ -704,6 +728,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         this.includeDefaulted = includeDefaulted;
         this.namedInvocation = namedInvocation;
         this.positionalInvocation = positionalInvocation;
+        this.inheritance = inheritance;
         this.qualified = qualified;
         this.qualifyingValue = qualifyingValue;
     }
@@ -751,7 +776,7 @@ class InvocationCompletionProposal extends CompletionProposal {
     @Override
     public void apply(IDocument document) {
         try {
-            EditorUtil.performChange(createChange(document));
+            performChange(createChange(document));
         }
         catch (BadLocationException e) {
             e.printStackTrace();
@@ -873,10 +898,14 @@ class InvocationCompletionProposal extends CompletionProposal {
         }
         return comma;
     }
-    
+
     public String getAdditionalProposalInfo() {
+        return getAdditionalProposalInfo(null);
+    }
+
+    public String getAdditionalProposalInfo(IProgressMonitor monitor) {
         return getDocumentationFor(cpc, declaration, 
-                producedReference);    
+                producedReference, monitor);
     }
     
     public void enterLinkedMode(IDocument document, 
@@ -973,6 +1002,16 @@ class InvocationCompletionProposal extends CompletionProposal {
         List<DeclarationWithProximity> proposals = 
                 getSortedProposedValues(scope, unit, 
                         exactName);
+        //very special case for print()
+        String dname = declaration.getQualifiedNameString();
+        boolean print = "ceylon.language::print".equals(dname);
+        if (print) {
+            for (String value: getAssignableLiterals(
+                    unit.getStringType(), unit)) {
+                props.add(new NestedLiteralCompletionProposal(
+                            value, loc, index));
+            }
+        }
         //stuff defined in the same block, along with
         //stuff with fuzzily-matching name 
         for (DeclarationWithProximity dwp: proposals) {
@@ -981,10 +1020,21 @@ class InvocationCompletionProposal extends CompletionProposal {
                         index, last, type, unit, dwp, null);
             }
         }
+        //this
+        ClassOrInterface ci = 
+                getContainingClassOrInterface(scope);
+        if (ci!=null) {
+            if (ci.getType().isSubtypeOf(type)) {
+                props.add(new NestedLiteralCompletionProposal(
+                        "this", loc, index));
+            }
+        }
         //literals
-        for (String value: getAssignableLiterals(type, unit)) {
-            props.add(new NestedLiteralCompletionProposal(
-                        value, loc, index));
+        if (!print) {
+            for (String value: getAssignableLiterals(type, unit)) {
+                props.add(new NestedLiteralCompletionProposal(
+                            value, loc, index));
+            }
         }
         //stuff with lower proximity
         for (DeclarationWithProximity dwp: proposals) {
@@ -1157,7 +1207,9 @@ class InvocationCompletionProposal extends CompletionProposal {
                             continue;
                         }
                     }
-                    if (isInBounds(tp.getSatisfiedTypes(), t)) {
+                    if (inheritance && tp.isSelfType() ? 
+                            scope.equals(td) : 
+                            isInBounds(tp.getSatisfiedTypes(), t)) {
                         props.add(new NestedCompletionProposal(
                                 dec, null, loc, index, true, ""));
                     }
@@ -1203,7 +1255,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                 boolean namedInvocation) {
             super(offset, "", "show parameters", "", dec, 
                     producedReference, scope, cpc, true, 
-                    true, namedInvocation, false, null);
+                    true, namedInvocation, false, false, 
+                    null);
         }
         @Override
         boolean isParameterInfo() {

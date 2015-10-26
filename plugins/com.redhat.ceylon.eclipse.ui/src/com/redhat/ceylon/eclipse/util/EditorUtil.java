@@ -43,7 +43,6 @@ import org.eclipse.jface.bindings.keys.IKeyLookup;
 import org.eclipse.jface.bindings.keys.KeyLookupFactory;
 import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.bindings.keys.KeyStroke;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRewriteTarget;
@@ -55,6 +54,8 @@ import org.eclipse.ltk.core.refactoring.IUndoManager;
 import org.eclipse.ltk.core.refactoring.RefactoringCore;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.search.ui.ISearchResultPage;
+import org.eclipse.search2.internal.ui.SearchView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyEvent;
@@ -68,6 +69,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -95,7 +97,6 @@ import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class EditorUtil {
@@ -125,7 +126,8 @@ public class EditorUtil {
 
     public static IFile getFile(IEditorInput input) {
         if (input instanceof IFileEditorInput) {
-            return ((IFileEditorInput) input).getFile();
+            IFileEditorInput fei = (IFileEditorInput) input;
+            return fei.getFile();
         }
         else {
             return null;
@@ -133,10 +135,11 @@ public class EditorUtil {
     }
 
     public static IFile getFile(IEditorPart editor) {
-        if (editor!=null && 
-                editor.getEditorInput() instanceof FileEditorInput) {
-            FileEditorInput input = (FileEditorInput) editor.getEditorInput();
-            if (input!=null) {
+        if (editor!=null) {
+            IEditorInput editorInput = editor.getEditorInput();
+            if (editorInput instanceof FileEditorInput) {
+                FileEditorInput input = 
+                        (FileEditorInput) editorInput;
                 return input.getFile();
             }
         }
@@ -180,6 +183,20 @@ public class EditorUtil {
         }
     }
     
+    public static ISearchResultPage getCurrentSearchResultPage() {
+        IWorkbenchPage activePage = getActivePage();
+        IWorkbenchPart part = 
+                activePage==null ? null :
+                    activePage.getActivePart();
+        if (part instanceof SearchView) {
+            SearchView searchView = (SearchView) part;
+            return searchView.getActivePage();
+        }
+        else {
+            return null;
+        }
+    }
+    
     public static Shell getShell() {
         IWorkbenchWindow activeWindow = 
                 getWorkbench()
@@ -187,15 +204,6 @@ public class EditorUtil {
         if (activeWindow != null) {
             return activeWindow.getShell();
         } else {
-            return null;
-        }
-    }
-
-    public static IPreferenceStore getPreferences() {
-        try {
-            return CeylonPlugin.getInstance().getPreferenceStore();
-        }
-        catch (Exception e) {
             return null;
         }
     }
@@ -709,8 +717,9 @@ public class EditorUtil {
                                                             relativePath.toString());
                                             if (unit instanceof ProjectPhasedUnit) {
                                                 if (instanceOfIFileVirtualFile(unit.getUnitFile())) {
-                                                    IFile newFile = 
-                                                            ((ProjectPhasedUnit)unit).getResourceFile();
+                                                    ProjectPhasedUnit ppu = 
+                                                            (ProjectPhasedUnit) unit;
+                                                    IFile newFile = ppu.getResourceFile();
                                                     if (newFile.exists() &&
                                                             getRootFolderType(newFile) 
                                                                     == RootFolderType.SOURCE) {

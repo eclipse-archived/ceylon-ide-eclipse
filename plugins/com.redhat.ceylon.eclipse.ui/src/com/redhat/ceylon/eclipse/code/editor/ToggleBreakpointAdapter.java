@@ -54,6 +54,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.IResourceAware;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunToLineTarget {
 
@@ -95,7 +96,9 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunTo
                 
                 if (!emptyLine) {
                     Tree.CompilationUnit rootNode = editor.getParseController().getLastCompilationUnit();
-                    location = getFirstValidLocation(rootNode, document, textSel);
+                    if (rootNode != null) {
+                        location = getFirstValidLocation(rootNode, document, textSel);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -247,6 +250,9 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunTo
         return null;
     }
 
+    
+    public static final String ORIGIN = CeylonPlugin.PLUGIN_ID + ".breakpointAttribute.Origin";
+    
     public IJavaStratumLineBreakpoint createLineBreakpoint(IFile file, int lineNumber, Map<String,Object> attributes, boolean isForRunToLine) throws CoreException {
         String srcFileName = file.getName();
         String srcPath = null;
@@ -276,7 +282,8 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunTo
         if (attributes == null) {
             attributes = new HashMap<String, Object>();
         }
-
+        attributes.put(ORIGIN, CeylonPlugin.PLUGIN_ID);
+        
         try {
             return JDIDebugModel.createStratumBreakpoint(isForRunToLine ? getWorkspace().getRoot() : file, null, srcFileName,
                     srcPath, classnamePattern, lineNumber, -1, -1, 0, !isForRunToLine, attributes);

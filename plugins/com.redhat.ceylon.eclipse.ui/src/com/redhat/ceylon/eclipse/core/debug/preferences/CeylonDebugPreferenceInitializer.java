@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.core.debug.preferences;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 
-import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 public class CeylonDebugPreferenceInitializer extends AbstractPreferenceInitializer {
 
@@ -17,7 +17,7 @@ public class CeylonDebugPreferenceInitializer extends AbstractPreferenceInitiali
     
     @Override
     public void initializeDefaultPreferences() {
-        IPreferenceStore store = EditorUtil.getPreferences();
+        IPreferenceStore store = CeylonPlugin.getPreferences();
         store.setDefault(ACTIVE_FILTERS_LIST,
                 "org.jboss.modules.*,ceylon.modules.*");
         store.setDefault(INACTIVE_FILTERS_LIST,

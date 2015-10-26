@@ -185,9 +185,11 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
         }
     }
 
-    protected void updateRefsFromMovedCeylonFile(final IProject project,
+    protected void updateRefsFromMovedCeylonFile(
+            final IProject project,
             final String newName, final String oldName,
-            final List<Change> changes, final PhasedUnit movedPhasedUnit,
+            final List<Change> changes, 
+            final PhasedUnit movedPhasedUnit,
             final List<Declaration> declarations) {
         final Map<Declaration,String> imports = 
                 new HashMap<Declaration,String>();

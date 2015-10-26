@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDec
 import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_PORT;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
 
@@ -71,7 +72,7 @@ public class CeylonTestLaunchDelegate extends ModuleLaunchDelegate {
                 project = CeylonTestUtil.getProject(entry.getProjectName());
                 projects.add(project);
                 for (Module m : getProjectDeclaredSourceModules(project)) {
-                    if (CeylonTestUtil.containsCeylonTestImport(m)) {
+                    if (CeylonTestUtil.containsCeylonTestImport(m) && CeylonTestUtil.checkNativeBackend(m, runAsJs ? LAUNCH_CONFIG_TYPE_JS : LAUNCH_CONFIG_TYPE)) {
                         moduleArgs.add(m.getNameAsString() + "/" + m.getVersion());
                         testArgs.add("module " + m.getNameAsString());
                     }

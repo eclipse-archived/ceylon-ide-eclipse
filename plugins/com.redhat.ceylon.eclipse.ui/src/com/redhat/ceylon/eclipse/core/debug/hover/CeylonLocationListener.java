@@ -96,7 +96,7 @@ final class CeylonLocationListener implements LocationListener {
             if (target!=null) {
                 String text = 
                         getDocumentationHoverText(target, 
-                                editor, null);
+                                editor, null, null);
                 DebugHoverInput input = 
                         new DebugHoverInput(
                                 control.getVariable(), 

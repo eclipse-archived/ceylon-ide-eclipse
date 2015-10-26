@@ -7,7 +7,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
@@ -19,6 +18,7 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 
 class CeylonOutlineLabelProvider 
@@ -56,7 +56,7 @@ class CeylonOutlineLabelProvider
             return node.getLabel(getPrefix(), getFont());
         }
         else if (element instanceof Declaration) {
-            IPreferenceStore prefs = getPreferences();
+            IPreferenceStore prefs = CeylonPlugin.getPreferences();
             return getQualifiedDescriptionFor((Declaration) element,
                     prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
                     prefs.getBoolean(PARAMS_IN_OUTLINES),

@@ -6,9 +6,9 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumen
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationForModule;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getPreferences;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
 import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
 
@@ -196,6 +196,11 @@ public class ModuleCompletions {
         
         @Override
         public String getAdditionalProposalInfo() {
+            return getAdditionalProposalInfo(null);
+        }
+        
+        @Override
+        public String getAdditionalProposalInfo(IProgressMonitor monitor) {
             Scope scope = node.getScope();
             Unit unit = node.getUnit();
             return JDKUtils.isJDKModule(name) ?
@@ -224,11 +229,15 @@ public class ModuleCompletions {
                     versioned.substring(len));
             this.name = name;
         }
-
+        
         @Override
         public String getAdditionalProposalInfo() {
-            return getDocumentationForModule(name, 
-                    JDKUtils.jdk.version, 
+            return getAdditionalProposalInfo(null);
+        }
+
+        @Override
+        public String getAdditionalProposalInfo(IProgressMonitor monitor) {
+            return getDocumentationForModule(name, JDKUtils.jdk.version, 
                     "This module forms part of the Java SDK.",
                     null, null);
         }

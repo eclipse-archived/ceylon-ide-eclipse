@@ -11,7 +11,8 @@ import referencedCeylonProject {
     JavaCeylonTopLevelClass_Referenced_Ceylon_Project,
     javaCeylonTopLevelObject_Referenced_Ceylon_Project,
     javaCeylonTopLevelMethod_Referenced_Ceylon_Project,
-    JavaClassInCeylonModule_Referenced_Ceylon_Project
+    JavaClassInCeylonModule_Referenced_Ceylon_Project,
+    CeylonTopLevelInterface_Referenced_Ceylon_Project
 }
 
 import source_and_binary_external_module {
@@ -23,7 +24,8 @@ import source_and_binary_external_module {
 import usedModule {
     CeylonTopLevelClass_Main_Ceylon_Project,
     ceylonTopLevelObject_Main_Ceylon_Project,
-    ceylonTopLevelMethod_Main_Ceylon_Project
+    ceylonTopLevelMethod_Main_Ceylon_Project,
+    CeylonTopLevelInterface_Main_Ceylon_Project
 }
 
 doc ("Run the module `mainModule`.")
@@ -57,4 +59,13 @@ shared void run() {
     value v11 = javaCeylonTopLevelObject_Referenced_Ceylon_Project;
     javaCeylonTopLevelMethod_Referenced_Ceylon_Project();
     value v12 = JavaClassInCeylonModule_Referenced_Ceylon_Project();
+
+    value v13 = object satisfies CeylonTopLevelInterface_Main_Ceylon_Project {};
+    v13.interfaceMethod(v13.interfaceAttribute);
+    v13.InterfaceClass(v13);
+    
+    value v14 = object satisfies CeylonTopLevelInterface_Referenced_Ceylon_Project {};
+    v14.interfaceMethod(v14.interfaceAttribute);
+    v14.InterfaceClass(v14);
+    
 }

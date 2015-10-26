@@ -21,7 +21,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_MODULE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_PACKAGE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static com.redhat.ceylon.model.cmr.JDKUtils.isJDKModule;
 import static com.redhat.ceylon.model.cmr.JDKUtils.isOracleJDKModule;
@@ -40,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -593,7 +593,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     }
 
     private StyledString label(Declaration dec) {
-        IPreferenceStore prefs = getPreferences();
+        IPreferenceStore prefs = CeylonPlugin.getPreferences();
         StyledString label = 
                 getQualifiedDescriptionFor(dec,
                     prefs.getBoolean(TYPE_PARAMS_IN_DIALOGS),
@@ -792,9 +792,12 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 unit instanceof JavaCompilationUnit) {
                 IResourceAware projectSourceFile = 
                         (IResourceAware) unit;
-                element.putString("projectName", 
-                        projectSourceFile.getResourceProject()
-                            .getName());
+                IProject project = 
+                        projectSourceFile.getResourceProject();
+                if (project!=null) {
+                    element.putString("projectName", 
+                            project.getName());
+                }
             }
         }
         
@@ -1036,7 +1039,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     }
 
     protected String getFilterListAsString(String preference) {
-        return getPreferences().getString(preference);
+        return CeylonPlugin.getPreferences().getString(preference);
     }
     
     private Filters filters = new Filters() {
@@ -1169,9 +1172,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 unit instanceof JavaCompilationUnit) {
                 IResourceAware sourceFile = 
                         (IResourceAware) unit;
-                return sourceFile.getResourceFile()
-                        .getFullPath()
-                        .toPortableString();
+                IFile ra = sourceFile.getResourceFile();
+                return ra==null ? null :
+                    ra.getFullPath().toPortableString();
             }
             else {
                 JDTModule mod = (JDTModule) module;
@@ -1287,7 +1290,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     selection.length==1 &&
                     selection[0] instanceof DeclarationProxy) {
                     browser.setText(getDocumentationFor(null, 
-                            toDeclaration(selection[0])));
+                            toDeclaration(selection[0]), null));
                 }
                 else {
                     if (emptyDoc==null) {
@@ -1387,7 +1390,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             if (target instanceof Declaration) {
                 String text = 
                         getDocumentationFor(null, 
-                                (Declaration) target);
+                                (Declaration) target, null);
                 if (text!=null) browser.setText(text);
             }
             if (target instanceof Package) {

@@ -13,11 +13,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 
 public class MoveOutInputPage extends UserInputWizardPage {
+    
     public MoveOutInputPage(String name) {
         super(name);
     }
@@ -66,6 +67,18 @@ public class MoveOutInputPage extends UserInputWizardPage {
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
         });
+        final Button delegate = new Button(result, SWT.CHECK);
+        delegate.setText("Leave original as delegate");
+        delegate.setSelection(false);
+        delegate.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                getMoveOutRefactoring().setLeaveDelegate();
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent event) {}
+        });
+        delegate.setEnabled(getMoveOutRefactoring().isMethod());
         text.addKeyListener(new SubwordIterator(text));
         text.selectAll();
         text.setFocus();

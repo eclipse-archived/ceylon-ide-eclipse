@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
+import static java.lang.Character.isWhitespace;
 import static java.util.Collections.singletonMap;
 
 import java.util.Collections;
@@ -21,15 +22,10 @@ import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModuleList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleNode;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -56,9 +52,8 @@ public class ModuleImportUtil {
                 moduleNames);
     }
 
-    public static void exportModuleImports(
-            IFile file, CompilationUnit cu, 
-            String moduleName) {
+    public static void exportModuleImports(IFile file, 
+            Tree.CompilationUnit cu, String moduleName) {
         TextFileChange textFileChange = 
                 new TextFileChange("Export Module Imports", 
                         file);
@@ -70,9 +65,8 @@ public class ModuleImportUtil {
         performChange(textFileChange);
     }
     
-    public static void removeModuleImports(
-            IFile file, CompilationUnit cu, 
-            List<String> moduleNames) {
+    public static void removeModuleImports(IFile file, 
+            Tree.CompilationUnit cu, List<String> moduleNames) {
         TextFileChange textFileChange = 
                 new TextFileChange("Remove Module Imports", 
                         file);
@@ -99,10 +93,9 @@ public class ModuleImportUtil {
                 addModuleImports(project, target, 
                         singletonMap(moduleName, 
                                 versionNode));
-        TypecheckerUnit unit = 
-                getDescriptorPhasedUnit(project, target)
-                    .getUnit();
-        gotoLocation(unit, 
+        ProjectPhasedUnit unit = 
+                getDescriptorPhasedUnit(project, target);
+        gotoLocation(unit.getUnit(), 
                 offset + moduleName.length() + 
                         getDefaultIndent().length() + 10, 
                 moduleVersion.length());
@@ -121,10 +114,11 @@ public class ModuleImportUtil {
                 unit.getCompilationUnit();
         IDocument doc = getDocument(textFileChange);
         for (String moduleName: moduleNames) {
-            List<ImportModule> importModules = 
+            Tree.ModuleDescriptor moduleDescriptor = 
                     compilationUnit.getModuleDescriptors()
-                        .get(0)
-                        .getImportModuleList()
+                        .get(0);
+            List<Tree.ImportModule> importModules = 
+                    moduleDescriptor.getImportModuleList()
                         .getImportModules();
             for (Tree.ImportModule im: importModules) {
                 String importedName = getImportedName(im);
@@ -155,7 +149,7 @@ public class ModuleImportUtil {
                 int stop = a.getEndIndex();
                 int start = a.getStartIndex();
                 try {
-                    while (Character.isWhitespace(doc.getChar(stop))) {
+                    while (isWhitespace(doc.getChar(stop))) {
                         stop++;
                     }
                 } catch (BadLocationException e) {
@@ -180,8 +174,8 @@ public class ModuleImportUtil {
                 moduleNamesAndVersions);
     }
 
-    public static int addModuleImports(
-            IFile file, CompilationUnit cu, IProject project, 
+    public static int addModuleImports(IFile file, 
+            Tree.CompilationUnit cu, IProject project, 
             Map<String, ModuleVersionNode> moduleNamesAndVersions) {
         TextFileChange textFileChange = 
                 new TextFileChange("Add Module Imports", 
@@ -189,17 +183,17 @@ public class ModuleImportUtil {
         textFileChange.setEdit(new MultiTextEdit());
         for (Map.Entry<String, ModuleVersionNode> entry: 
                 moduleNamesAndVersions.entrySet()) {
-            String nativeBackend;
+            Backends nativeBackend;
             String name = entry.getKey();
             String version = entry.getValue().getVersion();
-            if (CeylonBuilder.compileToJava(project) &&
-                CeylonBuilder.compileToJs(project)) {
+            /*if (CeylonBuilder.compileToJava(project) &&
+                CeylonBuilder.compileToJs(project)) {*/
                 nativeBackend = 
                         entry.getValue().getNativeBackend();
-            }
+            /*}
             else {
                 nativeBackend = null;
-            }
+            }*/
             InsertEdit edit = 
                     createAddEdit(cu, 
                             nativeBackend, name, version, 
@@ -224,10 +218,10 @@ public class ModuleImportUtil {
     }
     
     private static InsertEdit createAddEdit(
-            CompilationUnit unit, String backend,
+            Tree.CompilationUnit unit, Backends backend,
             String moduleName, String moduleVersion, 
             IDocument doc) {
-        ImportModuleList iml = getImportList(unit);    
+        Tree.ImportModuleList iml = getImportList(unit);    
         if (iml==null) return null;
         int offset;
         if (iml.getImportModules().isEmpty()) {
@@ -251,7 +245,7 @@ public class ModuleImportUtil {
 
     public static void appendImportStatement(
             StringBuilder importModule,
-            boolean shared, String backend,
+            boolean shared, Backends backend,
             String moduleName, String moduleVersion, 
             String newline) {
         importModule.append(newline)
@@ -279,12 +273,11 @@ public class ModuleImportUtil {
     }
 
     private static DeleteEdit createRemoveEdit(
-            CompilationUnit unit, 
-            String moduleName) {
-        ImportModuleList iml = getImportList(unit);    
+            Tree.CompilationUnit unit, String moduleName) {
+        Tree.ImportModuleList iml = getImportList(unit);    
         if (iml==null) return null;
-        ImportModule prev = null;
-        for (ImportModule im: iml.getImportModules()) {
+        Tree.ImportModule prev = null;
+        for (Tree.ImportModule im: iml.getImportModules()) {
             String ip = getImportedName(im);
             if (ip!=null && ip.equals(moduleName)) {
                 int startOffset = im.getStartIndex();
@@ -303,11 +296,10 @@ public class ModuleImportUtil {
     }
 
     private static InsertEdit createExportEdit(
-            CompilationUnit unit, 
-            String moduleName) {
-        ImportModuleList iml = getImportList(unit);    
+            Tree.CompilationUnit unit, String moduleName) {
+        Tree.ImportModuleList iml = getImportList(unit);    
         if (iml==null) return null;
-        for (ImportModule im: iml.getImportModules()) {
+        for (Tree.ImportModule im: iml.getImportModules()) {
             String ip = getImportedName(im);
             if (ip!=null && ip.equals(moduleName)) {
                 int startOffset = im.getStartIndex();
@@ -317,13 +309,14 @@ public class ModuleImportUtil {
         return null;
     }
 
-    private static ImportModuleList getImportList(
-            CompilationUnit unit) {
-        List<ModuleDescriptor> moduleDescriptors = 
+    private static Tree.ImportModuleList getImportList(
+            Tree.CompilationUnit unit) {
+        List<Tree.ModuleDescriptor> moduleDescriptors = 
                 unit.getModuleDescriptors();
         if (!moduleDescriptors.isEmpty()) {
-            return moduleDescriptors.get(0)
-                    .getImportModuleList();
+            Tree.ModuleDescriptor moduleDescriptor = 
+                    moduleDescriptors.get(0);
+            return moduleDescriptor.getImportModuleList();
         }
         else {
             return null;

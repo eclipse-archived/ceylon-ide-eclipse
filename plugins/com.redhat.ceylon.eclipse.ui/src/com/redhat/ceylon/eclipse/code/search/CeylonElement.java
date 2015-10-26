@@ -8,7 +8,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
 
 import org.eclipse.core.resources.IFile;
@@ -21,6 +20,7 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -143,7 +143,7 @@ public class CeylonElement {
             return label;
         }
         else {
-            IPreferenceStore prefs = getPreferences();
+            IPreferenceStore prefs = CeylonPlugin.getPreferences();
             return getQualifiedDescriptionFor(
                     proxy.get(), 
                     prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),

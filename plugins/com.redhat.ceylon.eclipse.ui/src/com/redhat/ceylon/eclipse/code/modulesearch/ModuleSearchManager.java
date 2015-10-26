@@ -20,6 +20,7 @@ import com.redhat.ceylon.cmr.api.ModuleVersionQuery;
 import com.redhat.ceylon.cmr.api.ModuleVersionResult;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.common.Backend;
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
@@ -184,10 +185,10 @@ public class ModuleSearchManager {
                     }
                 }
                 if (forJava && !forJs) {
-                    versionNode.setNativeBackend(Backend.Java.nativeAnnotation);
+                    versionNode.setNativeBackend(Backends.fromAnnotation(Backend.Java.nativeAnnotation));
                 }
                 if (!forJava && forJs) {
-                    versionNode.setNativeBackend(Backend.JavaScript.nativeAnnotation);
+                    versionNode.setNativeBackend(Backends.fromAnnotation(Backend.JavaScript.nativeAnnotation));
                 }
                 if (version.equals(detail.getLastVersion())) {
                     versionNode.setFilled(true);

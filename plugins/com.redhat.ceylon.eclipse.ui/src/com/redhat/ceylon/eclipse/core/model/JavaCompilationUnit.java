@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.core.model;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 
@@ -8,10 +9,12 @@ import com.redhat.ceylon.model.typechecker.model.Package;
 
 public class JavaCompilationUnit extends JavaUnit {
     ICompilationUnit typeRoot;
-
+    CeylonToJavaMatcher ceylonToJavaMatcher;
+    
     public JavaCompilationUnit(ICompilationUnit typeRoot, String fileName, String relativePath, String fullPath, Package pkg) {
         super(fileName, relativePath, fullPath, pkg);
         this.typeRoot = typeRoot;
+        ceylonToJavaMatcher = new CeylonToJavaMatcher(typeRoot);
     }
 
     @Override
@@ -20,8 +23,13 @@ public class JavaCompilationUnit extends JavaUnit {
     }
 
     @Override
-    public IJavaElement toJavaElement(final Declaration ceylonDeclaration) {
-        return new CeylonToJavaMatcher(this).searchInClass(ceylonDeclaration);
+    public IJavaElement toJavaElement(Declaration ceylonDeclaration, IProgressMonitor monitor) {
+        return ceylonToJavaMatcher.searchInClass(ceylonDeclaration, monitor);
+    }
+
+    @Override
+    public IJavaElement toJavaElement(Declaration ceylonDeclaration) {
+        return ceylonToJavaMatcher.searchInClass(ceylonDeclaration, null);
     }
 
     @Override

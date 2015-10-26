@@ -21,6 +21,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -510,19 +511,19 @@ public class AddAnnotionProposal extends CorrectionProposal {
                     if (node instanceof Tree.ImportPath) {
                         Tree.ImportPath ip = 
                                 (Tree.ImportPath) node;
-                        Module module = 
+                        Module module =
                                 (Module) ip.getModel();
-                        String backend = 
-                                module.getNativeBackend();
-                        TextFileChange change = 
+                        Backends backends =
+                                module.getNativeBackends();
+                        TextFileChange change =
                                 new TextFileChange(
-                                        "Declare Module Native", 
+                                        "Declare Module Native",
                                         file);
                         change.setEdit(new InsertEdit(
-                                that.getStartIndex(), 
-                                "native(\"" + backend + "\") "));
+                                that.getStartIndex(),
+                                "native(\"" + backends + "\") "));
                         proposals.add(new CorrectionProposal(
-                                "Declare module 'native(\"" + backend + "\")'", 
+                                "Declare module 'native(\"" + backends + "\")'",
                                 change, null));
                     }
                     super.visit(that);
@@ -530,21 +531,21 @@ public class AddAnnotionProposal extends CorrectionProposal {
                 @Override
                 public void visit(Tree.ImportModule that) {
                     if (that.getImportPath()==node) {
-                        Module module = 
+                        Module module =
                                 (Module)
                                     that.getImportPath()
                                         .getModel();
-                        String backend = 
-                                module.getNativeBackend();
-                        TextFileChange change = 
+                        Backends backends =
+                                module.getNativeBackends();
+                        TextFileChange change =
                                 new TextFileChange(
-                                        "Declare Import Native", 
+                                        "Declare Import Native",
                                         file);
                         change.setEdit(new InsertEdit(
-                                that.getStartIndex(), 
-                                "native(\"" + backend + "\") "));
+                                that.getStartIndex(),
+                                "native(\"" + backends + "\") "));
                         proposals.add(new CorrectionProposal(
-                                "Declare import 'native(\"" + backend + "\")'", 
+                                "Declare import 'native(\"" + backends + "\")'",
                                 change, null));
                     }
                     super.visit(that);

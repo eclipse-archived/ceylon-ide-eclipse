@@ -58,7 +58,7 @@
             the module descriptor, just before the closing brace:
             <br/>
             <br/>
-            <b>import ceylon.math "1.1.1";</b>
+            <b>import ceylon.math "1.2.0";</b>
             <br/>
             <br/>
             Remember to save the file.

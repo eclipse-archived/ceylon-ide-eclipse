@@ -45,6 +45,15 @@ public class JDTUtils {
         return result;
     }
 
+    public static String getFlatName(TypeBinding type) {
+        StringBuilder builder = new StringBuilder();
+        char[] packageName = type.qualifiedPackageName();
+        if (packageName != CharOperation.NO_CHAR) {
+            builder.append(packageName).append('.');
+        }
+        return builder.append(new String(type.qualifiedSourceName()).replace('.', '$')).toString();
+    }
+    
     public static String getFullyQualifiedName(TypeBinding type) {
         StringBuilder builder = new StringBuilder();
         char[] packageName = type.qualifiedPackageName();

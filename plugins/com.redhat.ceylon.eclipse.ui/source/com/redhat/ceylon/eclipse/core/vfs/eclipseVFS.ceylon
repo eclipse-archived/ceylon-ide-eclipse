@@ -102,6 +102,7 @@ shared class IFolderVirtualFile
             .makeRelativeTo(srcDir.nativeResource.projectRelativePath)
                 .segments()).coalesced.sequence();
     }
+    shared actual Boolean \iexists() => nativeResource.accessible;
 }
 
 shared class IFileVirtualFile
@@ -146,5 +147,6 @@ shared class IFileVirtualFile
         }
 
     }
+    shared actual Boolean \iexists() => nativeResource.accessible;
 }
 

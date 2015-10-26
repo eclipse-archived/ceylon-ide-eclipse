@@ -274,6 +274,7 @@ public class HTML {
                 break;
             case CeylonLexer.STRING_LITERAL:
             case CeylonLexer.STRING_START:
+            case CeylonLexer.STRING_END:
             case CeylonLexer.STRING_MID:
             case CeylonLexer.VERBATIM_STRING:
                 result.append("<span style='color:"+sc+"'>").append(s).append("</span>");

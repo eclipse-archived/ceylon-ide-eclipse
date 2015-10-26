@@ -24,7 +24,7 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.IWorkbenchPage;
 
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
  * Manages options for the Ceylon Debugger
@@ -79,7 +79,7 @@ public class CeylonDebugOptionsManager
         DebugPlugin debugPlugin = DebugPlugin.getDefault();
         debugPlugin.getLaunchManager().removeLaunchListener(this);
         debugPlugin.removeDebugEventListener(this);
-        EditorUtil.getPreferences().removePropertyChangeListener(this);
+        CeylonPlugin.getPreferences().removePropertyChangeListener(this);
     }   
 
     /**
@@ -88,7 +88,7 @@ public class CeylonDebugOptionsManager
      * @param target Ceylon debug target
      */
     protected void notifyTargetOfPropertyChanges(CeylonJDIDebugTarget target) {
-        IPreferenceStore store = EditorUtil.getPreferences();
+        IPreferenceStore store = CeylonPlugin.getPreferences();
         String[] filters = parseList(store.getString(ACTIVE_FILTERS_LIST));
         target.setCeylonStepFilters(filters);
         target.setCeylonStepFiltersEnabled(store.getBoolean(USE_STEP_FILTERS));

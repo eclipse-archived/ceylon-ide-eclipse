@@ -34,6 +34,10 @@ public class SourceCodeVirtualFile implements VirtualFile {
         name = path.toFile().getName();
     }
     
+    public boolean exists() {
+        return true;
+    }
+    
     public boolean isFolder() {
         return false;
     }

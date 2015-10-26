@@ -28,7 +28,6 @@ import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.getJdiProducedType
 import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.producedTypeFromTypeDescriptor;
 import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.toModelProducedType;
 import static com.redhat.ceylon.eclipse.core.debug.hover.CeylonDebugHover.jdiVariableForTypeParameter;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPreferences;
 import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATIONS;
 import static com.redhat.ceylon.eclipse.util.Highlights.ANNOTATION_STRINGS;
 import static com.redhat.ceylon.eclipse.util.Highlights.CHARS;
@@ -56,6 +55,7 @@ import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
@@ -77,6 +77,7 @@ import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Configuration.Builder;
 import com.github.rjeschke.txtmark.Processor;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -90,6 +91,7 @@ import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.Class;
@@ -422,7 +424,7 @@ public class DocumentationHover extends SourceInfoHover {
                 Referenceable model = 
                         getReferencedDeclaration(node);
                 return getDocumentationHoverText(model, 
-                        editor, node);
+                        editor, node, null);
             }
         }
         else {
@@ -742,7 +744,7 @@ public class DocumentationHover extends SourceInfoHover {
         }
         else if (obj instanceof Declaration) {
             Declaration dec = (Declaration) obj;
-            if (getPreferences().getBoolean(ALTERNATE_ICONS)) {
+            if (CeylonPlugin.getPreferences().getBoolean(ALTERNATE_ICONS)) {
                 if (dec instanceof Class) {
                     if (dec.isAnonymous()) {
                         return "anonymousClass.png";
@@ -861,13 +863,13 @@ public class DocumentationHover extends SourceInfoHover {
      */
     public static String getDocumentationHoverText(
             Referenceable model, CeylonEditor editor, 
-            Node node) {
+            Node node, IProgressMonitor monitor) {
         CeylonParseController parseController = 
                 editor.getParseController();
         if (model instanceof Declaration) {
             Declaration dec = (Declaration) model;
             return getDocumentationFor(parseController, dec, 
-                    node, null);
+                    node, null, null);
         }
         else if (model instanceof Package) {
             Package dec = (Package) model;
@@ -1290,19 +1292,20 @@ public class DocumentationHover extends SourceInfoHover {
 
     public static String getDocumentationFor(
             CeylonParseController controller, 
-            Declaration dec) {
-        return getDocumentationFor(controller, dec, null, null);
+            Declaration dec,
+            IProgressMonitor monitor) {
+        return getDocumentationFor(controller, dec, null, null, monitor);
     }
     
     public static String getDocumentationFor(
             CeylonParseController controller, 
-            Declaration dec, Reference pr) {
-        return getDocumentationFor(controller, dec, null, pr);
+            Declaration dec, Reference pr, IProgressMonitor monitor) {
+        return getDocumentationFor(controller, dec, null, pr, monitor);
     }
     
     private static String getDocumentationFor(
             CeylonParseController controller, 
-            Declaration dec, Node node, Reference pr) {
+            Declaration dec, Node node, Reference pr, IProgressMonitor monitor) {
         if (dec==null) return null;
         if (dec instanceof FunctionOrValue) {
             FunctionOrValue value = (FunctionOrValue) dec;
@@ -1324,7 +1327,7 @@ public class DocumentationHover extends SourceInfoHover {
         if (!(dec instanceof NothingType)) {
             addPackageInfo(dec, buffer);
         }
-        boolean hasDoc = addDoc(dec, node, buffer);
+        boolean hasDoc = addDoc(dec, node, buffer, monitor);
         addRefinementInfo(dec, node, buffer, hasDoc, unit); //TODO: use the pr to get the qualifying type??
         addReturnType(dec, buffer, node, pr, obj, unit);
         addParameters(controller, dec, node, pr, buffer, unit);
@@ -1352,14 +1355,14 @@ public class DocumentationHover extends SourceInfoHover {
         }
         if (isVariable(dec)) buf.append("variable&nbsp;");
         if (dec.isNative()) buf.append("native");
-        String nativeBackend = dec.getNativeBackend();
-        if (nativeBackend!=null && !nativeBackend.isEmpty()) {
+        Backends nativeBackends = dec.getNativeBackends();
+        if (!nativeBackends.none() && !Backends.HEADER.equals(nativeBackends)) {
             String color = 
                     toHex(getCurrentThemeColor(ANNOTATION_STRINGS));
             buf.append("(<span style='color:")
                 .append(color)
                 .append("'>\"")
-                .append(nativeBackend)
+                .append(nativeBackends.toString())
                 .append("\"</span>)");
         }
         if (dec.isNative()) buf.append("&nbsp;");
@@ -1726,7 +1729,7 @@ public class DocumentationHover extends SourceInfoHover {
     }
 
     private static boolean addDoc(Declaration dec, 
-            Node node, StringBuilder buffer) {
+            Node node, StringBuilder buffer, IProgressMonitor monitor) {
         boolean hasDoc = false;
         Node rn = getReferencedNode(dec);
         if (rn instanceof Tree.Declaration) {
@@ -1747,7 +1750,7 @@ public class DocumentationHover extends SourceInfoHover {
                     buffer);
         }
         else {
-            appendJavadoc(dec, buffer);
+            appendJavadoc(dec, buffer, monitor);
         }
         return hasDoc;
     }
@@ -2134,9 +2137,9 @@ public class DocumentationHover extends SourceInfoHover {
     }
 
     private static void appendJavadoc(Declaration model,
-            StringBuilder buffer) {
+            StringBuilder buffer, IProgressMonitor monitor) {
         try {
-            appendJavadoc(getJavaElement(model), buffer);
+            appendJavadoc(getJavaElement(model, monitor), buffer);
         }
         catch (JavaModelException jme) {
             jme.printStackTrace();

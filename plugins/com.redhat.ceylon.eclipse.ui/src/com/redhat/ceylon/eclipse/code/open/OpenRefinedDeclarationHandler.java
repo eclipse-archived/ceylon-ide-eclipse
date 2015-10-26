@@ -47,7 +47,7 @@ public class OpenRefinedDeclarationHandler extends AbstractHandler {
             if (dec instanceof Declaration) {
                 Declaration refinedDeclaration = 
                         ((Declaration) dec).getRefinedDeclaration();
-                return !refinedDeclaration.equals(dec);
+                return !dec.equals(refinedDeclaration);
             }
             else {
                 return false;

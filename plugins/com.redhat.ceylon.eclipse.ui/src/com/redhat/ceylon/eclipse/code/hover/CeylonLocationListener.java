@@ -90,7 +90,7 @@ final class CeylonLocationListener implements LocationListener {
             if (target!=null) {
                 String text = 
                         getDocumentationHoverText(target, 
-                                editor, null);
+                                editor, null, null);
                 CeylonBrowserInput input = 
                         new CeylonBrowserInput(
                                 control.getInput(), 

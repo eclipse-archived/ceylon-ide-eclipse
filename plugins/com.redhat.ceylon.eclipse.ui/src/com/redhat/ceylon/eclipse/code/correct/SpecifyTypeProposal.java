@@ -5,6 +5,8 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeArgumentsProposal.addSpecifyTypeArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.TypeProposal.getTypeProposals;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.REVEAL;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
@@ -33,7 +35,6 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -64,7 +65,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
         int offset = typeNode.getStartIndex();
         int length = typeNode.getDistance();
         if (editor==null) {
-            IEditorPart ed = EditorUtil.getCurrentEditor();
+            IEditorPart ed = getCurrentEditor();
             if (ed instanceof CeylonEditor) {
                 editor = (CeylonEditor) ed;
             }
@@ -80,7 +81,7 @@ public class SpecifyTypeProposal implements ICompletionProposal,
                 String typeName = 
                         infType.asSourceCodeString(rootNode.getUnit());
                 change.addEdit(new ReplaceEdit(offset, length, typeName));
-                EditorUtil.performChange(change);
+                performChange(change);
                 offset += il;
                 length = typeName.length();
                 selection = new Point(offset, length);

@@ -19,6 +19,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
@@ -232,12 +233,9 @@ public class Navigation {
         if (unit instanceof IResourceAware) {
             IResourceAware ra = (IResourceAware) unit;
             IFile fileResource = ra.getResourceFile();
-            if (fileResource!=null) {
-                return fileResource.getLocation();
-            }
-            else {
-            	return new Path(unit.getFullPath());
-            }
+            return fileResource!=null ? 
+                    fileResource.getLocation() : 
+                    new Path(unit.getFullPath());
         }
         
         if ((unit instanceof ExternalSourceFile) ||
@@ -245,7 +243,8 @@ public class Navigation {
             CeylonUnit ceylonUnit = (CeylonUnit) unit;
             IdePhasedUnit externalPhasedUnit = 
                     ceylonUnit.getPhasedUnit();
-            VirtualFile file = externalPhasedUnit.getUnitFile();
+            VirtualFile file = 
+                    externalPhasedUnit.getUnitFile();
             return new Path(file.getPath());
         }
         
@@ -409,6 +408,11 @@ public class Navigation {
 
     public static IJavaElement getJavaElement(Declaration declaration)
             throws JavaModelException {
+        return getJavaElement(declaration, null);
+    }
+
+    public static IJavaElement getJavaElement(Declaration declaration, IProgressMonitor monitor)
+            throws JavaModelException {
         if (declaration instanceof Function && declaration.isAnnotation()) {
             Function fun = (Function) declaration;
             declaration = fun.getTypeDeclaration();
@@ -417,7 +421,7 @@ public class Navigation {
             final IJavaModelAware javaModelAware = 
                     (IJavaModelAware) 
                         declaration.getUnit();
-            return javaModelAware.toJavaElement(declaration);
+            return javaModelAware.toJavaElement(declaration, monitor);
         }
         return null;
     }
