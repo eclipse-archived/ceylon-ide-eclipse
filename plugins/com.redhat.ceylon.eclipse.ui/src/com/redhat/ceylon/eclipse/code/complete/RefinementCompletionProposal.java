@@ -401,7 +401,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         //nothing:
         props.add(new NestedCompletionProposal(
                 unit.getLanguageModuleDeclaration("nothing"),
-                loc));
+                loc, unit));
         //this:
         ClassOrInterface ci =
                 getContainingClassOrInterface(scope);

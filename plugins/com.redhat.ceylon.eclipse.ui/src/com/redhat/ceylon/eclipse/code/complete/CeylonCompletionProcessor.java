@@ -1261,6 +1261,21 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         return false;
     }
 
+    private static boolean isQualifiedType(Node node) {
+        if (node instanceof Tree.QualifiedType) {
+            return true;
+        }
+        else if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
+            Tree.QualifiedMemberOrTypeExpression qmte =
+                    (Tree.QualifiedMemberOrTypeExpression)
+                        node;
+            return qmte.getStaticMethodReference();
+        }
+        else {
+            return false;
+        }
+    }
+
     private static boolean noParametersFollow(CommonToken nextToken) {
         return nextToken==null ||
                 //should we disable this, since a statement

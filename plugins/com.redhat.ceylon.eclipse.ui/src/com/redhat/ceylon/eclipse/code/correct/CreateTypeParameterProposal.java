@@ -4,9 +4,7 @@ import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.asIntersecti
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultIndent;
-import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
-import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
+import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
@@ -83,10 +81,10 @@ class CreateTypeParameterProposal extends CorrectionProposal {
                     String string = doc.get(start, loc-start);
                     if (!string.trim().isEmpty()) {
                         text =
-                            getDefaultLineDelimiter(doc) +
-                            getIndent(decNode, doc) +
-                            getDefaultIndent() +
-                            getDefaultIndent() +
+                            indents().getDefaultLineDelimiter(doc) +
+                            indents().getIndent(decNode, doc) +
+                            indents().getDefaultIndent() +
+                            indents().getDefaultIndent() +
                             constraints;
                     }
                 }
