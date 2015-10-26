@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.common.Versions.JVM_BINARY_MAJOR_VERSION;
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
@@ -20,13 +21,13 @@ import org.eclipse.swt.graphics.Point;
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
-import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.model.cmr.JDKUtils;
+import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
 class AddModuleImportProposal 
@@ -119,14 +120,14 @@ class AddModuleImportProposal
                 }
             }
         }
-        
-        ModuleQuery query = getModuleQuery("", project);
+        Module module = unit.getPackage().getModule();
+        ModuleQuery query = 
+                getModuleQuery("", module, project);
         query.setMemberName(pkg);
         query.setMemberSearchPackageOnly(true);
         query.setMemberSearchExact(true);
         query.setCount(10l);
-        query.setBinaryMajor(
-                Versions.JVM_BINARY_MAJOR_VERSION);
+        query.setBinaryMajor(JVM_BINARY_MAJOR_VERSION);
         ModuleSearchResult msr = 
                 typeChecker
                     .getContext()

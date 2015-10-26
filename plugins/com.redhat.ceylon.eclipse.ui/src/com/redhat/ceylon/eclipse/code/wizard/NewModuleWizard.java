@@ -224,9 +224,11 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                             new ModuleImportContentProvider(null, getProject()) {
                         @Override
                         public ModuleSearchResult getModules(String prefix) {
-                            IProject project = page.getSourceDir().getJavaProject()
-                                    .getProject();
-                            return getModuleSearchResults(prefix, 
+                            IProject project = 
+                                    page.getSourceDir()
+                                        .getJavaProject()
+                                        .getProject();
+                            return getModuleSearchResults(prefix, null,
                                     getProjectTypeChecker(project), project);
                         }
                     }), getProject());

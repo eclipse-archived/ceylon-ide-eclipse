@@ -10,9 +10,12 @@ import org.eclipse.ui.PlatformUI;
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleVersionQuery;
+import com.redhat.ceylon.common.Backend;
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.model.typechecker.model.Module;
 
 public class ModuleQueries {
 
@@ -28,6 +31,23 @@ public class ModuleQueries {
             }
         }
         return new ModuleQuery(prefix, ModuleQuery.Type.CODE);
+    }
+
+    public static ModuleQuery getModuleQuery(String prefix, Module module, IProject project) {
+        if (module!=null) {
+            Backends backends = module.getNativeBackends();
+            if (backends!=null) {
+                boolean compileToJava = backends.supports(Backend.Java);
+                boolean compileToJs = backends.supports(Backend.JavaScript);
+                if (compileToJava&&!compileToJs) {
+                    return new ModuleQuery(prefix, ModuleQuery.Type.JVM);
+                }
+                if (compileToJs&&!compileToJava) {
+                    return new ModuleQuery(prefix, ModuleQuery.Type.JS);
+                }
+            }
+        }
+        return getModuleQuery(prefix, project);
     }
 
     public static ModuleVersionQuery getModuleVersionQuery(String name, String version, IProject project) {
@@ -49,20 +69,23 @@ public class ModuleQueries {
         private String prefix;
         private TypeChecker typeChecker;
         private IProject project;
+        private Module module;
 
         ModuleSearchResult result;
         
-        Runnable(String prefix, TypeChecker typeChecker, IProject project) {
+        Runnable(String prefix, TypeChecker typeChecker,
+                Module module, IProject project) {
             this.prefix = prefix;
             this.typeChecker = typeChecker;
             this.project = project;
+            this.module = module;
         }
         
         @Override
         public void run(IProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException {
             monitor.beginTask("Querying module repositories...", IProgressMonitor.UNKNOWN);
-            ModuleQuery query = getModuleQuery(prefix, project);
+            ModuleQuery query = getModuleQuery(prefix, module, project);
             query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
             result = typeChecker.getContext().getRepositoryManager().completeModules(query);
             monitor.done();
@@ -70,9 +93,12 @@ public class ModuleQueries {
         
     }
 
-    public static ModuleSearchResult getModuleSearchResults(String prefix,
+    public static ModuleSearchResult getModuleSearchResults(
+            String prefix, Module module,
             TypeChecker typeChecker, IProject project) {
-        Runnable runnable = new Runnable(prefix, typeChecker, project);
+        Runnable runnable = 
+                new Runnable(prefix, typeChecker, 
+                        module, project);
         try {
             PlatformUI.getWorkbench().getActiveWorkbenchWindow().run(true, true, runnable);
         }

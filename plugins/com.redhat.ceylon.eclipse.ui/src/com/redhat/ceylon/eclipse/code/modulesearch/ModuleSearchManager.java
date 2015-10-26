@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.modulesearch;
 
 import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
+import static com.redhat.ceylon.common.Versions.JVM_BINARY_MAJOR_VERSION;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleVersionQuery;
 
@@ -75,7 +76,7 @@ public class ModuleSearchManager {
     
     private ModuleQuery newModuleQuery(String search, IProject project) {
         ModuleQuery query = getModuleQuery(search, project);
-        query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+        query.setBinaryMajor(JVM_BINARY_MAJOR_VERSION);
         query.setCount(20l);
         return query;
     }

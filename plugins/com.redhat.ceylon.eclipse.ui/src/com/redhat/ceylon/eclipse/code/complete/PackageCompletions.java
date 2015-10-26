@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.common.Versions.JVM_BINARY_MAJOR_VERSION;
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.fullPath;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isModuleDescriptor;
@@ -42,7 +43,6 @@ import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
-import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -353,8 +353,10 @@ public class PackageCompletions {
                 withBody, node.getUnit(), cpc, result, monitor);
     }
 
-    private static void addPackageCompletions(int offset, String prefix,
-            String fullPath, boolean withBody, final Unit unit,
+    private static void addPackageCompletions(
+            int offset, String prefix,
+            String fullPath, boolean withBody, 
+            Unit unit,
             CeylonParseController controller, 
             List<ICompletionProposal> result, 
             IProgressMonitor monitor) {
@@ -382,8 +384,10 @@ public class PackageCompletions {
                         }
                         //TODO: completion filtering
                         if (!already) {
-                            result.add(new ImportedModulePackageProposal(offset, prefix,
-                                    packageName.substring(fullPath.length()), withBody, 
+                            result.add(new ImportedModulePackageProposal(
+                                    offset, prefix,
+                                    packageName.substring(fullPath.length()), 
+                                    withBody, 
                                     packageName, controller, candidate));
                             found = true;
                         }
@@ -393,11 +397,12 @@ public class PackageCompletions {
             if (!found && !unit.getPackage().getNameAsString().isEmpty()) {
                 IProject project = controller.getProject();
                 monitor.subTask("querying module repositories...");
-                ModuleQuery query = getModuleQuery("", project);
+                ModuleQuery query = 
+                        getModuleQuery("", module, project);
                 query.setMemberName(fullPrefix);
                 query.setMemberSearchPackageOnly(true);
                 query.setMemberSearchExact(false);
-                query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+                query.setBinaryMajor(JVM_BINARY_MAJOR_VERSION);
                 ModuleSearchResult msr = 
                         controller.getTypeChecker()
                             .getContext()

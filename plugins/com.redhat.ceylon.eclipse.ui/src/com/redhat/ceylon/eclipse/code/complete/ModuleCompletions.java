@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.common.Versions.JVM_BINARY_MAJOR_VERSION;
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.fullPath;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
@@ -34,7 +35,6 @@ import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
-import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -255,7 +255,7 @@ public class ModuleCompletions {
     }
     
     static void addModuleCompletions(
-            CeylonParseController cpc, 
+            CeylonParseController controller, 
             int offset, String prefix, 
             Tree.ImportPath path, Node node, 
             List<ICompletionProposal> result, 
@@ -264,14 +264,14 @@ public class ModuleCompletions {
         String fullPath = fullPath(offset, prefix, path);
         addModuleCompletions(offset, prefix, node, result, 
                 fullPath.length(), fullPath+prefix, 
-                cpc, withBody, monitor);
+                controller, withBody, monitor);
     }
 
-    private static void addModuleCompletions(int offset, 
-            String prefix, Node node, 
+    private static void addModuleCompletions(
+            int offset,  String prefix, Node node, 
             List<ICompletionProposal> result, 
             int len, String pfp, 
-            CeylonParseController cpc, 
+            CeylonParseController controller, 
             boolean withBody,
             IProgressMonitor monitor) {
         if (pfp.startsWith("java.")) {
@@ -279,7 +279,7 @@ public class ModuleCompletions {
                     new TreeSet<String>
                         (JDKUtils.getJDKModuleNames())) {
                 if (name.startsWith(pfp) &&
-                        !moduleAlreadyImported(cpc, name)) {
+                        !moduleAlreadyImported(controller, name)) {
                     result.add(new JDKModuleProposal(offset, 
                             prefix, len,
                             getModuleString(withBody, name, 
@@ -289,12 +289,18 @@ public class ModuleCompletions {
             }
         }
         else {
-            TypeChecker typeChecker = cpc.getTypeChecker();
+            TypeChecker typeChecker = 
+                    controller.getTypeChecker();
             if (typeChecker!=null) {
-                IProject project = cpc.getProject();
+                IProject project = controller.getProject();
+                Module mod = 
+                        controller.getLastPhasedUnit()
+                            .getPackage()
+                            .getModule();
                 monitor.subTask("querying module repositories...");
-                ModuleQuery query = getModuleQuery(pfp, project);
-                query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+                ModuleQuery query = 
+                        getModuleQuery(pfp, mod, project);
+                query.setBinaryMajor(JVM_BINARY_MAJOR_VERSION);
                 final ModuleSearchResult results = 
                         typeChecker.getContext()
                                 .getRepositoryManager()
@@ -306,24 +312,26 @@ public class ModuleCompletions {
                 for (ModuleDetails module: results.getResults()) {
                     final String name = module.getName();
                     if (!name.equals(Module.DEFAULT_MODULE_NAME) && 
-                            !moduleAlreadyImported(cpc, name)) {
+                            !moduleAlreadyImported(controller, name)) {
                         if (getPreferences()
                                 .getBoolean(LINKED_MODE_ARGUMENTS)) {
                             result.add(new ModuleProposal(
                                     offset, prefix, len, 
-                                    getModuleString(withBody, name, 
+                                    getModuleString(
+                                            withBody, name, 
                                             module.getLastVersion()
                                                 .getVersion()), 
-                                            module, withBody, 
-                                            module.getLastVersion(), 
-                                            name, node));
+                                    module, withBody, 
+                                    module.getLastVersion(), 
+                                    name, node));
                         }
                         else {
                             for (final ModuleVersionDetails version: 
                                 module.getVersions().descendingSet()) {
                                 result.add(new ModuleProposal(
                                         offset, prefix, len, 
-                                        getModuleString(withBody, name, 
+                                        getModuleString(
+                                                withBody, name, 
                                                 version.getVersion()), 
                                         module, withBody, 
                                         version, name, node));

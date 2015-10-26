@@ -558,7 +558,7 @@ public class CeylonModulePropertiesPage extends PropertyPage
                         project) {
             @Override
             public ModuleSearchResult getModules(String prefix) {
-                return getModuleSearchResults(prefix, 
+                return getModuleSearchResults(prefix, getModule(),
                         getProjectTypeChecker(project), project);
             }
         };
