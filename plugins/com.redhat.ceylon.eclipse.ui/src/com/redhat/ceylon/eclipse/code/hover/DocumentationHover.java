@@ -1732,6 +1732,9 @@ public class DocumentationHover extends SourceInfoHover {
             Node node, StringBuilder buffer, IProgressMonitor monitor) {
         boolean hasDoc = false;
         Node rn = getReferencedNode(dec);
+        if (rn instanceof Tree.SpecifierStatement) {
+            rn = getReferencedNode(dec.getRefinedDeclaration());
+        }
         if (rn instanceof Tree.Declaration) {
             Tree.Declaration refnode = 
                     (Tree.Declaration) rn;
