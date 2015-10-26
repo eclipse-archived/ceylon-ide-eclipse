@@ -123,7 +123,6 @@ import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.model.cmr.ArtifactResult;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.loader.JvmBackendUtil;
-import com.redhat.ceylon.model.loader.LanguageAnnotation;
 import com.redhat.ceylon.model.loader.ModelResolutionException;
 import com.redhat.ceylon.model.loader.Timer;
 import com.redhat.ceylon.model.loader.TypeParser;
@@ -1488,6 +1487,22 @@ public class JDTModelLoader extends AbstractModelLoader {
     @Override
     protected void logVerbose(String message) {
         //System.err.println("NOTE: "+message);
+    }
+    
+    @Override
+    public ClassMirror[] getClassMirrorsToRemove(com.redhat.ceylon.model.typechecker.model.Declaration declaration) {
+        ClassMirror[] mirrors = super.getClassMirrorsToRemove(declaration);
+        if (mirrors != null && mirrors.length == 0) {
+            Unit unit = declaration.getUnit();
+            if (unit instanceof SourceFile) {
+                String fqn = getToplevelQualifiedName(unit.getPackage().getNameAsString(), declaration.getNameAsString());
+                SourceDeclarationHolder holder = sourceDeclarations.get(fqn);
+                if (holder != null) {
+                    return new ClassMirror[] { new SourceClass(holder) };
+                }
+            }
+        }
+        return mirrors;
     }
     
     @Override

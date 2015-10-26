@@ -23,6 +23,8 @@ public class SourceClass implements ClassMirror {
 
     private SourceDeclarationHolder sourceDeclarationHolder;
     private String cacheKey;
+    private String qualifiedName;
+    private String flatName;
 
 
     public SourceClass(SourceDeclarationHolder sourceDeclarationHolder) {
@@ -90,7 +92,7 @@ public class SourceClass implements ClassMirror {
     
     @Override
     public boolean isAnonymous() {
-        return false; // TODO : is it really right ?
+        return getModelDeclaration().isAnonymous();
     }
 
     @Override
@@ -100,13 +102,30 @@ public class SourceClass implements ClassMirror {
 
     @Override
     public String getQualifiedName() {
-        return getModelDeclaration().getQualifiedNameString();
+        if(qualifiedName == null) {
+            String ceylonQualifiedName = getModelDeclaration().getQualifiedNameString();
+            if (ceylonQualifiedName != null){
+                qualifiedName = ceylonQualifiedName.replace("::", ".");
+            }
+        }
+        return qualifiedName;
     }
 
     @Override
     public String getFlatName() {
-        // should be good
-        return getQualifiedName();
+        if(flatName == null) {
+            String ceylonQualifiedName = getModelDeclaration().getQualifiedNameString();
+            if (ceylonQualifiedName != null) {
+                String[] packageAndDecl = ceylonQualifiedName.split("::");
+                String declName = packageAndDecl[packageAndDecl.length-1].replace('.', '$');
+                if (packageAndDecl.length > 1) {
+                    flatName = packageAndDecl[0] + "." + declName;
+                } else {
+                    flatName = declName;
+                }
+            }
+        }
+        return flatName;
     }
 
     @Override
@@ -217,7 +236,6 @@ public class SourceClass implements ClassMirror {
     @Override
     public boolean isLoadedFromSource() {
         return true;
-        // return sourceDeclarationHolder.isSourceToCompile();  
     }
 
     @Override
