@@ -1,18 +1,5 @@
-import ceylon.interop.java {
-    CeylonList
-}
-
-import com.redhat.ceylon.compiler.typechecker.context {
-    PhasedUnit
-}
-import com.redhat.ceylon.eclipse.core.builder {
-    CeylonBuilder
-}
 import com.redhat.ceylon.eclipse.ui {
     CeylonResources
-}
-import com.redhat.ceylon.eclipse.util {
-    eclipseIndents
 }
 import com.redhat.ceylon.ide.common.correct {
     CreateEnumQuickFix
@@ -20,15 +7,17 @@ import com.redhat.ceylon.ide.common.correct {
 import com.redhat.ceylon.ide.common.doc {
     Icons
 }
-import com.redhat.ceylon.ide.common.util {
-    Indents
-}
 
 import org.eclipse.core.resources {
-    IProject
+    IProject,
+    IFile
 }
 import org.eclipse.jface.text {
-    IDocument
+    IDocument,
+    Region
+}
+import org.eclipse.jface.text.contentassist {
+    ICompletionProposal
 }
 import org.eclipse.ltk.core.refactoring {
     TextChange,
@@ -38,13 +27,11 @@ import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
 }
-import com.redhat.ceylon.eclipse.core.typechecker {
-    ModifiablePhasedUnit
-}
 
 object eclipseCreateEnumQuickFix
-        satisfies CreateEnumQuickFix<IProject, IDocument, InsertEdit, TextEdit, TextChange,EclipseQuickFixData> 
-                & EclipseDocumentChanges {
+        satisfies CreateEnumQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> 
+                & EclipseDocumentChanges
+                & EclipseAbstractQuickFix {
     
     shared actual void consumeNewQuickFix(String desc, Icons image, Integer offset, TextChange change, EclipseQuickFixData data) {
         assert(is TextFileChange change);
@@ -57,13 +44,4 @@ object eclipseCreateEnumQuickFix
     }
     
     shared actual Integer getDocLength(IDocument doc) => doc.length;
-    
-    shared actual List<PhasedUnit> getUnits(IProject project) => CeylonList(CeylonBuilder.getUnits(project));
-    
-    shared actual Indents<IDocument> indents => eclipseIndents;
-    
-    shared actual TextChange newTextChange(PhasedUnit unit) {
-        assert(is ModifiablePhasedUnit unit);
-        return TextFileChange("Create Enumerated", unit.resourceFile);
-    }
 }

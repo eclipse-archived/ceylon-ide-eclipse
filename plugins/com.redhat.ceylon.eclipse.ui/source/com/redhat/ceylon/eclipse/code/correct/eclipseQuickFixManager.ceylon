@@ -81,7 +81,7 @@ object eclipseQuickFixManager
     shared actual DeclareLocalQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,LinkedModeModel,ICompletionProposal,IProject,EclipseQuickFixData,Region> declareLocalQuickFix
             => eclipseDeclareLocalQuickFix;
     
-    shared actual CreateEnumQuickFix<IProject,IDocument,InsertEdit,TextEdit,TextChange,EclipseQuickFixData> createEnumQuickFix
+    shared actual CreateEnumQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> createEnumQuickFix
             => eclipseCreateEnumQuickFix;
     
     shared actual RefineFormalMembersQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> refineFormalMembersQuickFix
