@@ -792,9 +792,12 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 unit instanceof JavaCompilationUnit) {
                 IResourceAware projectSourceFile = 
                         (IResourceAware) unit;
-                element.putString("projectName", 
-                        projectSourceFile.getResourceProject()
-                            .getName());
+                IProject project = 
+                        projectSourceFile.getResourceProject();
+                if (project!=null) {
+                    element.putString("projectName", 
+                            project.getName());
+                }
             }
         }
         
