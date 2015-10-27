@@ -96,12 +96,6 @@ final class DeltaScanner implements IResourceDeltaVisitor {
                 /*mustDoFullBuild.value = true;
                 mustResolveClasspathContainer.value = true;*/
             }
-            try {
-                if (resource.equals(project) &&
-                        resource.findMarkers(CeylonBuilder.PROBLEM_MARKER_ID + ".backend", false, IResource.DEPTH_ZERO).length > 0) {
-                    somethingToBuild.value = true;
-                }
-            } catch(Exception e) {}
         }
         
         if (resource instanceof IFolder) {
