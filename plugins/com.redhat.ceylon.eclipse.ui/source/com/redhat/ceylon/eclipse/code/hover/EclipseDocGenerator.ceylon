@@ -59,6 +59,10 @@ import org.eclipse.jface.text {
     IDocument
 }
 
+object eclipseDocGenerator extends EclipseDocGenerator(null) {
+    
+}
+
 class EclipseDocGenerator(CeylonEditor? editor) extends SourceInfoHover(editor)
         satisfies DocGenerator<IDocument, IProject>{
     
@@ -79,15 +83,15 @@ class EclipseDocGenerator(CeylonEditor? editor) extends SourceInfoHover(editor)
             value cpc = editor.parseController;
             
             if (exists result = getExpressionHoverText(editor, hoverRegion)) {
-                print(DocumentationHover.getExpressionHoverText(editor, hoverRegion));
-                print("\n\n\n");
-                print(result);
+                //print(DocumentationHover.getExpressionHoverText(editor, hoverRegion));
+                //print("\n\n\n");
+                //print(result);
                 return CeylonBrowserInput(null, null, result);
             } else if (exists result = getDocumentation(cpc.typecheckedRootNode,
                     hoverRegion.offset, cpc)) {
-                print(DocumentationHover.getHoverText(editor, hoverRegion));
-                print("\n\n\n");
-                print(result);
+                //print(DocumentationHover.getHoverText(editor, hoverRegion));
+                //print("\n\n\n");
+                //print(result);
                 Referenceable? model = DocumentationHover.getModel(editor, hoverRegion);
                 return CeylonBrowserInput(null, model, result);
             }
@@ -241,6 +245,7 @@ class EclipseDocGenerator(CeylonEditor? editor) extends SourceInfoHover(editor)
     
     shared actual Boolean showMembers => true;
     
-
-    
+    shared IInformationControlCreator informationPresenterControlCreator {
+        return CeylonEnrichedInformationControlCreator(editor);
+    }
 }

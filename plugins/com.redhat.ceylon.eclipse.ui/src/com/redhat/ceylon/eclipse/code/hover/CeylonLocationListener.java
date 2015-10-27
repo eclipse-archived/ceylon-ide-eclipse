@@ -1,11 +1,10 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationHoverText;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static java.lang.Integer.parseInt;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
@@ -16,6 +15,7 @@ import com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.ide.common.doc.DocGenerator;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
 final class CeylonLocationListener implements LocationListener {
@@ -76,9 +76,12 @@ final class CeylonLocationListener implements LocationListener {
     }
     
     private void handleLink(String location) {
+        DocGenerator<IDocument, IProject> gen = hoverJ2C.getDocGenerator();
         if (location.startsWith("dec:")) {
             Referenceable target = 
-                    getLinkedModel(location,editor);
+                    gen.getLinkedModel(
+                            new ceylon.language.String(location),
+                            editor.getParseController());
             if (target!=null) {
                 DocumentationHover.close(control); //FIXME: should have protocol to hide, rather than dispose
                 gotoDeclaration(target);
@@ -86,11 +89,14 @@ final class CeylonLocationListener implements LocationListener {
         }
         else if (location.startsWith("doc:")) {
             Referenceable target = 
-                    getLinkedModel(location,editor);
+                    gen.getLinkedModel(
+                            new ceylon.language.String(location),
+                            editor.getParseController());
             if (target!=null) {
+                CeylonParseController cpc = editor.getParseController();
                 String text = 
-                        getDocumentationHoverText(target, 
-                                editor, null, null);
+                        new EclipseDocGenerator(null).getDocumentationText(target, 
+                                null, cpc.getLastCompilationUnit(), cpc).toString();
                 CeylonBrowserInput input = 
                         new CeylonBrowserInput(
                                 control.getInput(), 

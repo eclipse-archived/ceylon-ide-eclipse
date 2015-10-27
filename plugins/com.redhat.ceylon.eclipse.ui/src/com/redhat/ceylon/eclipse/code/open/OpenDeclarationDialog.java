@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.open;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
@@ -51,6 +50,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ILabelDecorator;
@@ -68,6 +68,8 @@ import org.eclipse.ui.IMemento;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
+import com.redhat.ceylon.eclipse.code.hover.hoverJ2C;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
@@ -82,6 +84,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.DocBrowser;
 import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
+import com.redhat.ceylon.ide.common.doc.DocGenerator;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -1350,14 +1353,18 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         
     }*/
     
+    // TODO this is a copy/paste of CeylonLocationListener.handleLink
     @Override
     void handleLink(String location, DocBrowser browser) {
         Referenceable target = null;
         CeylonEditor editor = null;
         IEditorPart currentEditor = getCurrentEditor();
+        DocGenerator<IDocument, IProject> gen = hoverJ2C.getDocGenerator();
         if (currentEditor instanceof CeylonEditor) {
             editor = (CeylonEditor) currentEditor;
-            target = getLinkedModel(location, editor);
+            target = gen.getLinkedModel(
+                    new ceylon.language.String(location),
+                    editor.getParseController());
             /*if (location.startsWith("ref:")) {
                 new FindReferencesAction(editor, 
                         (Declaration) target).run();
@@ -1385,7 +1392,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
         if (location.startsWith("doc:")) {
             if (target==null) {
-                target = getLinkedModel(location);
+                target = DocumentationHover.getLinkedModel(location);
             }
             if (target instanceof Declaration) {
                 String text = 
@@ -1408,7 +1415,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
         if (location.startsWith("dec:")) {
             if (target==null) {
-                target = getLinkedModel(location);
+                target = DocumentationHover.getLinkedModel(location);
             }
             if (target!=null) {
                 gotoDeclaration(target);

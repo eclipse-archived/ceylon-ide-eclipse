@@ -45,7 +45,8 @@ public class BestMatchHover
         fInstantiatedTextHovers = new ArrayList<ITextHover>(2);
         fInstantiatedTextHovers.add(new CeylonDebugHover(editor));
         fInstantiatedTextHovers.add(new AnnotationHover(editor, false));
-        fInstantiatedTextHovers.add(new DocumentationHover(editor));
+        //fInstantiatedTextHovers.add(new DocumentationHover(editor));
+        fInstantiatedTextHovers.add(new EclipseDocGenerator(editor));
     }
     
     @Override
@@ -154,10 +155,15 @@ public class BestMatchHover
 
     private static IInformationControlCreator 
     getInformationPresenterControlCreator(ITextHover hover) {
-        if (hover instanceof DocumentationHover) {
-            DocumentationHover documentationHover = 
-                    (DocumentationHover) hover;
-            return documentationHover.getInformationPresenterControlCreator();
+//        if (hover instanceof DocumentationHover) {
+//            DocumentationHover documentationHover = 
+//                    (DocumentationHover) hover;
+//            return documentationHover.getInformationPresenterControlCreator();
+//        }
+        if (hover instanceof EclipseDocGenerator) {
+            EclipseDocGenerator docGenerator =
+                    (EclipseDocGenerator) hover;
+            return docGenerator.getInformationPresenterControlCreator();
         }
         else {
             return null;

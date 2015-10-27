@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
+import static com.redhat.ceylon.eclipse.code.hover.hoverJ2C.getDocGenerator;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 
 import org.eclipse.jface.action.Action;
@@ -93,8 +93,9 @@ final class CeylonEnrichedInformationControlCreator
             DocumentationHover.close(fInfoControl); //FIXME: should have protocol to hide, rather than dispose
             CeylonBrowserInput input = (CeylonBrowserInput) 
                     fInfoControl.getInput();
-            gotoDeclaration(getLinkedModel(input.getAddress(), 
-                    editor));
+            gotoDeclaration(getDocGenerator().getLinkedModel(
+                    new ceylon.language.String(input.getAddress()), 
+                    editor.getParseController()));
         }
     }
 

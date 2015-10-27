@@ -1,9 +1,6 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationHoverText;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getHoverText;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
@@ -14,9 +11,11 @@ import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD_DISABLED;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -49,10 +48,14 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.DocBrowser;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.ide.common.doc.DocGenerator;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
 public class DocumentationView extends ViewPart {
     
+    private DocGenerator<IDocument, IProject> gen
+        = hoverJ2C.getDocGenerator();
+
     private static final Image GOTO_IMAGE = 
             CeylonPlugin.imageRegistry().get(GOTO);
     
@@ -156,22 +159,29 @@ public class DocumentationView extends ViewPart {
                     selection.getLength());
         }
     }
-    //TODO: big copy/paste from DocumentationHover.handleLink
+    //TODO: big copy/paste from CeylonLocationListener.handleLink
     private void handleLink(String location) {
+        CeylonParseController controller = editor.getParseController();
         if (location.startsWith("dec:")) {
             Referenceable target = 
-                    getLinkedModel(location, editor);
+                    gen.getLinkedModel(
+                            new ceylon.language.String(location),
+                            controller);
             if (target!=null) {
                 Navigation.gotoDeclaration(target);
             }
         }
         else if (location.startsWith("doc:")) {
             Referenceable target = 
-                    getLinkedModel(location, editor);
+                    gen.getLinkedModel(
+                            new ceylon.language.String(location),
+                            controller);
             if (target!=null) {
                 String html = 
-                        getDocumentationHoverText(target, 
-                                editor, null, null);
+                        gen.getDocumentationText(target, 
+                                null,
+                                controller.getLastCompilationUnit(),
+                                controller).toString();
                 if (html!=null) {
                     control.setText(html);
                     info = new CeylonBrowserInput(info, target, html);
@@ -206,7 +216,7 @@ public class DocumentationView extends ViewPart {
         }*/
         else if (location.startsWith("stp:")) {
             CeylonParseController parseController = 
-                    editor.getParseController();
+                    controller;
             Tree.CompilationUnit rootNode = 
                     parseController.getLastCompilationUnit();
             int offset = parseInt(location.substring(4));
@@ -233,7 +243,11 @@ public class DocumentationView extends ViewPart {
         }
         else {
             Region hoverRegion = new Region(offset, length);
-            String html = getHoverText(editor, hoverRegion);
+            CeylonParseController cpc = editor.getParseController();
+            String html = gen.getDocumentation(
+                    cpc.getLastCompilationUnit(), 
+                    hoverRegion.getOffset(),
+                    cpc).toString();
             if (html!=null) {
                 if (info==null || 
                         !info.getHtml().equals(html)) {
@@ -366,7 +380,10 @@ public class DocumentationView extends ViewPart {
         }
         @Override
         public void run() {
-            gotoDeclaration(getLinkedModel(info.getAddress(), editor));
+            Referenceable model = gen.getLinkedModel(
+                    new ceylon.language.String(info.getAddress()),
+                    editor.getParseController());
+            gotoDeclaration(model);
         }
     }
     
