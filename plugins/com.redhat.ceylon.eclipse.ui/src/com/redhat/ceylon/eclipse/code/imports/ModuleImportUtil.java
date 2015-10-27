@@ -260,9 +260,21 @@ public class ModuleImportUtil {
             importModule.append("shared ");
         }
         if (backend!=null) {
-            importModule.append("native(\"")
-                .append(backend)
-                .append("\") ");
+        	importModule.append("native(");
+        	boolean first = true;
+            for (String name: 
+            		backend.names().split(",")) {
+            	if (first) {
+            		first = false;
+            	}
+            	else {
+            		importModule.append(", ");
+            	}
+            	importModule.append('"')
+		            		.append(name)
+		            		.append('"');
+            }
+            importModule.append(") ");
         }
         importModule.append("import ");
         if (!moduleName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$")) {
