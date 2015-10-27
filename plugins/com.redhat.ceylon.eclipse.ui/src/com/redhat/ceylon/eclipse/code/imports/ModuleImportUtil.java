@@ -260,21 +260,7 @@ public class ModuleImportUtil {
             importModule.append("shared ");
         }
         if (backend!=null) {
-        	importModule.append("native(");
-        	boolean first = true;
-            for (String name: 
-            		backend.names().split(",")) {
-            	if (first) {
-            		first = false;
-            	}
-            	else {
-            		importModule.append(", ");
-            	}
-            	importModule.append('"')
-		            		.append(name)
-		            		.append('"');
-            }
-            importModule.append(") ");
+            appendNative(importModule, backend);
         }
         importModule.append("import ");
         if (!moduleName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$")) {
@@ -288,6 +274,24 @@ public class ModuleImportUtil {
         importModule.append(" \"")
             .append(moduleVersion)
             .append("\";");
+    }
+
+    public static void appendNative(StringBuilder builder, Backends backend) {
+        builder.append("native(");
+        boolean first = true;
+        for (String name: 
+                backend.names().split(",")) {
+            if (first) {
+                first = false;
+            }
+            else {
+                builder.append(", ");
+            }
+            builder.append('"')
+                   .append(name)
+                   .append('"');
+        }
+        builder.append(") ");
     }
 
     private static DeleteEdit createRemoveEdit(

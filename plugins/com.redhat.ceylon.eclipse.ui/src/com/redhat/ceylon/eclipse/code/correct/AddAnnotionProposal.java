@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.appendNative;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.eclipse.util.Types.getRefinedDeclaration;
@@ -519,11 +520,14 @@ public class AddAnnotionProposal extends CorrectionProposal {
                                 new TextFileChange(
                                         "Declare Module Native",
                                         file);
+                        StringBuilder annotation = 
+                        		new StringBuilder();
+                        appendNative(annotation, backends);
                         change.setEdit(new InsertEdit(
                                 that.getStartIndex(),
-                                "native(\"" + backends + "\") "));
+                                annotation.toString()));
                         proposals.add(new CorrectionProposal(
-                                "Declare module 'native(\"" + backends + "\")'",
+                                "Declare module '" + annotation + "'",
                                 change, null));
                     }
                     super.visit(that);
