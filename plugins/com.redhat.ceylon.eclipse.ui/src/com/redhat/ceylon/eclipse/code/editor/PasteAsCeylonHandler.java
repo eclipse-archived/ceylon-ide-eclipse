@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
+import static com.redhat.ceylon.eclipse.util.Indents.getIndentSpaces;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -34,7 +35,6 @@ import com.redhat.ceylon.eclipse.code.refactor.AbstractHandler;
 import com.redhat.ceylon.eclipse.code.style.CeylonStyle;
 import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.StringBuilderWriter;
 import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
 import com.redhat.ceylon.ide.common.model.JavaToCeylonConverterConfig;
@@ -199,13 +199,17 @@ public class PasteAsCeylonHandler extends AbstractHandler {
         ITextSelection selection = getSelection(editor);
         if (selection!=null) {
             try {
-                IRegion region = doc.getLineInformation(selection.getStartLine());
-                String line = doc.get(region.getOffset(), region.getLength());
+                IRegion region = 
+                		doc.getLineInformation(
+                				selection.getStartLine());
+                String line = 
+                		doc.get(region.getOffset(), 
+                				region.getLength());
                 char[] chars = line.toCharArray();
                 loop: for (int i=0; i<chars.length; i++) {
                     switch (chars[i]) {
                     case '\t':
-                        indentation += Indents.getIndentSpaces();
+                        indentation += getIndentSpaces();
                         break;
                     case ' ':
                         indentation += 1;
@@ -214,7 +218,7 @@ public class PasteAsCeylonHandler extends AbstractHandler {
                         break loop;
                     }
                 }
-                indentation /= Indents.getIndentSpaces();
+                indentation /= getIndentSpaces();
             } catch (BadLocationException e) {
                 indentation = 0;
             }
@@ -243,7 +247,6 @@ public class PasteAsCeylonHandler extends AbstractHandler {
 	                new StringBuilderWriter(builder),
 	                //new BufferedTokenStream(lexer),
 	                null, indentation);
-	    }
         } catch (Exception e) {
             CeylonPlugin.log(IStatus.ERROR, "Error during converted code formatting", e);
             return ceylonCode;
