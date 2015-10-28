@@ -525,7 +525,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
                         appendNative(annotation, backends);
                         change.setEdit(new InsertEdit(
                                 that.getStartIndex(),
-                                annotation.toString()));
+                                annotation + " "));
                         proposals.add(new CorrectionProposal(
                                 "Declare module '" + annotation + "'",
                                 change, null));
@@ -550,7 +550,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
                         appendNative(annotation, backends);
                         change.setEdit(new InsertEdit(
                                 that.getStartIndex(),
-                                annotation.toString()));
+                                annotation + " "));
                         proposals.add(new CorrectionProposal(
                                 "Declare import '" + annotation + "'",
                                 change, null));

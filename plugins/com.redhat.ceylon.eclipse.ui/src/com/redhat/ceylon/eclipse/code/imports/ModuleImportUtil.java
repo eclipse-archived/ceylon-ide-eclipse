@@ -261,6 +261,7 @@ public class ModuleImportUtil {
         }
         if (backend!=null) {
             appendNative(importModule, backend);
+            importModule.append(' ');
         }
         importModule.append("import ");
         if (!moduleName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$")) {
@@ -291,7 +292,7 @@ public class ModuleImportUtil {
                    .append(name)
                    .append('"');
         }
-        builder.append(") ");
+        builder.append(")");
     }
 
     private static DeleteEdit createRemoveEdit(
