@@ -11,10 +11,10 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageNam
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getCompletionFont;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE;
-import static com.redhat.ceylon.ide.common.util.Escaping.escapePackageName;
 import static com.redhat.ceylon.eclipse.util.Highlights.MEMBER_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
+import static com.redhat.ceylon.ide.common.util.Escaping.escapePackageName;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isOverloadedVersion;
 
@@ -46,7 +46,7 @@ import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
+import com.redhat.ceylon.eclipse.code.imports.importsJ2C;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -87,7 +87,7 @@ public class PackageCompletions {
         @Override
         public void apply(IDocument document) {
             super.apply(document);
-            ModuleImportUtil.addModuleImport(controller.getProject(), 
+            importsJ2C.importUtil().addModuleImport(controller.getProject(), 
                     controller.getLastPhasedUnit().getPackage().getModule(),
                     version.getModule(), version.getVersion());
         }

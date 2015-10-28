@@ -16,15 +16,15 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.imports.importsJ2C;
+import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
-import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class ExportModuleImportProposal implements ICompletionProposal, 
         ICompletionProposalExtension6 {
@@ -44,7 +44,7 @@ public class ExportModuleImportProposal implements ICompletionProposal,
     
     @Override
     public void apply(IDocument document) {
-        ModuleImportUtil.exportModuleImports(project, 
+        importsJ2C.importUtil().exportModuleImports(project, 
                 unit.getPackage().getModule(), 
                 name);
     }

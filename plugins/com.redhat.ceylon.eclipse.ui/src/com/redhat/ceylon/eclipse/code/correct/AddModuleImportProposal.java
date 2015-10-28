@@ -24,7 +24,7 @@ import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
+import com.redhat.ceylon.eclipse.code.imports.importsJ2C;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -57,7 +57,7 @@ class AddModuleImportProposal
     
     @Override
     public void apply(IDocument document) {
-        ModuleImportUtil.addModuleImport(project, 
+        importsJ2C.importUtil().addModuleImport(project, 
                 unit.getPackage().getModule(), 
                 name, version);
     }

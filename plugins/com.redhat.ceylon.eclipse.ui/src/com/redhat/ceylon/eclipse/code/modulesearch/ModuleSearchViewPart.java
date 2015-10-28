@@ -78,14 +78,12 @@ import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Processor;
 import com.redhat.ceylon.common.config.Repositories;
 import com.redhat.ceylon.common.config.Repositories.Repository;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.hover.CeylonBlockEmitter;
 import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
-import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
+import com.redhat.ceylon.eclipse.code.imports.importsJ2C;
 import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
@@ -94,6 +92,8 @@ import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.DocBrowser;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 
 public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
     
@@ -299,7 +299,8 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
                         MessageDialog.openInformation(parent.getShell(), "Information", "Can not add module import, because module '" + 
                                 target.getNameAsString() + "' contains it already.");
                     } else {
-                        ModuleImportUtil.addModuleImport(moduleMap.get(target), target, moduleName, moduleVersion);
+                        importsJ2C.importUtil()
+                            .addModuleImport(moduleMap.get(target), target, moduleName, moduleVersion);
                     }
                 }
             }

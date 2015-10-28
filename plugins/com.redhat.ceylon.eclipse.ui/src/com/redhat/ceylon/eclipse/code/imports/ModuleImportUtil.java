@@ -31,6 +31,7 @@ import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
+@Deprecated
 public class ModuleImportUtil {
 
     public static void exportModuleImports(IProject project, 
