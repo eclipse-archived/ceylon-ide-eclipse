@@ -38,8 +38,10 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.IEditorPart;
 
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.TreeUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.model.SourceFile;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -386,9 +388,13 @@ public class CeylonOutlineNode implements IAdaptable {
                             (Tree.Declaration) treeNode;
                     Tree.Identifier id = 
                             dec.getIdentifier();
+                    Backends backends = TreeUtil.getNativeBackend(dec.getAnnotationList(), dec.getUnit());
                     String name = id==null ? 
                             String.valueOf(identityHashCode(treeNode)) : 
                             id.getText();
+                    if (backends != null && ! backends.none()) {
+                        name = new StringBuilder(name).append("(").append(backends.names()).append(")").toString();
+                    }
                     if (parent!=null && parent.isDeclaration()) {
                         return getParent().getIdentifier() + ":" + name;
                     }
