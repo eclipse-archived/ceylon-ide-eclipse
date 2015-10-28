@@ -22,6 +22,7 @@ import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
+import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleNode;
@@ -277,16 +278,17 @@ public class ModuleImportUtil {
             .append("\";");
     }
 
-    public static void appendNative(StringBuilder builder, Backends backend) {
+    public static void appendNative(
+    		StringBuilder builder, Backends backends) {
         builder.append("native(");
-        appendNativeBackends(builder, backend);
+        appendNativeBackends(builder, backends);
         builder.append(")");
     }
 
-	public static void appendNativeBackends(StringBuilder builder, Backends backend) {
+	public static void appendNativeBackends(
+			StringBuilder builder, Backends backends) {
 		boolean first = true;
-        for (String name: 
-                backend.names().split(",")) {
+        for (Backend backend: backends) {
             if (first) {
                 first = false;
             }
@@ -294,7 +296,7 @@ public class ModuleImportUtil {
                 builder.append(", ");
             }
             builder.append('"')
-                   .append(name)
+                   .append(backend.nativeAnnotation)
                    .append('"');
         }
 	}
