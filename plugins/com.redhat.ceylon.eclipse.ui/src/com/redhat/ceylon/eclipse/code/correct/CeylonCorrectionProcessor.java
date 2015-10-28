@@ -111,6 +111,7 @@ import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.eclipse.util.Nodes.findArgument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
+import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 import static com.redhat.ceylon.eclipse.util.Nodes.findImport;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.findOperator;
@@ -166,6 +167,7 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -872,11 +874,67 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         case 11000:
             addNamedArgumentsProposal(file, rootNode, proposals, node);
             break;
+        case 12000:
+        	changeToVoid(file, rootNode, node, proposals);
+        	break;
+        case 13000:
+        	changeToFunction(file, rootNode, node, proposals);
+        	break;
         case 20000:
             addMakeNativeProposal(proposals, project, node, rootNode, file);
             break;
         }
     }
+
+	private void changeToFunction(IFile file, 
+			Tree.CompilationUnit rootNode, Node node, 
+			Collection<ICompletionProposal> proposals) {
+		Tree.Declaration dec = 
+				findDeclarationWithBody(rootNode, node);
+		if (dec instanceof Tree.AnyMethod) {
+			Tree.Return ret = (Tree.Return) node;
+			Tree.AnyMethod m = (Tree.AnyMethod) dec;
+			Tree.Type type = m.getType();
+			if (type instanceof Tree.VoidModifier) {
+				TextFileChange tfc = 
+						new TextFileChange("Change To Function", 
+								file);
+				Unit unit = rootNode.getUnit();
+				Type rt = 
+						ret.getExpression()
+							.getTypeModel();
+				tfc.setEdit(new ReplaceEdit(
+						type.getStartIndex(), 
+						type.getDistance(), 
+						isTypeUnknown(rt) ? "function" :
+							rt.asSourceCodeString(unit)));
+				proposals.add(new CorrectionProposal(
+						"make function non-'void'", tfc, null));
+			}
+		}
+	}
+
+	private void changeToVoid(IFile file, 
+			Tree.CompilationUnit rootNode, Node node, 
+			Collection<ICompletionProposal> proposals) {
+		Tree.Declaration dec = 
+				findDeclarationWithBody(rootNode, node);
+		if (dec instanceof Tree.AnyMethod) {
+			Tree.AnyMethod m = (Tree.AnyMethod) dec;
+			Tree.Type type = m.getType();
+			if (!(type instanceof Tree.VoidModifier)) {
+				TextFileChange tfc = 
+						new TextFileChange("Change To Void", 
+								file);
+				tfc.setEdit(new ReplaceEdit(
+						type.getStartIndex(), 
+						type.getDistance(), 
+						"void"));
+				proposals.add(new CorrectionProposal(
+						"make function 'void'", tfc, null));
+			}
+		}
+	}
 
     private void addNamedArgumentsProposal(IFile file,
             Tree.CompilationUnit rootNode,
