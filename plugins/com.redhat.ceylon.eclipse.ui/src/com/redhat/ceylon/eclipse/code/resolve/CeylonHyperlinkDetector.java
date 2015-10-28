@@ -100,11 +100,11 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                 else {
                     Referenceable referenceable = 
                             getReferencedModel(node);
+                    Backends supportedBackends = supportedBackends();
                     if (referenceable instanceof Declaration) {
                         Declaration dec = 
                                 (Declaration) 
                                     referenceable;
-                        Backends supportedBackends = supportedBackends();
                         if (dec.isNative()) {
                             if (supportedBackends.none()) {
                                 return null;
@@ -119,6 +119,10 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                             if (!supportedBackends.none()) {
                                 return null;
                             }
+                        }
+                    } else { // Module or package descriptors
+                        if (!supportedBackends.none()) {
+                            return null;
                         }
                     }
                     Node r = getReferencedNode(referenceable);
