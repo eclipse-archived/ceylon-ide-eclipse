@@ -875,6 +875,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addNamedArgumentsProposal(file, rootNode, proposals, node);
             break;
         case 12000:
+        case 12100:
         	changeToVoid(file, rootNode, node, proposals);
         	break;
         case 13000:
