@@ -545,11 +545,14 @@ public class AddAnnotionProposal extends CorrectionProposal {
                                 new TextFileChange(
                                         "Declare Import Native",
                                         file);
+                        StringBuilder annotation = 
+                        		new StringBuilder();
+                        appendNative(annotation, backends);
                         change.setEdit(new InsertEdit(
                                 that.getStartIndex(),
-                                "native(\"" + backends + "\") "));
+                                annotation.toString()));
                         proposals.add(new CorrectionProposal(
-                                "Declare import 'native(\"" + backends + "\")'",
+                                "Declare import '" + annotation + "'",
                                 change, null));
                     }
                     super.visit(that);
