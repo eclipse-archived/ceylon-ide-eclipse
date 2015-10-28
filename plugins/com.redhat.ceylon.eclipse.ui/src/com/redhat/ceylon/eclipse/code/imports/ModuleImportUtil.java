@@ -279,7 +279,12 @@ public class ModuleImportUtil {
 
     public static void appendNative(StringBuilder builder, Backends backend) {
         builder.append("native(");
-        boolean first = true;
+        appendNativeBackends(builder, backend);
+        builder.append(")");
+    }
+
+	public static void appendNativeBackends(StringBuilder builder, Backends backend) {
+		boolean first = true;
         for (String name: 
                 backend.names().split(",")) {
             if (first) {
@@ -292,8 +297,7 @@ public class ModuleImportUtil {
                    .append(name)
                    .append('"');
         }
-        builder.append(")");
-    }
+	}
 
     private static DeleteEdit createRemoveEdit(
             Tree.CompilationUnit unit, String moduleName) {
