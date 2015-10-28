@@ -20,6 +20,7 @@ import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.toHex;
+import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.appendNative;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ALTERNATE_ICONS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
@@ -1199,9 +1200,9 @@ public class DocumentationHover extends SourceInfoHover {
             String color = toHex(getCurrentThemeColor(ANNOTATION_STRINGS));
             buf.append("(<span style='color:")
                 .append(color)
-                .append("'>\"")
-                .append(nativeBackends.toString())
-                .append("\"</span>)");
+                .append("'>\"");
+            appendNative(buf, nativeBackends);
+            buf.append("\"</span>)");
         }
         if (mod.isNative()) buf.append("&nbsp;");
         if (buf.length()!=0) {
@@ -1388,9 +1389,9 @@ public class DocumentationHover extends SourceInfoHover {
             String color = toHex(getCurrentThemeColor(ANNOTATION_STRINGS));
             buf.append("(<span style='color:")
                 .append(color)
-                .append("'>\"")
-                .append(nativeBackends.toString())
-                .append("\"</span>)");
+                .append("'>\"");
+            appendNative(buf, nativeBackends);
+            buf.append("\"</span>)");
         }
         if (dec.isNative()) buf.append("&nbsp;");
         if (dec instanceof TypeDeclaration) {
