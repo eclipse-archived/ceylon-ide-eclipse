@@ -16,7 +16,7 @@ import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORM
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeParamListOpeningParen;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeSequenceEnumerationClosingBrace;
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_BeforeValueIteratorClosingParenthesis;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_forceSpaceAroundBinaryOp;
+import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_space_OptionalAroundOperatorLevel;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
@@ -107,8 +107,8 @@ public class FormatterTabSpace extends FormatterTabPage {
                 FORMATTER_space_AroundTypeParamListEqualsSign, FALSE_TRUE);
         createCheckboxPref(generalGroup, numColumns, "Space after control structure keyword ('if', 'for', etc.)",
                 FORMATTER_space_AfterControlStructureKeyword, FALSE_TRUE);
-        createCheckboxPref(generalGroup, numColumns, "Force spaces around binary operator",
-                FORMATTER_forceSpaceAroundBinaryOp, FALSE_TRUE);
+        createNumberPref(generalGroup, numColumns, "Space optional up to operator level:",
+                FORMATTER_space_OptionalAroundOperatorLevel, 0, 4);
   
         final Group parameter = createGroup(numColumns, composite, 
                 "Parameter Lists");

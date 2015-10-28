@@ -30,7 +30,7 @@ public class CeylonFormatterConstants {
     public static final String FORMATTER_space_AfterValueIteratorOpeningParenthesis = "spaceAfterValueIteratorOpeningParenthesis";
     public static final String FORMATTER_space_AfterParamListOpeningParen = "spaceAfterParamListOpeningParen";
     public static final String FORMATTER_space_AfterControlStructureKeyword = "spaceAfterControlStructureKeyword";
-    public static final String FORMATTER_forceSpaceAroundBinaryOp = "forceSpaceAroundBinaryOp";
+    public static final String FORMATTER_space_OptionalAroundOperatorLevel = "spaceOptionalAroundOperatorLevel";
 
     public static final String FORMATTER_maxLineLength = "maxLineLength";
     public static final String FORMATTER_maxLineLength_Number = "maxLineLengthNumber";
