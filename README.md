@@ -26,7 +26,7 @@ _If you want to have an up-to-date version of the Ceylon IDE based on the lastes
     - `ceylon.tool.converter.java2ceylon`
     - `ceylon-ide-eclipse`
 
-3.  Make sure that your JAVA_HOME is set to the right JDK 7 installation.
+3.  Make sure that you are using Java 7 by running `javac -version`.
 
 4. Build all the above dependencies + the IDE using this all-in-one command:
 
