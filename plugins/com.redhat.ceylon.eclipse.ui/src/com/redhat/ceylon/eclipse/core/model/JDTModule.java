@@ -950,11 +950,7 @@ public class JDTModule extends LazyModule {
                             Tree.CompilationUnit cu = parser.compilationUnit();
                             List<CommonToken> tokens = new ArrayList<CommonToken>(tokenStream.getTokens().size()); 
                             tokens.addAll(tokenStream.getTokens());
-                            SingleSourceUnitPackage proxyPackage = new SingleSourceUnitPackage(pkg, ceylonSourceUnitFullPath) {
-                                public Backends getScopedBackends() {
-                                    return Backend.Java.asSet();
-                                };
-                            };
+                            SingleSourceUnitPackage proxyPackage = new SingleSourceUnitPackage(pkg, ceylonSourceUnitFullPath);
                             if(originalProject == null) {
                                 phasedUnit = new ExternalPhasedUnit(archiveEntry, sourceArchive, cu, 
                                         proxyPackage, moduleManager, moduleSourceMapper, CeylonBuilder.getProjectTypeChecker(project), tokens) {
