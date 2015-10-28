@@ -244,10 +244,13 @@ public class PasteAsCeylonHandler extends AbstractHandler {
 	                //new BufferedTokenStream(lexer),
 	                null, indentation);
 	    }
-	    catch (Exception e1) {
-	        e1.printStackTrace();
-	        return ceylonCode;
-	    }
+        } catch (Exception e) {
+            CeylonPlugin.log(IStatus.ERROR, "Error during converted code formatting", e);
+            return ceylonCode;
+        } catch (AssertionError e) {
+            CeylonPlugin.log(IStatus.ERROR, "Error during converted code formatting", e);
+            return ceylonCode;
+        }
         return builder.toString();
     }
 
