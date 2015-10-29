@@ -26,6 +26,12 @@ import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
 }
+import com.redhat.ceylon.ide.common.imports {
+    AbstractModuleImportUtil
+}
+import com.redhat.ceylon.eclipse.code.imports {
+    eclipseModuleImportUtils
+}
 
 object eclipseAnnotationsQuickFix
         satisfies AddAnnotationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
@@ -44,4 +50,12 @@ object eclipseAnnotationsQuickFix
         assert(is TextFileChange change);
         data.proposals.add(RemoveAnnotionProposal(dec, annotation, offset, desc, change));
     }
+    
+    shared actual AbstractModuleImportUtil<IFile,IProject,IDocument,InsertEdit,TextEdit,TextChange> moduleImportUtil
+            => eclipseModuleImportUtils;
+    
+    shared actual void newCorrectionQuickFix(String desc, TextChange change,
+        Region? selection)
+            => CorrectionProposal(desc, change, selection);
+    
 }
