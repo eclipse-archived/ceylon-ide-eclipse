@@ -199,10 +199,10 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     shared actual ICompletionProposal newInvocationCompletion(Integer offset, String prefix,
         String desc, String text, Declaration dec, Reference? pr, Scope scope, CeylonParseController cpc,
         Boolean includeDefaulted, Boolean positionalInvocation, Boolean namedInvocation, 
-        Boolean qualified, Declaration? qualifyingDec) {
+        Boolean inheritance, Boolean qualified, Declaration? qualifyingDec) {
         
         return EclipseInvocationCompletionProposal(offset, prefix, desc, text, dec, pr, scope, cpc,
-            includeDefaulted, positionalInvocation, namedInvocation, qualified, qualifyingDec, this);
+            includeDefaulted, positionalInvocation, namedInvocation, inheritance, qualified, qualifyingDec, this);
     }
     
     shared actual ICompletionProposal newRefinementCompletionProposal(Integer offset, String prefix, Reference? pr,

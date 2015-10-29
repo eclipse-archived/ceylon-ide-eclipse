@@ -87,12 +87,12 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
             Reference? producedReference, Scope scope, 
             CeylonParseController cpc, Boolean includeDefaulted,
             Boolean positionalInvocation, Boolean namedInvocation, 
-            Boolean qualified, Declaration? qualifyingValue,
+            Boolean inheritance, Boolean qualified, Declaration? qualifyingValue,
             EclipseCompletionManager completionManager)
         extends InvocationCompletionProposal<CeylonParseController, IProject, ICompletionProposal, IFile,
                 IDocument, InsertEdit, TextEdit, TextChange, Point, LinkedModeModel>
                 (_offset, prefix, description, text, dec, producedReference, scope, cpc.lastCompilationUnit,
-    includeDefaulted, positionalInvocation, namedInvocation, qualified, qualifyingValue, completionManager)
+    includeDefaulted, positionalInvocation, namedInvocation, inheritance, qualified, qualifyingValue, completionManager)
         satisfies EclipseDocumentChanges & EclipseCompletionProposal {
     
     shared actual variable String? currentPrefix = prefix;
