@@ -36,7 +36,6 @@ import com.redhat.ceylon.eclipse.ui {
     CeylonPlugin
 }
 import com.redhat.ceylon.eclipse.util {
-    EditorUtil,
     EclipseProgressMonitor,
     EclipseIndents=Indents
 }
@@ -98,6 +97,9 @@ import org.eclipse.swt.graphics {
 import org.eclipse.ui {
     PlatformUI
 }
+import com.redhat.ceylon.eclipse.code.correct {
+    TypeProposal
+}
 
 EclipseCompletionManager dummyInstance = EclipseCompletionManager(CeylonEditor());
 
@@ -143,9 +145,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
                 monitor.beginTask("Preparing completions...", IProgressMonitor.\iUNKNOWN);
                 CeylonParseController controller = editor.parseController;
                 
-                _contentProposals = if (secondLevel)
-                    then CeylonCompletionProcessor(editor).getContentProposals(controller, offset, viewer, false, returnedParamInfo, monitor).array.sequence()
-                    else getEclipseContentProposals(controller, offset, viewer, secondLevel, returnedParamInfo, monitor);
+                _contentProposals = getEclipseContentProposals(controller, offset, viewer, secondLevel, returnedParamInfo, monitor);
                 if (_contentProposals.size == 1, is ParameterInfo pi = _contentProposals.get(0)) {
                     returnedParamInfo = true;
                 }
@@ -297,7 +297,6 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     shared actual ICompletionProposal newParameterInfo(Integer offset, Declaration dec, 
         Reference producedReference, Scope scope, CeylonParseController cpc, Boolean namedInvocation)
             => InvocationCompletionProposal.ParameterInfo(offset, dec, producedReference, scope, cpc, namedInvocation);
-               // TODO migrate this?
             
     shared actual ICompletionProposal newFunctionCompletionProposal(Integer offset, String prefix,
            String desc, String text, Declaration dec, Unit unit, CeylonParseController controller) {
@@ -310,7 +309,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
              => ControlStructureCompletionProposal(offset, prefix, desc, text, dec, cpc);
 
     shared actual ICompletionProposal newTypeProposal(Integer offset, Type? type, String text, String desc, Tree.CompilationUnit rootNode) {
-        return nothing; // TODO
+        return TypeProposal(offset, type, text, desc, rootNode); // TODO rewrite this one in Ceylon?
     }
 
     Boolean isIdentifierCharacter(ITextViewer viewer, Integer offset) {

@@ -37,7 +37,7 @@ import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
-class TypeProposal 
+public class TypeProposal 
         implements ICompletionProposal, 
                    ICompletionProposalExtension2, 
                    ICompletionProposalExtension6 {
@@ -49,7 +49,7 @@ class TypeProposal
     private Point selection;
     private String description;
 
-    private TypeProposal(int offset, Type type,
+    public TypeProposal(int offset, Type type,
             String text, String desc, 
             Tree.CompilationUnit rootNode) {
         this.type = type;
@@ -163,7 +163,7 @@ class TypeProposal
         return null;
     }
 
-    static ProposalPosition getTypeProposals(IDocument document, 
+    public static ProposalPosition getTypeProposals(IDocument document, 
             int offset, int length, Type infType,
             Tree.CompilationUnit rootNode, String kind) {
         
