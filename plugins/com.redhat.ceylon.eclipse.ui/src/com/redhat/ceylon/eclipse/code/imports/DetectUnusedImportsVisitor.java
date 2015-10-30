@@ -10,6 +10,7 @@ import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
+@Deprecated
 class DetectUnusedImportsVisitor extends Visitor {
     
     private final List<Declaration> result;

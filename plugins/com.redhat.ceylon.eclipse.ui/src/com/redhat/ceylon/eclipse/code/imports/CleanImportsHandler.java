@@ -98,6 +98,8 @@ public class CleanImportsHandler extends AbstractHandler {
         }
     }
 
+    @Deprecated
+    // Never used
     public static String imports(Node node, Tree.ImportList til,
             IDocument doc) {
         List<Declaration> unused = 
@@ -111,6 +113,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 doc);
     }
     
+    @Deprecated
     private static String imports(Tree.CompilationUnit cu, 
             IDocument doc) {
         List<Declaration> proposals = 
@@ -130,6 +133,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 proposed, doc);
     }
     
+    @Deprecated
     public static String reorganizeImports(Tree.ImportList til, 
             List<Declaration> unused, 
             List<Declaration> proposed,
@@ -203,7 +207,8 @@ public class CleanImportsHandler extends AbstractHandler {
         return builder.toString();
     }
 
-    private static boolean hasWildcard(List<Tree.Import> imports) {
+    @Deprecated
+   private static boolean hasWildcard(List<Tree.Import> imports) {
         boolean hasWildcard = false;
         for (Tree.Import i: imports) {
             hasWildcard = 
@@ -214,6 +219,7 @@ public class CleanImportsHandler extends AbstractHandler {
         return hasWildcard;
     }
 
+    @Deprecated
     private static String appendBreakIfNecessary(String lastToplevel,
             String currentPackage, StringBuilder builder, 
             IDocument doc) {
@@ -228,7 +234,8 @@ public class CleanImportsHandler extends AbstractHandler {
         return topLevel;
     }
 
-    private static void appendImportElements(String packageName,
+    @Deprecated
+   private static void appendImportElements(String packageName,
             List<Tree.ImportMemberOrType> elements, 
             List<Declaration> unused, 
             List<Declaration> proposed, 
@@ -275,6 +282,7 @@ public class CleanImportsHandler extends AbstractHandler {
         }
     }
 
+    @Deprecated
     private static void appendNestedImportElements(
             Tree.ImportMemberOrType imt,
             List<Declaration> unused, StringBuilder builder, 
@@ -328,7 +336,8 @@ public class CleanImportsHandler extends AbstractHandler {
         }
     }
 
-    private static boolean hasRealErrors(Node node) {
+    @Deprecated
+   private static boolean hasRealErrors(Node node) {
         for (Message m: node.getErrors()) {
             if (m instanceof AnalysisError) {
                 return true;
@@ -337,6 +346,7 @@ public class CleanImportsHandler extends AbstractHandler {
         return false;
     }
     
+    @Deprecated
     private static List<Tree.ImportMemberOrType> getUsedImportElements(
             List<Tree.Import> imports, List<Declaration> unused, 
             boolean hasWildcard, 
@@ -384,12 +394,14 @@ public class CleanImportsHandler extends AbstractHandler {
         return list;
     }
     
+    @Deprecated
     private static boolean isErrorFree(Tree.ImportMemberOrType imt) {
         return !hasRealErrors(imt.getIdentifier()) && 
                 !hasRealErrors(imt);
     }
 
-    private static boolean preventAmbiguityDueWildcards(Declaration d, 
+    @Deprecated
+   private static boolean preventAmbiguityDueWildcards(Declaration d, 
             Map<String, List<Tree.Import>> importsMap) {
         Module module = 
                 d.getUnit().getPackage().getModule();
@@ -423,7 +435,8 @@ public class CleanImportsHandler extends AbstractHandler {
         return false;
     }
 
-    private static boolean isImportedWithAlias(Declaration d, 
+    @Deprecated
+   private static boolean isImportedWithAlias(Declaration d, 
             List<Tree.Import> importList) {
         for (Tree.Import i: importList) {
             for (Tree.ImportMemberOrType imt: 
@@ -439,7 +452,8 @@ public class CleanImportsHandler extends AbstractHandler {
         return false;
     }
 
-    private static String packageName(Tree.Import i) {
+    @Deprecated
+   private static String packageName(Tree.Import i) {
         ImportPath path = i.getImportPath();
         if (path!=null) {
             return formatPath(path.getIdentifiers());
@@ -473,7 +487,8 @@ public class CleanImportsHandler extends AbstractHandler {
                 cpc.getTypecheckedRootNode()!=null;
     }
     
-    public static Declaration select(List<Declaration> proposals) {
+    @Deprecated
+   public static Declaration select(List<Declaration> proposals) {
         CeylonEditor editor = 
                 (CeylonEditor) getCurrentEditor();
         Shell shell = editor.getSite().getShell();

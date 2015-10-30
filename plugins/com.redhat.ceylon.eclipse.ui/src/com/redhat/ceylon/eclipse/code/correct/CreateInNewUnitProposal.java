@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
-import static com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler.imports;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
 import static com.redhat.ceylon.eclipse.util.Indents.indents;
@@ -26,7 +25,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 
+import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.imports.importsJ2C;
 import com.redhat.ceylon.eclipse.code.refactor.CreateUnitChange;
 import com.redhat.ceylon.eclipse.code.wizard.SelectNewUnitWizard;
 import com.redhat.ceylon.eclipse.util.Highlights;
@@ -36,6 +37,8 @@ import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
+
+import ceylon.interop.java.CeylonList;
 
 class CreateInNewUnitProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
@@ -149,7 +152,9 @@ class CreateInNewUnitProposal implements ICompletionProposal,
         if (dg.getParameters()!=null) {
             resolveImports(imports, dg.getParameters().values());
         }
-        String imps = imports(imports, doc);
+        String imps = importsJ2C.importCleaner().createImports(
+                new CeylonList<>(TypeDescriptor.klass(Declaration.class), imports),
+                doc);
         if (!imps.isEmpty()) {
             definition = imps + delim + delim + definition;
         }

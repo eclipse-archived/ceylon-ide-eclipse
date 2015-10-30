@@ -141,7 +141,7 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
+import com.redhat.ceylon.eclipse.code.imports.importsJ2C;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
 import com.redhat.ceylon.eclipse.code.outline.NavigateMenuItems;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
@@ -1826,7 +1826,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         boolean format = prefs.getBoolean(FORMAT);
         if (cleanImports) {
             try {
-                CleanImportsHandler.cleanImports(
+                importsJ2C.cleanImports(
                         parseController, doc);
             }
             catch (Exception e) {
