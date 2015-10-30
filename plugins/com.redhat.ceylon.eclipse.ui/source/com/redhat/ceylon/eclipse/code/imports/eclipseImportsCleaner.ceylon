@@ -66,7 +66,8 @@ object eclipseImportsCleaner
              return;
          }
          
-         cleanImports(cpc.typecheckedRootNode, doc, 
-            DocumentChange("Organize Imports", doc));
+         value change = DocumentChange("Organize Imports", doc);
+         cleanImports(cpc.typecheckedRootNode, doc, change);
+         EditorUtil.performChange(change);
     }
 }

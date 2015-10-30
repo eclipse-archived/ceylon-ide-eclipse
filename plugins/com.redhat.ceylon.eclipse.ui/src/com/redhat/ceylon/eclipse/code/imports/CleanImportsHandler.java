@@ -49,10 +49,13 @@ public class CleanImportsHandler extends AbstractHandler {
         IDocument doc = 
                 editor.getCeylonSourceViewer()
                       .getDocument();
-        cleanImports(editor.getParseController(), doc);
+        
+        eclipseImportsCleaner_.get_().cleanEditorImports(editor.getParseController(), doc);
+
         return null;
     }
 
+    @Deprecated
     public static void cleanImports(
             CeylonParseController controller, IDocument doc) {
         if (!isEnabled(controller)) return;
