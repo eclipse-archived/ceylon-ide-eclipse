@@ -1,9 +1,16 @@
 package com.redhat.ceylon.eclipse.code.html;
 
+import static com.redhat.ceylon.eclipse.util.EditorUtil.createColor;
+import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND;
+import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT;
+import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND;
+import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
 
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.util.Util;
 import org.eclipse.swt.SWT;
@@ -11,6 +18,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 
 /**
  * Provides a set of convenience methods for creating HTML pages.
@@ -288,7 +296,20 @@ public class HTMLPrinter {
     }
 
     public static void insertPageProlog(StringBuilder buffer, int position, String styleSheet) {
-        insertPageProlog(buffer, position, null, null, styleSheet);
+    	Color fg = null, bg = null;
+        IPreferenceStore editorPreferenceStore = 
+        		EditorsPlugin.getDefault().getPreferenceStore();
+		if (!editorPreferenceStore.getBoolean(
+				PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT)) {
+			 bg = createColor(editorPreferenceStore, 
+        				PREFERENCE_COLOR_BACKGROUND);
+		}
+		if (!editorPreferenceStore.getBoolean(
+				PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT)) {
+			fg = createColor(editorPreferenceStore, 
+        				PREFERENCE_COLOR_FOREGROUND);
+		}
+        insertPageProlog(buffer, position, fg.getRGB(), bg.getRGB(), styleSheet);
     }
 
     public static void addPageProlog(StringBuilder buffer) {
