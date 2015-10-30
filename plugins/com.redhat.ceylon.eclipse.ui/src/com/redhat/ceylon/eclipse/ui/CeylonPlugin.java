@@ -307,6 +307,9 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
                 URI fileURI = 
                         new URI("file", null, urlPath, null);
                 ceylonRepository = new File(fileURI);
+                try {
+                    ceylonRepository = ceylonRepository.getCanonicalFile();
+                } catch(Exception e) {}
             }
             catch (Exception e) {
                 e.printStackTrace();
