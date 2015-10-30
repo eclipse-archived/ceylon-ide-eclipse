@@ -5,6 +5,8 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTyp
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRootFolderType;
 import static com.redhat.ceylon.eclipse.core.vfs.vfsJ2C.instanceOfIFileVirtualFile;
 import static org.eclipse.jdt.core.JavaCore.isJavaLikeFileName;
+import static org.eclipse.jface.preference.PreferenceConverter.getColor;
+import static org.eclipse.jface.preference.PreferenceConverter.getDefaultColor;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.net.URI;
@@ -43,6 +45,7 @@ import org.eclipse.jface.bindings.keys.IKeyLookup;
 import org.eclipse.jface.bindings.keys.KeyLookupFactory;
 import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.bindings.keys.KeyStroke;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRewriteTarget;
@@ -61,7 +64,10 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
@@ -786,5 +792,21 @@ public class EditorUtil {
             }
         }
         return input;
+    }
+    
+    public static Color createColor(IPreferenceStore store, String key) {
+    	if (store.contains(key)) {
+    		RGB rgb;
+    		if (store.isDefault(key)) {
+    			rgb = getDefaultColor(store, key);
+    		}
+    		else {
+    			rgb = getColor(store, key);
+    		}
+    		if (rgb != null) {
+    			return new Color(Display.getDefault(), rgb);
+    		}
+    	}	
+    	return null;
     }
 }

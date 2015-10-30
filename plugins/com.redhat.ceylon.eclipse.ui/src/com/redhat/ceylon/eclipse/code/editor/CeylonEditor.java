@@ -1557,10 +1557,12 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
             new ToggleFoldingRunner(this)
                 .runWhenNextVisible();
         }
-        ContentAssistant contentAssistant = 
-                getCeylonSourceViewer()
-                    .getContentAssistant();
-        configCompletionPopup(contentAssistant);
+        CeylonSourceViewer sourceViewer = getCeylonSourceViewer();
+        if (sourceViewer!=null) {
+        	ContentAssistant contentAssistant = 
+        			sourceViewer.getContentAssistant();
+        	configCompletionPopup(contentAssistant);
+        }
     }
     
     private IPropertyChangeListener propertyChangeListener;

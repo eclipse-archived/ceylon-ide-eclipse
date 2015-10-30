@@ -4,10 +4,15 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_ACTIVATION_DELAY;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT_PREFIX;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.createColor;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.jface.dialogs.DialogSettings.getOrCreateSection;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
+import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND;
+import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT;
+import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND;
+import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT;
 
 import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.bindings.keys.KeyStroke;
@@ -40,6 +45,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
+import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 
 import com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor;
@@ -163,7 +169,8 @@ public class CeylonSourceViewerConfiguration
 
     static void configCompletionPopup(
             ContentAssistant contentAssistant) {
-        IPreferenceStore preferenceStore = CeylonPlugin.getPreferences();
+        IPreferenceStore preferenceStore = 
+        		CeylonPlugin.getPreferences();
         if (preferenceStore!=null) {
             contentAssistant.enableAutoInsert(
                     preferenceStore.getBoolean(AUTO_INSERT));
@@ -174,8 +181,22 @@ public class CeylonSourceViewerConfiguration
             contentAssistant.enablePrefixCompletion(
                     preferenceStore.getBoolean(AUTO_INSERT_PREFIX));
         }
+        IPreferenceStore editorPreferenceStore = 
+        		EditorsPlugin.getDefault().getPreferenceStore();
+		if (!editorPreferenceStore.getBoolean(
+				PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT)) {
+	        contentAssistant.setProposalSelectorBackground(
+	        		createColor(editorPreferenceStore, 
+        				PREFERENCE_COLOR_BACKGROUND));
+		}
+		if (!editorPreferenceStore.getBoolean(
+				PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT)) {
+	        contentAssistant.setProposalSelectorForeground(
+	        		createColor(editorPreferenceStore, 
+        				PREFERENCE_COLOR_FOREGROUND));
+		}
     }
-
+    
     @Override
     public IQuickAssistAssistant getQuickAssistAssistant(
             ISourceViewer sourceViewer) {
@@ -186,6 +207,20 @@ public class CeylonSourceViewerConfiguration
                 getOrCreateSection(getSettings(), 
                 "quickassist_proposal_popup"));
         quickAssist.enableColoredLabels(true);
+        IPreferenceStore editorPreferenceStore = 
+        		EditorsPlugin.getDefault().getPreferenceStore();
+		if (!editorPreferenceStore.getBoolean(
+				PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT)) {
+			quickAssist.setProposalSelectorBackground(
+					createColor(editorPreferenceStore, 
+        				PREFERENCE_COLOR_BACKGROUND));
+		}
+		if (!editorPreferenceStore.getBoolean(
+				PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT)) {
+			quickAssist.setProposalSelectorForeground(
+					createColor(editorPreferenceStore, 
+        				PREFERENCE_COLOR_FOREGROUND));
+		}
         return quickAssist;
     }
 
@@ -267,8 +302,24 @@ public class CeylonSourceViewerConfiguration
             @Override
             public IInformationControl 
             createInformationControl(Shell parent) {
-                return new BrowserInformationControl(parent, 
-                        APPEARANCE_JAVADOC_FONT, false);
+                BrowserInformationControl control = 
+                		new BrowserInformationControl(parent, 
+                				APPEARANCE_JAVADOC_FONT, false);
+                IPreferenceStore editorPreferenceStore = 
+                		EditorsPlugin.getDefault().getPreferenceStore();
+        		if (!editorPreferenceStore.getBoolean(
+        				PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT)) {
+        			control.setBackgroundColor(
+                		createColor(editorPreferenceStore, 
+                				PREFERENCE_COLOR_BACKGROUND));
+        		}
+        		if (!editorPreferenceStore.getBoolean(
+        				PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT)) {
+        			control.setForegroundColor(
+        					createColor(editorPreferenceStore, 
+                				PREFERENCE_COLOR_FOREGROUND));
+        		}
+				return control;
             }
         };
     }
