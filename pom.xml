@@ -36,36 +36,6 @@
      <url>http://download.eclipse.org/technology/swtbot/releases/latest/</url>
    </repository>
 
-   <repository>
-     <id>ceylon-dist</id>
-     <layout>p2</layout>
-     <url>file:../ceylon-dist/osgi/build/dist</url>
-   </repository>
-
-   <repository>
-     <id>ceylon-sdk</id>
-     <layout>p2</layout>
-     <url>file:../ceylon-sdk/osgi/dist</url>
-   </repository>
-
-   <repository>
-     <id>ceylon-formatter</id>
-     <layout>p2</layout>
-     <url>file:../ceylon.formatter/osgi/dist</url>
-   </repository>
-
-   <repository>
-     <id>ceylon.tool.converter.java2ceylon</id>
-     <layout>p2</layout>
-     <url>file:../ceylon.tool.converter.java2ceylon/osgi/dist</url>
-   </repository>
-
-   <repository>
-     <id>ceylon-ide-common</id>
-     <layout>p2</layout>
-     <url>file:../ceylon-ide-common/osgi/dist</url>
-   </repository>
-
   </repositories>
 
   <modules>
@@ -213,4 +183,63 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+        <id>update-site-runtime-dependencies</id>
+        <activation>
+          <property>
+            <name>build-against</name>
+            <value>last-release</value>
+          </property>
+        </activation>
+        <repositories>
+            <repository>
+             <id>ide-runtime-dependencies</id>
+             <layout>p2</layout>
+             <url>http://downloads.ceylon-lang.org/ide/eclipse/prod/</url>
+           </repository>
+        </repositories>
+    </profile>
+    <profile>
+        <id>local-runtime-dependencies</id>
+        <activation>
+            <activeByDefault>true</activeByDefault>
+            <property>
+              <name>build-against</name>
+              <value>current-master</value>
+            </property>
+        </activation>
+        <repositories>
+           <repository>
+             <id>ceylon-dist</id>
+             <layout>p2</layout>
+             <url>file:../ceylon-dist/osgi/build/dist</url>
+           </repository>
+        
+           <repository>
+             <id>ceylon-sdk</id>
+             <layout>p2</layout>
+             <url>file:../ceylon-sdk/osgi/dist</url>
+           </repository>
+        
+           <repository>
+             <id>ceylon-formatter</id>
+             <layout>p2</layout>
+             <url>file:../ceylon.formatter/osgi/dist</url>
+           </repository>
+        
+           <repository>
+             <id>ceylon.tool.converter.java2ceylon</id>
+             <layout>p2</layout>
+             <url>file:../ceylon.tool.converter.java2ceylon/osgi/dist</url>
+           </repository>
+        
+           <repository>
+             <id>ceylon-ide-common</id>
+             <layout>p2</layout>
+             <url>file:../ceylon-ide-common/osgi/dist</url>
+           </repository>
+        </repositories>
+    </profile>
+  </profiles>
 </project>
