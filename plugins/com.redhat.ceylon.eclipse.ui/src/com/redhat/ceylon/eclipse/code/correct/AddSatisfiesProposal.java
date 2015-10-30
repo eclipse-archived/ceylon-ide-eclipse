@@ -26,7 +26,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
-import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
+import com.redhat.ceylon.ide.common.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -363,7 +363,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
             public void visit(Tree.ObjectDefinition that) {
                 if (that.getDeclarationModel().getType()
                         .getDeclaration().equals(typeDec)) {
-                    declarationNode = that;
+                    setDeclarationNode(that);
                 }
                 super.visit(that);
             }

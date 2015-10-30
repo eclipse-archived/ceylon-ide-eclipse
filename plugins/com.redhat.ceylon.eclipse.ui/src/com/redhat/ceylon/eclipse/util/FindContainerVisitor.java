@@ -4,6 +4,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
+@Deprecated
 public class FindContainerVisitor extends Visitor {
     Node node;
     Tree.Declaration declaration;

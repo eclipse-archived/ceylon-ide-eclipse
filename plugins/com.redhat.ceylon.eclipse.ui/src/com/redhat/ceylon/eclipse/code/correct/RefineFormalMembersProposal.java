@@ -36,8 +36,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ClassDefinition;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.FindBodyContainerVisitor;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.ide.common.util.FindBodyContainerVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
@@ -294,7 +294,7 @@ class RefineFormalMembersProposal
             FindBodyContainerVisitor v =
                     new FindBodyContainerVisitor(n);
             v.visit(rootNode);
-            node = v.getDeclarationNode();
+            node = v.getDeclaration();
         }
         if (node!=null) {
             Scope scope = node.getScope();

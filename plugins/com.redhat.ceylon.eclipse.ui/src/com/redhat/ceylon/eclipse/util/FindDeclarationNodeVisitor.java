@@ -8,6 +8,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
+@Deprecated
 public class FindDeclarationNodeVisitor extends Visitor {
     
     private final Referenceable declaration;

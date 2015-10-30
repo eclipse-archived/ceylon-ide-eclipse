@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.util.Types.getRequiredType;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.Collection;
@@ -20,7 +19,8 @@ import org.eclipse.text.edits.InsertEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.eclipse.util.Types;
+import com.redhat.ceylon.ide.common.util.RequiredType;
+import com.redhat.ceylon.ide.common.util.types_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -74,8 +74,8 @@ class AppendMemberReferenceProposal extends CorrectionProposal  {
                     CommonToken token = 
                             (CommonToken) 
                                 id.getToken();
-                    Types.Required required = 
-                            getRequiredType(rootNode, node, token);
+                    RequiredType required = types_.get_()
+                            .getRequiredType(rootNode, node, token);
                     Type requiredType = required.getType();
                     if (requiredType!=null) {
                         TypeDeclaration type = t.getDeclaration();

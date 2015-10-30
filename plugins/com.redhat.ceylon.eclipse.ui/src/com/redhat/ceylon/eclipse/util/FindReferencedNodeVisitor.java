@@ -10,6 +10,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.FunctionArgument;
 
+@Deprecated
 class FindReferencedNodeVisitor extends Visitor {
     
     private final Referenceable declaration;

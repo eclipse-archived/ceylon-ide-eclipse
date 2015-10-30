@@ -34,6 +34,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
 
+@Deprecated
 class FindOccurrenceLocationVisitor extends Visitor {
     
     private Node node;

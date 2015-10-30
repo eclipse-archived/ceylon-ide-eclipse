@@ -21,6 +21,7 @@ import com.redhat.ceylon.model.typechecker.model.Reference;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
+@Deprecated
 class RequiredTypeVisitor 
         extends Visitor implements Types.Required {
     

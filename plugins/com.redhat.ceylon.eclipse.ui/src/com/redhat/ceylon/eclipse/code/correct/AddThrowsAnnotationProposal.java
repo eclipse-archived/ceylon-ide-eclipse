@@ -17,7 +17,7 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
+import com.redhat.ceylon.ide.common.util.FindContainerVisitor;
 
 public class AddThrowsAnnotationProposal extends CorrectionProposal {
     

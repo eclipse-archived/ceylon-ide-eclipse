@@ -32,7 +32,6 @@ import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.ide.common.util.NodePrinter;
 import com.redhat.ceylon.ide.common.util.nodes_;
-import com.redhat.ceylon.ide.common.util.FindNodeVisitor;
 import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
@@ -437,10 +436,8 @@ public class Nodes {
 
     public static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, 
             Node node, int offset) {
-        FindOccurrenceLocationVisitor visitor = 
-                new FindOccurrenceLocationVisitor(offset, node);
-        cu.visit(visitor);
-        return visitor.getOccurrenceLocation();
+        
+        return delegate.getOccurrenceLocation(cu, node, offset);
     }
 
     public static String getImportedName(Tree.ImportModule im) {
