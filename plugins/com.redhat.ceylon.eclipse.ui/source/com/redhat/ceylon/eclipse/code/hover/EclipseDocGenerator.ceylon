@@ -58,6 +58,12 @@ import org.eclipse.jface.text {
     IInformationControlCreator,
     IDocument
 }
+import com.redhat.ceylon.ide.common.imports {
+    AbstractModuleImportUtil
+}
+import com.redhat.ceylon.eclipse.code.imports {
+    eclipseModuleImportUtils
+}
 
 object eclipseDocGenerator extends EclipseDocGenerator(null) {
     
@@ -248,4 +254,6 @@ class EclipseDocGenerator(CeylonEditor? editor) extends SourceInfoHover(editor)
     shared IInformationControlCreator informationPresenterControlCreator {
         return CeylonEnrichedInformationControlCreator(editor);
     }
+    shared actual AbstractModuleImportUtil<out Anything,out Anything,out Anything,out Anything,out Anything,out Anything> moduleImportUtil
+            => eclipseModuleImportUtils;
 }
