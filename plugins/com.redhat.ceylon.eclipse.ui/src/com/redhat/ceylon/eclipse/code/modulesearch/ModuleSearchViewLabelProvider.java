@@ -6,6 +6,8 @@ import org.eclipse.jface.viewers.ViewerCell;
 
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.ide.common.modulesearch.ModuleNode;
+import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
 
 public class ModuleSearchViewLabelProvider extends StyledCellLabelProvider {
     

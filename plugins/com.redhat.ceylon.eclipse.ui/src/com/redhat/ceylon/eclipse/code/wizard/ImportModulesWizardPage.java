@@ -26,9 +26,9 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 import com.redhat.ceylon.common.Versions;
-import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
 import com.redhat.ceylon.model.typechecker.model.Module;
 
 public abstract class ImportModulesWizardPage extends WizardPage {

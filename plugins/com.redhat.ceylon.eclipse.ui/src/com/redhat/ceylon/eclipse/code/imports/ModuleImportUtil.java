@@ -24,10 +24,10 @@ import org.eclipse.text.edits.MultiTextEdit;
 import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.modulesearch.ModuleNode;
-import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.modulesearch.ModuleNode;
+import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 

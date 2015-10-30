@@ -30,10 +30,10 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
-import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
 import com.redhat.ceylon.eclipse.code.preferences.ModuleImportContentProvider;
 import com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
 
 public class NewModuleWizard extends Wizard implements INewWizard {
     

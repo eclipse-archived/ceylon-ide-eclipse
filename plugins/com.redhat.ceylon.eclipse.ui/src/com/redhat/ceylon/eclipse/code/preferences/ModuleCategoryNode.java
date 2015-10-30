@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 
-import com.redhat.ceylon.eclipse.code.modulesearch.ModuleNode;
+import com.redhat.ceylon.ide.common.modulesearch.ModuleNode;
 
 public class ModuleCategoryNode {
     private String name;

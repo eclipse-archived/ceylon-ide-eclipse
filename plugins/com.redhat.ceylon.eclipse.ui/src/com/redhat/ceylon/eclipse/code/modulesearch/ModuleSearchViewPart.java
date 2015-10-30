@@ -92,6 +92,8 @@ import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.DocBrowser;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
+import com.redhat.ceylon.ide.common.modulesearch.ModuleNode;
+import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 

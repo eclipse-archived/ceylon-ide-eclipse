@@ -12,8 +12,8 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 
-import com.redhat.ceylon.eclipse.code.modulesearch.ModuleNode;
-import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
+import com.redhat.ceylon.ide.common.modulesearch.ModuleNode;
+import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
 
 final class ModuleSelectionLabelProvider
         extends StyledCellLabelProvider 

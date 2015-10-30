@@ -34,11 +34,11 @@ import com.redhat.ceylon.cmr.impl.ShaSigner;
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.common.log.Logger;
 import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
 import com.redhat.ceylon.eclipse.code.preferences.ModuleImportContentProvider;
 import com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
+import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
 
 public class ExportJarWizard extends Wizard implements IExportWizard {
 

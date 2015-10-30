@@ -25,6 +25,8 @@ import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
+import com.redhat.ceylon.ide.common.modulesearch.ModuleNode;
+import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
 
 public class ModuleSearchManager {
     

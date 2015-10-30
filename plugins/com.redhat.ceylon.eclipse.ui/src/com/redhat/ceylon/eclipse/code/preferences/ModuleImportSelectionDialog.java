@@ -10,9 +10,9 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
 
-import com.redhat.ceylon.eclipse.code.modulesearch.ModuleNode;
 import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewPart;
-import com.redhat.ceylon.eclipse.code.modulesearch.ModuleVersionNode;
+import com.redhat.ceylon.ide.common.modulesearch.ModuleNode;
+import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
 
 public final class ModuleImportSelectionDialog extends FilteredElementTreeSelectionDialog {
     
