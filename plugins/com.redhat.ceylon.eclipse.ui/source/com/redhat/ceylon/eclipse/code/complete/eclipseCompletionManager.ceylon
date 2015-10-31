@@ -19,6 +19,9 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     Tree,
     Visitor
 }
+import com.redhat.ceylon.eclipse.code.correct {
+    TypeProposal
+}
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
 }
@@ -74,9 +77,6 @@ import org.eclipse.core.runtime {
     NullProgressMonitor,
     IProgressMonitor
 }
-import org.eclipse.jdt.internal.corext.refactoring {
-    ParameterInfo
-}
 import org.eclipse.jface.operation {
     IRunnableWithProgress
 }
@@ -96,9 +96,6 @@ import org.eclipse.swt.graphics {
 }
 import org.eclipse.ui {
     PlatformUI
-}
-import com.redhat.ceylon.eclipse.code.correct {
-    TypeProposal
 }
 
 EclipseCompletionManager dummyInstance = EclipseCompletionManager(CeylonEditor());
@@ -144,9 +141,10 @@ shared class EclipseCompletionManager(CeylonEditor editor)
             shared actual void run(IProgressMonitor monitor) {
                 monitor.beginTask("Preparing completions...", IProgressMonitor.\iUNKNOWN);
                 CeylonParseController controller = editor.parseController;
-                
+                print(returnedParamInfo);
                 _contentProposals = getEclipseContentProposals(controller, offset, viewer, secondLevel, returnedParamInfo, monitor);
-                if (_contentProposals.size == 1, is ParameterInfo pi = _contentProposals.get(0)) {
+                if (_contentProposals.size == 1 && 
+                    _contentProposals.first is InvocationCompletionProposal.ParameterInfo) {
                     returnedParamInfo = true;
                 }
                 monitor.done();
@@ -299,10 +297,8 @@ shared class EclipseCompletionManager(CeylonEditor editor)
             => InvocationCompletionProposal.ParameterInfo(offset, dec, producedReference, scope, cpc, namedInvocation);
             
     shared actual ICompletionProposal newFunctionCompletionProposal(Integer offset, String prefix,
-           String desc, String text, Declaration dec, Unit unit, CeylonParseController controller) {
-        
-        return EclipseFunctionCompletionProposal(offset, prefix, desc, text, dec, controller.lastCompilationUnit);
-    }
+           String desc, String text, Declaration dec, Unit unit, CeylonParseController controller) 
+           => EclipseFunctionCompletionProposal(offset, prefix, desc, text, dec, controller.lastCompilationUnit);
 
     shared actual ICompletionProposal newControlStructureCompletionProposal(Integer offset, String prefix,
         String desc, String text, Declaration dec, CeylonParseController cpc)
