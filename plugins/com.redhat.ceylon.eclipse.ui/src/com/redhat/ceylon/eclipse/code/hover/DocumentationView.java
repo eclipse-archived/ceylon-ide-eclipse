@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.hover;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static java.lang.Integer.parseInt;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
@@ -40,14 +41,12 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.browser.BrowserInput;
 import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.DocBrowser;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.ide.common.doc.DocGenerator;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
@@ -81,7 +80,8 @@ public class DocumentationView extends ViewPart {
     @Override
     public void createPartControl(Composite parent) {
         IToolBarManager tbm = 
-                getViewSite().getActionBars()
+                getViewSite()
+                	.getActionBars()
                     .getToolBarManager();
         back = new BackAction();
         back.setEnabled(false);
@@ -144,12 +144,13 @@ public class DocumentationView extends ViewPart {
         };
         CeylonPlugin.getPreferences()
             .addPropertyChangeListener(propertyChangeListener);
-        getWorkbench().getThemeManager()
+        getWorkbench()
+        	.getThemeManager()
             .addPropertyChangeListener(propertyChangeListener);
     }
 
     private void updateWithCurrentEditor() {
-        IEditorPart part = EditorUtil.getCurrentEditor();
+        IEditorPart part = getCurrentEditor();
         if (part instanceof CeylonEditor) {
             CeylonEditor editor = (CeylonEditor) part;
             IRegion selection = editor.getSelection();
@@ -161,14 +162,15 @@ public class DocumentationView extends ViewPart {
     }
     //TODO: big copy/paste from CeylonLocationListener.handleLink
     private void handleLink(String location) {
-        CeylonParseController controller = editor.getParseController();
+        CeylonParseController controller = 
+        		editor.getParseController();
         if (location.startsWith("dec:")) {
             Referenceable target = 
                     gen.getLinkedModel(
                             new ceylon.language.String(location),
                             controller);
             if (target!=null) {
-                Navigation.gotoDeclaration(target);
+                gotoDeclaration(target);
             }
         }
         else if (location.startsWith("doc:")) {
@@ -243,18 +245,21 @@ public class DocumentationView extends ViewPart {
         }
         else {
             Region hoverRegion = new Region(offset, length);
-            CeylonParseController cpc = editor.getParseController();
-            String html = gen.getDocumentation(
-                    cpc.getLastCompilationUnit(), 
-                    hoverRegion.getOffset(),
-                    cpc).toString();
+            CeylonParseController cpc = 
+            		editor.getParseController();
+            ceylon.language.String html = 
+            		gen.getDocumentation(
+            				cpc.getLastCompilationUnit(), 
+            				hoverRegion.getOffset(),
+            				cpc);
             if (html!=null) {
+            	String text = html.toString();
                 if (info==null || 
-                        !info.getHtml().equals(html)) {
-                    control.setText(html);
+                        !info.getHtml().equals(text)) {
+                    control.setText(text);
                     info = new CeylonBrowserInput(info, 
                             getModel(editor, hoverRegion), 
-                            html);
+                            text);
                     back.update();
                     forward.update();
                     openDeclarationAction.setEnabled(true);
