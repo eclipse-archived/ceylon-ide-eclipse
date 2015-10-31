@@ -12,6 +12,9 @@ import com.redhat.ceylon.eclipse.code.html {
     HTML,
     HTMLPrinter
 }
+import com.redhat.ceylon.eclipse.code.imports {
+    eclipseModuleImportUtils
+}
 import com.redhat.ceylon.eclipse.code.parse {
     CeylonParseController
 }
@@ -26,6 +29,9 @@ import com.redhat.ceylon.ide.common.doc {
     DocGenerator,
     Icons,
     Colors
+}
+import com.redhat.ceylon.ide.common.imports {
+    AbstractModuleImportUtil
 }
 import com.redhat.ceylon.ide.common.typechecker {
     LocalAnalysisResult
@@ -58,12 +64,6 @@ import org.eclipse.jface.text {
     IInformationControlCreator,
     IDocument
 }
-import com.redhat.ceylon.ide.common.imports {
-    AbstractModuleImportUtil
-}
-import com.redhat.ceylon.eclipse.code.imports {
-    eclipseModuleImportUtils
-}
 
 object eclipseDocGenerator extends EclipseDocGenerator(null) {
     
@@ -86,20 +86,21 @@ class EclipseDocGenerator(CeylonEditor? editor) extends SourceInfoHover(editor)
     
     shared actual CeylonBrowserInput? getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
         if (exists editor, exists prov = editor.selectionProvider) {
-            CeylonParseController? cpc = editor.parseController;
-            
             if (exists result = getExpressionHoverText(editor, hoverRegion)) {
                 return CeylonBrowserInput(null, null, result);
-            } else if (exists cpc, exists result = getDocumentation(
-                    cpc.typecheckedRootNode,
-                    hoverRegion.offset, cpc)) {
-                
+            } else if (exists cpc = editor.parseController, 
+                exists rootNode = cpc.typecheckedRootNode, 
+                exists result = getDocumentation(rootNode, hoverRegion.offset, cpc)) {
                 Referenceable? model = DocumentationHover.getModel(editor, hoverRegion);
                 return CeylonBrowserInput(null, model, result);
             }
+            else {
+                return null;
+            }
         }
-        
-        return null;        
+        else {
+            return null;
+        }        
     }
     
     shared actual IInformationControlCreator hoverControlCreator
