@@ -143,7 +143,7 @@ class EclipseImportedModulePackageProposal(Integer offset, String prefix, String
                 return result;
             }
             
-            shared actual Boolean validate(IDocument document, Integer int, DocumentEvent documentEvent) {
+            shared actual Boolean validate(IDocument document, Integer int, DocumentEvent? documentEvent) {
                 value start = selection.x;
                 if (offset<start) {
                     return false;

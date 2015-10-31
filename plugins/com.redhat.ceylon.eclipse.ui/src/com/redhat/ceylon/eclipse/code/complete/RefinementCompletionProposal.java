@@ -649,7 +649,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         public Point getSelection(IDocument document) {
             return null;
         }
-
+        
+        @Override
         public void apply(IDocument document) {
             try {
                 IRegion region =
@@ -662,7 +663,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 e.printStackTrace();
             }
         }
-
+        
+        @Override
         public String getDisplayString() {
             return value;
         }
@@ -680,7 +682,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         public Image getImage() {
             return getDecoratedImage(CEYLON_LITERAL, 0, false);
         }
-
+        
+        @Override
         public String getAdditionalProposalInfo() {
             return null;
         }
@@ -728,5 +731,5 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             }
         }
 
-        }
+    }
 }
