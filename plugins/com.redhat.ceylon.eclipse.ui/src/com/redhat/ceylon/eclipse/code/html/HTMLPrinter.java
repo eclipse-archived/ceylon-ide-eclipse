@@ -309,7 +309,11 @@ public class HTMLPrinter {
 			fg = createColor(editorPreferenceStore, 
         				PREFERENCE_COLOR_FOREGROUND);
 		}
-        insertPageProlog(buffer, position, fg.getRGB(), bg.getRGB(), styleSheet);
+        insertPageProlog(
+        		buffer, position, 
+        		fg==null ? null : fg.getRGB(), 
+        		bg==null ? null : bg.getRGB(), 
+        		styleSheet);
     }
 
     public static void addPageProlog(StringBuilder buffer) {
