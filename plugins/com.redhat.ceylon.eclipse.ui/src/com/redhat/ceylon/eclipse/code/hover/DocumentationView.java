@@ -245,13 +245,19 @@ public class DocumentationView extends ViewPart {
         }
         else {
             Region hoverRegion = new Region(offset, length);
-            CeylonParseController cpc = 
+            CeylonParseController controller = 
             		editor.getParseController();
-            ceylon.language.String html = 
-            		gen.getDocumentation(
-            				cpc.getLastCompilationUnit(), 
-            				hoverRegion.getOffset(),
-            				cpc);
+            Tree.CompilationUnit rootNode = 
+            		controller.getLastCompilationUnit();
+			ceylon.language.String html;
+			if (rootNode==null) {
+				html = null;
+			}
+			else {
+				html = gen.getDocumentation(rootNode, 
+						hoverRegion.getOffset(),
+						controller);
+			}
             if (html!=null) {
             	String text = html.toString();
                 if (info==null || 
