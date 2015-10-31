@@ -86,18 +86,14 @@ class EclipseDocGenerator(CeylonEditor? editor) extends SourceInfoHover(editor)
     
     shared actual CeylonBrowserInput? getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
         if (exists editor, exists prov = editor.selectionProvider) {
-            value cpc = editor.parseController;
+            CeylonParseController? cpc = editor.parseController;
             
             if (exists result = getExpressionHoverText(editor, hoverRegion)) {
-                //print(DocumentationHover.getExpressionHoverText(editor, hoverRegion));
-                //print("\n\n\n");
-                //print(result);
                 return CeylonBrowserInput(null, null, result);
-            } else if (exists result = getDocumentation(cpc.typecheckedRootNode,
+            } else if (exists cpc, exists result = getDocumentation(
+                    cpc.typecheckedRootNode,
                     hoverRegion.offset, cpc)) {
-                //print(DocumentationHover.getHoverText(editor, hoverRegion));
-                //print("\n\n\n");
-                //print(result);
+                
                 Referenceable? model = DocumentationHover.getModel(editor, hoverRegion);
                 return CeylonBrowserInput(null, model, result);
             }
