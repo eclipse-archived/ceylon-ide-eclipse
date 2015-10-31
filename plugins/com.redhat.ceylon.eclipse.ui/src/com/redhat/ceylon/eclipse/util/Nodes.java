@@ -10,7 +10,6 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_E
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
-import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -31,8 +30,8 @@ import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.ide.common.util.NodePrinter;
-import com.redhat.ceylon.ide.common.util.nodes_;
 import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
+import com.redhat.ceylon.ide.common.util.nodes_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
@@ -436,32 +435,17 @@ public class Nodes {
 
     public static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, 
             Node node, int offset) {
-        
         return delegate.getOccurrenceLocation(cu, node, offset);
     }
 
     public static String getImportedName(Tree.ImportModule im) {
-        Tree.ImportPath ip = im.getImportPath();
-        Tree.QuotedLiteral ql = im.getQuotedLiteral();
-        if (ip!=null) {
-            return formatPath(ip.getIdentifiers());
-        }
-        else if (ql!=null) {
-            return ql.getText();
-        }
-        else {
-            return null;
-        }
+        ceylon.language.String name = delegate.getImportedModuleName(im);
+		return name==null ? null : name.toString();
     }
 
     public static String getImportedName(Tree.Import i) {
-        Tree.ImportPath ip = i.getImportPath();
-        if (ip!=null) {
-            return formatPath(ip.getIdentifiers());
-        }
-        else {
-            return null;
-        }
+        ceylon.language.String name = delegate.getImportedPackageName(i);
+		return  name==null ? null : name.toString();
     }
 
 }
