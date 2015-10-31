@@ -198,13 +198,9 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
             return sb.string;
         }
         
-        shared actual Point? getSelection(IDocument document) {
-            return null;
-        }
+        shared actual Point? getSelection(IDocument document) => null;
         
-        shared actual String displayString {
-            return getText(true);
-        }
+        shared actual String displayString => getText(true);
         
         shared actual StyledString styledDisplayString {
             value result = StyledString();
@@ -216,9 +212,7 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
             return CeylonLabelProvider.getImageForDeclaration(dec);
         }
         
-        shared actual IContextInformation? contextInformation {
-            return null;
-        }
+        shared actual IContextInformation? contextInformation => null;
         
         shared actual void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
             apply(viewer.document);
@@ -312,9 +306,7 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
                 CeylonResources.\iCEYLON_LITERAL, 0, false);
         }
         
-        shared actual IContextInformation? contextInformation {
-            return null;
-        }
+        shared actual IContextInformation? contextInformation => null;
         
         shared actual void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
             apply(viewer.document);
