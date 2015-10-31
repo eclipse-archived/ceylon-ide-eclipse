@@ -82,82 +82,80 @@ class EclipseImportedModulePackageProposal(Integer offset, String prefix, String
     
     shared actual void apply(IDocument doc) => applyInternal(doc);
     
-    shared actual ICompletionProposal newPackageMemberCompletionProposal(Declaration d, Point selection, LinkedModeModel lm) {
-        return object satisfies IEclipseCompletionProposal2And6 {
-            
-            function length(IDocument document) {
-                variable value length = 0;
-                variable value i = selection.x;
-                try {
-                    while (i<document.length &&
-                        (JCharacter.isJavaIdentifierPart(document.getChar(i)) ||
-                            document.getChar(i)=='.')) {
-                        length++;
-                        i++;
-                    }
+    shared actual ICompletionProposal newPackageMemberCompletionProposal(Declaration d, Point selection, LinkedModeModel lm) 
+            => object satisfies IEclipseCompletionProposal2And6 {
+        function length(IDocument document) {
+            variable value length = 0;
+            variable value i = selection.x;
+            try {
+                while (i<document.length &&
+                    (JCharacter.isJavaIdentifierPart(document.getChar(i)) ||
+                    document.getChar(i)=='.')) {
+                    length++;
+                    i++;
                 }
-                catch (BadLocationException e) {
-                    e.printStackTrace();
-                }
-                return length;
             }
-            
-            shared actual void apply(IDocument document) {
-                try {
-                    document.replace(selection.x,
-                        length(document),
-                        d.name);
-                }
-                catch (BadLocationException e) {
-                    e.printStackTrace();
-                }
-                lm.exit(ILinkedModeListener.\iUPDATE_CARET);
+            catch (BadLocationException e) {
+                e.printStackTrace();
             }
-            
-            shared actual void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
-                apply(viewer.document);
+            return length;
+        }
+        
+        shared actual void apply(IDocument document) {
+            try {
+                document.replace(selection.x,
+                    length(document),
+                    d.name);
             }
-            
-            shared actual Point? getSelection(IDocument document) => null;
-            
-            shared actual Image image => CeylonLabelProvider.getImageForDeclaration(d);
-
-            shared actual String displayString => d.name;
-
-            shared actual IContextInformation? contextInformation => null;
-            
-            shared actual String? additionalProposalInfo => null;
-            
-            shared actual void selected(ITextViewer iTextViewer, Boolean boolean) {}
-            
-            shared actual void unselected(ITextViewer iTextViewer) {}
-            
-            shared actual StyledString styledDisplayString {
-                StyledString result = StyledString();
-                Highlights.styleIdentifier(result, prefix,
-                    displayString,
-                    d is TypeDeclaration 
-                    then Highlights.\iTYPE_STYLER 
-                    else Highlights.\iMEMBER_STYLER,
-                    CeylonPlugin.completionFont);
-                return result;
+            catch (BadLocationException e) {
+                e.printStackTrace();
             }
-            
-            shared actual Boolean validate(IDocument document, Integer int, DocumentEvent? documentEvent) {
-                value start = selection.x;
-                if (offset<start) {
-                    return false;
-                }
-                String prefix;
-                try {
-                    prefix = document.get(start, offset-start);
-                }
-                catch (BadLocationException e) {
-                    return false;
-                }
-                return ModelUtil.isNameMatching(prefix, d);
+            lm.exit(ILinkedModeListener.\iUPDATE_CARET);
+        }
+        
+        shared actual void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
+            apply(viewer.document);
+        }
+        
+        shared actual Point? getSelection(IDocument document) => null;
+        
+        shared actual Image image => CeylonLabelProvider.getImageForDeclaration(d);
+        
+        shared actual String displayString => d.name;
+        
+        shared actual IContextInformation? contextInformation => null;
+        
+        shared actual String? additionalProposalInfo => null;
+        
+        shared actual void selected(ITextViewer iTextViewer, Boolean boolean) {}
+        
+        shared actual void unselected(ITextViewer iTextViewer) {}
+        
+        shared actual StyledString styledDisplayString {
+            StyledString result = StyledString();
+            Highlights.styleIdentifier(result, prefix,
+                displayString,
+                d is TypeDeclaration 
+                then Highlights.\iTYPE_STYLER 
+                else Highlights.\iMEMBER_STYLER,
+                CeylonPlugin.completionFont);
+            return result;
+        }
+        
+        shared actual Boolean validate(IDocument document, Integer currentOffset, DocumentEvent? documentEvent) {
+            value start = selection.x;
+            if (currentOffset<start) {
+                return false;
             }
-            
-        };
-    }
+            String prefix;
+            try {
+                prefix = document.get(start, currentOffset-start);
+            }
+            catch (BadLocationException e) {
+                return false;
+            }
+            return ModelUtil.isNameMatching(prefix, d);
+        }
+        
+    };
 }
