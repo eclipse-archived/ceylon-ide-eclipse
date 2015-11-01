@@ -204,7 +204,9 @@ public class HTMLPrinter {
     
     public static String toHex(Color color) {
         StringBuilder buffer = new StringBuilder();
-        appendColor(buffer, color.getRGB());
+        if (color!=null) {
+        	appendColor(buffer, color.getRGB());
+        }
         return buffer.toString();
     }
     
