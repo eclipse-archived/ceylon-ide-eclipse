@@ -164,14 +164,12 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     
     shared actual ObjectArray<IContextInformation> computeContextInformation(ITextViewer viewer, Integer offset) {
         CeylonParseController controller = editor.parseController;
-        
-        PhasedUnit? phasedUnit = controller.parseAndTypecheck(viewer.document, 10, NullProgressMonitor(), null);
-        
-        if (exists phasedUnit) {
+        if (exists phasedUnit = controller.parseAndTypecheck(viewer.document, 10, NullProgressMonitor(), null)) {
             return createJavaObjectArray<IContextInformation>(computeParameterContextInformation(offset, controller.lastCompilationUnit, viewer));
         }
-        
-        return ObjectArray(0);
+        else {
+            return ObjectArray(0);
+        }
     }
     
     shared actual IContextInformationValidator contextInformationValidator {
