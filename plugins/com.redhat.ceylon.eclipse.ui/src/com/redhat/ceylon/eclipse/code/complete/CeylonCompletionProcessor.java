@@ -282,10 +282,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 editor.getParseController();
         PhasedUnit phasedUnit =
                 controller.parseAndTypecheck(
-	                viewer.getDocument(),
-	                10,
-	                new NullProgressMonitor(), 
-	                null);
+                    viewer.getDocument(),
+                    10,
+                    new NullProgressMonitor(), 
+                    null);
         if (phasedUnit!=null) {
             return computeParameterContextInformation(offset,
                     phasedUnit.getCompilationUnit(), viewer)
@@ -328,15 +328,15 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         
         PhasedUnit typecheckedPhasedUnit =
                 controller.parseAndTypecheck(
-                		viewer.getDocument(),
-		                10, monitor, null);
+                        viewer.getDocument(),
+                        10, monitor, null);
         if (typecheckedPhasedUnit == null) {
             return null;
         }
         controller.getHandler().updateAnnotations();
         List<CommonToken> tokens = controller.getTokens(); 
         Tree.CompilationUnit typecheckedRootNode = 
-        		typecheckedPhasedUnit.getCompilationUnit();
+                typecheckedPhasedUnit.getCompilationUnit();
         
         //adjust the token to account for unclosed blocks
         //we search for the first non-whitespace/non-comment
@@ -1840,20 +1840,20 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                             catch (BadLocationException e) {}
                         }
                         if (string.trim().isEmpty()) {
-                        	Unit unit = rootNode.getUnit();
-                        	Tree.Term primary = that.getPrimary();
-                        	Declaration declaration;
-                        	Reference target;
-                        	if (primary instanceof Tree.MemberOrTypeExpression) {
-                        		Tree.MemberOrTypeExpression mte = 
+                            Unit unit = rootNode.getUnit();
+                            Tree.Term primary = that.getPrimary();
+                            Declaration declaration;
+                            Reference target;
+                            if (primary instanceof Tree.MemberOrTypeExpression) {
+                                Tree.MemberOrTypeExpression mte = 
                                     (Tree.MemberOrTypeExpression) primary;
-                            	declaration = mte.getDeclaration();
-								target = mte.getTarget();
-                        	}
-                        	else {
-                        		declaration = null;
-                        		target = null;
-                        	}
+                                declaration = mte.getDeclaration();
+                                target = mte.getTarget();
+                            }
+                            else {
+                                declaration = null;
+                                target = null;
+                            }
                             if (declaration instanceof Functional) {
                                 Functional fd =
                                         (Functional) declaration;
@@ -1872,15 +1872,15 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                                 }
                             }
                             else {
-                            	Type type = primary.getTypeModel();
-                            	if (unit.isCallableType(type)) {
-                            		List<Type> argTypes = 
-                            				unit.getCallableArgumentTypes(type);
-                            		if (!argTypes.isEmpty()) {
-                            			infos.clear();                            	
-                            			infos.add(new ParametersCompletionProposal.ParameterContextInformation(
-                            					argTypes, start, unit));
-                            		}
+                                Type type = primary.getTypeModel();
+                                if (unit.isCallableType(type)) {
+                                    List<Type> argTypes = 
+                                            unit.getCallableArgumentTypes(type);
+                                    if (!argTypes.isEmpty()) {
+                                        infos.clear();                                
+                                        infos.add(new ParametersCompletionProposal.ParameterContextInformation(
+                                                argTypes, start, unit));
+                                    }
                                 }
                             }
                         }

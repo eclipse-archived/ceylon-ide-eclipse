@@ -74,46 +74,46 @@ import com.redhat.ceylon.model.typechecker.model.Value;
 
 class ParametersCompletionProposal extends CompletionProposal {
     
-	static final class ParameterContextInformation 
-			implements IContextInformation {
+    static final class ParameterContextInformation 
+            implements IContextInformation {
 
-		final String string;
-		final int argumentListOffset;
-		
-		ParameterContextInformation(List<Type> argTypes,
-				int argumentListOffset, Unit unit) {
-			this.argumentListOffset = argumentListOffset;
-			StringBuilder builder = new StringBuilder();
-			for (Type argType: argTypes) {
-				if (builder.length()>0) {
-					builder.append(", ");
-				}
-				builder.append(argType.asString(unit));
-			}
-			string = builder.toString();
-		}
+        final String string;
+        final int argumentListOffset;
+        
+        ParameterContextInformation(List<Type> argTypes,
+                int argumentListOffset, Unit unit) {
+            this.argumentListOffset = argumentListOffset;
+            StringBuilder builder = new StringBuilder();
+            for (Type argType: argTypes) {
+                if (builder.length()>0) {
+                    builder.append(", ");
+                }
+                builder.append(argType.asString(unit));
+            }
+            string = builder.toString();
+        }
 
-		@Override
-		public String getInformationDisplayString() {
-			return string;
-		}
+        @Override
+        public String getInformationDisplayString() {
+            return string;
+        }
 
-		@Override
-		public Image getImage() {
-			return null;
-		}
+        @Override
+        public Image getImage() {
+            return null;
+        }
 
-		@Override
-		public String getContextDisplayString() {
-			return "Indirect invocation";
-		}
-		
-		public int getArgumentListOffset() {
-			return argumentListOffset;
-		}
-	}
+        @Override
+        public String getContextDisplayString() {
+            return "Indirect invocation";
+        }
+        
+        public int getArgumentListOffset() {
+            return argumentListOffset;
+        }
+    }
 
-	//TODO: this is a big copy/paste from
+    //TODO: this is a big copy/paste from
     //      InvocationCompletionProposal.NestedCompletionProposal
     final class NestedCompletionProposal
             implements ICompletionProposal,
@@ -422,7 +422,7 @@ class ParametersCompletionProposal extends CompletionProposal {
     private final Unit unit;
     private final List<Type> argTypes;
     private final Scope scope;
-	private int argumentListOffset;
+    private int argumentListOffset;
     
     ParametersCompletionProposal(int offset, 
             String desc, String text, 
@@ -431,7 +431,7 @@ class ParametersCompletionProposal extends CompletionProposal {
             Unit unit) {
         super(offset, "", LARGE_CORRECTION_IMAGE, 
                 desc, text);
-		this.argumentListOffset = offset + text.indexOf("(");
+        this.argumentListOffset = offset + text.indexOf("(");
         this.unit = unit;
         this.scope = scope;
         this.argTypes = argTypes;
@@ -445,7 +445,7 @@ class ParametersCompletionProposal extends CompletionProposal {
             throws BadLocationException {
         DocumentChange change = 
                 new DocumentChange("Complete Invocation", 
-                		document);
+                        document);
         change.setEdit(new MultiTextEdit());
         change.addEdit(createEdit(document));
         return change;
@@ -583,8 +583,8 @@ class ParametersCompletionProposal extends CompletionProposal {
     
     @Override
     public IContextInformation getContextInformation() {
-    	return new ParameterContextInformation(argTypes, 
-    			argumentListOffset, unit);
+        return new ParameterContextInformation(argTypes, 
+                argumentListOffset, unit);
     }
     
     private void addValueArgumentProposals(
@@ -791,8 +791,8 @@ class ParametersCompletionProposal extends CompletionProposal {
                         if (argType.isClassOrInterface() ||
                             argType.isTypeParameter()) {
                             String n = 
-                            		argType.getDeclaration()
-                                    	.getName(unit);
+                                    argType.getDeclaration()
+                                        .getName(unit);
                             name = Escaping.toInitialLowercase(n);
                         }
                         else {
