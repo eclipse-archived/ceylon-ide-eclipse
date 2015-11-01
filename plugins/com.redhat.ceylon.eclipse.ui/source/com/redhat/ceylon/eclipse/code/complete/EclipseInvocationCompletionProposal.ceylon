@@ -172,7 +172,8 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
             //instantiated).
             try {
                 IRegion region = 
-                        CompletionUtil.getCurrentArgumentRegion(document, loc, index, getFirstPosition());
+                        CompletionUtil.getCurrentArgumentRegion(
+                            document, loc, index, getFirstPosition());
                 variable String str = getText(false);
                 Integer start = region.offset;
                 Integer len = region.length;
@@ -229,8 +230,9 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
                 return true;
             } else {
                 try {
-                    IRegion region = CompletionUtil.getCurrentArgumentRegion(document,
-                        loc, index, getFirstPosition());
+                    IRegion region = 
+                            CompletionUtil.getCurrentArgumentRegion(
+                                document, loc, index, getFirstPosition());
                     String content = document.get(region.offset, currentOffset - region.offset);
                     return isContentValid(content);
                 } catch (BadLocationException e) {
@@ -241,11 +243,11 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
         
         Boolean isContentValid(variable String content) {
             if (exists fat = content.firstInclusion("=>")) {
-                content = content.spanFrom(fat + 2);
+                content = content[fat + 2...];
             }
             
             if (exists eq = content.firstInclusion("=")) {
-                content = content.spanFrom(eq + 1);
+                content = content[eq + 1...];
             }
             
             if (content.startsWith(op)) {
@@ -256,7 +258,8 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
             value unit = cpc.lastCompilationUnit.unit;
             
             return ModelUtil.isNameMatching(content, dec)
-                    || getProposedName(qualifier, dec, unit).lowercased.startsWith(filter);
+                    || getProposedName(qualifier, dec, unit)
+                        .lowercased.startsWith(filter);
         }
     }
 
@@ -271,8 +274,9 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
             //text may have changed, since the proposal was
             //instantiated).
             try {
-                IRegion region = CompletionUtil.getCurrentArgumentRegion(document,
-                    loc, index, getFirstPosition());
+                IRegion region = 
+                        CompletionUtil.getCurrentArgumentRegion(
+                            document, loc, index, getFirstPosition());
                 variable String str = val;
                 Integer start = region.offset;
                 Integer len = region.length;
@@ -323,8 +327,9 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
                 return true;
             } else {
                 try {
-                    IRegion region = CompletionUtil.getCurrentArgumentRegion(document,
-                        loc, index, getFirstPosition());
+                    IRegion region = 
+                            CompletionUtil.getCurrentArgumentRegion(
+                                document, loc, index, getFirstPosition());
                     variable String content = document.get(region.offset, currentOffset - region.offset);
                     
                     if (exists eq = content.firstOccurrence('=')) {
