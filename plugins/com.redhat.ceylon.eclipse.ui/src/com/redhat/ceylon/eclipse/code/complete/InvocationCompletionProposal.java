@@ -1487,6 +1487,11 @@ class InvocationCompletionProposal extends CompletionProposal {
             }
         }
         
+        @Override
+        public int hashCode() {
+        	return declaration.hashCode();
+        }
+        
         int getArgumentListOffset() {
             return argumentListOffset;
         }
