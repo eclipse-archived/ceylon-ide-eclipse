@@ -1677,4 +1677,85 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
        return DUMMY_INSTANCE.getProposals(node, scope, "", false, rootNode); 
     }
     
+    static List<IContextInformation> computeParameterContextInformation(
+            final int offset,
+            final Tree.CompilationUnit rootNode, 
+            final ITextViewer viewer) {
+        final List<IContextInformation> infos = 
+                new ArrayList<IContextInformation>();
+        rootNode.visit(new Visitor() {
+            @Override
+            public void visit(Tree.InvocationExpression that) {
+                Tree.ArgumentList al = 
+                        that.getPositionalArgumentList();
+                if (al==null) {
+                    al = that.getNamedArgumentList();
+                }
+                if (al!=null) {
+                    //TODO: should reuse logic for adjusting tokens
+                    //      from CeylonContentProposer!!
+                    Integer start = al.getStartIndex();
+                    Integer stop = al.getEndIndex();
+                    if (start!=null && stop!=null && offset>start) {
+                        String string = "";
+                        if (offset>stop) {
+                            try {
+                                string =
+                                    viewer.getDocument()
+                                        .get(stop, offset-stop);
+                            } 
+                            catch (BadLocationException e) {}
+                        }
+                        if (string.trim().isEmpty()) {
+                            Unit unit = rootNode.getUnit();
+                            Tree.Term primary = that.getPrimary();
+                            Declaration declaration;
+                            Reference target;
+                            if (primary instanceof Tree.MemberOrTypeExpression) {
+                                Tree.MemberOrTypeExpression mte = 
+                                    (Tree.MemberOrTypeExpression) primary;
+                                declaration = mte.getDeclaration();
+                                target = mte.getTarget();
+                            }
+                            else {
+                                declaration = null;
+                                target = null;
+                            }
+                            if (declaration instanceof Functional) {
+                                Functional fd =
+                                        (Functional) declaration;
+                                List<com.redhat.ceylon.model.typechecker.model.ParameterList> pls = 
+                                        fd.getParameterLists();
+                                if (!pls.isEmpty()) {
+                                    //Note: This line suppresses the little menu 
+                                    //      that gives me a choice of context infos.
+                                    //      Delete it to get a choice of all surrounding
+                                    //      argument lists.
+                                    infos.clear();
+                                    infos.add(new InvocationCompletionProposal.ParameterContextInformation(
+                                            declaration, target, unit, 
+                                            pls.get(0), start, true, 
+                                            al instanceof Tree.NamedArgumentList));
+                                }
+                            }
+                            else {
+                                Type type = primary.getTypeModel();
+                                if (unit.isCallableType(type)) {
+                                    List<Type> argTypes = 
+                                            unit.getCallableArgumentTypes(type);
+                                    if (!argTypes.isEmpty()) {
+                                        infos.clear();                              
+                                        infos.add(new ParametersCompletionProposal.ParameterContextInformation(
+                                                argTypes, start, unit));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                super.visit(that);
+            }
+        });
+        return infos;
+    }
 }
