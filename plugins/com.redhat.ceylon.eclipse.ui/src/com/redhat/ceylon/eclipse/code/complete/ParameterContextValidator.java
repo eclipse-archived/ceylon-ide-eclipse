@@ -126,8 +126,13 @@ class ParameterContextValidator
     public void install(IContextInformation info, ITextViewer viewer, 
             int documentPosition) {
         if (info instanceof InvocationCompletionProposal.ParameterContextInformation) {
-            ParameterContextInformation pci = 
+        	InvocationCompletionProposal.ParameterContextInformation pci = 
                     (InvocationCompletionProposal.ParameterContextInformation) info;
+            this.position = pci.getArgumentListOffset();
+        }
+        else if (info instanceof ParametersCompletionProposal.ParameterContextInformation) {
+        	ParametersCompletionProposal.ParameterContextInformation pci = 
+                    (ParametersCompletionProposal.ParameterContextInformation) info;
             this.position = pci.getArgumentListOffset();
         }
         else {
@@ -144,6 +149,7 @@ class ParameterContextValidator
             Object linkedModeOwner = editor.getLinkedModeOwner();
             if (linkedModeOwner instanceof InvocationCompletionProposal ||
                 linkedModeOwner instanceof RefinementCompletionProposal ||
+                linkedModeOwner instanceof ParametersCompletionProposal ||
                 linkedModeOwner instanceof com.redhat.ceylon.ide.common.completion.InvocationCompletionProposal ||
                 linkedModeOwner instanceof com.redhat.ceylon.ide.common.completion.RefinementCompletionProposal) {
                 return true;

@@ -866,7 +866,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 @Override
                 public void visit(Tree.InvocationExpression that) {
                     if (that.getNamedArgumentList()==node ||
-                            that.getPositionalArgumentList()==node) {
+                        that.getPositionalArgumentList()==node) {
                         result = that;
                     }
                     super.visit(that);

@@ -180,12 +180,10 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     shared actual Indents<IDocument> indents => EclipseIndents.indents();
         
     shared actual ICompletionProposal newParametersCompletionProposal(Integer offset,
-        String prefix, String desc, String text, JList<Type> argTypes, Node node, Unit unit) {
-        
-        return ParametersCompletionProposal(offset,
-            desc.string, text.string,
-            argTypes, node.scope, unit);
-    }
+        String prefix, String desc, String text, JList<Type> argTypes, Node node, Unit unit) 
+                => ParametersCompletionProposal(offset,
+                    desc.string, text.string,
+                    argTypes, node.scope, unit);
         
     shared actual String getDocumentSubstring(IDocument doc, Integer start, Integer length) => doc.get(start, length);
     

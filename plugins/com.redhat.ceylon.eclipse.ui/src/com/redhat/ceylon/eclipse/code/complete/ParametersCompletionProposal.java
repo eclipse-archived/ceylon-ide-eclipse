@@ -18,8 +18,10 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImag
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CHAIN_LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getPreferences;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.addLinkedPosition;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.installLinkedMode;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getContainingClassOrInterface;
@@ -50,7 +52,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.ide.common.util.Escaping;
@@ -73,7 +74,42 @@ import com.redhat.ceylon.model.typechecker.model.Value;
 
 class ParametersCompletionProposal extends CompletionProposal {
     
-    //TODO: this is a big copy/paste from
+	final class ParameterContextInformation implements IContextInformation {
+
+		final String string;
+		
+		ParameterContextInformation() {
+			StringBuilder builder = new StringBuilder();
+			for (Type argType: argTypes) {
+				if (builder.length()>0) {
+					builder.append(", ");
+				}
+				builder.append(argType.asString(unit));
+			}
+			string = builder.toString();
+		}
+
+		@Override
+		public String getInformationDisplayString() {
+			return string;
+		}
+
+		@Override
+		public Image getImage() {
+			return null;
+		}
+
+		@Override
+		public String getContextDisplayString() {
+			return "Indirect invocation";
+		}
+		
+		public int getArgumentListOffset() {
+			return argumentListOffset;
+		}
+	}
+
+	//TODO: this is a big copy/paste from
     //      InvocationCompletionProposal.NestedCompletionProposal
     final class NestedCompletionProposal
             implements ICompletionProposal,
@@ -382,6 +418,7 @@ class ParametersCompletionProposal extends CompletionProposal {
     private final Unit unit;
     private final List<Type> argTypes;
     private final Scope scope;
+	private int argumentListOffset;
     
     ParametersCompletionProposal(int offset, 
             String desc, String text, 
@@ -390,6 +427,7 @@ class ParametersCompletionProposal extends CompletionProposal {
             Unit unit) {
         super(offset, "", LARGE_CORRECTION_IMAGE, 
                 desc, text);
+		this.argumentListOffset = offset + text.indexOf("(");
         this.unit = unit;
         this.scope = scope;
         this.argTypes = argTypes;
@@ -402,7 +440,8 @@ class ParametersCompletionProposal extends CompletionProposal {
     private DocumentChange createChange(IDocument document)
             throws BadLocationException {
         DocumentChange change = 
-                new DocumentChange("Complete Invocation", document);
+                new DocumentChange("Complete Invocation", 
+                		document);
         change.setEdit(new MultiTextEdit());
         change.addEdit(createEdit(document));
         return change;
@@ -411,7 +450,7 @@ class ParametersCompletionProposal extends CompletionProposal {
     @Override
     public void apply(IDocument document) {
         try {
-            EditorUtil.performChange(createChange(document));
+            performChange(createChange(document));
         }
         catch (BadLocationException e) {
             e.printStackTrace();
@@ -503,25 +542,25 @@ class ParametersCompletionProposal extends CompletionProposal {
                     new LinkedModeModel();
             int seq=0, param=0;
             while (next>0 && param<paramCount) {
-                    List<ICompletionProposal> props = 
-                            new ArrayList<ICompletionProposal>();
-                    addValueArgumentProposals(
-                            argTypes.get(seq),
-                            loc, first, props, seq);
-                    int middle =
-                            getCompletionPosition(first, next);
-                    int start = loc+first+middle;
-                    int len = next-middle;
-                    ProposalPosition linkedPosition = 
-                            new ProposalPosition(
-                                    document, start, len, seq,
-                                    props.toArray(NO_COMPLETIONS));
-                    addLinkedPosition(linkedModeModel, linkedPosition);
-                    first = first+next+1;
-                    next = getNextPosition(document, first);
-                    seq++;
-                }
-                param++;
+                List<ICompletionProposal> props = 
+                        new ArrayList<ICompletionProposal>();
+                addValueArgumentProposals(
+                        argTypes.get(seq),
+                        loc, first, props, seq);
+                int middle =
+                        getCompletionPosition(first, next);
+                int start = loc+first+middle;
+                int len = next-middle;
+                ProposalPosition linkedPosition = 
+                        new ProposalPosition(
+                                document, start, len, seq,
+                                props.toArray(NO_COMPLETIONS));
+                addLinkedPosition(linkedModeModel, linkedPosition);
+                first = first+next+1;
+                next = getNextPosition(document, first);
+                seq++;
+            }
+            param++;
             if (seq>0) {
                 CeylonEditor editor =
                         (CeylonEditor)
@@ -537,7 +576,12 @@ class ParametersCompletionProposal extends CompletionProposal {
             e.printStackTrace();
         }
     }
-
+    
+    @Override
+    public IContextInformation getContextInformation() {
+    	return new ParameterContextInformation();
+    }
+    
     private void addValueArgumentProposals(
             Type type, final int loc, int first,
             List<ICompletionProposal> props,
@@ -689,11 +733,6 @@ class ParametersCompletionProposal extends CompletionProposal {
             return false;
         }
     }
-
-    @Override
-    public IContextInformation getContextInformation() {
-        return null;
-    }
     
     boolean isParameterInfo() {
         return false;
@@ -717,13 +756,13 @@ class ParametersCompletionProposal extends CompletionProposal {
                     final List<Type> argTypes = 
                             unit.getCallableArgumentTypes(type);
                     boolean paramTypes = 
-                            CeylonPlugin.getPreferences()
+                            getPreferences()
                                 .getBoolean(PARAMETER_TYPES_IN_COMPLETIONS);
                     final StringBuilder desc = new StringBuilder();
                     final StringBuilder text = new StringBuilder();
                     desc.append('(');
                     text.append('(');
-                    for (int i = 0; i < argTypes.size(); i++) {
+                    for (int i=0; i<argTypes.size(); i++) {
                         Type argType = argTypes.get(i);
                         if (desc.length()>1) desc.append(", ");
                         if (text.length()>1) text.append(", ");
@@ -746,8 +785,9 @@ class ParametersCompletionProposal extends CompletionProposal {
                         String name;
                         if (argType.isClassOrInterface() ||
                             argType.isTypeParameter()) {
-                            String n = argType.getDeclaration()
-                                    .getName(unit);
+                            String n = 
+                            		argType.getDeclaration()
+                                    	.getName(unit);
                             name = Escaping.toInitialLowercase(n);
                         }
                         else {
