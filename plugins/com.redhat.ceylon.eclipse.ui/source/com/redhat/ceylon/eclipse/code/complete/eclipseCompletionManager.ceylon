@@ -172,9 +172,8 @@ shared class EclipseCompletionManager(CeylonEditor editor)
         }
     }
     
-    shared actual IContextInformationValidator contextInformationValidator {
-        return validator else (validator = ParameterContextValidator(editor));
-    }
+    shared actual IContextInformationValidator contextInformationValidator 
+            => validator else (validator = ParameterContextValidator(editor));
     
     shared actual String errorMessage => "No completions available";
     
@@ -193,36 +192,28 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     shared actual ICompletionProposal newInvocationCompletion(Integer offset, String prefix,
         String desc, String text, Declaration dec, Reference? pr, Scope scope, CeylonParseController cpc,
         Boolean includeDefaulted, Boolean positionalInvocation, Boolean namedInvocation, 
-        Boolean inheritance, Boolean qualified, Declaration? qualifyingDec) {
-        
-        return EclipseInvocationCompletionProposal(offset, prefix, desc, text, dec, pr, scope, cpc,
-            includeDefaulted, positionalInvocation, namedInvocation, inheritance, qualified, qualifyingDec, this);
-    }
+        Boolean inheritance, Boolean qualified, Declaration? qualifyingDec) 
+            => EclipseInvocationCompletionProposal(offset, prefix, desc, text, dec, pr, scope, cpc,
+                includeDefaulted, positionalInvocation, namedInvocation, inheritance, qualified, qualifyingDec, this);
     
     shared actual ICompletionProposal newRefinementCompletionProposal(Integer offset, String prefix, Reference? pr,
         String desc, String text, CeylonParseController cmp, Declaration dec,
-        Scope scope, Boolean fullType, Boolean explicitReturnType) {
-        
-        return RefinementCompletionProposal(offset, prefix, pr, desc, text, cmp, dec,
-            scope, fullType, explicitReturnType);
-    }
+        Scope scope, Boolean fullType, Boolean explicitReturnType) 
+            => RefinementCompletionProposal(offset, prefix, pr, desc, text, cmp, dec,
+                scope, fullType, explicitReturnType);
     
-    shared actual ICompletionProposal newMemberNameCompletionProposal(Integer offset, String prefix, String name, String unquotedName) {
-        return CompletionProposal(offset, prefix, CeylonResources.\iLOCAL_NAME, unquotedName, name);
-    }
+    shared actual ICompletionProposal newMemberNameCompletionProposal(Integer offset, String prefix, String name, String unquotedName) 
+            => CompletionProposal(offset, prefix, CeylonResources.\iLOCAL_NAME, unquotedName, name);
     
-    shared actual ICompletionProposal newKeywordCompletionProposal(Integer offset, String prefix, String keyword, String text) {
-        return KeywordCompletionProposal(offset, prefix, keyword, text);
-    }
+    shared actual ICompletionProposal newKeywordCompletionProposal(Integer offset, String prefix, String keyword, String text) 
+            => KeywordCompletionProposal(offset, prefix, keyword, text);
     
     shared actual ICompletionProposal newAnonFunctionProposal(Integer _offset, Type? requiredType,
         Unit unit, String _text, String header, Boolean isVoid, Integer selectionStart, Integer selectionLength) {
         
         value largeCorrectionImage = CeylonLabelProvider.getDecoratedImage(CeylonResources.\iCEYLON_CORRECTION, 0, false);
         return object extends CompletionProposal(_offset, "", largeCorrectionImage, _text, _text) {
-            shared actual Point getSelection(IDocument document) {
-                return Point(selectionStart, selectionLength);
-            }
+            shared actual Point getSelection(IDocument document) => Point(selectionStart, selectionLength);
         };
     }
 
@@ -245,35 +236,30 @@ shared class EclipseCompletionManager(CeylonEditor editor)
         lastOffset = -1;
     }
     
-    shared actual ICompletionProposal newPackageDescriptorProposal(Integer offset, String prefix, String desc, String text) {
-        return PackageCompletions.PackageDescriptorProposal(offset, prefix, desc, text);
-    }
+    shared actual ICompletionProposal newPackageDescriptorProposal(Integer offset, String prefix, String desc, String text) 
+            => PackageCompletions.PackageDescriptorProposal(offset, prefix, desc, text);
     
     shared actual ICompletionProposal newCurrentPackageProposal(Integer offset, String prefix, String packageName,
-        CeylonParseController controller) {
-        
-        return CompletionProposal(offset, prefix, 
-            if (isModuleDescriptor(controller.lastCompilationUnit)) then CeylonResources.\iMODULE else CeylonResources.\iPACKAGE,
-            packageName, packageName);
-    }
+        CeylonParseController controller) 
+            => CompletionProposal(offset, prefix, 
+                if (isModuleDescriptor(controller.lastCompilationUnit)) 
+                then CeylonResources.\iMODULE 
+                else CeylonResources.\iPACKAGE,
+                packageName, packageName);
 
     shared actual ICompletionProposal newImportedModulePackageProposal(Integer offset, String prefix,
         String memberPackageSubname, Boolean withBody,
         String fullPackageName, CeylonParseController controller,
-        Package candidate) {
-        
-        return EclipseImportedModulePackageProposal(offset, prefix, memberPackageSubname, withBody,
-            fullPackageName, controller, candidate);
-    }
+        Package candidate) 
+            => EclipseImportedModulePackageProposal(offset, prefix, 
+                memberPackageSubname, withBody, fullPackageName, controller, candidate);
     
     shared actual ICompletionProposal newQueriedModulePackageProposal(Integer offset, String prefix,
         String memberPackageSubname, Boolean withBody,
         String fullPackageName, CeylonParseController controller,
-        ModuleVersionDetails version, Unit unit, ModuleSearchResult.ModuleDetails md) {
-        
-        return PackageCompletions.QueriedModulePackageProposal(offset, prefix,
-            memberPackageSubname, withBody, fullPackageName, controller, version, unit, md);
-    }
+        ModuleVersionDetails version, Unit unit, ModuleSearchResult.ModuleDetails md) 
+            => PackageCompletions.QueriedModulePackageProposal(offset, prefix,
+                memberPackageSubname, withBody, fullPackageName, controller, version, unit, md);
     
     shared actual ICompletionProposal newModuleProposal(Integer offset, String prefix, Integer len, 
         String versioned, ModuleSearchResult.ModuleDetails mod, Boolean withBody,
@@ -317,14 +303,20 @@ shared class EclipseCompletionManager(CeylonEditor editor)
                     if (exists al = that.positionalArgumentList else that.namedArgumentList) {
                         //TODO: should reuse logic for adjusting tokens
                         //      from CeylonContentProposer!!
-                        Integer? start = al.startIndex?.intValue();
-                        Integer? stop = al.endIndex?.intValue();
-                        if (exists start, exists stop, offset > start) {
-                            variable String string = "";
-                            if (offset > stop) {
-                                string = viewer.document.get(stop, offset - stop - 1);
+                        if (exists start = al.startIndex?.intValue(), 
+                            exists stop = al.endIndex?.intValue(), 
+                            offset > start) {
+                            String string;
+                            try {
+                                string = 
+                                        if (offset > stop) 
+                                        then viewer.document.get(stop, offset - stop).trimmed 
+                                        else "";
                             }
-                            if (string.trimmed.empty) {
+                            catch (e) {
+                                return;
+                            }
+                            if (string.empty) {
                                 assert (is Tree.MemberOrTypeExpression mte = that.primary);
                                 if (is Functional declaration = mte.declaration) {
                                     value pls = declaration.parameterLists;
