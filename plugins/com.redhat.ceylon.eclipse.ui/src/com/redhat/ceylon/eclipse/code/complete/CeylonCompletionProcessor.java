@@ -52,7 +52,6 @@ import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionPropos
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addProgramElementReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.addSecondLevelProposal;
-import static com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.computeParameterContextInformation;
 import static com.redhat.ceylon.eclipse.code.complete.KeywordCompletionProposal.addKeywordProposals;
 import static com.redhat.ceylon.eclipse.code.complete.MemberNameCompletions.addMemberNameProposal;
 import static com.redhat.ceylon.eclipse.code.complete.MemberNameCompletions.addMemberNameProposals;
@@ -142,12 +141,13 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.ParameterContextInformation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.ide.common.completion.FindScopeVisitor;
 import com.redhat.ceylon.eclipse.util.Types;
+import com.redhat.ceylon.ide.common.completion.FindScopeVisitor;
 import com.redhat.ceylon.ide.common.util.Escaping;
 import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
 import com.redhat.ceylon.model.typechecker.model.Class;
@@ -243,8 +243,8 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                                 returnedParamInfo,
                                 monitor);
                 if (contentProposals!=null && 
-                        contentProposals.length==1 && 
-                        contentProposals[0] instanceof 
+                    contentProposals.length==1 && 
+                    contentProposals[0] instanceof 
                             InvocationCompletionProposal.ParameterInfo) {
                     returnedParamInfo = true;
                 }
@@ -282,11 +282,11 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 editor.getParseController();
         PhasedUnit phasedUnit =
                 controller.parseAndTypecheck(
-                viewer.getDocument(),
-                10,
-                new NullProgressMonitor(), 
-                null);
-        if (phasedUnit != null) {
+	                viewer.getDocument(),
+	                10,
+	                new NullProgressMonitor(), 
+	                null);
+        if (phasedUnit!=null) {
             return computeParameterContextInformation(offset,
                     phasedUnit.getCompilationUnit(), viewer)
                     .toArray(NO_CONTEXTS);
@@ -327,15 +327,16 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         }
         
         PhasedUnit typecheckedPhasedUnit =
-                controller.parseAndTypecheck(viewer.getDocument(),
-                10,
-                monitor, null);
+                controller.parseAndTypecheck(
+                		viewer.getDocument(),
+		                10, monitor, null);
         if (typecheckedPhasedUnit == null) {
             return null;
         }
         controller.getHandler().updateAnnotations();
         List<CommonToken> tokens = controller.getTokens(); 
-        Tree.CompilationUnit typecheckedRootNode = typecheckedPhasedUnit.getCompilationUnit();
+        Tree.CompilationUnit typecheckedRootNode = 
+        		typecheckedPhasedUnit.getCompilationUnit();
         
         //adjust the token to account for unclosed blocks
         //we search for the first non-whitespace/non-comment
@@ -1808,4 +1809,87 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     newEmptyProposals() {
         return new TreeMap<String,DeclarationWithProximity>();
     }
+    
+    static List<IContextInformation> computeParameterContextInformation(
+            final int offset,
+            final Tree.CompilationUnit rootNode, 
+            final ITextViewer viewer) {
+        final List<IContextInformation> infos = 
+                new ArrayList<IContextInformation>();
+        rootNode.visit(new Visitor() {
+            @Override
+            public void visit(Tree.InvocationExpression that) {
+                Tree.ArgumentList al = 
+                        that.getPositionalArgumentList();
+                if (al==null) {
+                    al = that.getNamedArgumentList();
+                }
+                if (al!=null) {
+                    //TODO: should reuse logic for adjusting tokens
+                    //      from CeylonContentProposer!!
+                    Integer start = al.getStartIndex();
+                    Integer stop = al.getEndIndex();
+                    if (start!=null && stop!=null && offset>start) {
+                        String string = "";
+                        if (offset>stop) {
+                            try {
+                                string =
+                                    viewer.getDocument()
+                                        .get(stop, offset-stop);
+                            } 
+                            catch (BadLocationException e) {}
+                        }
+                        if (string.trim().isEmpty()) {
+                        	Unit unit = rootNode.getUnit();
+                        	Tree.Term primary = that.getPrimary();
+                        	Declaration declaration;
+                        	Reference target;
+                        	if (primary instanceof Tree.MemberOrTypeExpression) {
+                        		Tree.MemberOrTypeExpression mte = 
+                                    (Tree.MemberOrTypeExpression) primary;
+                            	declaration = mte.getDeclaration();
+								target = mte.getTarget();
+                        	}
+                        	else {
+                        		declaration = null;
+                        		target = null;
+                        	}
+                            if (declaration instanceof Functional) {
+                                Functional fd =
+                                        (Functional) declaration;
+                                List<ParameterList> pls = 
+                                        fd.getParameterLists();
+                                if (!pls.isEmpty()) {
+                                    //Note: This line suppresses the little menu 
+                                    //      that gives me a choice of context infos.
+                                    //      Delete it to get a choice of all surrounding
+                                    //      argument lists.
+                                    infos.clear();
+                                    infos.add(new ParameterContextInformation(
+                                            declaration, target, unit, 
+                                            pls.get(0), start, true, 
+                                            al instanceof Tree.NamedArgumentList));
+                                }
+                            }
+                            else {
+                            	Type type = primary.getTypeModel();
+                            	if (unit.isCallableType(type)) {
+                            		List<Type> argTypes = 
+                            				unit.getCallableArgumentTypes(type);
+                            		if (!argTypes.isEmpty()) {
+                            			infos.clear();                            	
+                            			infos.add(new ParametersCompletionProposal.ParameterContextInformation(
+                            					argTypes, start, unit));
+                            		}
+                                }
+                            }
+                        }
+                    }
+                }
+                super.visit(that);
+            }
+        });
+        return infos;
+    }
+    
 }

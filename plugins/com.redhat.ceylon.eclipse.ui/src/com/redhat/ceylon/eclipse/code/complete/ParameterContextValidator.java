@@ -17,7 +17,6 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 
-import com.redhat.ceylon.eclipse.code.complete.InvocationCompletionProposal.ParameterContextInformation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 

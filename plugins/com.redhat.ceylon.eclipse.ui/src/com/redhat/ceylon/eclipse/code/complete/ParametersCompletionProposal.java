@@ -74,11 +74,15 @@ import com.redhat.ceylon.model.typechecker.model.Value;
 
 class ParametersCompletionProposal extends CompletionProposal {
     
-	final class ParameterContextInformation implements IContextInformation {
+	static final class ParameterContextInformation 
+			implements IContextInformation {
 
 		final String string;
+		final int argumentListOffset;
 		
-		ParameterContextInformation() {
+		ParameterContextInformation(List<Type> argTypes,
+				int argumentListOffset, Unit unit) {
+			this.argumentListOffset = argumentListOffset;
 			StringBuilder builder = new StringBuilder();
 			for (Type argType: argTypes) {
 				if (builder.length()>0) {
@@ -579,7 +583,8 @@ class ParametersCompletionProposal extends CompletionProposal {
     
     @Override
     public IContextInformation getContextInformation() {
-    	return new ParameterContextInformation();
+    	return new ParameterContextInformation(argTypes, 
+    			argumentListOffset, unit);
     }
     
     private void addValueArgumentProposals(
@@ -753,7 +758,7 @@ class ParametersCompletionProposal extends CompletionProposal {
                 Interface cd = unit.getCallableDeclaration();
                 if (type.isClassOrInterface() &&
                         td.equals(cd)) {
-                    final List<Type> argTypes = 
+                    List<Type> argTypes = 
                             unit.getCallableArgumentTypes(type);
                     boolean paramTypes = 
                             getPreferences()

@@ -56,7 +56,9 @@ import com.redhat.ceylon.model.typechecker.model {
     Scope,
     Unit,
     Functional,
-    Package
+    Package,
+    Interface,
+    TypeDeclaration
 }
 
 import java.lang {
@@ -315,8 +317,19 @@ shared class EclipseCompletionManager(CeylonEditor editor)
                                 return;
                             }
                             if (string.empty) {
-                                assert (is Tree.MemberOrTypeExpression mte = that.primary);
-                                if (is Functional declaration = mte.declaration) {
+                                Unit unit = rootNode.unit;
+                                Tree.Term primary = that.primary;
+                                Declaration? declaration;
+                                Reference? target;
+                                if (is Tree.MemberOrTypeExpression primary) {
+                                    declaration = primary.declaration;
+                                    target = primary.target;
+                                }
+                                else {
+                                    declaration = null;
+                                    target = null;
+                                }
+                                if (is Functional declaration) {
                                     value pls = declaration.parameterLists;
                                     if (!pls.empty) {
                                         //Note: This line suppresses the little menu 
@@ -325,8 +338,18 @@ shared class EclipseCompletionManager(CeylonEditor editor)
                                         //      argument lists.
                                         infos.clear();
                                         infos.add(InvocationCompletionProposal.ParameterContextInformation( // TODO migrate this?
-                                                declaration, mte.target, rootNode.unit,
-                                                pls.get(0), start, true, al is Tree.NamedArgumentList));
+                                                declaration, target, unit,
+                                                pls.get(0), start, true, 
+                                                al is Tree.NamedArgumentList));
+                                    }
+                                }
+                                else if (exists type = primary.typeModel, 
+                                        unit.isCallableType(type)) {
+                                    value argTypes = unit.getCallableArgumentTypes(type);
+                                    if (!argTypes.empty) {
+                                        infos.clear();                            	
+                                        infos.add(ParametersCompletionProposal.ParameterContextInformation(
+                                            argTypes, start, unit));
                                     }
                                 }
                             }

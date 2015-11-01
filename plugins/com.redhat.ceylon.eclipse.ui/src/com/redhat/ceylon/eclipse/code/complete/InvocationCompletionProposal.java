@@ -1288,68 +1288,6 @@ class InvocationCompletionProposal extends CompletionProposal {
         public void apply(IDocument document) {}
     }
 
-    static List<IContextInformation> computeParameterContextInformation(
-            final int offset,
-            final Tree.CompilationUnit rootNode, 
-            final ITextViewer viewer) {
-        final List<IContextInformation> infos = 
-                new ArrayList<IContextInformation>();
-        rootNode.visit(new Visitor() {
-            @Override
-            public void visit(Tree.InvocationExpression that) {
-                Tree.ArgumentList al = 
-                        that.getPositionalArgumentList();
-                if (al==null) {
-                    al = that.getNamedArgumentList();
-                }
-                if (al!=null) {
-                    //TODO: should reuse logic for adjusting tokens
-                    //      from CeylonContentProposer!!
-                    Integer start = al.getStartIndex();
-                    Integer stop = al.getEndIndex();
-                    if (start!=null && stop!=null && offset>start) { 
-                        String string = "";
-                        if (offset>stop) {
-                            try {
-                                string =
-                                    viewer.getDocument()
-                                        .get(stop, offset-stop);
-                            } 
-                            catch (BadLocationException e) {}
-                        }
-                        if (string.trim().isEmpty()) {
-                            Tree.MemberOrTypeExpression mte = 
-                                    (Tree.MemberOrTypeExpression) 
-                                        that.getPrimary();
-                            Declaration declaration = 
-                                    mte.getDeclaration();
-                            if (declaration instanceof Functional) {
-                                Functional fd =
-                                        (Functional) declaration;
-                                List<ParameterList> pls = 
-                                        fd.getParameterLists();
-                                if (!pls.isEmpty()) {
-                                    //Note: This line suppresses the little menu 
-                                    //      that gives me a choice of context infos.
-                                    //      Delete it to get a choice of all surrounding
-                                    //      argument lists.
-                                    infos.clear();
-                                    infos.add(new ParameterContextInformation(
-                                            declaration, mte.getTarget(), 
-                                            rootNode.getUnit(), pls.get(0), 
-                                            al.getStartIndex(), true, 
-                                            al instanceof Tree.NamedArgumentList));
-                                }
-                            }
-                        }
-                    }
-                }
-                super.visit(that);
-            }
-        });
-        return infos;
-    }
-    
     static void addFakeShowParametersCompletion(final Node node, 
             final CeylonParseController cpc, 
             final List<ICompletionProposal> result) {
