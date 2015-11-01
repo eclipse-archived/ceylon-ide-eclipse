@@ -140,9 +140,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
             
             shared actual void run(IProgressMonitor monitor) {
                 monitor.beginTask("Preparing completions...", IProgressMonitor.\iUNKNOWN);
-                CeylonParseController controller = editor.parseController;
-                print(returnedParamInfo);
-                _contentProposals = getEclipseContentProposals(controller, offset, viewer, secondLevel, returnedParamInfo, monitor);
+                _contentProposals = getEclipseContentProposals(editor.parseController, offset, viewer, secondLevel, returnedParamInfo, monitor);
                 if (_contentProposals.size == 1 && 
                     _contentProposals.first is InvocationCompletionProposal.ParameterInfo) {
                     returnedParamInfo = true;
@@ -304,9 +302,8 @@ shared class EclipseCompletionManager(CeylonEditor editor)
         String desc, String text, Declaration dec, CeylonParseController cpc)
              => ControlStructureCompletionProposal(offset, prefix, desc, text, dec, cpc);
 
-    shared actual ICompletionProposal newTypeProposal(Integer offset, Type? type, String text, String desc, Tree.CompilationUnit rootNode) {
-        return TypeProposal(offset, type, text, desc, rootNode); // TODO rewrite this one in Ceylon?
-    }
+    shared actual ICompletionProposal newTypeProposal(Integer offset, Type? type, String text, String desc, Tree.CompilationUnit rootNode) 
+            => TypeProposal(offset, type, text, desc, rootNode);
 
     Boolean isIdentifierCharacter(ITextViewer viewer, Integer offset) {
         IDocument doc = viewer.document;
