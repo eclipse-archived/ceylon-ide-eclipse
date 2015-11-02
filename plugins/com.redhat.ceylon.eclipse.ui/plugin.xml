@@ -2635,15 +2635,6 @@
     </colorDefinition>
     <colorDefinition
           categoryId="com.redhat.ceylon.eclipse.ui.theme"
-          id="com.redhat.ceylon.eclipse.ui.theme.color.proposalBackground"
-          label="Proposal background color"
-          value="COLOR_WHITE">
-       <description>
-          Background color for proposal windows.
-       </description>
-    </colorDefinition>
-    <colorDefinition
-          categoryId="com.redhat.ceylon.eclipse.ui.theme"
           id="com.redhat.ceylon.eclipse.ui.theme.color.documentationBackground"
           label="Documentation background color"
           value="COLOR_WHITE">
@@ -2712,9 +2703,6 @@
             id="com.redhat.ceylon.eclipse.ui.theme.color.typeLiterals"
             value="0,0,0"/>
         <colorOverride 
-            id="com.redhat.ceylon.eclipse.ui.theme.color.proposalBackground"
-            value="255,255,255"/>
-        <colorOverride 
             id="com.redhat.ceylon.eclipse.ui.theme.color.documentationBackground"
             value="255,255,255"/>
     </theme>
@@ -2779,11 +2767,8 @@
             id="com.redhat.ceylon.eclipse.ui.theme.color.annotationstrings"
             value="128,128,128"/>
         <colorOverride
-            id="com.redhat.ceylon.eclipse.ui.theme.color.proposalBackground"
-            value="0,0,0"/>
-        <colorOverride
             id="com.redhat.ceylon.eclipse.ui.theme.color.documentationBackground"
-            value="32,0,0"/>
+            value="32,32,32"/>
     </theme>
     
     </extension>
