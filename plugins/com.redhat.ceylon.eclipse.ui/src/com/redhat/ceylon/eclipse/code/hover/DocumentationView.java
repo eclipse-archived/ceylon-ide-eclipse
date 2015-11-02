@@ -82,7 +82,7 @@ public class DocumentationView extends ViewPart {
     public void createPartControl(Composite parent) {
         IToolBarManager tbm = 
                 getViewSite()
-                	.getActionBars()
+                    .getActionBars()
                     .getToolBarManager();
         back = new BackAction();
         back.setEnabled(false);
@@ -146,7 +146,7 @@ public class DocumentationView extends ViewPart {
         getPreferences()
             .addPropertyChangeListener(propertyChangeListener);
         getWorkbench()
-        	.getThemeManager()
+            .getThemeManager()
             .addPropertyChangeListener(propertyChangeListener);
     }
 
@@ -164,7 +164,7 @@ public class DocumentationView extends ViewPart {
     //TODO: big copy/paste from CeylonLocationListener.handleLink
     private void handleLink(String location) {
         CeylonParseController controller = 
-        		editor.getParseController();
+                editor.getParseController();
         if (location.startsWith("dec:")) {
             Referenceable target = 
                     gen.getLinkedModel(
@@ -247,20 +247,20 @@ public class DocumentationView extends ViewPart {
         else {
             Region hoverRegion = new Region(offset, length);
             CeylonParseController controller = 
-            		editor.getParseController();
+                    editor.getParseController();
             Tree.CompilationUnit rootNode = 
-            		controller.getLastCompilationUnit();
-			ceylon.language.String html;
-			if (rootNode==null) {
-				html = null;
-			}
-			else {
-				html = gen.getDocumentation(rootNode, 
-						hoverRegion.getOffset(),
-						controller);
-			}
+                    controller.getLastCompilationUnit();
+            ceylon.language.String html;
+            if (rootNode==null) {
+                html = null;
+            }
+            else {
+                html = gen.getDocumentation(rootNode, 
+                        hoverRegion.getOffset(),
+                        controller);
+            }
             if (html!=null) {
-            	String text = html.toString();
+                String text = html.toString();
                 if (info==null || 
                         !info.getHtml().equals(text)) {
                     control.setText(text);
