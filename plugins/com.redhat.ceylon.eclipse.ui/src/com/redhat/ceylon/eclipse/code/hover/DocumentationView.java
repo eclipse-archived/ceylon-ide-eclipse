@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.hover;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getModel;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getPreferences;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
@@ -142,7 +143,7 @@ public class DocumentationView extends ViewPart {
                 updateWithCurrentEditor();
             }
         };
-        CeylonPlugin.getPreferences()
+        getPreferences()
             .addPropertyChangeListener(propertyChangeListener);
         getWorkbench()
         	.getThemeManager()

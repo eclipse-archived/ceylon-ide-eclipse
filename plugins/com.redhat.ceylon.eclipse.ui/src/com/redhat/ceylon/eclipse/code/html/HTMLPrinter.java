@@ -1,7 +1,8 @@
 package com.redhat.ceylon.eclipse.code.html;
 
 import static com.redhat.ceylon.eclipse.util.EditorUtil.createColor;
-import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND;
+import static com.redhat.ceylon.eclipse.util.Highlights.DOC_BACKGROUND;
+import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT;
@@ -303,8 +304,9 @@ public class HTMLPrinter {
         		EditorsPlugin.getDefault().getPreferenceStore();
 		if (!editorPreferenceStore.getBoolean(
 				PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT)) {
-			 bg = createColor(editorPreferenceStore, 
-        				PREFERENCE_COLOR_BACKGROUND);
+		    bg = getCurrentThemeColor(DOC_BACKGROUND);
+//			bg = createColor(editorPreferenceStore, 
+//        				PREFERENCE_COLOR_BACKGROUND);
 		}
 		if (!editorPreferenceStore.getBoolean(
 				PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT)) {

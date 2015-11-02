@@ -5,11 +5,13 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT_PREFIX;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.createColor;
+import static com.redhat.ceylon.eclipse.util.Highlights.DOC_BACKGROUND;
+import static com.redhat.ceylon.eclipse.util.Highlights.PROPOSALS_BACKGROUND;
+import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.jface.dialogs.DialogSettings.getOrCreateSection;
 import static org.eclipse.jface.text.AbstractInformationControlManager.ANCHOR_GLOBAL;
 import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
-import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT;
@@ -66,6 +68,7 @@ import com.redhat.ceylon.eclipse.code.resolve.CeylonNativeHeaderHyperlinkDetecto
 import com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.search.ReferencesPopup;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class CeylonSourceViewerConfiguration 
         extends TextSourceViewerConfiguration {
@@ -191,8 +194,9 @@ public class CeylonSourceViewerConfiguration
 		if (!editorPreferenceStore.getBoolean(
 				PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT)) {
 	        contentAssistant.setProposalSelectorBackground(
-	        		createColor(editorPreferenceStore, 
-        				PREFERENCE_COLOR_BACKGROUND));
+	                getCurrentThemeColor(PROPOSALS_BACKGROUND));
+//	        		createColor(editorPreferenceStore, 
+//        				PREFERENCE_COLOR_BACKGROUND));
 		}
 		if (!editorPreferenceStore.getBoolean(
 				PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT)) {
@@ -217,8 +221,9 @@ public class CeylonSourceViewerConfiguration
 		if (!editorPreferenceStore.getBoolean(
 				PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT)) {
 			quickAssist.setProposalSelectorBackground(
-					createColor(editorPreferenceStore, 
-        				PREFERENCE_COLOR_BACKGROUND));
+			        getCurrentThemeColor(PROPOSALS_BACKGROUND));
+//					createColor(editorPreferenceStore, 
+//        				PREFERENCE_COLOR_BACKGROUND));
 		}
 		if (!editorPreferenceStore.getBoolean(
 				PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT)) {
@@ -315,8 +320,9 @@ public class CeylonSourceViewerConfiguration
         		if (!editorPreferenceStore.getBoolean(
         				PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT)) {
         			control.setBackgroundColor(
-                		createColor(editorPreferenceStore, 
-                				PREFERENCE_COLOR_BACKGROUND));
+        			    getCurrentThemeColor(DOC_BACKGROUND));
+//                		createColor(CeylonPlugin.getPreferences(), 
+//                				PREFERENCE_COLOR_BACKGROUND));
         		}
         		if (!editorPreferenceStore.getBoolean(
         				PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT)) {
