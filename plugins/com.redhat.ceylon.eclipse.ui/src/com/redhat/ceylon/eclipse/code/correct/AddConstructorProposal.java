@@ -70,20 +70,25 @@ public class AddConstructorProposal extends CorrectionProposal {
                     Reference pr = 
                             dec.appliedReference(null, 
                                     Collections.<Type>emptyList());
-                    String type = 
-                            pr.getFullType().asString(unit);
-                    String name = dec.getName();
-                    params.append(type)
-                          .append(" ")
-                          .append(name);
-                    initializers.append(indent)
-                                .append(defaultIndent)
-                                .append("this.")
-                                .append(name)
-                                .append(" = ")
-                                .append(name)
-                                .append(";")
-                                .append(delim);
+                    if (pr != null) {
+                        Type fullType = pr.getFullType();
+                        if (fullType != null) {
+                            String type = 
+                                    fullType.asString(unit);
+                            String name = dec.getName();
+                            params.append(type)
+                                  .append(" ")
+                                  .append(name);
+                            initializers.append(indent)
+                                        .append(defaultIndent)
+                                        .append("this.")
+                                        .append(name)
+                                        .append(" = ")
+                                        .append(name)
+                                        .append(";")
+                                        .append(delim);
+                        }
+                    }
                 }
                 if (!uninitialized.isEmpty()) {
                     initializers.append(indent);
