@@ -242,7 +242,7 @@ public class Highlights  {
             }
             else {
                 int initial = token.codePointAt(0);
-                if (initial=='\\' || token.length()>1) {
+                if (initial=='\\' && token.length()>1) {
                     initial = token.codePointAt(1);
                 }
                 if (isDigit(initial)) {
