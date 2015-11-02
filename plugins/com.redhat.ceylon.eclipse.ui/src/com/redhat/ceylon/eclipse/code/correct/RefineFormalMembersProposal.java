@@ -107,6 +107,8 @@ class RefineFormalMembersProposal
         }
     }
     
+    @Deprecated
+    // replaced by RefineFormalMembersQuickFix.ceylon
     private void refineFormalMembers(IDocument document) 
             throws ExecutionException {
         if (rootNode==null) return;
@@ -259,6 +261,7 @@ class RefineFormalMembersProposal
         }
     }
 
+    @Deprecated
     private void appendRefinementText(boolean isInterface, 
             String indent, StringBuilder result, 
             ClassOrInterface ci, Unit unit, Declaration member) {
@@ -272,6 +275,7 @@ class RefineFormalMembersProposal
             .append(indent);
     }
     
+    @Deprecated
     static void addRefineFormalMembersProposal(
             Collection<ICompletionProposal> proposals, 
             Node n, Tree.CompilationUnit rootNode,
