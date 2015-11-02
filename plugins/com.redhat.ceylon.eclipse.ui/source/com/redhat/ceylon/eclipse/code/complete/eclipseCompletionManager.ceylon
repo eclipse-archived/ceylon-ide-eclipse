@@ -56,9 +56,7 @@ import com.redhat.ceylon.model.typechecker.model {
     Scope,
     Unit,
     Functional,
-    Package,
-    Interface,
-    TypeDeclaration
+    Package
 }
 
 import java.lang {

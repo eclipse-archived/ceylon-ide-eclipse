@@ -13,7 +13,6 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.CustomTree;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -26,8 +25,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ThenOp;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ValueModifier;
-import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Type;
 
 class ConvertThenElseToIfElse extends CorrectionProposal {
     

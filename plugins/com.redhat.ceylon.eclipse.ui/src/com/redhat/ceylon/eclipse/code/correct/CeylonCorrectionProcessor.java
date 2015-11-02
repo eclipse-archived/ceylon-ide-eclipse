@@ -1,18 +1,10 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeAbstractDecProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeActualDecProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeContainerAbstractProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeDefaultDecProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeDefaultProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeFormalDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeNativeProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeRefinedSharedProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeSharedDecProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeSharedProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeSharedProposalForSupertypes;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableDecProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddConstructorProposal.addConstructorProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddInitializerProposal.addInitializerProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddModuleImportProposal.addModuleImportProposals;
@@ -37,8 +29,6 @@ import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAs
 import static com.redhat.ceylon.eclipse.code.correct.AssignToTryProposal.addAssignToTryProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeDeclarationProposal.addChangeDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeInitialCaseOfIdentifierInDeclaration.addChangeIdentifierCaseProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ChangeReferenceProposal.addChangeArgumentReferenceProposals;
-import static com.redhat.ceylon.eclipse.code.correct.ChangeReferenceProposal.addChangeReferenceProposals;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningParametersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningTypeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeToIfProposal.addChangeToIfProposal;
@@ -61,11 +51,9 @@ import static com.redhat.ceylon.eclipse.code.correct.ConvertToInterpolationPropo
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToNamedArgumentsProposal.addConvertToNamedArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToPositionalArgumentsProposal.addConvertToPositionalArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToSpecifierProposal.addConvertToSpecifierProposal;
-import static com.redhat.ceylon.eclipse.code.correct.CreateEnumProposal.addCreateEnumProposal;
 import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.addCreateParameterProposals;
 import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.addCreateProposals;
 import static com.redhat.ceylon.eclipse.code.correct.CreateTypeParameterProposal.addCreateTypeParameterProposal;
-import static com.redhat.ceylon.eclipse.code.correct.DeclareLocalProposal.addDeclareLocalProposal;
 import static com.redhat.ceylon.eclipse.code.correct.DestructureProposal.addDestructureProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExpandTypeProposal.addExpandTypeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExportModuleImportProposal.addExportModuleImportProposal;
@@ -85,9 +73,6 @@ import static com.redhat.ceylon.eclipse.code.correct.PrintProposal.addPrintPropo
 import static com.redhat.ceylon.eclipse.code.correct.RefineEqualsHashProposal.addRefineEqualsHashProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RefineFormalMembersProposal.addRefineFormalMembersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAliasProposal.addRemoveAliasProposal;
-import static com.redhat.ceylon.eclipse.code.correct.RemoveAnnotionProposal.addMakeContainerNonfinalProposal;
-import static com.redhat.ceylon.eclipse.code.correct.RemoveAnnotionProposal.addRemoveAnnotationDecProposal;
-import static com.redhat.ceylon.eclipse.code.correct.RemoveAnnotionProposal.addRemoveAnnotationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameAliasProposal.addRenameAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameDescriptorProposal.addRenameDescriptorProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameVersionProposal.addRenameVersionProposals;
