@@ -243,6 +243,9 @@ public class Highlights  {
             }
             else {
                 int initial = token.codePointAt(0);
+                if (initial=='\\' || token.length()>1) {
+                    initial = token.codePointAt(1);
+                }
                 if (isDigit(initial)) {
                     append(result, token, font, NUM_STYLER);
                 }
@@ -320,7 +323,7 @@ public class Highlights  {
     }
 
     private static final Pattern HUMP = 
-            Pattern.compile("\\w\\p{Ll}*");
+            Pattern.compile("(\\w|\\\\[iI])\\p{Ll}*");
     
 	public static void styleIdentifier(StyledString result, 
 			String prefix, String token, 
