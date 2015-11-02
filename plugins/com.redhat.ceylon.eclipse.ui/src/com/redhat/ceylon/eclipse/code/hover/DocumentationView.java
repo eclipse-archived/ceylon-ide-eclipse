@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumen
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getHoverText;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getModel;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getPreferences;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static java.lang.Integer.parseInt;
@@ -139,7 +140,7 @@ public class DocumentationView extends ViewPart {
                 updateWithCurrentEditor();
             }
         };
-        CeylonPlugin.getPreferences()
+        getPreferences()
             .addPropertyChangeListener(propertyChangeListener);
         getWorkbench().getThemeManager()
             .addPropertyChangeListener(propertyChangeListener);

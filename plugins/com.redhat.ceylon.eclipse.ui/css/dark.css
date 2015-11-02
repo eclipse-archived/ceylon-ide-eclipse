@@ -66,5 +66,7 @@ IEclipsePreferences#org-eclipse-ui-workbench {
         'com.redhat.ceylon.eclipse.ui.theme.color.annotationstrings=119,110,113'
         'com.redhat.ceylon.eclipse.ui.theme.color.comments=119,110,113'
         'com.redhat.ceylon.eclipse.ui.theme.color.matches=0,128,255'
+        'com.redhat.ceylon.eclipse.ui.theme.color.proposalBackground=0,0,0'
+        'com.redhat.ceylon.eclipse.ui.theme.color.documentationBackground=32,0,0'
         'com.redhat.ceylon.eclipse.ui.theme.matchingBracketsColor=0,128,255'
 }

@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.util;
 
 import static com.redhat.ceylon.eclipse.util.EditorUtil.createColor;
+import static com.redhat.ceylon.eclipse.util.Highlights.PROPOSALS_BACKGROUND;
+import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND;
@@ -78,8 +80,9 @@ public class LinkedMode {
     		if (!editorPreferenceStore.getBoolean(
     				PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT)) {
     			table.setBackground(
-            		createColor(editorPreferenceStore, 
-            				PREFERENCE_COLOR_BACKGROUND));
+    			        getCurrentThemeColor(PROPOSALS_BACKGROUND));
+//            		createColor(editorPreferenceStore, 
+//            				PREFERENCE_COLOR_BACKGROUND));
     		}
     		if (!editorPreferenceStore.getBoolean(
     				PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT)) {

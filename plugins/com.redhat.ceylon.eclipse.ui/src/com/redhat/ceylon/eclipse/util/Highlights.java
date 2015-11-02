@@ -48,11 +48,14 @@ public class Highlights  {
     public static String ANNOTATIONS = "annotations";
     public static String ANNOTATION_STRINGS = "annotationstrings";
     public static String SEMIS = "semis";
-    public static String BRACES = "braces";    
-    public static String PACKAGES = "packages";    
-    public static String MEMBERS = "members";    
+    public static String BRACES = "braces";
+    public static String PACKAGES = "packages";
+    public static String MEMBERS = "members";
     public static String OUTLINE_TYPES = "outlineTypes";  
-    public static String MATCHES = "matches";  
+    public static String MATCHES = "matches";
+    
+    public static final String PROPOSALS_BACKGROUND = "proposalBackground";
+    public static final String DOC_BACKGROUND = "documentationBackground";
     
     private static TextAttribute identifierAttribute, 
             typeAttribute, typeLiteralAttribute, 
