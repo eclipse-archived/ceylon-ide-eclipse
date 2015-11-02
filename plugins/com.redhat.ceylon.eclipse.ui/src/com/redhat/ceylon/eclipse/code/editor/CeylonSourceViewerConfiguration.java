@@ -6,7 +6,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT_PREFIX;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.createColor;
 import static com.redhat.ceylon.eclipse.util.Highlights.DOC_BACKGROUND;
-import static com.redhat.ceylon.eclipse.util.Highlights.PROPOSALS_BACKGROUND;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 import static org.eclipse.jface.dialogs.DialogSettings.getOrCreateSection;
@@ -67,7 +66,6 @@ import com.redhat.ceylon.eclipse.code.resolve.CeylonNativeHeaderHyperlinkDetecto
 import com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.search.ReferencesPopup;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.Highlights;
 
 public class CeylonSourceViewerConfiguration 
         extends TextSourceViewerConfiguration {
@@ -184,21 +182,6 @@ public class CeylonSourceViewerConfiguration
             contentAssistant.enablePrefixCompletion(
                     preferenceStore.getBoolean(AUTO_INSERT_PREFIX));
         }
-        IPreferenceStore editorPreferenceStore = 
-        		EditorsPlugin.getDefault().getPreferenceStore();
-		if (!editorPreferenceStore.getBoolean(
-				PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT)) {
-	        contentAssistant.setProposalSelectorBackground(
-	                getCurrentThemeColor(PROPOSALS_BACKGROUND));
-//	        		createColor(editorPreferenceStore, 
-//        				PREFERENCE_COLOR_BACKGROUND));
-		}
-		if (!editorPreferenceStore.getBoolean(
-				PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT)) {
-	        contentAssistant.setProposalSelectorForeground(
-	        		createColor(editorPreferenceStore, 
-        				PREFERENCE_COLOR_FOREGROUND));
-		}
     }
     
     @Override
@@ -211,21 +194,6 @@ public class CeylonSourceViewerConfiguration
                 getOrCreateSection(getSettings(), 
                 "quickassist_proposal_popup"));
         quickAssist.enableColoredLabels(true);
-        IPreferenceStore editorPreferenceStore = 
-        		EditorsPlugin.getDefault().getPreferenceStore();
-		if (!editorPreferenceStore.getBoolean(
-				PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT)) {
-			quickAssist.setProposalSelectorBackground(
-			        getCurrentThemeColor(PROPOSALS_BACKGROUND));
-//					createColor(editorPreferenceStore, 
-//        				PREFERENCE_COLOR_BACKGROUND));
-		}
-		if (!editorPreferenceStore.getBoolean(
-				PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT)) {
-			quickAssist.setProposalSelectorForeground(
-					createColor(editorPreferenceStore, 
-        				PREFERENCE_COLOR_FOREGROUND));
-		}
         return quickAssist;
     }
 

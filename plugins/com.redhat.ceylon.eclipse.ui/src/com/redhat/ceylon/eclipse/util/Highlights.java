@@ -54,7 +54,6 @@ public class Highlights  {
     public static String OUTLINE_TYPES = "outlineTypes";  
     public static String MATCHES = "matches";
     
-    public static final String PROPOSALS_BACKGROUND = "proposalBackground";
     public static final String DOC_BACKGROUND = "documentationBackground";
     
     private static TextAttribute identifierAttribute, 
