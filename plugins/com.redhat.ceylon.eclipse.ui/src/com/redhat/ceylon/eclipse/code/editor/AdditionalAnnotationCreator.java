@@ -64,6 +64,11 @@ public class AdditionalAnnotationCreator
     public void update(
             CeylonParseController parseController, 
             IProgressMonitor monitor) {
+        if (editor.isBackgroundParsingPaused() || 
+                monitor.isCanceled()) {
+            return;
+        }
+        
         final CeylonParseController cpc = parseController;
         if (cpc.getStage().ordinal() >= getStage().ordinal()) {
             final Tree.CompilationUnit rootNode = 

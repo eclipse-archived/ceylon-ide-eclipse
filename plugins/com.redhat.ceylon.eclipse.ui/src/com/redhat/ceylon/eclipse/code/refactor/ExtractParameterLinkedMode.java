@@ -103,11 +103,8 @@ public final class ExtractParameterLinkedMode
                 return ExtractParameterLinkedMode.this.refactoring;
             }
             @Override
-            public RefactoringWizard createWizard(
-                    Refactoring refactoring) {
-                return new ExtractParameterWizard(
-                        (ExtractParameterRefactoring) 
-                            refactoring) {
+            public RefactoringWizard createWizard(Refactoring refactoring) {
+                return new ExtractParameterWizard((ExtractParameterRefactoring) refactoring) {
                     @Override
                     protected void addUserInputPages() {}
                 };

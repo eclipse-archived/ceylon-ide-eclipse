@@ -52,7 +52,7 @@ public class ExtractValueInputPage extends UserInputWizardPage {
         et.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-                getExtractValueRefactoring().setExplicitType(true);
+                getExtractValueRefactoring().setExplicitType(!getExtractValueRefactoring().getExplicitType());
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
@@ -62,7 +62,7 @@ public class ExtractValueInputPage extends UserInputWizardPage {
         gs.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-                getExtractValueRefactoring().setGetter(true);
+                getExtractValueRefactoring().setGetter(!getExtractValueRefactoring().getGetter());
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}

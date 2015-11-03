@@ -4,7 +4,13 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModule;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModuleDependenciesForProject;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectSourceModules;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.createColor;
+import static com.redhat.ceylon.eclipse.util.Highlights.DOC_BACKGROUND;
+import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT;
+import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND;
+import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +38,7 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -52,6 +59,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.part.IShowInTarget;
 import org.eclipse.ui.part.ShowInContext;
 import org.eclipse.ui.part.ViewPart;
@@ -343,6 +351,21 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
     
     @Override
     public void createPartControl(Composite parent) {
+        IPreferenceStore editorPreferenceStore = 
+                EditorsPlugin.getDefault().getPreferenceStore();
+        if (!editorPreferenceStore.getBoolean(
+                PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT)) {
+            parent.setBackground(
+                getCurrentThemeColor(DOC_BACKGROUND));
+//              createColor(CeylonPlugin.getPreferences(), 
+//                      PREFERENCE_COLOR_BACKGROUND));
+        }
+        if (!editorPreferenceStore.getBoolean(
+                PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT)) {
+            parent.setForeground(
+                    createColor(editorPreferenceStore, 
+                        PREFERENCE_COLOR_FOREGROUND));
+        }
         setPartName("Ceylon Module Dependencies");
 //        setContentDescription("Ceylon module dependencies");
         parent.setLayout(new GridLayout(4, false));
@@ -373,6 +396,21 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
         viewer.setLabelProvider(new GraphLabelProvider());
         viewer.setLayoutAlgorithm(getCurrentLayoutAlgorithm());
         viewer.getControl().setLayoutData(GridDataFactory.fillDefaults().span(4, 1).grab(true, true).create());
+        IPreferenceStore editorPreferenceStore = 
+                EditorsPlugin.getDefault().getPreferenceStore();
+        if (!editorPreferenceStore.getBoolean(
+                PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT)) {
+            viewer.getControl().setBackground(
+                getCurrentThemeColor(DOC_BACKGROUND));
+//              createColor(CeylonPlugin.getPreferences(), 
+//                      PREFERENCE_COLOR_BACKGROUND));
+        }
+        if (!editorPreferenceStore.getBoolean(
+                PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT)) {
+            viewer.getControl().setForeground(
+                    createColor(editorPreferenceStore, 
+                        PREFERENCE_COLOR_FOREGROUND));
+        }
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             
             @Override

@@ -11,12 +11,12 @@ public class ExtractValueRefactoringAction extends AbstractRefactoringAction {
     
     @Override
     public Refactoring createRefactoring() {
-        return new ExtractValueRefactoring(editor);
+        return (Refactoring) refactorJ2C.newExtractValueRefactoring(editor);
     }
     
     @Override
     public RefactoringWizard createWizard(Refactoring refactoring) {
-        return new ExtractValueWizard((ExtractValueRefactoring) refactoring);
+        return new ExtractValueWizard(refactoring);
     }
     
     @Override

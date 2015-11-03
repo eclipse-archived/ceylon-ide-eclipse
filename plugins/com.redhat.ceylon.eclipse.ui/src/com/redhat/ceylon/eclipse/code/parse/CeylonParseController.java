@@ -30,6 +30,7 @@ import static org.eclipse.core.runtime.jobs.Job.getJobManager;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -72,7 +73,6 @@ import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
@@ -80,7 +80,6 @@ import com.redhat.ceylon.compiler.typechecker.util.WarningSuppressionVisitor;
 import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler.Stager;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem;
@@ -95,7 +94,7 @@ import com.redhat.ceylon.eclipse.core.vfs.SourceCodeVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.TemporaryFile;
 import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EclipseLogger;import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.settings.CompletionOptions;
@@ -119,12 +118,6 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument,IPro
      * The path to the file containing the source being parsed.
      */
     protected IPath filePath;
-
-    /**
-     * The {@link AnnotationCreator} to which parser/compiler 
-     * messages are directed.
-     */
-    protected AnnotationCreator handler;
 
     /**
      * The current AST (if any) produced by the most recent 
@@ -183,13 +176,8 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument,IPro
         }
         this.project = project;
         this.filePath = filePath;
-        this.handler = handler;
     }
-    
-    public AnnotationCreator getHandler() {
-        return handler;
-    }
-        
+       
     public Stage getStage() {
         return stage;
     }
@@ -257,12 +245,6 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument,IPro
             cu.addParseError(pe);
         }
         parserErrors.clear();
-    }
-
-    private void collectErrors(Tree.CompilationUnit cu) {
-        if (handler!=null) {
-            cu.visit(handler);      
-        }
     }
 
     private PhasedUnit typecheck(IPath path, VirtualFile file,
@@ -812,30 +794,32 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument,IPro
                         }
 
                         VirtualFile file = createSourceCodeVirtualFile(contents, finalPath);
-                        IdePhasedUnit builtPhasedUnit = (IdePhasedUnit) typeChecker.getPhasedUnit(file); // TODO : refactor !
-                        phasedUnit = typecheck(finalPath, file, rootNode, finalSrcDir,
-                                showWarnings, builtPhasedUnit);
+                        IdePhasedUnit builtPhasedUnit = 
+                                (IdePhasedUnit) 
+                                    typeChecker.getPhasedUnit(file); // TODO : refactor !
+                        phasedUnit =
+                                typecheck(finalPath, file, 
+                                        rootNode, finalSrcDir,
+                                        showWarnings, 
+                                        builtPhasedUnit);
                         rootNode = phasedUnit.getCompilationUnit();
-                        if (finalProject != null && !CeylonNature.isEnabled(finalProject)) {
+                        if (finalProject != null && 
+                                !CeylonNature.isEnabled(finalProject)) {
                             rootNode.visit(new Visitor() {
                                 @Override
                                 public void visitAny(Node node) {
                                     super.visitAny(node);
-                                    List<Message> errorsToRemove = new ArrayList<>();
-                                    List<Message> nodeErrors = node.getErrors();
-                                    for (Message error: nodeErrors) {
-
-                                        if (! (error instanceof RecognitionError)) {
-                                            errorsToRemove.add(error);
+                                    for (Iterator<Message> i 
+                                            = node.getErrors().iterator();
+                                            i.hasNext();) {
+                                        if (!(i.next() 
+                                                instanceof RecognitionError)) {
+                                            i.remove();
                                         }
-                                    }
-                                    for (Message error: errorsToRemove) {
-                                        nodeErrors.remove(error);
                                     }
                                 }
                             });
                         }
-                        collectErrors(rootNode);
 
                         stage = TYPE_ANALYSIS;
                         if (stager!=null) {
@@ -847,7 +831,8 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument,IPro
                     }
 
                   });
-          } catch(OperationCanceledException e) {
+          }
+          catch(OperationCanceledException e) {
               if (monitor!= null) {
                   // Sets the current monitor to canceled,
                   // so that the scheduler will reschedule it later

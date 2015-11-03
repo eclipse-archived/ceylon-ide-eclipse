@@ -14,6 +14,7 @@ package com.redhat.ceylon.eclipse.code.outline;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.DEFAULT_CATEGORY;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.IMPORT_LIST_CATEGORY;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getPreferences;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.EXPAND_ALL;
@@ -110,7 +111,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
                 treeViewer.refresh();
             }
         };
-        CeylonPlugin.getPreferences()
+        getPreferences()
             .addPropertyChangeListener(propertyChangeListener);
         getWorkbench().getThemeManager()
             .addPropertyChangeListener(propertyChangeListener);
@@ -133,6 +134,11 @@ public class CeylonOutlinePage extends ContentOutlinePage
     public void update(
             final CeylonParseController controller, 
             IProgressMonitor monitor) {
+        if (//editor.isBackgroundParsingPaused() || 
+                monitor.isCanceled()) {
+            return;
+        }
+        
         TreeViewer treeViewer = getTreeViewer();
         if (treeViewer!=null) {
             org.eclipse.swt.widgets.Tree tree = 
@@ -275,7 +281,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             labelProvider = null;
         }
         if (propertyChangeListener!=null) {
-            CeylonPlugin.getPreferences()
+            getPreferences()
                 .removePropertyChangeListener(propertyChangeListener);
             getWorkbench().getThemeManager()
                 .removePropertyChangeListener(propertyChangeListener);
@@ -461,7 +467,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             setImageDescriptor(PUBLIC); 
             
             boolean checked = 
-                    CeylonPlugin.getPreferences()
+                    getPreferences()
                         .getBoolean(HIDE_NON_SHARED);
             valueChanged(checked, false);
         }
@@ -491,7 +497,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
             });
             
             if (store) {
-                CeylonPlugin.getPreferences()
+                getPreferences()
                     .setValue(HIDE_NON_SHARED, on);
             }
         }
@@ -588,7 +594,7 @@ public class CeylonOutlinePage extends ContentOutlinePage
         OutlineNodeVisitor(int offset) {
             this.offset = offset;
             hideNonshared = 
-                    CeylonPlugin.getPreferences()
+                    getPreferences()
                         .getBoolean(HIDE_NON_SHARED);
         }
         List<CeylonOutlineNode> result = 

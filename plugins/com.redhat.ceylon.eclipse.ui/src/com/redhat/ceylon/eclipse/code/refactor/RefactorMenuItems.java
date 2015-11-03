@@ -80,7 +80,7 @@ public class RefactorMenuItems extends CompoundContributionItem {
                         COMP_CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.extractValue", 
                         "Extract &Value...",
-                        editor!=null && new ExtractValueRefactoring(editor).getEnabled(),
+                        editor!=null && refactorJ2C.newExtractValueRefactoring(editor).getEnabled(),
                         CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.extractFunction", 
                         "Extract &Function...",

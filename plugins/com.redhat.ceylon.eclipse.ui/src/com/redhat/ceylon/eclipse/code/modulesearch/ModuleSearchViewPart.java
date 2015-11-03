@@ -52,7 +52,6 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -456,8 +455,6 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
     private SashForm sashForm;
     private TreeViewer moduleTreeViewer;
     private DocBrowser docBrowser;
-    private static RGB docForegroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_FOREGROUND).getRGB();
-    private static RGB docBackgroundColor = Display.getCurrent().getSystemColor(SWT.COLOR_INFO_BACKGROUND).getRGB();
     private List<String> queryHistory = new ArrayList<String>();
     private Map<String, IProject> projectMap = new ConcurrentHashMap<String, IProject>();
     private IResourceChangeListener updateProjectComboListener;
@@ -779,7 +776,7 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
 
     public static String getModuleDoc(ModuleVersionNode versionNode) {
         StringBuilder docBuilder = new StringBuilder();
-        HTMLPrinter.insertPageProlog(docBuilder, 0, docForegroundColor, docBackgroundColor, HTML.getStyleSheet());
+        HTMLPrinter.insertPageProlog(docBuilder, 0, HTML.getStyleSheet());
 
         if (versionNode != null) {
             HTML.addImageAndLabel(docBuilder, null, 

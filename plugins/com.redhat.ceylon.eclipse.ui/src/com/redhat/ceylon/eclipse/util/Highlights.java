@@ -49,11 +49,13 @@ public class Highlights  {
     public static String ANNOTATIONS = "annotations";
     public static String ANNOTATION_STRINGS = "annotationstrings";
     public static String SEMIS = "semis";
-    public static String BRACES = "braces";    
-    public static String PACKAGES = "packages";    
-    public static String MEMBERS = "members";    
+    public static String BRACES = "braces";
+    public static String PACKAGES = "packages";
+    public static String MEMBERS = "members";
     public static String OUTLINE_TYPES = "outlineTypes";  
-    public static String MATCHES = "matches";  
+    public static String MATCHES = "matches";
+    
+    public static final String DOC_BACKGROUND = "documentationBackground";
     
     private static TextAttribute identifierAttribute, 
             typeAttribute, typeLiteralAttribute, 
@@ -243,6 +245,9 @@ public class Highlights  {
             }
             else {
                 int initial = token.codePointAt(0);
+                if (initial=='\\' && token.length()>1) {
+                    initial = token.codePointAt(1);
+                }
                 if (isDigit(initial)) {
                     append(result, token, font, NUM_STYLER);
                 }
@@ -320,7 +325,7 @@ public class Highlights  {
     }
 
     private static final Pattern HUMP = 
-            Pattern.compile("\\w\\p{Ll}*");
+            Pattern.compile("(\\w|\\\\[iI])\\p{Ll}*");
     
 	public static void styleIdentifier(StyledString result, 
 			String prefix, String token, 
