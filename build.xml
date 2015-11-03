@@ -18,12 +18,15 @@
         </echo>
     </target>
 
+    <property name="build-against" location="current-master"/>
+
     <target name="build"
             description="Builds the IDE plugin">
         <mvn:mvn pom="${basedir}/pom.xml" mavenVersion="3.2.2" fork="true" dir="${basedir}" failonerror="true">
             <arg value="clean" />
             <arg value="install" />
             <arg value="-DskipTests" />
+            <arg value="-Dbuild-against=${build-against}"/>
         </mvn:mvn>
     </target>
 
