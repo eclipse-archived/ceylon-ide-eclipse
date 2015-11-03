@@ -333,7 +333,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
         if (typecheckedPhasedUnit == null) {
             return null;
         }
-        controller.getHandler().updateAnnotations();
+        editor.getAnnotationCreator().updateAnnotations();
         List<CommonToken> tokens = controller.getTokens(); 
         Tree.CompilationUnit typecheckedRootNode = 
                 typecheckedPhasedUnit.getCompilationUnit();

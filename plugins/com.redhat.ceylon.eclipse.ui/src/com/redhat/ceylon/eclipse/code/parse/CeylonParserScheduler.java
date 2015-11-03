@@ -13,7 +13,6 @@ import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IDocument;
 
-import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
@@ -24,12 +23,11 @@ public class CeylonParserScheduler extends Job {
     
     private CeylonParseController parseController;
     private CeylonEditor editor;
-    private AnnotationCreator annotationCreator;
     
     private final List<TreeLifecycleListener> listeners = new ArrayList<TreeLifecycleListener>();
 
     public CeylonParserScheduler(CeylonParseController parseController,
-            CeylonEditor editor, AnnotationCreator annotationCreator) {
+            CeylonEditor editor) {
         super("Parsing and typechecking " + editor.getEditorInput().getName());
         setSystem(true); //do not show this job in the Progress view
         setPriority(SHORT);
@@ -49,7 +47,6 @@ public class CeylonParserScheduler extends Job {
         // may actually depend on that.
         this.parseController = parseController;
         this.editor = editor;
-        this.annotationCreator = annotationCreator;
     }
 
     @Override
@@ -119,13 +116,6 @@ public class CeylonParserScheduler extends Job {
                 // need it; just make sure the document gets 
                 // parsed
                 parseController.parseAndTypecheck(document, 0, wrappedMonitor, new Stager());
-                if (wrappedMonitor.isCanceled() || 
-                        editor.isBackgroundParsingPaused()) {
-                    annotationCreator.clearMessages();
-                }
-                else {
-                    annotationCreator.updateAnnotations();
-                }
             } 
             catch (Exception e) {
                 e.printStackTrace();
@@ -154,10 +144,6 @@ public class CeylonParserScheduler extends Job {
     private synchronized void notifyModelListeners(Stage stage, IProgressMonitor monitor) {
         if (parseController!=null) {
             for (TreeLifecycleListener listener: new ArrayList<TreeLifecycleListener>(listeners)) {
-                if (editor.isBackgroundParsingPaused() || 
-                        monitor.isCanceled()) {
-                    break;
-                }
                 if (listener.getStage()==stage) {
                     listener.update(parseController, monitor);
                 }

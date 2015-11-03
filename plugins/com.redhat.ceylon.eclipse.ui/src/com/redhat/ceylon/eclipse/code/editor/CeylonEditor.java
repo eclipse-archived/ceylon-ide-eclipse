@@ -201,6 +201,8 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
             new ProjectionAnnotationManager(this);
     private AnnotationCreator annotationCreator = 
             new AnnotationCreator(this);
+    private AdditionalAnnotationCreator additionalAnnotationCreator = 
+            new AdditionalAnnotationCreator(this);
     
     ToggleFoldingRunner fFoldingRunner;
     
@@ -250,6 +252,10 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
     
     public Object getLinkedModeOwner() {
         return linkedModeOwner;
+    }
+    
+    public AnnotationCreator getAnnotationCreator() {
+        return annotationCreator;
     }
     
     /**
@@ -1459,10 +1465,10 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         problemMarkerManager.addListener(editorIconUpdater);
         
         parserScheduler = 
-                new CeylonParserScheduler(parseController, 
-                        this, annotationCreator);
+                new CeylonParserScheduler(parseController, this);
         
-        addModelListener(new AdditionalAnnotationCreator(this));
+        addModelListener(annotationCreator);        
+        addModelListener(additionalAnnotationCreator);
         
         installProjectionSupport();
         

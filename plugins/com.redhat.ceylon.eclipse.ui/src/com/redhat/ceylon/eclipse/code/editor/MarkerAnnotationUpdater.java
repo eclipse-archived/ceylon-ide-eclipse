@@ -38,6 +38,11 @@ class MarkerAnnotationUpdater implements TreeLifecycleListener {
      */
     public void update(CeylonParseController parseController, 
             IProgressMonitor monitor) {
+        if (editor.isBackgroundParsingPaused() || 
+                monitor.isCanceled()) {
+            return;
+        }
+        
         if (parseController.getStage().ordinal() 
                 >= getStage().ordinal()) {
             IAnnotationModel model = 
@@ -94,7 +99,8 @@ class MarkerAnnotationUpdater implements TreeLifecycleListener {
                                     if (markerStart.intValue()
                                             == position.offset &&
                                         markerEnd.intValue()
-                                            == position.offset+position.length) {
+                                            == position.offset
+                                             + position.length) {
                                         found=true;
                                         break;
                                     }

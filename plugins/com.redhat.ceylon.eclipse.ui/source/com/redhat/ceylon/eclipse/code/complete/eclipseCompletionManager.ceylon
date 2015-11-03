@@ -11,9 +11,6 @@ import com.redhat.ceylon.cmr.api {
     ModuleVersionDetails,
     ModuleSearchResult
 }
-import com.redhat.ceylon.compiler.typechecker.context {
-    PhasedUnit
-}
 import com.redhat.ceylon.compiler.typechecker.tree {
     Node,
     Tree,
@@ -376,23 +373,18 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     
     ICompletionProposal[] getEclipseContentProposals(CeylonParseController? controller, Integer offset,
         ITextViewer? viewer, Boolean secondLevel, Boolean returnedParamInfo, IProgressMonitor monitor) {
-        
-        if (controller is Null || viewer is Null) {
-            return [];
-        }
-        if (exists controller, exists viewer, exists rn = controller.lastCompilationUnit, exists t = controller.tokens) {
-            PhasedUnit? pu = controller.parseAndTypecheck(viewer.document, 10, monitor, null);
-            if (!exists pu) {
-                return [];
-            }
-            controller.handler.updateAnnotations();
+        if (exists controller, exists viewer, 
+            exists rn = controller.lastCompilationUnit, exists t = controller.tokens, 
+            exists pu = controller.parseAndTypecheck(viewer.document, 10, monitor, null)) {
+            
+            editor.annotationCreator.updateAnnotations();
             
             value line = CompletionUtil.getLine(offset, viewer);
-            
             return getContentProposals(pu.compilationUnit, controller, offset, line,
                 secondLevel, EclipseProgressMonitor(monitor), returnedParamInfo);
         }
-        
-        return [];
+        else {
+            return [];
+        }
     }
 }

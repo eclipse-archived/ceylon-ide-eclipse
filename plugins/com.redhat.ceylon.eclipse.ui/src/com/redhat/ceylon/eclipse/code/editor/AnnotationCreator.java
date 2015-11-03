@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
@@ -34,6 +35,8 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 
 /**
@@ -42,8 +45,10 @@ import com.redhat.ceylon.eclipse.util.ErrorVisitor;
  * which uses the class MarkerCreator to create markers).
  * @author rmfuhrer
  */
-public class AnnotationCreator extends ErrorVisitor {
-    
+public class AnnotationCreator 
+        extends ErrorVisitor
+        implements TreeLifecycleListener {
+        
     private static class PositionedMessage {
         public final String message;
         public final Position pos;
@@ -70,11 +75,29 @@ public class AnnotationCreator extends ErrorVisitor {
     }
     
     private final CeylonEditor editor;
-    private final List<PositionedMessage> messages= new LinkedList<PositionedMessage>();
-    private final List<Annotation> annotations= new LinkedList<Annotation>();
+    private final List<PositionedMessage> messages = new LinkedList<PositionedMessage>();
+    private final List<Annotation> annotations = new LinkedList<Annotation>();
     
     public AnnotationCreator(CeylonEditor editor) {
         this.editor = editor;
+    }
+    
+    @Override
+    public void update(CeylonParseController parseController, 
+            IProgressMonitor monitor) {
+        if (monitor.isCanceled() || 
+                editor.isBackgroundParsingPaused()) {
+            clearMessages();
+        }
+        else {
+            parseController.getParsedRootNode().visit(this);
+            updateAnnotations();
+        }
+    }
+
+    @Override
+    public Stage getStage() {
+        return Stage.TYPE_ANALYSIS;
     }
     
     @Override
