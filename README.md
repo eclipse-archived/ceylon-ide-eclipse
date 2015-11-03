@@ -4,7 +4,7 @@
 
 ### From the update site
 
-_This is the **simplest way** to install the Ceyon IDE Eclipse plugin._
+This is the simplest way to install the Ceyon IDE Eclipse plugin.
 
 1.  Follow the instructions found there:
     
@@ -16,7 +16,7 @@ _This is the **simplest way** to install the Ceyon IDE Eclipse plugin._
 
 ### From a local snapshot site built with Tycho/Maven 3
 
-_If you want to have an up-to-date version of the Ceylon IDE based on the lastest code of all Ceylon projects, this is the **prefered method**._
+If you want to have an up-to-date version of the Ceylon IDE based on the lastest code of all Ceylon projects, this is the recommended method.
 
 1.  Make sure that you are using Java 7 by running `javac -version`.
 
