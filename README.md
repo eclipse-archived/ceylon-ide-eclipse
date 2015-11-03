@@ -1,5 +1,14 @@
 # Eclipse plugin for Ceylon
 
+This project contains the Eclipse-based IDE for the [Ceylon language](http://ceylon-lang.org/).
+
+It is made of several Eclipse features and plugins.
+
+For more information about the Eclipse Ceylon IDE, go to :
+
+http://ceylon-lang.org/documentation/ide
+
+
 ## Installing the Eclipse Plugin
 
 ### From the update site
