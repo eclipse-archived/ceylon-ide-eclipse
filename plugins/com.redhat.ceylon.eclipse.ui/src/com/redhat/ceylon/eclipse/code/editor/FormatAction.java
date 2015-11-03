@@ -18,6 +18,7 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -32,8 +33,10 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.StringBuilderWriter;
+import com.redhat.ceylon.ide.common.refactoring.DefaultRegion;
 
 import ceylon.formatter.format_;
+import ceylon.formatter.options.FormattingOptions;
 import ceylon.formatter.options.SparseFormattingOptions;
 import ceylon.formatter.options.combinedOptions_;
 import ceylon.formatter.options.loadProfile_;
@@ -66,6 +69,7 @@ final class FormatAction extends Action {
                 cpc.getParsedRootNode()!=null;
     }
     
+    @Deprecated
     private static class FormattingUnit {
         public final Node node;
         public final CommonToken startToken;
@@ -87,6 +91,33 @@ final class FormatAction extends Action {
     }
 
     public static void format(final CeylonParseController pc, 
+            IDocument document, final ITextSelection ts, 
+            final boolean selected, ISelectionProvider selectionProvider) {
+        
+        if (!isEnabled(pc)) {
+            return;
+        }
+        
+        FormattingOptions options = loadProfile_.loadProfile(
+                CeylonStyle.getFormatterProfile(pc.getProject()),
+                /* inherit = */ false,
+                /* baseDir = */ pc.getProject().getLocation().toOSString());
+        
+        TextChange change = eclipseFormatAction_.get_().format(pc.getParsedRootNode(),
+                pc.getTokens(), document, document.getLength(),
+                new DefaultRegion(ts.getOffset(), ts.getLength()),
+                CeylonStyle.getEclipseWsOptions(document),
+                options);
+        
+        EditorUtil.performChange(change);
+        
+        selectionProvider.setSelection(new TextSelection(
+                change.getEdit().getOffset(),
+                change.getEdit().getLength()));
+    }
+    
+    @Deprecated
+    void oldformat(final CeylonParseController pc, 
             IDocument document, final ITextSelection ts, 
             final boolean selected, ISelectionProvider selectionProvider) {
         if (!isEnabled(pc)) return;
