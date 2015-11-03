@@ -1,6 +1,8 @@
 # Eclipse plugin for Ceylon
 
-## Installing from the update site
+## Installing the Eclipse Plugin
+
+### From the update site
 
 _This is the **simplest way** to install the Ceyon IDE Eclipse plugin._
 
@@ -12,7 +14,7 @@ _This is the **simplest way** to install the Ceyon IDE Eclipse plugin._
 
 5.  Go to `Help > Welcome to Ceylon` to get started.
 
-## Building with Tycho/Maven 3
+### From a local snapshot site built with Tycho/Maven 3
 
 _If you want to have an up-to-date version of the Ceylon IDE based on the lastest code of all Ceylon projects, this is the **prefered method**._
 
@@ -41,13 +43,15 @@ _If you want to have an up-to-date version of the Ceylon IDE based on the lastes
     
     at the same directory level as the `.../ceylon-dist` local repository.
 
-4. Finally to build all the above projects, go into the `.../ceylon-dist` directory and type:
+5. Finally to build all the above projects, go into the `.../ceylon-dist` directory and type:
 
     `ant clean clean-sdk clean-ide dist sdk eclipse`
 
-5.  The directory `.../ceylon-ide-eclipse/site/target/repository` now contains an update site you can install from. The update process is decribed at http://ceylon-lang.org/documentation/1.2/ide/install/ but use the full path to this directory instead of the url of the web update site.
+6.  The directory `.../ceylon-ide-eclipse/site/target/repository` now contains an update site you can install from. The update process is decribed at http://ceylon-lang.org/documentation/1.2/ide/install/ but use the full path to this directory instead of the url of the web update site.
+
+## Developing the Ceylon Plugin
     
-## Building project per project
+### Building project per project
 
 If you make modifications on one of Ceylon IDE's dependencies, you can rebuild projects separately:
 
@@ -89,9 +93,9 @@ If you make modifications on one of Ceylon IDE's dependencies, you can rebuild p
 
         mvn clean install -DskipTests
 
-## Developing the plugin inside Eclipse
+### Developing the plugin inside Eclipse
 
-_This method implies some **additional complexity**, and is only useful if you want to debug the Ceylon IDE plugin._
+_This implies some **additional complexity**, and is only useful if you want to debug the Ceylon IDE plugin._
 
 **_Prelimiary remark_**: Now, parts of the Ceylon IDE project itself are written in Ceylon. Thus, in order to develop the Ceylon IDE plugin, you must have a previous version of the plugin installed in your
 main Eclipse (preferably downloaded from the stable update site, or built with Maven).
@@ -169,7 +173,34 @@ main Eclipse (preferably downloaded from the stable update site, or built with M
     `Run > Run As > Eclipse Application`. Now go to the new instance of
     Eclipse.
 
-## Updating the Ceylon version
+### Building the next maintenance update of the last released version
+
+By default, when [building the plugin from Maven](#building-with-tychomaven-3) and developping it, all the code is built against the *master* branch of all the dependencies (incuding the Ceylon command line distribution).
+However, after a release, we create GitHub maintenance branches for the two following projects:
+
+- `.../ceylon-ide-common`
+- `.../ceylon-ide-eclipse`
+    
+These branches allow pushing only changes that are fully compatible with the release available at the main updatesite: http://ceylon-lang.org/eclipse/updatesite/.
+
+In order to work on these branches and build these 2 projects against the dependencies found in the release update site (instead of building against the local master branch of each project), you should:
+
+- switch to the last release maintenance branch by going into the `.../ceylon-dist` directory and typing:
+    
+        ant eclipse-switch-to-last-release-updates
+        
+- implement your maintenance changes inside the the IDE as usual.  
+- build the IDE with the following command run from the `.../ceylon-dist` directory:
+    
+        ant eclipse-rebuild-last-release-updates
+    
+The generated update site generated in directory `.../ceylon-ide-eclipse/site/target/repository` now contains a maintenance release fully compatible with the last release published in the [official Ceylon Eclipse update site](http://ceylon-lang.org/eclipse/updatesite/)  
+
+In order to come back to the master branches, run the following command from the `.../ceylon-dist` directory:
+    
+        ant eclipse-switch-back-to-master
+    
+### Updating the Ceylon version
 
 1. Total panic
 
@@ -179,7 +210,7 @@ main Eclipse (preferably downloaded from the stable update site, or built with M
 
     for f in *-1.1.0.?ar; do newf=${f/1.1.0/1.1.1}; if test \! -d $newf; then mkdir $newf; fi; cp $f/{.classpath,.project,.gitignore} $newf/; perl -pi -e 's/1\.1\.0/1.1.1/g' $newf/{.classpath,.project,.gitignore}; done
 
-## Pushing a new release onto the development update site
+### Pushing a new release onto the development update site
 
 1.  Build with Tycho/Maven 3 (see previous section)
 
