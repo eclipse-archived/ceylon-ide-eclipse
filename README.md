@@ -18,7 +18,7 @@ This is the simplest way to install the Ceyon IDE Eclipse plugin.
 
 If you want to have an up-to-date version of the Ceylon IDE based on the lastest code of all Ceylon projects, this is the recommended method.
 
-1.  Make sure that you are using Java 7 by running `javac -version`.
+1.  Make sure that you are using Java 7 or 8 by running `javac -version`.
 
 2.  Make sure that `ant` (latest version) and `maven` (version from 3.0.5 to 3.2.1) can be run on the command line.
 
