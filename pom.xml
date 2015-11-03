@@ -193,6 +193,11 @@
           </property>
         </activation>
         <repositories>
+           <repository>
+             <id>ceylon-ide-common</id>
+             <layout>p2</layout>
+             <url>file:../ceylon-ide-common/osgi/dist</url>
+           </repository>
             <repository>
              <id>ide-runtime-dependencies</id>
              <layout>p2</layout>
