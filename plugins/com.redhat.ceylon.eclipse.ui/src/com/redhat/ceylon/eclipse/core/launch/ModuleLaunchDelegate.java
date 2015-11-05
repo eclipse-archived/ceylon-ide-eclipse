@@ -19,8 +19,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -157,7 +160,7 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
             args.add("run");
         }
         
-        CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = ceylonModel().getProject(project);
         prepareRepositoryArguments(args, ceylonProject, workingRepos);
         prepareOverridesArgument(args, ceylonProject);
         prepareFlatClasspathArgument(args, ceylonProject);
@@ -182,7 +185,7 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
     }
 
     protected void prepareRepositoryArguments(List<String> args, 
-            CeylonProject<IProject> project, List<IPath> workingRepos) {
+            CeylonProject<IProject,IResource,IFolder,IFile> project, List<IPath> workingRepos) {
         for (IPath repo : workingRepos) {
             args.add("--rep");
             args.add(repo.toOSString());
@@ -195,28 +198,28 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         }
     }
 
-    protected void prepareOverridesArgument(List<String> args, CeylonProject<IProject> project) {
+    protected void prepareOverridesArgument(List<String> args, CeylonProject<IProject,IResource,IFolder,IFile> project) {
         String overrides = toJavaString(project.getConfiguration().getOverrides());
         if (overrides != null) {
             args.add("--overrides=" + overrides);
         }
     }
 
-    protected void prepareFlatClasspathArgument(List<String> args, CeylonProject<IProject> project) {
+    protected void prepareFlatClasspathArgument(List<String> args, CeylonProject<IProject,IResource,IFolder,IFile> project) {
         boolean flatClasspath = project.getConfiguration().getFlatClasspath();
         if (flatClasspath) {
             args.add("--flat-classpath");
         }
     }
 
-    protected void prepareAutoExportMavenDependencies(List<String> args, CeylonProject<IProject> project) {
+    protected void prepareAutoExportMavenDependencies(List<String> args, CeylonProject<IProject,IResource,IFolder,IFile> project) {
         boolean autoExportMavenDependencies = project.getConfiguration().getAutoExportMavenDependencies();
         if (autoExportMavenDependencies) {
             args.add("--auto-export-maven-dependencies");
         }
     }
 
-    protected void prepareOfflineArgument(List<String> args, CeylonProject<IProject> project) {
+    protected void prepareOfflineArgument(List<String> args, CeylonProject<IProject,IResource,IFolder,IFile> project) {
         if (project.getConfiguration().getOffline()) {
             args.add("--offline");
         }

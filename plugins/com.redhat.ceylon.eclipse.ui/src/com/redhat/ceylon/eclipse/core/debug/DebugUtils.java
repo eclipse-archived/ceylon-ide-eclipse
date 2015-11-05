@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -50,11 +53,11 @@ import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.Evaluatio
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationRunner;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationWaiter;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
-import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
 import com.redhat.ceylon.eclipse.util.JavaSearch.DefaultArgumentMethodSearch;
 import com.redhat.ceylon.ide.common.util.escaping_;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.model.loader.NamingBase.Suffix;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -213,14 +216,14 @@ public class DebugUtils {
         }
         for (Module module : CeylonBuilder
                 .getProjectExternalModules(project.getProject())) {
-            if (module instanceof JDTModule) {
-                JDTModule jdtModule = (JDTModule) module;
-                if (jdtModule.isCeylonArchive()) {
+            if (module instanceof BaseIdeModule) {
+                BaseIdeModule jdtModule = (BaseIdeModule) module;
+                if (jdtModule.getIsCeylonArchive()) {
                     PhasedUnit phasedUnit = jdtModule
                             .getPhasedUnitFromRelativePath(sourcePath);
                     if (phasedUnit != null) {
                         if (phasedUnit instanceof CrossProjectPhasedUnit) {
-                            phasedUnit = ((CrossProjectPhasedUnit) phasedUnit)
+                            phasedUnit = ((CrossProjectPhasedUnit<IProject,IResource,IFolder,IFile>) phasedUnit)
                                     .getOriginalProjectPhasedUnit();
                         }
                         return phasedUnit;

@@ -73,7 +73,7 @@ import org.eclipse.text.edits {
 class EclipseRefinementCompletionProposal(Integer _offset, String prefix, Reference pr, String desc, 
         String text, CeylonParseController cpc, Declaration declaration, Scope scope,
         Boolean fullType, Boolean explicitReturnType)
-        extends RefinementCompletionProposal<CeylonParseController, IProject, ICompletionProposal, IFile,
+        extends RefinementCompletionProposal<CeylonParseController, ICompletionProposal, IFile,
                 IDocument, InsertEdit, TextEdit, TextChange, Point, LinkedModeModel>
                 (_offset, prefix, pr, desc, text, cpc, declaration, scope, fullType, explicitReturnType)
         satisfies EclipseDocumentChanges & EclipseCompletionProposal {

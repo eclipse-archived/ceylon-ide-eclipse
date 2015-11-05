@@ -40,9 +40,9 @@ import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.ModelState;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
@@ -91,7 +91,8 @@ final class JdtCompilerDelegate implements CompilerDelegate {
         if (! needingAdditionalCompilerPhases.isEmpty()) {
             for (PhasedUnit phasedUnit : needingAdditionalCompilerPhases) {
                 assert(phasedUnit  instanceof ProjectPhasedUnit);
-                ProjectPhasedUnit projectPhasedUnit = (ProjectPhasedUnit) phasedUnit;
+                ProjectPhasedUnit<IProject, IResource, IFolder, IFile> projectPhasedUnit = 
+                        (ProjectPhasedUnit<IProject, IResource, IFolder, IFile>) phasedUnit;
                 IFile resource = projectPhasedUnit.getResourceFile();
                 File file = resource.getRawLocation().toFile();
                 JavacFileManager fileManager = (JavacFileManager) context.get(JavaFileManager.class);

@@ -89,7 +89,7 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
             Boolean positionalInvocation, Boolean namedInvocation, 
             Boolean inheritance, Boolean qualified, Declaration? qualifyingValue,
             EclipseCompletionManager completionManager)
-        extends InvocationCompletionProposal<CeylonParseController, IProject, ICompletionProposal, IFile,
+        extends InvocationCompletionProposal<CeylonParseController, ICompletionProposal, IFile,
                 IDocument, InsertEdit, TextEdit, TextChange, Point, LinkedModeModel>
                 (_offset, prefix, description, text, dec, producedReference, scope, cpc.lastCompilationUnit,
     includeDefaulted, positionalInvocation, namedInvocation, inheritance, qualified, qualifyingValue, completionManager)

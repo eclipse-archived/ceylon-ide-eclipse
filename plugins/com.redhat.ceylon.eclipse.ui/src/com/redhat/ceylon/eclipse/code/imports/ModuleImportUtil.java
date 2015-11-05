@@ -13,7 +13,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -24,10 +26,10 @@ import org.eclipse.text.edits.MultiTextEdit;
 import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
 import com.redhat.ceylon.ide.common.modulesearch.ModuleNode;
 import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
@@ -36,7 +38,7 @@ public class ModuleImportUtil {
 
     public static void exportModuleImports(IProject project, 
             Module target, String moduleName) {
-        ProjectPhasedUnit unit = 
+        ProjectPhasedUnit<IProject,IResource,IFolder,IFile> unit = 
                 getDescriptorPhasedUnit(project, target);
         exportModuleImports(unit.getResourceFile(), 
                 unit.getCompilationUnit(), 
@@ -46,7 +48,7 @@ public class ModuleImportUtil {
     public static void removeModuleImports(IProject project, 
             Module target, List<String> moduleNames) {
         if (moduleNames.isEmpty()) return;
-        ProjectPhasedUnit unit = 
+        ProjectPhasedUnit<IProject,IResource,IFolder,IFile> unit = 
                 getDescriptorPhasedUnit(project, target);
         removeModuleImports(unit.getResourceFile(), 
                 unit.getCompilationUnit(), 
@@ -105,7 +107,7 @@ public class ModuleImportUtil {
     public static void makeModuleImportShared(
             IProject project, Module target,
             String[] moduleNames) {
-        ProjectPhasedUnit unit = 
+        ProjectPhasedUnit<IProject,IResource,IFolder,IFile> unit = 
                 getDescriptorPhasedUnit(project, target);
         TextFileChange textFileChange = 
                 new TextFileChange("Make Module Import Shared", 
@@ -168,7 +170,7 @@ public class ModuleImportUtil {
             IProject project, Module target,
             Map<String,ModuleVersionNode> moduleNamesAndVersions) {
         if (moduleNamesAndVersions.isEmpty()) return 0;
-        ProjectPhasedUnit unit = 
+        ProjectPhasedUnit<IProject,IResource,IFolder,IFile> unit = 
                 getDescriptorPhasedUnit(project, target);
         return addModuleImports(unit.getResourceFile(),
                 unit.getCompilationUnit(), project,
@@ -213,12 +215,12 @@ public class ModuleImportUtil {
         return textFileChange.getEdit().getOffset();
     }
 
-    private static ProjectPhasedUnit getDescriptorPhasedUnit(
+    private static ProjectPhasedUnit<IProject,IResource,IFolder,IFile> getDescriptorPhasedUnit(
             IProject project, Module module) {
         Unit unit = module.getUnit();
         if (unit instanceof ProjectSourceFile) {
-            ProjectSourceFile ceylonUnit =
-                    (ProjectSourceFile) unit;
+            ProjectSourceFile<IProject,IResource,IFolder,IFile> ceylonUnit =
+                    (ProjectSourceFile<IProject,IResource,IFolder,IFile>) unit;
             return ceylonUnit.getPhasedUnit();
         }
         return null;

@@ -84,7 +84,7 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
                     backendJava, backendJs, astAwareIncrementalBuids, verbose)
                     .addToProject(project);
 
-            CeylonProjectConfig<IProject> config = ceylonModel().getProject(project).getConfiguration();
+            CeylonProjectConfig config = ceylonModel().getProject(project).getConfiguration();
             if (offlineOption!=null) {
                 config.setProjectOffline(ceylon.language.Boolean.instance(offlineOption));
             }

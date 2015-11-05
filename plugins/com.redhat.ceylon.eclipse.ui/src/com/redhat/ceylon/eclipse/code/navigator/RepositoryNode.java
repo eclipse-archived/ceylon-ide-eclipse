@@ -6,7 +6,7 @@ import java.util.List;
 import org.eclipse.core.resources.IProject;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.model.cmr.Repository;
 
 public class RepositoryNode {
@@ -32,7 +32,7 @@ public class RepositoryNode {
         return null;
     }
     
-    public void addModule(JDTModule module) {
+    public void addModule(BaseIdeModule module) {
         modules.add(new ExternalModuleNode(this, module.getSignature()));
     }
 

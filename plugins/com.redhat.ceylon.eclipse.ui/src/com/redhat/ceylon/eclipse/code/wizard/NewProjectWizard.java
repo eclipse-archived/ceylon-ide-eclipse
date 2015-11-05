@@ -44,6 +44,7 @@ import com.redhat.ceylon.eclipse.code.explorer.PackageExplorerPart;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonRepoConfigBlock;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 
@@ -148,7 +149,7 @@ public class NewProjectWizard extends NewElementWizard
             
             IProject project = getCreatedElement().getProject();
             
-            CeylonProject<IProject> ceylonProject = 
+            BaseCeylonProject ceylonProject = 
                     ceylonModel().getProject(project);
             CeylonProjectConfig projectConfig = 
                     ceylonProject.getConfiguration();

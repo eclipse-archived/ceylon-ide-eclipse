@@ -9,6 +9,8 @@ import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
@@ -27,13 +29,12 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.CrossProjectBinaryUnit;
-import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
-import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
-import com.redhat.ceylon.eclipse.core.model.IResourceAware;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.ide.common.model.CrossProjectSourceFile;
+import com.redhat.ceylon.ide.common.model.IResourceAware;
+import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 
 abstract class AbstractRefactoring extends Refactoring {
     
@@ -93,7 +94,7 @@ abstract class AbstractRefactoring extends Refactoring {
         }
         if (unit instanceof IResourceAware) {
             IProject project = 
-                    ((IResourceAware) unit).getResourceProject();
+                    ((IResourceAware<IProject,IFolder,IFile>) unit).getResourceProject();
             if (project==null) {
                 return false;
             }
@@ -130,7 +131,7 @@ abstract class AbstractRefactoring extends Refactoring {
         return dc;
     }
     
-    TextFileChange newTextFileChange(ProjectPhasedUnit pu) {
+    TextFileChange newTextFileChange(ProjectPhasedUnit<IProject,IResource,IFolder,IFile> pu) {
         TextFileChange tfc = 
                 new TextFileChange(getName(), 
                         pu.getResourceFile());

@@ -84,27 +84,25 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
-import com.redhat.ceylon.eclipse.core.model.JDTModuleManager;
-import com.redhat.ceylon.eclipse.core.model.JDTModuleSourceMapper;
-import com.redhat.ceylon.eclipse.core.typechecker.EditedPhasedUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.SourceCodeVirtualFile;
 import com.redhat.ceylon.eclipse.core.vfs.TemporaryFile;
 import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
-import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
+import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.IdeModuleManager;
+import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.settings.CompletionOptions;
+import com.redhat.ceylon.ide.common.typechecker.EditedPhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.LocalAnalysisResult;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
-public class CeylonParseController implements LocalAnalysisResult<IDocument,IProject> {
+public class CeylonParseController implements LocalAnalysisResult<IDocument> {
     
     /**
      * The project containing the source being parsed. May be 
@@ -277,10 +275,12 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument,IPro
             pkg = getPackage(file, srcDir, builtPhasedUnit);
         }
         
-        JDTModuleManager moduleManager = (JDTModuleManager) 
-                typeChecker.getPhasedUnits().getModuleManager();
-        JDTModuleSourceMapper moduleSourceMapper = (JDTModuleSourceMapper) 
-                typeChecker.getPhasedUnits().getModuleSourceMapper();
+        IdeModuleManager<IProject,IResource,IFolder,IFile> moduleManager = 
+                (IdeModuleManager<IProject,IResource,IFolder,IFile>) 
+                    typeChecker.getPhasedUnits().getModuleManager();
+        IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper = 
+                (IdeModuleSourceMapper<IProject,IResource,IFolder,IFile>)
+                    typeChecker.getPhasedUnits().getModuleSourceMapper();
         if (builtPhasedUnit instanceof ProjectPhasedUnit) {
             newPhasednit = 
                     new EditedPhasedUnit(file, srcDir, cu, pkg, 
@@ -349,7 +349,7 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument,IPro
     private static TypeChecker createTypeChecker(IProject project, 
             boolean showWarnings) 
             throws CoreException {
-        final CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+        final CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = ceylonModel().getProject(project);
         
         final IJavaProject javaProject = 
                 project != null ? JavaCore.create(project) : null;
@@ -866,7 +866,7 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument,IPro
     }
 
     @Override
-    public CeylonProject<IProject> getCeylonProject() {
+    public BaseCeylonProject getCeylonProject() {
         return ceylonModel().getProject(project);
     }
 

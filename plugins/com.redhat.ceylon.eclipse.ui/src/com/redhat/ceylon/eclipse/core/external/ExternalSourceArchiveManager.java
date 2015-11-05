@@ -43,8 +43,8 @@ import org.eclipse.jdt.internal.core.util.Util;
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 
 public class ExternalSourceArchiveManager implements IResourceChangeListener {
     private static final String EXTERNAL_PROJECT_NAME = "Ceylon Source Archives";
@@ -69,12 +69,12 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
      * Returns a set of external path to external folders referred to on the given classpath.
      * Returns null if none.
      */
-    public static Set<IPath> getExternalSourceArchives(Collection<JDTModule> modules) {
+    public static Set<IPath> getExternalSourceArchives(Collection<BaseIdeModule> modules) {
         if (modules == null)
             return Collections.emptySet();
         Set<IPath> folders = null;
-        for (JDTModule  module : modules) {
-            if (module.isCeylonArchive()) {
+        for (BaseIdeModule  module : modules) {
+            if (module.getIsCeylonArchive()) {
                 IPath archivePath = Path.fromOSString(module.getSourceArchivePath());
                 if (isExternalSourceArchivePath(archivePath)) {
                     if (folders == null)
@@ -232,7 +232,7 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
         
         Set<IPath> projectSourcePaths = null;
         for (IProject project : CeylonBuilder.getProjects()) {
-            for (JDTModule module : CeylonBuilder.getProjectExternalModules(project)) {
+            for (BaseIdeModule module : CeylonBuilder.getProjectExternalModules(project)) {
                 String sourceArchivePathString = module.getSourceArchivePath();
                 if (sourceArchivePathString!= null) {
                     if (projectSourcePaths == null) {

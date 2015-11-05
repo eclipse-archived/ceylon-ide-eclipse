@@ -15,6 +15,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -37,10 +41,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -352,7 +356,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         for (PhasedUnit pu : units) {
             if (searchInFile(pu)) {
                 TextFileChange tfc = 
-                        newTextFileChange((ProjectPhasedUnit)pu);
+                        newTextFileChange((ProjectPhasedUnit<IProject,IResource,IFolder,IFile>)pu);
                 refactorInFile(tfc, cc, 
                         pu.getCompilationUnit(),
                         pu.getTokens());

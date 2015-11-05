@@ -24,7 +24,10 @@ import com.redhat.ceylon.model.typechecker.model {
 }
 
 import org.eclipse.core.resources {
-    IProject
+    IProject,
+    IResource,
+    IFolder,
+    IFile
 }
 import org.eclipse.jdt.core {
     IClasspathEntry,
@@ -41,8 +44,8 @@ import ceylon.collection {
     ArrayList
 }
 
-shared class JDTModuleManager(Context context, CeylonProject<IProject>? ceylonProject)
-         extends IdeModuleManager<IProject>(ceylonProject) {
+shared class JDTModuleManager(Context context, CeylonProject<IProject,IResource,IFolder,IFile>? ceylonProject)
+         extends IdeModuleManager<IProject,IResource,IFolder,IFile>(ceylonProject) {
 
     shared actual JDTModelLoader newModelLoader(BaseIdeModuleManager self, BaseIdeModuleSourceMapper sourceMapper, Modules modules) {
         assert (is JDTModuleSourceMapper sourceMapper);

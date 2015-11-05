@@ -14,7 +14,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -27,9 +29,9 @@ import org.eclipse.text.edits.MultiTextEdit;
 import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
-import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.ide.common.model.ModifiableSourceFile;
+import com.redhat.ceylon.ide.common.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.ide.common.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
@@ -63,7 +65,7 @@ class CreateParameterProposal extends InitializerProposal {
     private static void addCreateParameterProposal(
             Collection<ICompletionProposal> proposals, 
             String def, String desc, Image image, 
-            Declaration dec, ModifiablePhasedUnit unit,
+            Declaration dec, ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> unit,
             Tree.Declaration decNode, 
             Tree.ParameterList paramList, 
             Type returnType, 
@@ -90,7 +92,7 @@ class CreateParameterProposal extends InitializerProposal {
     private static void addCreateParameterAndAttributeProposal(
             Collection<ICompletionProposal> proposals, 
             String pdef, String adef, String desc, 
-            Image image, Declaration dec, ModifiablePhasedUnit unit,
+            Image image, Declaration dec, ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> unit,
             Tree.Declaration decNode, 
             Tree.ParameterList paramList, Tree.Body body, 
             Type returnType, Node node) {
@@ -160,7 +162,7 @@ class CreateParameterProposal extends InitializerProposal {
                 TypecheckerUnit u = 
                         dg.getRootNode().getUnit();
                 if (u instanceof ModifiableSourceFile) {
-                    ModifiableSourceFile cu = (ModifiableSourceFile) u;
+                    ModifiableSourceFile<IProject,IResource,IFolder,IFile> cu = (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) u;
                     addCreateParameterProposal(
                             proposals, paramDef, paramDesc,
                             ADD_CORR,

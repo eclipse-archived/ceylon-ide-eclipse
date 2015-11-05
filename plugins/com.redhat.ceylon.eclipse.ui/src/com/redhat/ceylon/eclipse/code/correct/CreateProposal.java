@@ -15,7 +15,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
@@ -29,9 +31,9 @@ import org.eclipse.text.edits.MultiTextEdit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
-import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.ide.common.util.FindDeclarationNodeVisitor;
+import com.redhat.ceylon.ide.common.model.ModifiableSourceFile;
+import com.redhat.ceylon.ide.common.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.ide.common.util.FindContainerVisitor;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
@@ -65,7 +67,7 @@ class CreateProposal extends InitializerProposal {
     static void addCreateMemberProposal(
             Collection<ICompletionProposal> proposals,
             DefinitionGenerator dg, Declaration typeDec,
-            ModifiablePhasedUnit unit, Tree.Declaration decNode,
+            ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> unit, Tree.Declaration decNode,
             Tree.Body body, Tree.Statement statement) {
         IFile file = unit.getResourceFile();
         if (file == null) {
@@ -166,7 +168,7 @@ class CreateProposal extends InitializerProposal {
     private static void addCreateProposal(
             Collection<ICompletionProposal> proposals,
             boolean local, DefinitionGenerator dg,
-            ModifiablePhasedUnit unit,
+            ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> unit,
             Tree.Statement statement) {
         IFile file = unit.getResourceFile();
         if (file == null) {
@@ -233,9 +235,9 @@ class CreateProposal extends InitializerProposal {
                         && dg.isFormalSupported()))) {
             Unit u = typeDec.getUnit();
             if (u instanceof ModifiableSourceFile) {
-                ModifiableSourceFile msf =
-                        (ModifiableSourceFile) u;
-                ModifiablePhasedUnit phasedUnit =
+                ModifiableSourceFile<IProject,IResource,IFolder,IFile> msf =
+                        (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) u;
+                ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> phasedUnit =
                         msf.getPhasedUnit();
                 //TODO: "object" declarations?
                 FindDeclarationNodeVisitor fdv =

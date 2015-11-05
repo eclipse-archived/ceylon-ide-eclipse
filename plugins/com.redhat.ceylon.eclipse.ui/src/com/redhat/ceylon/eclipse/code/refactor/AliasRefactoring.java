@@ -8,6 +8,10 @@ import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStat
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -26,7 +30,8 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Class;
@@ -188,7 +193,7 @@ public class AliasRefactoring extends AbstractRefactoring {
                     pu.getPackage()
                         .equals(editorPackage);
             if (inSamePackage && searchInFile(pu)) {
-                TextFileChange tfc = newTextFileChange((ProjectPhasedUnit)pu);
+                TextFileChange tfc = newTextFileChange((ProjectPhasedUnit<IProject,IResource,IFolder,IFile>)pu);
                 renameInFile(tfc, cc, 
                         pu.getCompilationUnit());
                 pm.worked(i++);

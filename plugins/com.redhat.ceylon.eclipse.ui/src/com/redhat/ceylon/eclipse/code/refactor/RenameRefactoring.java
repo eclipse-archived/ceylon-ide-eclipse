@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -49,7 +50,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.util.Escaping;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.ide.common.util.escaping_;
@@ -341,7 +343,7 @@ public class RenameRefactoring extends AbstractRefactoring {
         int i=0;
         for (PhasedUnit pu: units) {
             if (searchInFile(pu)) {
-                TextFileChange tfc = newTextFileChange((ProjectPhasedUnit) pu);
+                TextFileChange tfc = newTextFileChange((ProjectPhasedUnit<IProject, IResource, IFolder, IFile>) pu);
                 renameInFile(tfc, composite, 
                         pu.getCompilationUnit());
                 pm.worked(i++);

@@ -6,7 +6,9 @@ import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextChange;
@@ -16,8 +18,8 @@ import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
-import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
+import com.redhat.ceylon.ide.common.model.ModifiableSourceFile;
+import com.redhat.ceylon.ide.common.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.ide.common.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -101,8 +103,9 @@ class RemoveAnnotionProposal extends CorrectionProposal {
         if (dec!=null && dec.getName()!=null) {
             Unit u = dec.getUnit();
             if (u instanceof ModifiableSourceFile) {
-                ModifiableSourceFile cu = (ModifiableSourceFile) u;
-                ModifiablePhasedUnit unit = cu.getPhasedUnit();
+                ModifiableSourceFile<IProject,IResource,IFolder,IFile> cu = 
+                        (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) u;
+                ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> unit = cu.getPhasedUnit();
                 //TODO: "object" declarations?
                 FindDeclarationNodeVisitor fdv = 
                         new FindDeclarationNodeVisitor(dec);
@@ -123,7 +126,7 @@ class RemoveAnnotionProposal extends CorrectionProposal {
             String annotation, String desc, 
             Declaration dec,
             Collection<ICompletionProposal> proposals, 
-            ModifiablePhasedUnit unit, Tree.Declaration decNode) {
+            ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> unit, Tree.Declaration decNode) {
         IFile file = unit.getResourceFile();
         if (file == null) {
             return;

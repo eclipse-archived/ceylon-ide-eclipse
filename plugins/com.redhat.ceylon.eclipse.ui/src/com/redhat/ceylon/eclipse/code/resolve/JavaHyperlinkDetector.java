@@ -9,6 +9,10 @@ import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEdito
 
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -29,10 +33,9 @@ import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
-import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
-import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
+import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
+import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
 
 public class JavaHyperlinkDetector implements IHyperlinkDetector {
 
@@ -121,7 +124,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                             boolean hasFoundAJavaImplementation = false;
                             if (dec.isNative()) {
                                 if (declarationUnit instanceof EditedSourceFile) {
-                                    ProjectSourceFile projectSourceFile = ((EditedSourceFile)declarationUnit).getOriginalSourceFile();
+                                    ProjectSourceFile<IProject, IResource, IFolder, IFile> projectSourceFile = ((EditedSourceFile)declarationUnit).getOriginalSourceFile();
                                     if (projectSourceFile != null) {
 
                                         Declaration modelDeclaration = null;

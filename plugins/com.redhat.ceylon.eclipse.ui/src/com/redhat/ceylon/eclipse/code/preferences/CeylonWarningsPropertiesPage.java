@@ -46,7 +46,7 @@ public class CeylonWarningsPropertiesPage extends PropertyPage {
     public boolean performOk() {
         IProject project = getSelectedProject();
         if (CeylonNature.isEnabled(project)) {
-            CeylonProjectConfig<IProject> config = ceylonModel().getProject(project).getConfiguration();
+            CeylonProjectConfig config = ceylonModel().getProject(project).getConfiguration();
             if (suppressedWarnings.isEmpty()) {
                 config.setProjectSuppressWarnings(null);
             }

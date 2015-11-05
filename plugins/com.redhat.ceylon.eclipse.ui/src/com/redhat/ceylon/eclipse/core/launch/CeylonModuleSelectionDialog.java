@@ -27,12 +27,12 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.code.open.FilteredItemsSelectionDialog;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.IdeModule;
+import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
 
 public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
     
@@ -106,7 +106,8 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
                 if (module.getIsProjectModule()) {
 //                    ProjectSourceFile unit = (ProjectSourceFile) module.getUnit();
 //                    return unit.getProjectResource().getName();
-                    return module.getCeylonProject().getIdeArtifact().getName();
+                    CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = module.getCeylonProject();
+                    return ceylonProject.getIdeArtifact().getName();
                 }
                 else {
                     return module.getRepositoryDisplayString();
@@ -137,8 +138,10 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
                 final IdeModule<IProject,IResource,IFolder,IFile> module = (IdeModule<IProject,IResource,IFolder,IFile>) element;
                 if (module.getIsProjectModule()) {
                     if (!module.getIsDefaultModule()) {
-                        IProject project = module.getCeylonProject().getIdeArtifact();
-                        ProjectSourceFile unit = (ProjectSourceFile) module.getUnit();
+                        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = module.getCeylonProject();
+                        IProject project = ceylonProject.getIdeArtifact();
+                        ProjectSourceFile<IProject,IResource,IFolder,IFile> unit = 
+                                (ProjectSourceFile<IProject,IResource,IFolder,IFile>) module.getUnit();
                         for (IFolder folder: getSourceFolders(project)) {
                             if (folder.findMember(unit.getRelativePath())!=null) {
                                 return folder.getFullPath().toPortableString();

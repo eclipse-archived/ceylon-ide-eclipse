@@ -7,12 +7,6 @@ import com.redhat.ceylon.compiler.typechecker.tree {
 import com.redhat.ceylon.eclipse.code.correct {
     EclipseDocumentChanges
 }
-import com.redhat.ceylon.eclipse.core.model {
-    ProjectSourceFile
-}
-import com.redhat.ceylon.eclipse.core.typechecker {
-    ProjectPhasedUnit
-}
 import com.redhat.ceylon.eclipse.util {
     eclipseIndents,
     EditorUtil
@@ -29,7 +23,9 @@ import com.redhat.ceylon.model.typechecker.model {
 
 import org.eclipse.core.resources {
     IFile,
-    IProject
+    IProject,
+    IResource,
+    IFolder
 }
 import org.eclipse.jface.text {
     IDocument
@@ -45,10 +41,18 @@ import org.eclipse.text.edits {
 import com.redhat.ceylon.eclipse.code.editor {
     Navigation
 }
+import com.redhat.ceylon.ide.common.typechecker {
+    TypecheckerAliases
+}
+import com.redhat.ceylon.ide.common.model {
+    ModelAliases
+}
 
 shared object eclipseModuleImportUtils
         extends AbstractModuleImportUtil<IFile,IProject,IDocument,InsertEdit,TextEdit,TextChange>()
-        satisfies EclipseDocumentChanges {
+        satisfies EclipseDocumentChanges
+        & TypecheckerAliases<IProject, IResource, IFolder, IFile>
+        & ModelAliases<IProject, IResource, IFolder, IFile> {
     
     shared actual Character getChar(IDocument doc, Integer offset)
             => doc.getChar(offset);
@@ -77,9 +81,9 @@ shared object eclipseModuleImportUtils
         EditorUtil.performChange(change);
     }
     
-    ProjectPhasedUnit? getDescriptorPhasedUnit(IProject project, Module mod) {
+    ProjectPhasedUnitAlias? getDescriptorPhasedUnit(IProject project, Module mod) {
         value unit = mod.unit;
-        if (is ProjectSourceFile unit) {
+        if (is ProjectSourceFileAlias unit) {
             value ceylonUnit = unit;
             return ceylonUnit.phasedUnit;
         }

@@ -17,7 +17,7 @@ import org.eclipse.ui.dialogs.PropertyPage;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 
 public class CeylonRepoPropertiesPage extends PropertyPage {
@@ -34,8 +34,8 @@ public class CeylonRepoPropertiesPage extends PropertyPage {
         }
 
         IProject project = getSelectedProject();
-        CeylonProject<IProject> ceylonProject = modelJ2C.ceylonModel().getProject(project);
-        CeylonProjectConfig<IProject> projectConfig = 
+        BaseCeylonProject ceylonProject = modelJ2C.ceylonModel().getProject(project);
+        CeylonProjectConfig projectConfig = 
                 ceylonProject.getConfiguration();
         block.applyToConfiguration(projectConfig);
         projectConfig.setOutputRepo(block.getOutputRepo());

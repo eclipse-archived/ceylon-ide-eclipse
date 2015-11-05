@@ -36,6 +36,7 @@ import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -45,7 +46,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
@@ -224,7 +224,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                 if (dec!=null && !declarations.contains(dec)) {
                     Unit unit = dec.getUnit();
                     if (unit instanceof ProjectSourceFile && 
-                            movingFiles.contains(((ProjectSourceFile) unit).getResourceFile())) {
+                            movingFiles.contains(((ProjectSourceFile<IProject, IResource, IFolder, IFile>) unit).getResourceFile())) {
                         //also moving
                     }
                     else if (unit.getPackage().equals(movedPhasedUnit.getPackage())) {

@@ -18,9 +18,6 @@ import com.redhat.ceylon.eclipse.code.imports {
 import com.redhat.ceylon.eclipse.code.parse {
     CeylonParseController
 }
-import com.redhat.ceylon.eclipse.core.model {
-    CeylonUnit
-}
 import com.redhat.ceylon.eclipse.util {
     Nodes,
     Highlights
@@ -64,13 +61,16 @@ import org.eclipse.jface.text {
     IInformationControlCreator,
     IDocument
 }
+import com.redhat.ceylon.ide.common.model {
+    CeylonUnit
+}
 
 object eclipseDocGenerator extends EclipseDocGenerator(null) {
     
 }
 
 class EclipseDocGenerator(CeylonEditor? editor) extends SourceInfoHover(editor)
-        satisfies DocGenerator<IDocument, IProject>{
+        satisfies DocGenerator<IDocument>{
     
     shared actual String? getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
         if (exists editor, exists prov = editor.selectionProvider) {
@@ -231,13 +231,16 @@ class EclipseDocGenerator(CeylonEditor? editor) extends SourceInfoHover(editor)
             => Nodes.getReferencedNode(dec);
     
     shared actual String getUnitName(Unit u)
-            => if (is CeylonUnit u) then u.ceylonFileName else u.filename;
+            => if (is CeylonUnit u, 
+                    exists ceylonFileName=u.ceylonFileName)
+                then ceylonFileName 
+                else u.filename;
     
-    shared actual String highlight(String text, LocalAnalysisResult<IDocument,IProject> cmp) {
+    shared actual String highlight(String text, LocalAnalysisResult<IDocument> cmp) {
         return HTML.highlightLine(text);
     }
     
-    shared actual String markdown(String text, LocalAnalysisResult<IDocument,IProject> cmp,
+    shared actual String markdown(String text, LocalAnalysisResult<IDocument> cmp,
         Scope? linkScope, Unit? unit) {
         
         return DocumentationHover.markdown(text, linkScope, unit);

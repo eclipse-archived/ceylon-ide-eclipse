@@ -10,7 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.Change;
@@ -24,8 +26,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraint;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraintList;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
-import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
-import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
+import com.redhat.ceylon.ide.common.model.ModifiableSourceFile;
+import com.redhat.ceylon.ide.common.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.ide.common.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -98,9 +100,9 @@ public class AddSatisfiesProposal extends CorrectionProposal {
 
         Unit unit = typeDec.getUnit();
         if (unit instanceof ModifiableSourceFile) {
-            ModifiableSourceFile msf = 
-                    (ModifiableSourceFile) unit;
-            ModifiablePhasedUnit phasedUnit = 
+            ModifiableSourceFile<IProject,IResource,IFolder,IFile> msf = 
+                    (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) unit;
+            ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> phasedUnit = 
                     msf.getPhasedUnit();
             Tree.CompilationUnit decRootNode = 
                     phasedUnit.getCompilationUnit();

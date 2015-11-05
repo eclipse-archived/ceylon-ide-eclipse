@@ -230,7 +230,7 @@ public class CeylonEncodingSynchronizer {
                         synchronizeEncoding(project, false);
                     }
                     if (filePath.equals(".ceylon/config")) {
-                        CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+                        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = ceylonModel().getProject(project);
                         if (ceylonProject != null) {
                             ceylonProject.getConfiguration().refresh();
                             synchronizeEncoding(project, false);
@@ -259,7 +259,7 @@ public class CeylonEncodingSynchronizer {
             refresh(project.getFolder(".settings"), monitor);
             refresh(project.getFolder(".ceylon"), monitor);
             
-            CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = ceylonModel().getProject(project);
             if (ceylonProject != null) {
                 CeylonProjectConfig config = ceylonProject.getConfiguration();
                 config.refresh();

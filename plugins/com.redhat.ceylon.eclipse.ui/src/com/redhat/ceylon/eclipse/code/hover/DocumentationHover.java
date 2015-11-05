@@ -38,6 +38,7 @@ import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isResolvable;
 import static java.lang.Character.codePointCount;
 import static java.lang.Double.parseDouble;
@@ -90,10 +91,10 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
+import com.redhat.ceylon.ide.common.model.CeylonUnit;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
@@ -1975,7 +1976,7 @@ public class DocumentationHover extends SourceInfoHover {
             // but getCeylonFileName() will return the ceylon source file name if any.
             CeylonUnit ceylonUnit = 
                     (CeylonUnit) dec.getUnit();
-            unitName = ceylonUnit.getCeylonFileName();
+            unitName = toJavaString(ceylonUnit.getCeylonFileName());
         }
         if (unitName == null) {
             unitName = dec.getUnit().getFilename();

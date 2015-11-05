@@ -51,7 +51,9 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
+import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 
 public class CeylonNavigatorContentProvider implements
         IPipelinedTreeContentProvider2, ICeylonModelListener {
@@ -84,9 +86,9 @@ public class CeylonNavigatorContentProvider implements
                             IPackageFragmentRoot pfr = (IPackageFragmentRoot) entry;
                             for (RepositoryNode rn : repositories.values()) {
                                 for (ExternalModuleNode emn : rn.getModules()) {
-                                    JDTModule module = emn.getModule();
+                                    BaseIdeModule module = emn.getModule();
                                     if (module != null &&
-                                            module.getPackageFragmentRoots()
+                                            modelJ2C.getModulePackageFragmentRoots(module)
                                             .contains(pfr)) {
                                         emn.getBinaryArchives().add(pfr);
                                     }
@@ -175,7 +177,7 @@ public class CeylonNavigatorContentProvider implements
                                 e.printStackTrace();
                             }
                         } else {
-                            JDTModule fragmentModule = CeylonBuilder.getModule(pkgFragment);
+                            BaseIdeModule fragmentModule = CeylonBuilder.getModule(pkgFragment);
                             if (fragmentModule != null) {
                                 for (Iterator<Object> itr = theCurrentChildren.iterator(); itr.hasNext(); ) {
                                     Object child = itr.next();
@@ -207,12 +209,12 @@ public class CeylonNavigatorContentProvider implements
         RepositoryNode unknownRepositoryNode = new RepositoryNode(project, NodeUtils.UNKNOWN_REPOSITORY);
         repositories.put(NodeUtils.UNKNOWN_REPOSITORY, unknownRepositoryNode);
         
-        for (JDTModule externalModule : CeylonBuilder.getProjectExternalModules(project)) {
+        for (BaseIdeModule externalModule : CeylonBuilder.getProjectExternalModules(project)) {
             if (! externalModule.isAvailable()) {
                 continue;
             }
             String repoDisplayString = externalModule.getRepositoryDisplayString();
-            if (externalModule.isJDKModule()) {
+            if (externalModule.getIsJDKModule()) {
                 repositories.get(JDKRepository.JDK_REPOSITORY_DISPLAY_STRING).addModule(externalModule);
             }
             else if (repositories.containsKey(repoDisplayString)) {
@@ -228,9 +230,9 @@ public class CeylonNavigatorContentProvider implements
         Map<String, SourceModuleNode> sourceDirectoryModules = new LinkedHashMap<>();
 
         for (Module m : CeylonBuilder.getProjectSourceModules(sourceRoot.getJavaProject().getProject())) {
-            if (m instanceof JDTModule) {
-                JDTModule module = (JDTModule) m;
-                if (module.getPackageFragmentRoots().contains(sourceRoot)) {
+            if (m instanceof BaseIdeModule) {
+                BaseIdeModule module = (BaseIdeModule) m;
+                if (modelJ2C.getModulePackageFragmentRoots(module).contains(sourceRoot)) {
                     String signature = module.getSignature();
                     SourceModuleNode sourceModuleNode = sourceDirectoryModules.get(signature);
                     if (sourceModuleNode == null) {
@@ -258,9 +260,9 @@ public class CeylonNavigatorContentProvider implements
                 Map<String, RepositoryNode> repositories = getProjectRepositoryNodes(project);
                 for (RepositoryNode rn : repositories.values()) {
                     for (ExternalModuleNode emn : rn.getModules()) {
-                        JDTModule module = emn.getModule();
+                        BaseIdeModule module = emn.getModule();
                         if (module != null) {
-                            if (module.getPackageFragmentRoots()
+                            if (modelJ2C.getModulePackageFragmentRoots(module)
                                     .contains(pfr)) {
                                 return rn;
                             }
@@ -278,15 +280,15 @@ public class CeylonNavigatorContentProvider implements
                 Map<String, SourceModuleNode> moduleNodes = getSourceDirectoryModules(root);
                 if (CeylonBuilder.isSourceFolder(root)) {
                     if (aSuggestedParent instanceof IPackageFragmentRoot) {
-                        JDTModule module = CeylonBuilder.getModule(pkgFragment);
+                        BaseIdeModule module = CeylonBuilder.getModule(pkgFragment);
                         if (module != null) {
                             return moduleNodes.get(module.getSignature());
                         }
                     }
                     if (aSuggestedParent instanceof IPackageFragment) {
-                        JDTModule module = CeylonBuilder.getModule(pkgFragment);
+                        BaseIdeModule module = CeylonBuilder.getModule(pkgFragment);
                         if (module != null) {
-                            JDTModule parentModule = CeylonBuilder.getModule((IPackageFragment)aSuggestedParent);
+                            BaseIdeModule parentModule = CeylonBuilder.getModule((IPackageFragment)aSuggestedParent);
                             if (! module.equals(parentModule)) {
                                 String signature = module.getSignature();
                                 return moduleNodes.get(signature);

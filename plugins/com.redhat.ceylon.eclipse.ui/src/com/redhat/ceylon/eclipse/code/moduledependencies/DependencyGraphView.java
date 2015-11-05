@@ -727,7 +727,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
                 if (element instanceof SourceModuleNode) {
                     SourceModuleNode module = (SourceModuleNode) element;
                     setProject(module.getProject());
-                    select(module.getModule());;
+                    select(module.getModule());
                     return true;
                 }
                 else if (element instanceof ExternalModuleNode) {

@@ -7,6 +7,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -24,7 +28,7 @@ import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 
 public class ChangeVersionRefactoring extends AbstractRefactoring {
     
@@ -133,7 +137,7 @@ public class ChangeVersionRefactoring extends AbstractRefactoring {
         for (PhasedUnit pu: units) {
             if (searchInFile(pu)) {
                 TextFileChange tfc = 
-                        newTextFileChange((ProjectPhasedUnit)pu);
+                        newTextFileChange((ProjectPhasedUnit<IProject,IResource,IFolder,IFile>)pu);
                 renameInFile(tfc, cc, 
                         pu.getCompilationUnit());
                 pm.worked(i++);

@@ -15,7 +15,9 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -30,8 +32,8 @@ import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
-import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
+import com.redhat.ceylon.ide.common.model.ModifiableSourceFile;
+import com.redhat.ceylon.ide.common.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
@@ -53,7 +55,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
             boolean wasNotGeneric,
             String def, String name,
             Image image, Declaration dec,
-            ModifiablePhasedUnit unit,
+            ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> unit,
             Tree.Declaration decNode, int offset, 
             String constraints) {
         IFile file = unit.getResourceFile();
@@ -291,8 +293,8 @@ class CreateTypeParameterProposal extends CorrectionProposal {
 
         TypecheckerUnit u = rootNode.getUnit();
         if (u instanceof ModifiableSourceFile) {
-            ModifiableSourceFile cu =
-                    (ModifiableSourceFile) u;
+            ModifiableSourceFile<IProject,IResource,IFolder,IFile> cu =
+                    (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) u;
             addProposal(proposals, paramList==null,
                     paramDef, brokenName, ADD_CORR, 
                     d, cu.getPhasedUnit(), decl, offset,

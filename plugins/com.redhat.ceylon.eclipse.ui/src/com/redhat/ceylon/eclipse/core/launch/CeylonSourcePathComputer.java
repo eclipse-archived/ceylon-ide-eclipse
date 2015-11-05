@@ -21,7 +21,7 @@ import org.eclipse.jdt.launching.sourcelookup.containers.PackageFragmentRootSour
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 
 public class CeylonSourcePathComputer implements ISourcePathComputerDelegate {
 
@@ -45,7 +45,7 @@ public class CeylonSourcePathComputer implements ISourcePathComputerDelegate {
         
         IJavaProject javaProject = JavaRuntime.getJavaProject(configuration);
         IProject project = javaProject != null ? javaProject.getProject() : null;
-        Collection<JDTModule> modules = project != null ? CeylonBuilder.getProjectExternalModules(project) : null;
+        Collection<BaseIdeModule> modules = project != null ? CeylonBuilder.getProjectExternalModules(project) : null;
                 
         for (ISourceContainer container : JavaRuntime.getSourceContainers(resolvedEntries.toArray(new IRuntimeClasspathEntry[0]))) {
             containers.add(container);
@@ -61,8 +61,8 @@ public class CeylonSourcePathComputer implements ISourcePathComputerDelegate {
                             File archiveFile = pfr.getPath().toFile();
                             if (archiveFile != null 
                                     && modules != null) {
-                                for (JDTModule m : modules) {
-                                    if (m.isCeylonBinaryArchive() 
+                                for (BaseIdeModule m : modules) {
+                                    if (m.getIsCeylonBinaryArchive() 
                                             && archiveFile.equals(m.getArtifact())) {
                                         String sourceArchivePath = m.getSourceArchivePath();
                                         if (sourceArchivePath != null) {

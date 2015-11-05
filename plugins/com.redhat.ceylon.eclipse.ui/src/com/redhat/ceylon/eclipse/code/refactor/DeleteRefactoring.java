@@ -6,6 +6,10 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclarat
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -27,9 +31,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 
 public class DeleteRefactoring extends AbstractRefactoring {
     
@@ -332,7 +336,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
         }
         for (PhasedUnit pu: units) {
             if (searchInFile(pu)) {
-                deleteInFile(change, newTextFileChange((ProjectPhasedUnit)pu), 
+                deleteInFile(change, newTextFileChange((ProjectPhasedUnit<IProject,IResource,IFolder,IFile>)pu), 
                         pu.getCompilationUnit());
             }
         }

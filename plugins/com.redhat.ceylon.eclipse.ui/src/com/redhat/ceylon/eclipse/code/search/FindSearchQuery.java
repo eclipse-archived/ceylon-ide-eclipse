@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -44,8 +45,10 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.util.Filters;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.IdeModule;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Modules;
@@ -129,17 +132,18 @@ abstract class FindSearchQuery implements ISearchQuery {
                         typeChecker.getContext()
                             .getModules();
                 for (Module m: modules.getListOfModules()) {
-                    if (m instanceof JDTModule &&
+                    if (m instanceof IdeModule &&
                             !filters.isFiltered(m)) {
-                        JDTModule module = (JDTModule) m;
-                        if (module.isCeylonArchive() && 
-                                !module.isProjectModule() && 
+                        IdeModule<IProject, IResource, IFolder, IFile> module = 
+                                (IdeModule<IProject, IResource, IFolder, IFile>) m;
+                        if (module.getIsCeylonArchive() && 
+                                !module.getIsProjectModule() && 
                                 module.getArtifact()!=null) {
-                            IProject originalProject = 
+                            CeylonProject<IProject, IResource, IFolder, IFile> originalProject = 
                                     module.getOriginalProject();
                             if (originalProject != null 
                                     && projectsToSearch.contains(
-                                            originalProject)) {
+                                            originalProject.getIdeArtifact())) {
                                 continue;
                             }
                            
@@ -153,7 +157,7 @@ abstract class FindSearchQuery implements ISearchQuery {
                                     m.getAllReachablePackages()
                                         .contains(pack)) {
                                 findInUnits(
-                                        module.getPhasedUnits(), 
+                                        module.getPhasedUnitsAsJavaList(), 
                                         monitor);
                                 monitor.worked(1);
                                 if (monitor.isCanceled()) {
@@ -198,11 +202,11 @@ abstract class FindSearchQuery implements ISearchQuery {
                                 .getContext()
                                 .getModules();
                 for (Module m: modules.getListOfModules()) {
-                    if (m instanceof JDTModule &&
+                    if (m instanceof BaseIdeModule &&
                             !filters.isFiltered(m)) {
-                        JDTModule module = (JDTModule) m;
-                        if (module.isCeylonArchive() && 
-                                !module.isProjectModule() && 
+                        BaseIdeModule module = (BaseIdeModule) m;
+                        if (module.getIsCeylonArchive() && 
+                                !module.getIsProjectModule() && 
                                 module.getArtifact()!=null) { 
                             String archivePath = 
                                     module.getArtifact()

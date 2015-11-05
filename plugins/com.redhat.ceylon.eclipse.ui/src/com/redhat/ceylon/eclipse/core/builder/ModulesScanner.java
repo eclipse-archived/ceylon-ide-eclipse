@@ -14,10 +14,12 @@ import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 
+import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.IdeModuleManager;
 import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -26,14 +28,13 @@ import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 
 final class ModulesScanner implements IResourceVisitor {
     private final Module defaultModule;
     private final JDTModelLoader modelLoader;
-    private final IdeModuleManager<IProject> moduleManager;
+    private final IdeModuleManager<IProject, IResource, IFolder, IFile> moduleManager;
     private final IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper;
     private final ResourceVirtualFile<IResource, IFolder, IFile> srcDir;
     private final TypeChecker typeChecker;
@@ -41,7 +42,7 @@ final class ModulesScanner implements IResourceVisitor {
     private SubMonitor monitor;
 
     ModulesScanner(Module defaultModule, JDTModelLoader modelLoader,
-            IdeModuleManager<IProject> moduleManager, 
+            IdeModuleManager<IProject, IResource, IFolder, IFile> moduleManager, 
             IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper, 
             ResourceVirtualFile<IResource, IFolder, IFile> srcDir, 
             TypeChecker typeChecker, SubMonitor monitor) {
@@ -100,7 +101,7 @@ final class ModulesScanner implements IResourceVisitor {
                     PhasedUnit tempPhasedUnit = null;
                     tempPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, moduleSourceMapper, 
                             typeChecker, virtualFile, srcDir, pkg);
-                    tempPhasedUnit = new CeylonSourceParser<ProjectPhasedUnit>() {
+                    tempPhasedUnit = new CeylonSourceParser<ProjectPhasedUnit<IProject, IResource, IFolder, IFile>>() {
                         @Override
                         protected String getCharset() {
                             try {
@@ -112,8 +113,13 @@ final class ModulesScanner implements IResourceVisitor {
                         }
                         @SuppressWarnings("unchecked")
                         @Override
-                        protected ProjectPhasedUnit createPhasedUnit(CompilationUnit cu, Package pkg, CommonTokenStream tokenStream) {
-                            return new ProjectPhasedUnit(virtualFile, srcDir, cu, pkg, 
+                        protected ProjectPhasedUnit<IProject, IResource, IFolder, IFile> createPhasedUnit(CompilationUnit cu, Package pkg, CommonTokenStream tokenStream) {
+                            return new ProjectPhasedUnit<IProject, IResource, IFolder, IFile> (
+                                    TypeDescriptor.klass(IProject.class),
+                                    TypeDescriptor.klass(IResource.class),
+                                    TypeDescriptor.klass(IFolder.class),
+                                    TypeDescriptor.klass(IFile.class),
+                                    moduleManager.getCeylonProject(), virtualFile, srcDir, cu, pkg, 
                                     moduleManager, moduleSourceMapper, typeChecker, tokenStream.getTokens()) {
                                 protected boolean isAllowedToChangeModel(Declaration declaration) {
                                     return false;

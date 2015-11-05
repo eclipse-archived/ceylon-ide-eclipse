@@ -66,7 +66,7 @@ import java.lang {
 
 class EclipseImportedModulePackageProposal(Integer offset, String prefix, String memberPackageSubname, Boolean withBody,
                 String fullPackageName, CeylonParseController controller, Package candidate)
-                extends ImportedModulePackageProposal<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange,Point,LinkedModeModel,CeylonParseController,IProject>
+                extends ImportedModulePackageProposal<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange,Point,LinkedModeModel,CeylonParseController>
                 (offset, prefix, memberPackageSubname, withBody, fullPackageName, candidate, controller)
                 satisfies EclipseDocumentChanges & EclipseCompletionProposal{
 

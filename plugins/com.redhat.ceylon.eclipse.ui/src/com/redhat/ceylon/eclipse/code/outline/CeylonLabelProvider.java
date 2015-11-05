@@ -65,11 +65,11 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.ErrorCollectionVisitor;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
@@ -1159,7 +1159,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 }
                 catch (JavaModelException e) {}
                 if (folder != null) {
-                    final JDTModule moduleOfRootPackage = 
+                    final BaseIdeModule moduleOfRootPackage = 
                             getModule(folder);
                     int sev = getMaxProblemMarkerSeverity(
                             folder, DEPTH_INFINITE,

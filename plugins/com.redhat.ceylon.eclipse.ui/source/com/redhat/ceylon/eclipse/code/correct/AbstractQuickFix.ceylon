@@ -26,6 +26,9 @@ import com.redhat.ceylon.eclipse.util {
 import com.redhat.ceylon.ide.common.completion {
     IdeCompletionManager
 }
+import com.redhat.ceylon.ide.common.typechecker {
+    ModifiablePhasedUnit
+}
 import com.redhat.ceylon.ide.common.correct {
     AbstractQuickFix,
     ImportProposals
@@ -39,7 +42,9 @@ import com.redhat.ceylon.model.typechecker.model {
 
 import org.eclipse.core.resources {
     IFile,
-    IProject
+    IProject,
+    IResource,
+    IFolder
 }
 import org.eclipse.jface.text {
     IDocument,
@@ -61,7 +66,7 @@ import org.eclipse.text.edits {
 interface EclipseAbstractQuickFix
         satisfies AbstractQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> {
     
-    shared actual IdeCompletionManager<out Anything,out Anything,out ICompletionProposal,IDocument> completionManager 
+    shared actual IdeCompletionManager<out Anything,out ICompletionProposal,IDocument> completionManager 
             => EclipseCompletionManager(CeylonEditor());
     
     shared actual Integer getTextEditOffset(TextEdit change) => change.offset;
@@ -79,7 +84,7 @@ interface EclipseAbstractQuickFix
         if (is IDocument u) {
             return DocumentChange(desc, u);
         } else if (is PhasedUnit u){
-            assert(is ModifiablePhasedUnit u);
+            assert(is ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> u);
             return TextFileChange(desc, u.resourceFile);
         } else {
             return TextFileChange(desc, u);

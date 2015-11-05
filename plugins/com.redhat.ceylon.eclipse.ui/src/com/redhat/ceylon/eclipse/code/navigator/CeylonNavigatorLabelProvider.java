@@ -37,8 +37,9 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.model.cmr.Repository;
 
@@ -61,7 +62,7 @@ public class CeylonNavigatorLabelProvider extends
     public StyledString getStyledText(Object element) {
         if (element instanceof ExternalModuleNode) {
             ExternalModuleNode externalModule = (ExternalModuleNode) element;
-            JDTModule jdtModule = externalModule.getModule();
+            BaseIdeModule jdtModule = externalModule.getModule();
 			String name = jdtModule == null ? externalModule.getSignature() : super.getStyledText(jdtModule).toString();
 			StyledString moduleText = new StyledString(name);
             if (jdtModule != null) {
@@ -70,7 +71,7 @@ public class CeylonNavigatorLabelProvider extends
             return moduleText;
         }
         if (element instanceof SourceModuleNode) {
-            JDTModule module = ((SourceModuleNode) element).getModule();
+            BaseIdeModule module = ((SourceModuleNode) element).getModule();
             if (module==null) {
                 return new StyledString(((SourceModuleNode) element).getElementName());
             }
@@ -155,7 +156,7 @@ public class CeylonNavigatorLabelProvider extends
             stringToDisplay = "Output Modules";
         }
         
-        CeylonProject<IProject> ceylonProject = ceylonModel().getProject(repoNode.project);
+        BaseCeylonProject ceylonProject = ceylonModel().getProject(repoNode.project);
         Repositories mergedRepos = ceylonProject != null ? 
                 ceylonProject.getConfiguration().getRepositories() :
                     Repositories.get();
@@ -242,7 +243,7 @@ public class CeylonNavigatorLabelProvider extends
                 }
             }
             
-            JDTModule module = ((SourceModuleNode)element).getModule();
+            BaseIdeModule module = ((SourceModuleNode)element).getModule();
             if (module==null) {
                 return getDecoratedImage(CEYLON_MODULE, decorationAttributes, true);
             }

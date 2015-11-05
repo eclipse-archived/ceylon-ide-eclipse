@@ -98,7 +98,7 @@ import org.eclipse.ui {
 EclipseCompletionManager dummyInstance = EclipseCompletionManager(CeylonEditor());
 
 shared class EclipseCompletionManager(CeylonEditor editor) 
-        extends IdeCompletionManager<CeylonParseController,IProject,ICompletionProposal,IDocument>()
+        extends IdeCompletionManager<CeylonParseController,ICompletionProposal,IDocument>()
         satisfies IContentAssistProcessor & EclipseCompletionProcessor {
     
     variable ParameterContextValidator? validator = null;

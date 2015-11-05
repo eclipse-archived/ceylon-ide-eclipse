@@ -72,6 +72,7 @@ import org.eclipse.jdt.internal.ui.wizards.buildpaths.newsourcepage.RemoveFromBu
 
 import com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsBlock;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsPropertiesPage;
+import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 
@@ -337,8 +338,8 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
 			return;
 		}
 		
-		CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
-        CeylonProjectConfig<IProject> config = ceylonProject.getConfiguration();
+		BaseCeylonProject ceylonProject = ceylonModel().getProject(project);
+        CeylonProjectConfig config = ceylonProject.getConfiguration();
 
         if (! ceylonProject.getSynchronizedWithConfiguration()) {
 			MessageDialog.openError(shell, 

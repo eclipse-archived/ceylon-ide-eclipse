@@ -9,6 +9,8 @@ import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.styleJavaType;
+import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
 import static org.eclipse.jdt.core.IJavaElement.TYPE;
@@ -39,10 +41,11 @@ import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
-import com.redhat.ceylon.eclipse.core.model.IdeUnit;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.IdeUnit;
+import com.redhat.ceylon.ide.common.util.toCeylonString_;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 
@@ -75,13 +78,13 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
         } else if (element instanceof IJavaModelAware && 
                 element instanceof IdeUnit) {
             IdeUnit unit = (IdeUnit) element;
-            String sourceFileName = unit.getSourceFileName();
+            String sourceFileName = toJavaString(unit.getSourceFileName());
             if (sourceFileName != null  &&
                     sourceFileName.endsWith("java")) {
                 key = JAVA_FILE;
                 decorations = 0; 
             } else if (sourceFileName == null &&
-                    unit.getModule().isJava()) {
+                    unit.getCeylonModule().isJava()) {
                 key = JAVA_CLASS_FILE;
                 decorations = 0; 
             } else {
@@ -127,8 +130,8 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                     new StyledString(text.toString());
             if (appendSourceLocation()) {
                 String path = null;
-                if (element instanceof JDTModule) {
-                    JDTModule mod = (JDTModule) element;
+                if (element instanceof BaseIdeModule) {
+                    BaseIdeModule mod = (BaseIdeModule) element;
                     path = mod.getSourceArchivePath();
                 }
                 else if (element instanceof JarPackageFragmentRoot) {
@@ -151,7 +154,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             return styledString;
         } else if (element instanceof IdeUnit) {
             IdeUnit unit = (IdeUnit) element;
-            String displayedFileName = unit.getSourceFileName();
+            String displayedFileName = toJavaString(unit.getSourceFileName());
             if (displayedFileName == null) {
                 displayedFileName = unit.getFilename();
             }
@@ -344,9 +347,11 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                     }
                     if (unit instanceof JavaClassFile) {
                         JavaClassFile javaClassFile = (JavaClassFile) unit;
-                        JDTModule module = javaClassFile.getModule();
-                        if (module.isCeylonBinaryArchive()) {
-                            String sourceRelativePath = module.toSourceUnitRelativePath(javaClassFile.getRelativePath());
+                        BaseIdeModule module = javaClassFile.getCeylonModule();
+                        if (module.getIsCeylonBinaryArchive()) {
+                            String sourceRelativePath = 
+                                    toJavaString(module.toSourceUnitRelativePath(
+                                                    toCeylonString(javaClassFile.getRelativePath())));
                             if (sourceRelativePath != null) {
                                 String sourceArchivePath = module.getSourceArchivePath();
                                 if (sourceArchivePath != null) {

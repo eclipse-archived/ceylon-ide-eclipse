@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -39,14 +40,14 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
-import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
-import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
-import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.JavaUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.ide.common.model.CeylonUnit;
+import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
+import com.redhat.ceylon.ide.common.model.IResourceAware;
+import com.redhat.ceylon.ide.common.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
@@ -143,7 +144,8 @@ public class Navigation {
         }
         else {
             if (unit instanceof IResourceAware) {
-                IResourceAware ra = (IResourceAware) unit;
+                IResourceAware<IProject,IFolder,IFile> ra = 
+                        (IResourceAware<IProject,IFolder,IFile>) unit;
                 IFile file = ra.getResourceFile();
                 if (file != null) {
                     return gotoFile(file, startOffset, length);
@@ -158,7 +160,8 @@ public class Navigation {
     public static ITextEditor gotoLocation(Unit unit, 
             int startOffset, int length) {
         if (unit instanceof IResourceAware) {
-            IResourceAware ra = (IResourceAware) unit;
+            IResourceAware<IProject,IFolder,IFile> ra = 
+                    (IResourceAware<IProject,IFolder,IFile>) unit;
             IFile file = ra.getResourceFile();
             if (file != null) {
                 return gotoFile(file, startOffset, length);
@@ -231,7 +234,8 @@ public class Navigation {
 
     public static IPath getUnitPath(Unit unit) {
         if (unit instanceof IResourceAware) {
-            IResourceAware ra = (IResourceAware) unit;
+            IResourceAware<IProject,IFolder,IFile> ra = 
+                    (IResourceAware<IProject,IFolder,IFile>) unit;
             IFile fileResource = ra.getResourceFile();
             return fileResource!=null ? 
                     fileResource.getLocation() : 

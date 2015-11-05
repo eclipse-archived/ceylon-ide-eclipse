@@ -5,8 +5,8 @@ import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.jdt.core.IJavaElement;
 
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
-import com.redhat.ceylon.eclipse.core.model.IResourceAware;
-import com.redhat.ceylon.eclipse.core.model.IUnit;
+import com.redhat.ceylon.ide.common.model.IResourceAware;
+import com.redhat.ceylon.ide.common.model.IUnit;
 
 
 public class CeylonModelAdapterFactory implements IAdapterFactory {

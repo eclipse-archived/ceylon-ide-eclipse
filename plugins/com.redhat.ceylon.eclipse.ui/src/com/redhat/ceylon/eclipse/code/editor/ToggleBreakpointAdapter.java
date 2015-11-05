@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
@@ -53,8 +55,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
-import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.ide.common.model.IResourceAware;
 
 public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunToLineTarget {
 
@@ -262,7 +264,7 @@ public class ToggleBreakpointAdapter implements IToggleBreakpointsTarget, IRunTo
         if (ExternalSourceArchiveManager.isInSourceArchive(file)) {
             relativePath = ExternalSourceArchiveManager.getSourceArchiveEntryPath(file);
         } else {
-            IResourceAware unit = CeylonBuilder.getUnit(file);
+            IResourceAware<IProject,IFolder,IFile> unit = CeylonBuilder.getUnit(file);
             if (unit != null) {
                 relativePath = new Path(((Unit)unit).getRelativePath());
             }

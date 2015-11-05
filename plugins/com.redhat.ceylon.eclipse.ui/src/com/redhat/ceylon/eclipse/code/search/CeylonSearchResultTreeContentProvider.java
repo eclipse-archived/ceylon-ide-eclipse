@@ -33,10 +33,10 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
-import com.redhat.ceylon.eclipse.core.model.IResourceAware;
-import com.redhat.ceylon.eclipse.core.model.IdeUnit;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.IResourceAware;
+import com.redhat.ceylon.ide.common.model.IdeUnit;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -351,9 +351,9 @@ class CeylonSearchResultTreeContentProvider implements
             if (unit instanceof CeylonBinaryUnit || unit instanceof JavaClassFile) {
                 IdeUnit ideUnit = (IdeUnit) unit;
                 Module module = ideUnit.getPackage().getModule();
-                if (module instanceof JDTModule) {
-                    JDTModule jdtModule = (JDTModule) module;
-                    if (jdtModule.isCeylonBinaryArchive()) {
+                if (module instanceof BaseIdeModule) {
+                    BaseIdeModule jdtModule = (BaseIdeModule) module;
+                    if (jdtModule.getIsCeylonBinaryArchive()) {
                         return new WithSourceFolder(unit, null);
                     }
                 }
@@ -394,7 +394,7 @@ class CeylonSearchResultTreeContentProvider implements
                         (IPackageFragmentRoot) 
                         javaElement.getAncestor(
                                 PACKAGE_FRAGMENT_ROOT);
-                IResourceAware unit = getUnit(file);
+                IResourceAware<IProject, IFolder, IFile> unit = getUnit(file);
                 if (unit instanceof Unit) {
                     return new WithSourceFolder(unit, 
                             sourceFolder);

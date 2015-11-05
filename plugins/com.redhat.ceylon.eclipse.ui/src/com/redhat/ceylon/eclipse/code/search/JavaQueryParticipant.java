@@ -57,10 +57,10 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.ide.common.util.FindSubtypesVisitor;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.model.loader.ModelLoader;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -258,10 +258,10 @@ public class JavaQueryParticipant
                                             .getModules();
                                 for (Module mod: 
                                         modules.getListOfModules()) {
-                                    if (mod instanceof JDTModule) {
-                                        JDTModule module = 
-                                                (JDTModule) mod;
-                                        if (module.isCeylonArchive() && 
+                                    if (mod instanceof BaseIdeModule) {
+                                        BaseIdeModule module = 
+                                                (BaseIdeModule) mod;
+                                        if (module.getIsCeylonArchive() && 
                                                 module.getArtifact()!=null) {
                                             String archivePath = 
                                                     module.getArtifact()
@@ -271,7 +271,7 @@ public class JavaQueryParticipant
                                                         .contains(pack)) {
                                                 searchInUnits(requestor, 
                                                         limitTo, declaration, 
-                                                        module.getPhasedUnits());
+                                                        module.getPhasedUnitsAsJavaList());
                                                 if (monitor.isCanceled()) {
                                                     throw new OperationCanceledException();
                                                 }

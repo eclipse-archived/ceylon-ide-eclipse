@@ -7,7 +7,7 @@ import com.redhat.ceylon.ide.common.doc.DocGenerator;
 
 public class hoverJ2C {
 
-    public static DocGenerator<IDocument, IProject> getDocGenerator() {
+    public static DocGenerator<IDocument> getDocGenerator() {
         return eclipseDocGenerator_.get_();
     }
 }

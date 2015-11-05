@@ -40,6 +40,7 @@ import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
 import com.redhat.ceylon.eclipse.core.model.modelJ2C;
+import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 
@@ -88,11 +89,11 @@ public class CeylonModuleResolutionBlock {
         
         ceylon.language.String overrides = null;
         if (isCeylonNatureEnabled) {
-            CeylonProject<IProject> ceylonProject = modelJ2C.ceylonModel().getProject(project);
+            BaseCeylonProject ceylonProject = modelJ2C.ceylonModel().getProject(project);
             if (project != null) {
                 
             }
-            CeylonProjectConfig<IProject> config = 
+            CeylonProjectConfig config = 
                     ceylonProject.getConfiguration();
             overrides = config.getProjectOverrides();
             flatClasspath = config.getProjectFlatClasspath();

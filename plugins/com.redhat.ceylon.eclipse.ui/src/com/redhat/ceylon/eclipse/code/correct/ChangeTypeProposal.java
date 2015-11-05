@@ -12,7 +12,9 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -25,8 +27,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
-import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
+import com.redhat.ceylon.ide.common.model.ModifiableSourceFile;
+import com.redhat.ceylon.ide.common.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.ide.common.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -57,8 +59,8 @@ class ChangeTypeProposal extends CorrectionProposal {
     public void apply(IDocument document) {
         CeylonEditor editor = null;
         if (unit instanceof ModifiableSourceFile) {
-            ModifiableSourceFile cu =
-                    (ModifiableSourceFile) unit;
+            ModifiableSourceFile<IProject,IResource,IFolder,IFile> cu =
+                    (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) unit;
             IFile file = cu.getResourceFile();
             if (file!=null) {
                 editor = (CeylonEditor) gotoFile(file, 0, 0);
@@ -283,9 +285,9 @@ class ChangeTypeProposal extends CorrectionProposal {
         if (dec!=null) {
             Unit u = dec.getUnit();
             if (u instanceof ModifiableSourceFile) {
-                ModifiableSourceFile msf =
-                        (ModifiableSourceFile) u;
-                ModifiablePhasedUnit phasedUnit =
+                ModifiableSourceFile<IProject,IResource,IFolder,IFile> msf =
+                        (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) u;
+                ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> phasedUnit =
                         msf.getPhasedUnit();
                 Type t = null;
                 Node typeNode = null;

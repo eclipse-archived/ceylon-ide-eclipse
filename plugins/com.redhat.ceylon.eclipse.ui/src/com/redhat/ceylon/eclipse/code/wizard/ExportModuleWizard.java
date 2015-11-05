@@ -37,7 +37,7 @@ import com.redhat.ceylon.cmr.ceylon.CeylonUtils.CeylonRepoManagerBuilder;
 import com.redhat.ceylon.cmr.ceylon.ModuleCopycat;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 
 public class ExportModuleWizard extends Wizard implements IExportWizard {
 
@@ -102,7 +102,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
             return false;
         }
 
-        final CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+        final BaseCeylonProject ceylonProject = ceylonModel().getProject(project);
         if (ceylonProject == null) {
             MessageDialog.openError(getShell(), "Export Module Error", 
                     "The selected project is not a Ceylon project.");

@@ -53,7 +53,7 @@ import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
 public class DocumentationView extends ViewPart {
     
-    private DocGenerator<IDocument, IProject> gen
+    private DocGenerator<IDocument> gen
         = hoverJ2C.getDocGenerator();
 
     private static final Image GOTO_IMAGE = 

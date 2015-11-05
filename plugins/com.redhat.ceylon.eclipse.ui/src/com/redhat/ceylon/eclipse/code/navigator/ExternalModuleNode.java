@@ -12,7 +12,6 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 
 public class ExternalModuleNode implements ModuleNode {
@@ -30,9 +29,9 @@ public class ExternalModuleNode implements ModuleNode {
     }
 
     public CeylonArchiveFileStore getSourceArchive() {
-        JDTModule module = getModule();
+        BaseIdeModule module = getModule();
         if (module != null 
-                && module.isCeylonArchive()) {
+                && module.getIsCeylonArchive()) {
             String sourcePathString = module.getSourceArchivePath();
             if (sourcePathString != null) {
                 IFolder sourceArchive = getExternalSourceArchiveManager().getSourceArchive(Path.fromOSString(sourcePathString));

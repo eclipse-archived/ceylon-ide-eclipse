@@ -23,6 +23,7 @@ import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jdt.core.IJavaElement;
@@ -61,10 +62,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
 import com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
 import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 import com.redhat.ceylon.model.typechecker.model.Modules;
@@ -437,10 +438,10 @@ public class CeylonModulePropertiesPage extends PropertyPage
                 getModule()
                     .getPackage(item.getText());
         Unit unit = pkg.getUnit();
-        ProjectPhasedUnit phasedUnit;
+        ProjectPhasedUnit<IProject,IResource,IFolder,IFile> phasedUnit;
         if (unit instanceof ProjectSourceFile) {
-            ProjectSourceFile ceylonUnit = 
-                    (ProjectSourceFile) unit;
+            ProjectSourceFile<IProject,IResource,IFolder,IFile> ceylonUnit = 
+                    (ProjectSourceFile<IProject,IResource,IFolder,IFile>) unit;
             phasedUnit = ceylonUnit.getPhasedUnit();
             TextFileChange textFileChange = 
                     new TextFileChange(

@@ -15,6 +15,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getOpenDialogFont;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_MODULE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_PACKAGE;
@@ -39,7 +40,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -73,18 +76,20 @@ import com.redhat.ceylon.eclipse.code.hover.hoverJ2C;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
-import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
-import com.redhat.ceylon.eclipse.core.model.EditedSourceFile;
-import com.redhat.ceylon.eclipse.core.model.IResourceAware;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
+import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.DocBrowser;
 import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 import com.redhat.ceylon.ide.common.doc.DocGenerator;
+import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.CrossProjectSourceFile;
+import com.redhat.ceylon.ide.common.model.IResourceAware;
+import com.redhat.ceylon.ide.common.model.IdeModule;
+import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -793,8 +798,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 unit instanceof CrossProjectSourceFile ||
                 //TODO: is this correct:
                 unit instanceof JavaCompilationUnit) {
-                IResourceAware projectSourceFile = 
-                        (IResourceAware) unit;
+                IResourceAware<IProject,IFolder,IFile> projectSourceFile = 
+                        (IResourceAware<IProject,IFolder,IFile>) unit;
                 IProject project = 
                         projectSourceFile.getResourceProject();
                 if (project!=null) {
@@ -891,7 +896,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         usedNames.clear();
         monitor.beginTask("Filtering", estimateWork(monitor));
         Set<String> searchedArchives = new HashSet<String>();
-        
+    
         Collection<IProject> projectsToSearch = getProjects();
         
         for (IProject project: projectsToSearch) {
@@ -905,11 +910,11 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             Modules modules = 
                     typeChecker.getContext().getModules();
             for (Module m: modules.getListOfModules()) {
-                if (m instanceof JDTModule &&
+                if (m instanceof IdeModule &&
                         !filters.isFiltered(m)) {
-                    JDTModule module = (JDTModule) m;
+                    IdeModule<IProject,IResource,IFolder,IFile> module = (IdeModule<IProject,IResource,IFolder,IFile>) m;
 
-                    IProject originalProject = 
+                    BaseCeylonProject originalProject = 
                             module.getOriginalProject();
                     if (originalProject != null 
                             && projectsToSearch.contains(
@@ -938,7 +943,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     }
 
     private void fill(AbstractContentProvider contentProvider,
-            ItemsFilter itemsFilter, JDTModule module, 
+            ItemsFilter itemsFilter, BaseIdeModule module, 
             IProgressMonitor monitor) {
         ArrayList<Package> copiedPackages = 
                 new ArrayList<Package>(module.getPackages());
@@ -992,10 +997,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private void fillDeclarationAndMembers(
             AbstractContentProvider contentProvider, 
             ItemsFilter itemsFilter,
-            JDTModule module, Declaration dec) {
+            BaseIdeModule module, Declaration dec) {
         if (includeDeclaration(module, dec) &&
                 //watch out for dupes!
-                (!module.isProjectModule() || 
+                (!module.getIsProjectModule() || 
                  !dec.getUnit()
                      .getFilename()
                      .endsWith(".ceylon"))) {
@@ -1027,7 +1032,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             ItemsFilter itemsFilter, 
             List<? extends PhasedUnit> units) {
         for (PhasedUnit unit: units) {
-            JDTModule jdtModule = (JDTModule) 
+            BaseIdeModule jdtModule = (BaseIdeModule) 
                     unit.getPackage().getModule();
             for (Declaration dec: unit.getDeclarations()) {
                 if (includeDeclaration(jdtModule, dec)) {
@@ -1061,14 +1066,14 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         return filters.isFiltered(declaration);
     }
 
-    private boolean includeDeclaration(JDTModule module, 
+    private boolean includeDeclaration(BaseIdeModule module, 
             Declaration dec) {
         try {
             boolean visibleFromSourceModules;
             if (dec.isToplevel()) {
                 visibleFromSourceModules = 
                         dec.isShared() || 
-                        module.isProjectModule();
+                        module.getIsProjectModule();
             }
             else {
                 visibleFromSourceModules = 
@@ -1095,9 +1100,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                         .getContext()
                         .getModules();
             for (Module m: modules.getListOfModules()) {
-                if (m instanceof JDTModule &&
+                if (m instanceof BaseIdeModule &&
                         !filters.isFiltered(m)) {
-                    JDTModule module = (JDTModule) m;
+                    BaseIdeModule module = (BaseIdeModule) m;
                     String moduleName = 
                             module.getNameAsString();
                     if (module.isAvailable() &&
@@ -1115,7 +1120,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         return work;
     }
     
-    private String uniqueIdentifier(JDTModule module) {
+    private String uniqueIdentifier(BaseIdeModule module) {
         return module.getArtifact()==null ?
                 module.getNameAsString() + 
                     '#' + module.getVersion() :
@@ -1139,9 +1144,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private static Image getLocationImage(Declaration dwp) {
         Module module = 
                 dwp.getUnit().getPackage().getModule();
-        if (module instanceof JDTModule) {
-            JDTModule m = (JDTModule) module;
-            if (m.isProjectModule()) {
+        if (module instanceof BaseIdeModule) {
+            BaseIdeModule m = (BaseIdeModule) module;
+            if (m.getIsProjectModule()) {
 //                IProject project = dwp.getProject();
 //                if (project.isOpen()) {
                     return CeylonResources.FILE;
@@ -1167,20 +1172,20 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private static String getLocation(Declaration declaration) {
         Unit unit = declaration.getUnit();
         Module module = unit.getPackage().getModule();
-        if (module instanceof JDTModule) {
+        if (module instanceof BaseIdeModule) {
             if (unit instanceof EditedSourceFile ||
                 unit instanceof ProjectSourceFile ||
                 unit instanceof CrossProjectSourceFile ||
                 //TODO: is this correct:
                 unit instanceof JavaCompilationUnit) {
-                IResourceAware sourceFile = 
-                        (IResourceAware) unit;
+                IResourceAware<IProject,IFolder,IFile> sourceFile = 
+                        (IResourceAware<IProject,IFolder,IFile>) unit;
                 IFile ra = sourceFile.getResourceFile();
                 return ra==null ? null :
                     ra.getFullPath().toPortableString();
             }
             else {
-                JDTModule mod = (JDTModule) module;
+                BaseIdeModule mod = (BaseIdeModule) module;
                 String displayString = 
                         mod.getRepositoryDisplayString();
                 if (repositoryPath.equals(displayString)) {
@@ -1359,7 +1364,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         Referenceable target = null;
         CeylonEditor editor = null;
         IEditorPart currentEditor = getCurrentEditor();
-        DocGenerator<IDocument, IProject> gen = hoverJ2C.getDocGenerator();
+        DocGenerator<IDocument> gen = hoverJ2C.getDocGenerator();
         if (currentEditor instanceof CeylonEditor) {
             editor = (CeylonEditor) currentEditor;
             target = gen.getLinkedModel(

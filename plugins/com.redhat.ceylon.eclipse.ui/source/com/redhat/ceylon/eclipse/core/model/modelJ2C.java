@@ -23,7 +23,7 @@ import com.redhat.ceylon.ide.common.util.toJavaList_;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
 public class modelJ2C {
-    static public CeylonProjects<IProject> ceylonModel() {
+    static public CeylonProjects<IProject, IResource,IFolder,IFile> ceylonModel() {
         return ceylonModel_.get_();
     }
 
@@ -47,7 +47,7 @@ public class modelJ2C {
         toJavaList_.toJavaList(((JDTModule) module).getPackageFragmentRoots());
     }
 
-    static public IdeModuleManager<IProject> newModuleManager(Context context, CeylonProject<IProject> ceylonProject) {
+    static public IdeModuleManager<IProject,IResource,IFolder,IFile> newModuleManager(Context context, CeylonProject<IProject> ceylonProject) {
         return new JDTModuleManager(context, ceylonProject);
     }
 

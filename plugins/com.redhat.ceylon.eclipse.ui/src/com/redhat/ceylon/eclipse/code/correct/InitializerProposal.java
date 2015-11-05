@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
@@ -39,9 +42,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
+import com.redhat.ceylon.ide.common.model.ModifiableSourceFile;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -314,8 +317,8 @@ class InitializerProposal extends CorrectionProposal {
     public void apply(IDocument document) {
         CeylonEditor editor = null;
         if (unit instanceof ModifiableSourceFile) {
-            ModifiableSourceFile cu = 
-                    (ModifiableSourceFile) unit;
+            ModifiableSourceFile<IProject,IResource,IFolder,IFile> cu = 
+                    (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) unit;
             IFile file = cu.getResourceFile();
             if (file!=null) {
                 editor = (CeylonEditor) gotoFile(file, 0, 0);

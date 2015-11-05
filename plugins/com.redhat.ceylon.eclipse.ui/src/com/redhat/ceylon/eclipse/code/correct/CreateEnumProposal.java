@@ -9,7 +9,9 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -20,10 +22,10 @@ import org.eclipse.text.edits.InsertEdit;
 import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
-import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.ide.common.model.ModifiableSourceFile;
+import com.redhat.ceylon.ide.common.typechecker.ModifiablePhasedUnit;
 
 class CreateEnumProposal extends CorrectionProposal {
     
@@ -98,7 +100,7 @@ class CreateEnumProposal extends CorrectionProposal {
     private static void addCreateEnumProposal(
             Collection<ICompletionProposal> proposals,
             String def, String desc, Image image,
-            ModifiablePhasedUnit unit,
+            ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> unit,
             Tree.Statement statement) {
         IFile file = unit.getResourceFile();
         if (file != null) {
@@ -129,7 +131,7 @@ class CreateEnumProposal extends CorrectionProposal {
             Tree.CompilationUnit rootNode, Tree.TypeDeclaration cd) {
             TypecheckerUnit u = rootNode.getUnit();
         if (u instanceof ModifiableSourceFile) {
-            ModifiableSourceFile cu = (ModifiableSourceFile) u;
+            ModifiableSourceFile<IProject,IResource,IFolder,IFile> cu = (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) u;
                 addCreateEnumProposal(proposals, def, desc, image,
                         cu.getPhasedUnit(), cd);
         }

@@ -61,112 +61,111 @@ shared class JDTModule(
     shared actual JDTModuleManager moduleManager = jdtModuleManager;
     shared actual JDTModuleSourceMapper moduleSourceMapper = jdtModuleSourceMapper;
     MutableList<IPackageFragmentRoot> _packageFragmentRoots=thePackageFragmentRoots;
-    
-shared List<IPackageFragmentRoot> packageFragmentRoots {
-    return synchronize {
-        on = _packageFragmentRoots;
-        function do() {
-            if (_packageFragmentRoots.empty 
-                && !moduleManager.isExternalModuleLoadedFromSource(nameAsString)) {
-                value ceylonProject = moduleManager.ceylonProject;
-                if (exists ceylonProject) {
-                    value javaProject = JavaCore.create(ceylonProject.ideArtifact);
-                    if (this.equals(languageModule)) {
-                        variable IClasspathEntry? runtimeClasspathEntry = null;
-                        try {
-                            for (entry in javaProject.rawClasspath.array.coalesced) {
-                                if (entry.entryKind == IClasspathEntry.\iCPE_CONTAINER && entry.path.segment(0).equals(CeylonLanguageModuleContainer.\iCONTAINER_ID)) {
-                                    runtimeClasspathEntry = entry;
-                                    break;
+    shared List<IPackageFragmentRoot> packageFragmentRoots {
+        return synchronize {
+            on = _packageFragmentRoots;
+            function do() {
+                if (_packageFragmentRoots.empty 
+                    && !moduleManager.isExternalModuleLoadedFromSource(nameAsString)) {
+                    value ceylonProject = moduleManager.ceylonProject;
+                    if (exists ceylonProject) {
+                        value javaProject = JavaCore.create(ceylonProject.ideArtifact);
+                        if (this.equals(languageModule)) {
+                            variable IClasspathEntry? runtimeClasspathEntry = null;
+                            try {
+                                for (entry in javaProject.rawClasspath.array.coalesced) {
+                                    if (entry.entryKind == IClasspathEntry.\iCPE_CONTAINER && entry.path.segment(0).equals(CeylonLanguageModuleContainer.\iCONTAINER_ID)) {
+                                        runtimeClasspathEntry = entry;
+                                        break;
+                                    }
                                 }
-                            }
-                            if (exists existingEntry=runtimeClasspathEntry) {
-                                for (root in javaProject.packageFragmentRoots.array.coalesced) {
-                                    if (root.\iexists() && javaProject.isOnClasspath(root) && root.rawClasspathEntry == existingEntry) {
-                                        _packageFragmentRoots.add(root);
+                                if (exists existingEntry=runtimeClasspathEntry) {
+                                    for (root in javaProject.packageFragmentRoots.array.coalesced) {
+                                        if (root.\iexists() && javaProject.isOnClasspath(root) && root.rawClasspathEntry == existingEntry) {
+                                            _packageFragmentRoots.add(root);
+                                        }
                                     }
                                 }
                             }
-                        }
-                        catch (JavaModelException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    else {
-                        variable File? jarToSearch = null;
-                        try {
-                            jarToSearch = returnCarFile();
-                            if (! jarToSearch exists) {
-                                RepositoryManager? repoMgr = CeylonBuilder.getProjectRepositoryManager(ceylonProject.ideArtifact);
-                                if (exists repoMgr) {
-                                    jarToSearch = CeylonProjectModulesContainer.getModuleArtifact(repoMgr, this);
-                                }
+                            catch (JavaModelException e) {
+                                e.printStackTrace();
                             }
-                            if (exists foundJar = jarToSearch) {
-                                IPackageFragmentRoot root = javaProject.getPackageFragmentRoot(foundJar.string);
-                                if (is JarPackageFragmentRoot root) {
-                                    if (root.jar.name == foundJar.path) {
-                                        _packageFragmentRoots.add(root);
+                        }
+                        else {
+                            variable File? jarToSearch = null;
+                            try {
+                                jarToSearch = returnCarFile();
+                                if (! jarToSearch exists) {
+                                    RepositoryManager? repoMgr = CeylonBuilder.getProjectRepositoryManager(ceylonProject.ideArtifact);
+                                    if (exists repoMgr) {
+                                        jarToSearch = CeylonProjectModulesContainer.getModuleArtifact(repoMgr, this);
+                                    }
+                                }
+                                if (exists foundJar = jarToSearch) {
+                                    IPackageFragmentRoot root = javaProject.getPackageFragmentRoot(foundJar.string);
+                                    if (is JarPackageFragmentRoot root) {
+                                        if (root.jar.name == foundJar.path) {
+                                            _packageFragmentRoots.add(root);
+                                        }
                                     }
                                 }
                             }
-                        }
-                        catch (CoreException e) {
-                            if (exists foundJar=jarToSearch) {
-                                process.writeErrorLine("Exception trying to get Jar file '``foundJar``' :");
+                            catch (CoreException e) {
+                                if (exists foundJar=jarToSearch) {
+                                    process.writeErrorLine("Exception trying to get Jar file '``foundJar``' :");
+                                }
+                                e.printStackTrace();
                             }
-                            e.printStackTrace();
                         }
                     }
                 }
+                return _packageFragmentRoots;
             }
-            return _packageFragmentRoots;
+        };
+    }
+    
+    shared actual JDTModelLoader modelLoader {
+        assert (is JDTModelLoader jml=moduleManager.modelLoader);
+        return jml;
+    }
+    
+    shared actual Set<String> listPackages() {
+        MutableSet<String> packageList = HashSet<String>();
+        value name = nameAsString;
+        if (JDKUtils.isJDKModule(name)) {
+            packageList.addAll(toCeylonStringIterable(JDKUtils.getJDKPackagesByModule(name)));
         }
-    };
-}
-
-shared actual JDTModelLoader modelLoader {
-    return moduleManager.modelLoader;
-}
-
-shared actual Set<String> listPackages() {
-    MutableSet<String> packageList = HashSet<String>();
-    value name = nameAsString;
-    if (JDKUtils.isJDKModule(name)) {
-        packageList.addAll(toCeylonStringIterable(JDKUtils.getJDKPackagesByModule(name)));
-    }
-    else if (JDKUtils.isOracleJDKModule(name)) {
-        packageList.addAll(toCeylonStringIterable(JDKUtils.getOracleJDKPackagesByModule(name)));
-    }
-    else if (java || true) {  // TODO : check this - the `|| true` part is strange
-        for (fragmentRoot in packageFragmentRoots) {
-            if (!fragmentRoot.\iexists()) {
-                continue;
-            }
-            listPackagesInternal(packageList, fragmentRoot);
+        else if (JDKUtils.isOracleJDKModule(name)) {
+            packageList.addAll(toCeylonStringIterable(JDKUtils.getOracleJDKPackagesByModule(name)));
         }
-    }
-    return packageList;
-}
-
-void listPackagesInternal(MutableSet<String> packageList, IParent parent) {
-    try {
-        for (child in parent.children.array.coalesced) {
-            if (is PackageFragment child) {
-                packageList.add(child.elementName);
-                listPackagesInternal(packageList, child);
+        else if (java || true) {  // TODO : check this - the `|| true` part is strange
+            for (fragmentRoot in packageFragmentRoots) {
+                if (!fragmentRoot.\iexists()) {
+                    continue;
+                }
+                listPackagesInternal(packageList, fragmentRoot);
             }
         }
+        return packageList;
     }
-    catch (JavaModelException e) {
-        e.printStackTrace();
+    
+    void listPackagesInternal(MutableSet<String> packageList, IParent parent) {
+        try {
+            for (child in parent.children.array.coalesced) {
+                if (is PackageFragment child) {
+                    packageList.add(child.elementName);
+                    listPackagesInternal(packageList, child);
+                }
+            }
+        }
+        catch (JavaModelException e) {
+            e.printStackTrace();
+        }
     }
-}
-
-shared actual void refreshJavaModel() {
-    JavaModelManager.javaModelManager.resetClasspathListCache();
-    JavaModelManager.javaModelManager.javaModel.refreshExternalArchives(
-        javaObjectArray(Array<IPackageFragmentRoot?>(packageFragmentRoots)), null);
-}
-
+    
+    shared actual void refreshJavaModel() {
+        JavaModelManager.javaModelManager.resetClasspathListCache();
+        JavaModelManager.javaModelManager.javaModel.refreshExternalArchives(
+            javaObjectArray(Array<IPackageFragmentRoot?>(packageFragmentRoots)), null);
+    }
 }

@@ -138,7 +138,7 @@ public class CeylonRepoConfigBlock extends CeylonRepositoryConfigurator {
         lookupRepoTable.removeAll();
         
         if (isCeylonNatureEnabled) {
-            CeylonProjectConfig<IProject> config = 
+            CeylonProjectConfig config = 
                     ceylonModel().getProject(project).getConfiguration();
 
             loadFromConfiguration(config);

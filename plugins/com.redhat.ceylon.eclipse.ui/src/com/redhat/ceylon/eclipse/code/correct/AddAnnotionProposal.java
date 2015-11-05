@@ -12,7 +12,9 @@ import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -27,8 +29,8 @@ import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
-import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
+import com.redhat.ceylon.ide.common.model.ModifiableSourceFile;
+import com.redhat.ceylon.ide.common.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.ide.common.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
@@ -114,7 +116,7 @@ public class AddAnnotionProposal extends CorrectionProposal {
     private static void addAddAnnotationProposal(
             String annotation, String desc, Referenceable dec, 
             Collection<ICompletionProposal> proposals, 
-            ModifiablePhasedUnit unit, Node node,
+            ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> unit, Node node,
             Tree.StatementOrArgument decNode) {
         IFile file = unit.getResourceFile();
         if (file == null) {

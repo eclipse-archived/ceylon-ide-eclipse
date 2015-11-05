@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
@@ -27,6 +29,7 @@ import org.eclipse.search.ui.text.AbstractTextSearchResult;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 
+import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
@@ -36,10 +39,13 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.eclipse.util.SearchVisitor;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.IdeModule;
+import com.redhat.ceylon.ide.common.util.toJavaIterable_;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Modules;
 
@@ -197,16 +203,16 @@ class CeylonSearchQuery implements ISearchQuery {
                             typeChecker.getContext()
                                 .getModules();
                     for (Module m: modules.getListOfModules()) {
-                        if (m instanceof JDTModule &&
+                        if (m instanceof IdeModule &&
                                 !filters.isFiltered(m)) {
-                            JDTModule module = (JDTModule) m;
-                            if (module.isCeylonArchive() && 
-                                    !module.isProjectModule() && 
+                            IdeModule<IProject,IResource,IFolder,IFile> module = (IdeModule<IProject,IResource,IFolder,IFile>) m;
+                            if (module.getIsCeylonArchive() && 
+                                    !module.getIsProjectModule() && 
                                     module.getArtifact()!=null) { 
 
-                                IProject originalProject = module.getOriginalProject();
+                                CeylonProject<IProject,IResource,IFolder,IFile> originalProject = module.getOriginalProject();
                                 if (originalProject != null 
-                                        && projectsToSearch.contains(originalProject)) {
+                                        && projectsToSearch.contains(originalProject.getIdeArtifact())) {
                                     continue;
                                 }
                                 
@@ -218,7 +224,7 @@ class CeylonSearchQuery implements ISearchQuery {
                                 if (searchedArchives.add(archivePath) &&
                                     searchedArchives.add(sourceArchivePath)) {
                                     findInUnits(monitor, 
-                                            module.getPhasedUnits());
+                                            module.getPhasedUnitsAsJavaList());
                                     monitor.worked(1);
                                     if (monitor.isCanceled()) {
                                         throw new OperationCanceledException();
@@ -286,10 +292,10 @@ class CeylonSearchQuery implements ISearchQuery {
                                     .getContext()
                                     .getModules();
                     for (Module m: modules.getListOfModules()) {
-                        if (m instanceof JDTModule) {
-                            JDTModule module = (JDTModule) m;
-                            if (module.isCeylonArchive() && 
-                                    !module.isProjectModule() && 
+                        if (m instanceof BaseIdeModule) {
+                            BaseIdeModule module = (BaseIdeModule) m;
+                            if (module.getIsCeylonArchive() && 
+                                    !module.getIsProjectModule() && 
                                     module.getArtifact()!=null) { 
                                 String archivePath = 
                                         module.getArtifact()

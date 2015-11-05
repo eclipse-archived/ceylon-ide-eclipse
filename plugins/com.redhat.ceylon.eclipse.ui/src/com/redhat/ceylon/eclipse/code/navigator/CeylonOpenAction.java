@@ -50,7 +50,7 @@ import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 
 public class CeylonOpenAction extends OpenAction {
 
@@ -119,7 +119,7 @@ public class CeylonOpenAction extends OpenAction {
                                         String archivePath = archiveFileStore.getArchivePath().toOSString();
                                         searchTheClassToDisplay:
                                         for (IProject project : CeylonBuilder.getProjects()) {
-                                            for (JDTModule module : CeylonBuilder.getProjectExternalModules(project)) {
+                                            for (BaseIdeModule module : CeylonBuilder.getProjectExternalModules(project)) {
                                                 if (archivePath.equals(module.getSourceArchivePath())) {
                                                     String className = ModelUtil.formatPath(Arrays.asList(entryPath.removeFileExtension().segments()));
                                                     IType classToDisplay = JavaCore.create(project).findType(className);

@@ -19,7 +19,7 @@ import org.eclipse.jdt.internal.core.PackageFragmentRoot;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 
 public class SourceModuleNode extends PackageFragment implements ModuleNode {
     private IPackageFragmentRoot sourceFolder;
@@ -37,9 +37,9 @@ public class SourceModuleNode extends PackageFragment implements ModuleNode {
     }
 
     public static SourceModuleNode createSourceModuleNode(IPackageFragmentRoot sourceFolder, String moduleSignature) {
-        JDTModule module = moduleFromSignatureAndProject(moduleSignature, sourceFolder.getJavaProject().getProject());
+        BaseIdeModule module = moduleFromSignatureAndProject(moduleSignature, sourceFolder.getJavaProject().getProject());
         String[] packageName;
-        if (module.isDefaultModule()) {
+        if (module.getIsDefaultModule()) {
             packageName = new String[0];
         } else {
             packageName = module.getName().toArray(new String[0]);
@@ -68,15 +68,15 @@ public class SourceModuleNode extends PackageFragment implements ModuleNode {
     
 
     
-    private static JDTModule moduleFromSignatureAndProject(String signature, IProject project) {
+    private static BaseIdeModule moduleFromSignatureAndProject(String signature, IProject project) {
         Modules modules = CeylonBuilder.getProjectModules(project);
         if (modules != null) {
             for (Module module : modules.getListOfModules()) {
-                if (! (module instanceof JDTModule)) {
+                if (! (module instanceof BaseIdeModule)) {
                     continue;
                 }
-                JDTModule jdtModule = (JDTModule) module;
-                if (jdtModule.isProjectModule() || jdtModule.isDefaultModule()) {
+                BaseIdeModule jdtModule = (BaseIdeModule) module;
+                if (jdtModule.getIsProjectModule() || jdtModule.getIsDefaultModule()) {
                     if (jdtModule.getSignature().equals(signature)) {
                         return jdtModule;
                     }
@@ -123,7 +123,7 @@ public class SourceModuleNode extends PackageFragment implements ModuleNode {
     }
 
     @Override
-    public JDTModule getModule() {
+    public BaseIdeModule getModule() {
         return moduleFromSignatureAndProject(moduleSignature, getProject());
     }
 

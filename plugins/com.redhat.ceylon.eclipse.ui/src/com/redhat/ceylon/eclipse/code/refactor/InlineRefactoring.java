@@ -12,6 +12,10 @@ import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -32,8 +36,8 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.model.CeylonUnit;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -292,7 +296,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                 if (searchInFile(pu) && 
                         affectsUnit(pu.getUnit())) {
                     ProjectPhasedUnit ppu = 
-                            (ProjectPhasedUnit) pu;
+                            (ProjectPhasedUnit<IProject,IResource,IFolder,IFile>) pu;
                     TextFileChange tfc = 
                             newTextFileChange(ppu);
                     Tree.CompilationUnit cu = 
