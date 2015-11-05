@@ -17,6 +17,8 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_STACK_
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.internal.debug.ui.console.JavaStackTraceHyperlink;
@@ -133,44 +135,58 @@ public class StackTracePanel extends Composite {
                 compareValuesAction.run();
             } else {
                 String text = selectedLines[0].getText();
-
-                int i = text.indexOf("(");
-                int j = text.indexOf(":");
-                int k = text.indexOf("at ");
-
-                if (i == -1 || j == -1 || k == -1) {
-                    return;
-                }
-
-                String file = text.substring(i + 1, j);
-                String line = text.substring(j + 1, text.length() - 1);
-                String pack = text.substring(k + 3, i);
-
-                if (file.endsWith(".ceylon")) {
-                    gotoFileAndLine(file, line, pack);
-                } else if (file.endsWith(".java")) {
-                    new InternalJavaStackTraceHyperlink(text.substring(k + 3)).linkActivated();
-                }
+                gotoStackTraceLine(text);
             }
         }
     }
+
+    public static void gotoStackTraceLine(String stackTraceLine) {
+        int i = stackTraceLine.indexOf("(");
+        int j = stackTraceLine.indexOf(":");
+        int k = stackTraceLine.indexOf("at ");
+
+        if (i == -1 || j == -1 || k == -1) {
+            return;
+        }
+
+        String file = stackTraceLine.substring(i + 1, j);
+        String line = stackTraceLine.substring(j + 1, stackTraceLine.length() - 1);
+        String pack = stackTraceLine.substring(k + 3, i);
+
+        if (file.endsWith(".ceylon")) {
+            gotoFileAndLine(file, line, pack);
+        } else if (file.endsWith(".java")) {
+            new InternalJavaStackTraceHyperlink(stackTraceLine.substring(k + 3)).linkActivated();
+        }
+    }
     
-    private void createStackTraceLines(String stackTrace) {
+    public static List<String> parseStackTraceLine(String stackTrace) {
+        List<String> lines = new ArrayList<String>();
+
         StringReader stringReader = new StringReader(stackTrace);
         BufferedReader bufferedReader = new BufferedReader(stringReader);
         try {
             String line;
-            boolean isFirstLine = true;
             while ((line = bufferedReader.readLine()) != null) {
-                if( !isStackTraceLineFiltred(isFirstLine, line) ) {
-                    createStackTraceLine(isFirstLine, line);
-                }
-                if( isFirstLine ) {
-                    isFirstLine = false;
-                }
+                lines.add(line);
             }
         } catch (IOException e) {
             CeylonTestPlugin.logError("", e);
+        }
+
+        return lines;
+    }
+    
+    private void createStackTraceLines(String stackTrace) {
+        List<String> lines = parseStackTraceLine(stackTrace);
+        boolean isFirstLine = true;
+        for (String line : lines) {
+            if (!isStackTraceLineFiltred(isFirstLine, line)) {
+                createStackTraceLine(isFirstLine, line);
+            }
+            if (isFirstLine) {
+                isFirstLine = false;
+            }
         }
     }
 
