@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEditor;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.TOGGLE_SHOW_SELECTED_ELEMENT_ONLY;
@@ -39,11 +40,11 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.JavaUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.CeylonUnit;
 import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
 import com.redhat.ceylon.ide.common.model.IResourceAware;
@@ -74,7 +75,7 @@ public class Navigation {
                     //special case for Java source in ceylon.language!
                     CeylonBinaryUnit binaryUnit = 
                             (CeylonBinaryUnit) ceylonUnit;
-                    String path = binaryUnit.getSourceRelativePath();
+                    String path = toJavaString(binaryUnit.getSourceRelativePath());
                     if (JavaCore.isJavaLikeFileName(path) && 
                             model instanceof Declaration) {
                         return gotoJavaNode((Declaration) model);

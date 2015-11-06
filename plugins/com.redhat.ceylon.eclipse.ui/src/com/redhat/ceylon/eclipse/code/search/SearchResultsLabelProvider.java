@@ -39,11 +39,11 @@ import org.eclipse.swt.graphics.Image;
 
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.IdeUnit;
 import com.redhat.ceylon.ide.common.util.toCeylonString_;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -132,7 +132,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                 String path = null;
                 if (element instanceof BaseIdeModule) {
                     BaseIdeModule mod = (BaseIdeModule) element;
-                    path = mod.getSourceArchivePath();
+                    path = toJavaString(mod.getSourceArchivePath());
                 }
                 else if (element instanceof JarPackageFragmentRoot) {
                     try {
@@ -339,7 +339,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                     
                     IJavaModelAware unit = CeylonBuilder.getUnit(type);
                     if (unit instanceof CeylonBinaryUnit) {
-                        String path = ((CeylonBinaryUnit)unit).getSourceFullPath();
+                        String path = toJavaString(((CeylonBinaryUnit)unit).getSourceFullPath());
                         if (path != null) {
                             styledString.append(" \u2014 " + path, 
                                 COUNTER_STYLER);
@@ -353,7 +353,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                                     toJavaString(module.toSourceUnitRelativePath(
                                                     toCeylonString(javaClassFile.getRelativePath())));
                             if (sourceRelativePath != null) {
-                                String sourceArchivePath = module.getSourceArchivePath();
+                                String sourceArchivePath = toJavaString(module.getSourceArchivePath());
                                 if (sourceArchivePath != null) {
                                     String path = sourceArchivePath + "!/" + sourceRelativePath;
                                     return styledString.append(" \u2014 " + path, 

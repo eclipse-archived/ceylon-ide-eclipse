@@ -47,11 +47,11 @@ public class modelJ2C {
         toJavaList_.toJavaList(((JDTModule) module).getPackageFragmentRoots());
     }
 
-    static public IdeModuleManager<IProject,IResource,IFolder,IFile> newModuleManager(Context context, CeylonProject<IProject> ceylonProject) {
+    static public IdeModuleManager<IProject,IResource,IFolder,IFile> newModuleManager(Context context, CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject) {
         return new JDTModuleManager(context, ceylonProject);
     }
 
-    static public IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> newModuleSourceMapper(Context context, IdeModuleManager<IProject> moduleManager) {
+    static public IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> newModuleSourceMapper(Context context, IdeModuleManager<IProject,IResource,IFolder,IFile> moduleManager) {
         return new JDTModuleSourceMapper(context, moduleManager);
     }
 

@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModu
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRootFolderType;
 import static com.redhat.ceylon.eclipse.core.vfs.vfsJ2C.instanceOfIFileVirtualFile;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static org.eclipse.jdt.core.JavaCore.isJavaLikeFileName;
 import static org.eclipse.jface.preference.PreferenceConverter.getColor;
 import static org.eclipse.jface.preference.PreferenceConverter.getDefaultColor;
@@ -33,6 +34,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClassFile;
+import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.internal.core.JarEntryFile;
@@ -100,10 +102,11 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
-import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
+import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.IResourceAware;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.util.toJavaString_;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class EditorUtil {
@@ -382,9 +385,9 @@ public class EditorUtil {
             if (classFile != null) {
                 IJavaModelAware unit = CeylonBuilder.getUnit(classFile);
                 if (unit instanceof CeylonBinaryUnit) {                
-                    CeylonBinaryUnit ceylonUnit = (CeylonBinaryUnit) unit;
-                    if (! isJavaLikeFileName(ceylonUnit.getSourceRelativePath())) {
-                        return getEditorInput(Path.fromOSString(ceylonUnit.getSourceFullPath()));
+                    CeylonBinaryUnit<IProject, IClassFile, ITypeRoot, IJavaElement> ceylonUnit = (CeylonBinaryUnit<IProject, IClassFile, ITypeRoot, IJavaElement>) unit;
+                    if (! isJavaLikeFileName(toJavaString(ceylonUnit.getSourceRelativePath()))) {
+                        return getEditorInput(Path.fromOSString(toJavaString(ceylonUnit.getSourceFullPath())));
                     }
                 }
             }

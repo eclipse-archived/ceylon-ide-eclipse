@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.editor.Navigation.getJavaElement;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.openInEditor;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEditor;
 
@@ -14,6 +15,8 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IClassFile;
+import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
@@ -25,17 +28,18 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 
+import com.redhat.ceylon.common.Backend;
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
+import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
+import com.redhat.ceylon.ide.common.model.EditedSourceFile;
+import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
+import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.common.Backend;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
-import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
-import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
-import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
 
 public class JavaHyperlinkDetector implements IHyperlinkDetector {
 
@@ -169,9 +173,9 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                         jp = havaModelAware.getTypeRoot().getJavaProject();
                     }
                     if (declarationUnit instanceof CeylonBinaryUnit) {
-                        CeylonBinaryUnit ceylonBinaryUnit = 
-                                (CeylonBinaryUnit) declarationUnit;
-                        String path = ceylonBinaryUnit.getSourceRelativePath();
+                        CeylonBinaryUnit<IProject,IClassFile,ITypeRoot,IJavaElement> ceylonBinaryUnit = 
+                                (CeylonBinaryUnit<IProject,IClassFile,ITypeRoot,IJavaElement>) declarationUnit;
+                        String path = toJavaString(ceylonBinaryUnit.getSourceRelativePath());
                         if (! JavaCore.isJavaLikeFileName(path)) {
                             return null; 
                         }

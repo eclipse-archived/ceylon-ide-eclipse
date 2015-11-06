@@ -23,6 +23,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModu
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.parseCeylonModel;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.ceylonSourceArchiveToJavaSourceArchive;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static java.util.Arrays.asList;
 import static java.util.Collections.synchronizedSet;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -460,7 +461,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 
     public static File getSourceArtifact(RepositoryManager provider,
             BaseIdeModule module) {
-        String sourceArchivePath = module.getSourceArchivePath(); 
+        String sourceArchivePath = toJavaString(module.getSourceArchivePath()); 
         if (sourceArchivePath != null) {
             File sourceArchive = new File(sourceArchivePath);
             if (sourceArchive.exists()) {

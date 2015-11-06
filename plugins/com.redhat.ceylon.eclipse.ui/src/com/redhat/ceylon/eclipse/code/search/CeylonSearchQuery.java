@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.compile;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -29,7 +30,6 @@ import org.eclipse.search.ui.text.AbstractTextSearchResult;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 
-import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
@@ -45,7 +45,6 @@ import com.redhat.ceylon.eclipse.util.SearchVisitor;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.IdeModule;
-import com.redhat.ceylon.ide.common.util.toJavaIterable_;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Modules;
 
@@ -220,7 +219,7 @@ class CeylonSearchQuery implements ISearchQuery {
                                         module.getArtifact()
                                             .getAbsolutePath();
                                 String sourceArchivePath = 
-                                        module.getSourceArchivePath();
+                                        toJavaString(module.getSourceArchivePath());
                                 if (searchedArchives.add(archivePath) &&
                                     searchedArchives.add(sourceArchivePath)) {
                                     findInUnits(monitor, 
@@ -301,7 +300,7 @@ class CeylonSearchQuery implements ISearchQuery {
                                         module.getArtifact()
                                             .getAbsolutePath();
                                 String sourceArchivePath = 
-                                        module.getSourceArchivePath();
+                                        toJavaString(module.getSourceArchivePath());
                                 if (searchedArchives.add(archivePath) &&
                                     searchedArchives.add(sourceArchivePath)) {
                                     work++;

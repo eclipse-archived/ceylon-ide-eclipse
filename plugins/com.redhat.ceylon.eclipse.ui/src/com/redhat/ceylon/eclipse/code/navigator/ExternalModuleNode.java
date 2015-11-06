@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,7 @@ public class ExternalModuleNode implements ModuleNode {
         BaseIdeModule module = getModule();
         if (module != null 
                 && module.getIsCeylonArchive()) {
-            String sourcePathString = module.getSourceArchivePath();
+            String sourcePathString = toJavaString(module.getSourceArchivePath());
             if (sourcePathString != null) {
                 IFolder sourceArchive = getExternalSourceArchiveManager().getSourceArchive(Path.fromOSString(sourcePathString));
                 if (sourceArchive != null && sourceArchive.exists()) {

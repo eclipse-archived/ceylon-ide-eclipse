@@ -5,6 +5,8 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeDeclaration;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeHeader;
 
@@ -18,7 +20,7 @@ import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
+import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
 import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -152,9 +154,9 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                         phasedUnit.getUnit();
                 if (sourceFile != null) {
                     String sourceRelativePath = 
-                            binaryUnit.getModule()
+                            toJavaString(binaryUnit.getCeylonModule()
                                 .toSourceUnitRelativePath(
-                                        unit.getRelativePath());
+                                        toCeylonString(unit.getRelativePath())));
                     if (sourceRelativePath != null && 
                             sourceRelativePath.endsWith(".ceylon")) {
                         for (Declaration sourceDecl: 

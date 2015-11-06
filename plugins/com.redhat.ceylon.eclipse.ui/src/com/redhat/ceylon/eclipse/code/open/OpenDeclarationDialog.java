@@ -15,13 +15,13 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getOpenDialogFont;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_MODULE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_PACKAGE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static com.redhat.ceylon.model.cmr.JDKUtils.isJDKModule;
 import static com.redhat.ceylon.model.cmr.JDKUtils.isOracleJDKModule;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
@@ -77,7 +77,6 @@ import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
 import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
-import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.DocBrowser;
@@ -87,6 +86,7 @@ import com.redhat.ceylon.ide.common.doc.DocGenerator;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CrossProjectSourceFile;
+import com.redhat.ceylon.ide.common.model.EditedSourceFile;
 import com.redhat.ceylon.ide.common.model.IResourceAware;
 import com.redhat.ceylon.ide.common.model.IdeModule;
 import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
@@ -1124,7 +1124,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         return module.getArtifact()==null ?
                 module.getNameAsString() + 
                     '#' + module.getVersion() :
-                new File(module.getSourceArchivePath())
+                new File(toJavaString(module.getSourceArchivePath()))
                     .getAbsolutePath();
     }
 

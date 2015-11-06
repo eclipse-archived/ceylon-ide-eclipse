@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.core.external;
 
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -75,7 +77,7 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
         Set<IPath> folders = null;
         for (BaseIdeModule  module : modules) {
             if (module.getIsCeylonArchive()) {
-                IPath archivePath = Path.fromOSString(module.getSourceArchivePath());
+                IPath archivePath = Path.fromOSString(toJavaString(module.getSourceArchivePath()));
                 if (isExternalSourceArchivePath(archivePath)) {
                     if (folders == null)
                         folders = new HashSet<>();
@@ -233,7 +235,7 @@ public class ExternalSourceArchiveManager implements IResourceChangeListener {
         Set<IPath> projectSourcePaths = null;
         for (IProject project : CeylonBuilder.getProjects()) {
             for (BaseIdeModule module : CeylonBuilder.getProjectExternalModules(project)) {
-                String sourceArchivePathString = module.getSourceArchivePath();
+                String sourceArchivePathString = toJavaString(module.getSourceArchivePath());
                 if (sourceArchivePathString!= null) {
                     if (projectSourcePaths == null) {
                         projectSourcePaths = new HashSet<>();

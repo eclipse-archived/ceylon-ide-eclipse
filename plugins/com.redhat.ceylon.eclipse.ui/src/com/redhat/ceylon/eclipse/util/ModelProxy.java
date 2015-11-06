@@ -4,27 +4,31 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoade
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 
 import java.lang.ref.SoftReference;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.jdt.core.IClassFile;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.core.model.IProjectAware;
+import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
+import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
+import com.redhat.ceylon.ide.common.model.IResourceAware;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
-import com.redhat.ceylon.eclipse.core.model.IProjectAware;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
-import com.redhat.ceylon.ide.common.model.IResourceAware;
 
 public class ModelProxy {
     
@@ -136,7 +140,7 @@ public class ModelProxy {
                     // proxy (in the serialized ModelProxy objects 
                     // of the history for example)
                     String ceylonSourceFileName = 
-                            ((CeylonBinaryUnit) unit).getCeylonFileName();
+                            toJavaString(((CeylonBinaryUnit) unit).getCeylonFileName());
                     if (ceylonSourceFileName != null) {
                         if (ceylonSourceFileName.equals(unitName)) {
                             foundTheUnit = true;

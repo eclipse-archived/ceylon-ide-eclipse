@@ -31,7 +31,10 @@ import org.antlr.runtime {
     CommonToken
 }
 import org.eclipse.core.resources {
-    IProject
+    IProject,
+    IResource,
+    IFolder,
+    IFile
 }
 import org.eclipse.jface.text {
     IDocument
@@ -51,6 +54,16 @@ import org.eclipse.ui.texteditor {
 }
 import com.redhat.ceylon.eclipse.core.vfs {
     IFileVirtualFile
+}
+import com.redhat.ceylon.ide.common.model {
+    CrossProjectSourceFile,
+    CrossProjectBinaryUnit,
+    IResourceAware,
+    EditedSourceFile,
+    ProjectSourceFile
+}
+import com.redhat.ceylon.ide.common.typechecker {
+    ProjectPhasedUnit
 }
 
 abstract class EclipseAbstractRefactoring<RefactoringData>(IEditorPart editorPart)
@@ -88,10 +101,11 @@ abstract class EclipseAbstractRefactoring<RefactoringData>(IEditorPart editorPar
 
     shared Boolean inSameProject(Declaration declaration) {
         value unit = declaration.unit;
-        if (unit is CrossProjectSourceFile || unit is CrossProjectBinaryUnit) {
+        if (unit is CrossProjectSourceFile<IProject,IResource,IFolder,IFile> || 
+            unit is CrossProjectBinaryUnit<IProject,IResource,IFolder,IFile, out Anything, out Anything, out Anything>) {
             return false;
         }
-        if (is IResourceAware unit) {
+        if (is IResourceAware<out Anything, out Anything, out Anything> unit) {
             if (exists p = unit.resourceProject,
                 exists editorProject=editorData?.project) {
                 return p.equals(editorProject);
@@ -101,8 +115,8 @@ abstract class EclipseAbstractRefactoring<RefactoringData>(IEditorPart editorPar
     }
 
     shared Boolean isEditable()
-            => rootNode?.unit is EditedSourceFile ||
-            rootNode?.unit is ProjectSourceFile;
+            => rootNode?.unit is EditedSourceFile<IProject,IResource,IFolder,IFile> ||
+            rootNode?.unit is ProjectSourceFile<IProject,IResource,IFolder,IFile>;
 
     shared actual String toString(Node term) {
         assert(editorData exists);
@@ -117,7 +131,7 @@ abstract class EclipseAbstractRefactoring<RefactoringData>(IEditorPart editorPar
     }
 
     shared TextFileChange newTextFileChange(PhasedUnit pu) {
-        assert(is ProjectPhasedUnit pu);
+        assert(is ProjectPhasedUnit<IProject,IResource,IFolder,IFile> pu);
         TextFileChange tfc = TextFileChange(name, pu.resourceFile);
         tfc.textType = "ceylon";
         return tfc;

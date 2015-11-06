@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.createSearchPattern;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectsToSearch;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.runSearch;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static java.util.Arrays.asList;
 
 import java.util.HashSet;
@@ -43,10 +44,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.IdeModule;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -151,7 +152,7 @@ abstract class FindSearchQuery implements ISearchQuery {
                                     module.getArtifact()
                                         .getAbsolutePath();
                             String sourceArchivePath = 
-                                    module.getSourceArchivePath();
+                                    toJavaString(module.getSourceArchivePath());
                             if (searchedArchives.add(archivePath) &&
                                 searchedArchives.add(sourceArchivePath) && 
                                     m.getAllReachablePackages()
@@ -212,7 +213,7 @@ abstract class FindSearchQuery implements ISearchQuery {
                                     module.getArtifact()
                                         .getAbsolutePath();
                             String sourceArchivePath = 
-                                    module.getSourceArchivePath();
+                                    toJavaString(module.getSourceArchivePath());
                             if (searchedArchives.add(archivePath) &&
                                 searchedArchives.add(sourceArchivePath) && 
                                     m.getAllReachablePackages()

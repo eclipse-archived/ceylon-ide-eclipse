@@ -10,6 +10,8 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_E
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.UIDENTIFIER;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
+import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -24,16 +26,14 @@ import org.eclipse.jface.text.Region;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
-import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.CeylonUnit;
 import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
 import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.ide.common.util.NodePrinter;
 import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
 import com.redhat.ceylon.ide.common.util.nodes_;
-import com.redhat.ceylon.ide.common.util.toCeylonString_;
-import com.redhat.ceylon.ide.common.util.toJavaString_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
@@ -266,9 +266,9 @@ public class Nodes {
                     boolean foundTheCeylonDeclaration = false;
                     if (unit instanceof CeylonBinaryUnit) {
                         BaseIdeModule module = (BaseIdeModule) unit.getPackage().getModule();
-                        String sourceRelativePath = toJavaString_.toJavaString(module.toSourceUnitRelativePath(toCeylonString_.toCeylonString(unit.getRelativePath())));
+                        String sourceRelativePath = toJavaString(module.toSourceUnitRelativePath(toCeylonString(unit.getRelativePath())));
                         if (sourceRelativePath != null) {
-                            String ceylonSourceRelativePath = toJavaString_.toJavaString(module.getCeylonDeclarationFile(toCeylonString_.toCeylonString(sourceRelativePath)));
+                            String ceylonSourceRelativePath = toJavaString(module.getCeylonDeclarationFile(toCeylonString(sourceRelativePath)));
                             if (ceylonSourceRelativePath != null) {
                                 ExternalPhasedUnit externalPhasedUnit = module.getPhasedUnitFromRelativePath(ceylonSourceRelativePath);
                                 if (externalPhasedUnit != null) {

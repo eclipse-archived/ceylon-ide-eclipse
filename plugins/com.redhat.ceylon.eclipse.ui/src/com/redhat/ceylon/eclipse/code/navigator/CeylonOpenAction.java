@@ -24,6 +24,7 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.ISourceReference;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
 import org.eclipse.jdt.internal.corext.util.Messages;
@@ -47,10 +48,10 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
-import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
+import com.redhat.ceylon.ide.common.model.IdeModelLoader;
 
 public class CeylonOpenAction extends OpenAction {
 
@@ -142,7 +143,7 @@ public class CeylonOpenAction extends OpenAction {
                         if (part instanceof CeylonEditor) {
                             IJavaModelAware unit = CeylonBuilder.getUnit((IJavaElement)elementToOpen);
                             if (unit instanceof CeylonBinaryUnit) {
-                                CeylonBinaryUnit ceylonUnit = (CeylonBinaryUnit) unit;
+                                CeylonBinaryUnit<IProject,IClassFile,ITypeRoot,IJavaElement> ceylonUnit = (CeylonBinaryUnit<IProject,IClassFile,ITypeRoot,IJavaElement>) unit;
                                 CeylonEditor ceylonEditor = (CeylonEditor) part;
                                 IMember member = null;
                                 if (elementToOpen instanceof IClassFile) {
@@ -153,7 +154,7 @@ public class CeylonOpenAction extends OpenAction {
                                 }
                                 if (member != null) {
                                     Declaration declaration = toCeylonDeclaration(member, ceylonUnit, 
-                                            ceylonUnit.getModule().getModuleManager().getModelLoader());
+                                            ceylonUnit.getCeylonModule().getModuleManager().getModelLoader());
                                     Node node = getReferencedNodeInUnit(declaration, ceylonUnit.getCompilationUnit());
                                     if (node != null) {
                                         Node identifyingNode = getIdentifyingNode(node);
@@ -181,14 +182,14 @@ public class CeylonOpenAction extends OpenAction {
         }
     }
 
-    private Declaration toCeylonDeclaration(IMember member, CeylonBinaryUnit ceylonUnit, JDTModelLoader modelLoader) {        
+    private Declaration toCeylonDeclaration(IMember member, CeylonBinaryUnit ceylonUnit, IdeModelLoader modelLoader) {
         if (member instanceof IType) {
-            return modelLoader.convertToDeclaration(ceylonUnit.getModule(), ((IType) member).getFullyQualifiedName(), DeclarationType.VALUE);
+            return modelLoader.convertToDeclaration(ceylonUnit.getCeylonModule(), ((IType) member).getFullyQualifiedName(), DeclarationType.VALUE);
         }
         
         if (member instanceof IMethod || member instanceof IField) {
             IType parent = member.getDeclaringType();
-            Declaration parentDeclaration = modelLoader.convertToDeclaration(ceylonUnit.getModule(), parent.getFullyQualifiedName(), DeclarationType.VALUE);
+            Declaration parentDeclaration = modelLoader.convertToDeclaration(ceylonUnit.getCeylonModule(), parent.getFullyQualifiedName(), DeclarationType.VALUE);
             if (parentDeclaration != null) {
                 return parentDeclaration.getMemberOrParameter(ceylonUnit, member.getElementName(), null, false);
             }

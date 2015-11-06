@@ -20,8 +20,11 @@ import com.redhat.ceylon.ide.common.util {
     Status
 }
 
-shared class JDTModuleSourceMapper(Context context, CeylonProject<IProject>? ceylonProject, IdeModuleManager<IProject> moduleManager)
-        extends IdeModuleSourceMapper<IProject, IResource, IFolder,IFile>(context, ceylonProject, moduleManager) {
+shared class JDTModuleSourceMapper(
+            Context context, 
+            CeylonProject<IProject,IResource,IFolder,IFile>? ceylonProject, 
+            IdeModuleManager<IProject,IResource,IFolder,IFile> moduleManager)
+        extends IdeModuleSourceMapper<IProject, IResource, IFolder,IFile>(context, moduleManager) {
     
     shared actual String defaultCharset => ResourcesPlugin.workspace.root.defaultCharset;
     

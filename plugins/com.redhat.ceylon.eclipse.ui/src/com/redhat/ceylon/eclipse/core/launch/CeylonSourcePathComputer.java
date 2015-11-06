@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -64,7 +66,7 @@ public class CeylonSourcePathComputer implements ISourcePathComputerDelegate {
                                 for (BaseIdeModule m : modules) {
                                     if (m.getIsCeylonBinaryArchive() 
                                             && archiveFile.equals(m.getArtifact())) {
-                                        String sourceArchivePath = m.getSourceArchivePath();
+                                        String sourceArchivePath = toJavaString(m.getSourceArchivePath());
                                         if (sourceArchivePath != null) {
                                             containers.add(new ExternalArchiveSourceContainer(sourceArchivePath, true));
                                             break;

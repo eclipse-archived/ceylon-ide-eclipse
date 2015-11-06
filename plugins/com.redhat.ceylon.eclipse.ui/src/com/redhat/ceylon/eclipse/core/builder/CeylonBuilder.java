@@ -121,6 +121,7 @@ import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
 import com.redhat.ceylon.compiler.java.loader.mirror.JavacClass;
+import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.java.tools.CeylonLog;
 import com.redhat.ceylon.compiler.java.tools.CeyloncFileManager;
 import com.redhat.ceylon.compiler.java.tools.CeyloncTaskImpl;
@@ -1154,7 +1155,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             final IJavaProject javaProject,
             List<IClasspathContainer> cpContainers) throws CoreException,
             JavaModelException {
-        CeylonProject<IProject> ceylonProject = ceylonModel().getProject(javaProject.getProject());
+        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = ceylonModel().getProject(javaProject.getProject());
         boolean languageModuleContainerFound = false;
         boolean applicationModulesContainerFound = false;
         
@@ -1729,7 +1730,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             @SuppressWarnings("unchecked")
             @Override
             protected ProjectPhasedUnit createPhasedUnit(CompilationUnit cu, Package pkg, CommonTokenStream tokenStream) {
-                return new ProjectPhasedUnit(file, srcDir, cu, pkg, 
+                return new ProjectPhasedUnit<IProject,IResource,IFolder,IFile>(
+                        TypeDescriptor.klass(IProject.class),
+                        TypeDescriptor.klass(IResource.class),
+                        TypeDescriptor.klass(IFolder.class),
+                        TypeDescriptor.klass(IFile.class),
+                        file, srcDir, cu, pkg, 
                         moduleManager, moduleSourceMapper, typeChecker, tokenStream.getTokens());
             }
         }.parseFileToPhasedUnit(moduleManager, typeChecker, file, srcDir, pkg);
@@ -2164,8 +2170,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             TypeChecker typeChecker = buildTypeChecker(project, javaProject);
                             PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
 
-                            IdeModuleManager<IProject> moduleManager = 
-                                    (IdeModuleManager<IProject>) phasedUnits.getModuleManager();
+                            IdeModuleManager<IProject,IResource,IFolder,IFile> moduleManager = 
+                                    (IdeModuleManager<IProject,IResource,IFolder,IFile>) phasedUnits.getModuleManager();
                             IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper = 
                                     (IdeModuleSourceMapper<IProject,IResource,IFolder,IFile>) phasedUnits.getModuleSourceMapper();
                             moduleManager.setTypeChecker(typeChecker);
