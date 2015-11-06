@@ -71,6 +71,9 @@
     <module module="org.eclipse.core.resources">
         <share module="org.eclipse.core.runtime"/>
     </module>
+    <module module="org.eclipse.jdt.core">
+        <add module="org.eclipse.core.contenttype" version="${org.eclipse.ui.workbench.texteditor.version.override}"/>
+    </module>
 
     <module module="org.eclipse.swt">
         <add module="org.eclipse.swt.gtk.linux.x86_64" version="${org.eclipse.swt.gtk.linux.x86_64.version.override}" shared="true"/>
