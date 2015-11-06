@@ -166,6 +166,7 @@ class EclipseDocGenerator(CeylonEditor? editor) extends SourceInfoHover(editor)
             case (Icons.see) HTML.fileUrl("ihigh_obj.gif").toExternalForm()
             case (Icons.implementation) HTML.fileUrl("implm_co.png").toExternalForm()
             case (Icons.override) HTML.fileUrl("over_co.png").toExternalForm()
+            case (Icons.quickAssists) HTML.fileUrl("correction_change.png").toExternalForm()
             else HTML.fileUrl("ihigh_obj.gif").toExternalForm()
             ;
             value top = icon in [Icons.types, Icons.annotations] 
@@ -250,4 +251,6 @@ class EclipseDocGenerator(CeylonEditor? editor) extends SourceInfoHover(editor)
     }
     shared actual AbstractModuleImportUtil<out Anything,out Anything,out Anything,out Anything,out Anything,out Anything> moduleImportUtil
             => eclipseModuleImportUtils;
+    
+    shared actual Boolean supportsQuickAssists => true;
 }
