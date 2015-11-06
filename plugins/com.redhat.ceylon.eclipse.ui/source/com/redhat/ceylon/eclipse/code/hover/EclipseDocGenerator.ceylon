@@ -216,10 +216,7 @@ class EclipseDocGenerator(CeylonEditor? editor) extends SourceInfoHover(editor)
         case (Colors.keywords) HTMLPrinter.toHex(Highlights.getCurrentThemeColor(Highlights.\iKEYWORDS))
         ;
         
-        if (is String what) {
-            return "<span style='color:``myColor``'>``what``</span>";
-        }
-        return "red";
+        return "<span style='color:``myColor``'>``what?.string else "null"``</span>";
     }
     
     shared actual String? getLiveValue(Declaration dec, Unit unit)
