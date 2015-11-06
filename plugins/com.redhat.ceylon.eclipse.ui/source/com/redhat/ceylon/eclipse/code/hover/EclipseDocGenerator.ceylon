@@ -198,8 +198,9 @@ class EclipseDocGenerator(CeylonEditor? editor) extends SourceInfoHover(editor)
         builder.append(b.string);
     }
     
-    shared actual String buildLink(Referenceable model, String text, String protocol) {
-        value href = protocol == "dec"
+    shared actual String buildLink(Referenceable|String model, String text, String protocol) {
+        value href = if (is String model) then "href='" + protocol + ":" + model + "'"
+                     else if (protocol == "dec")
                      then "href='dec:``HTML.declink(model)``'"
                      else HTML.link(model);
         

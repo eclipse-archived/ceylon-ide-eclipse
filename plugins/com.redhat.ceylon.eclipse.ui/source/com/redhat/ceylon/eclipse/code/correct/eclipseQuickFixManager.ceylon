@@ -15,7 +15,8 @@ import com.redhat.ceylon.ide.common.correct {
     ChangeReferenceQuickFix,
     DeclareLocalQuickFix,
     CreateEnumQuickFix,
-    RefineFormalMembersQuickFix
+    RefineFormalMembersQuickFix,
+    SpecifyTypeQuickFix
 }
 
 import java.util {
@@ -86,5 +87,9 @@ object eclipseQuickFixManager
     
     shared actual RefineFormalMembersQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> refineFormalMembersQuickFix
             => eclipseRefineFormalMembersQuickFix;
+    
+    shared actual SpecifyTypeQuickFix<IFile,IDocument,InsertEdit,TextEdit,
+        TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal,
+        LinkedModeModel> specifyTypeQuickFix => nothing; // TODO
     
 }
