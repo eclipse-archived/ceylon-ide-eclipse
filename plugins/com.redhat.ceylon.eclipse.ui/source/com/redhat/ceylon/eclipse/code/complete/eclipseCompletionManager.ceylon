@@ -279,7 +279,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
 
     shared actual ICompletionProposal newControlStructureCompletionProposal(Integer offset, String prefix,
         String desc, String text, Declaration dec, CeylonParseController cpc, Node? node)
-             => ControlStructureCompletionProposal(offset, prefix, desc, text, dec, cpc);
+             => EclipseControlStructureProposal(offset, prefix, desc, text, dec, cpc, node);
 
     shared actual ICompletionProposal newTypeProposal(Integer offset, Type? type, String text, String desc, Tree.CompilationUnit rootNode) 
             => TypeProposal(offset, type, text, desc, rootNode);
