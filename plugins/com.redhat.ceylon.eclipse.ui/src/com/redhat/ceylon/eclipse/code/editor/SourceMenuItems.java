@@ -122,6 +122,13 @@ public class SourceMenuItems extends CompoundContributionItem {
                         true),
                 new DynamicMenuItem(PLUGIN_ID + ".editor.removeBlockComment", 
                         "Re&move Block Comment", 
+                        true),
+                new Separator(),
+                new DynamicMenuItem(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS, 
+                        "Content Proposals", 
+                        true),
+                new DynamicMenuItem(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION, 
+                        "Parameter Context Information", 
                         true)
         };
     }
