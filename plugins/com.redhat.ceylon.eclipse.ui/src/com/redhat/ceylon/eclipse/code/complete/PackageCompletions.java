@@ -20,6 +20,7 @@ import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isOverloadedVe
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -411,17 +412,29 @@ public class PackageCompletions {
                 for (final ModuleDetails md: msr.getResults()) {
                     final ModuleVersionDetails version = 
                             md.getLastVersion();
-                    for (String packageName: version.getMembers()) {
-                        //TODO: completion filtering
-                        if (packageName.startsWith(fullPrefix)) {
-                            result.add(new QueriedModulePackageProposal(offset, prefix, 
-                                    packageName.substring(fullPath.length()), withBody,
-                                    packageName, controller, version, unit, md));
+                    if (!alreadyImported(version, controller.getTypeChecker()
+                            .getContext().getModules().getListOfModules())) {
+                        for (String packageName: version.getMembers()) {
+                            //TODO: completion filtering
+                            if (packageName.startsWith(fullPrefix)) {
+                                result.add(new QueriedModulePackageProposal(offset, prefix, 
+                                        packageName.substring(fullPath.length()), withBody,
+                                        packageName, controller, version, unit, md));
+                            }
                         }
                     }
                 }
             }
         }
+    }
+    
+    static boolean alreadyImported(ModuleVersionDetails module, Set<Module> modules) {
+        for (Module candidate : modules) {
+            if (candidate.getNameAsString().equals(module.getModule())) {
+                return true;
+            }
+        }
+        return false;
     }
     
     static void addPackageDescriptorCompletion(CeylonParseController cpc, 
