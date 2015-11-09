@@ -12,17 +12,19 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.ITypeRoot;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaModelException;
 
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
-import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
 import com.redhat.ceylon.ide.common.model.ICrossProjectReference;
+import com.redhat.ceylon.ide.common.model.JavaClassFile;
+import com.redhat.ceylon.ide.common.model.JavaCompilationUnit;
 import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -270,7 +272,7 @@ public class UnitDependencyVisitor extends Visitor {
                     createDependency(dependingOn);
                     Unit u = dependingOn.getUnit();
                     if (u instanceof JavaCompilationUnit) {
-                        ICompilationUnit compilationUnit = ((JavaCompilationUnit) u).getTypeRoot();
+                        ITypeRoot compilationUnit = ((JavaCompilationUnit<IProject,IFolder,IFile,ITypeRoot,IJavaElement>) u).getTypeRoot();
                         if (compilationUnit != null) {
                             IResource javaFile;
                             try {

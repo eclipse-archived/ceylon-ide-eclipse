@@ -31,10 +31,10 @@ import org.eclipse.ui.PartInitException;
 import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.EditedSourceFile;
 import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
+import com.redhat.ceylon.ide.common.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
@@ -157,7 +157,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                                     if (javaOverload.getUnit() instanceof IJavaModelAware) {
                                         dec = javaOverload;
                                         declarationUnit = dec.getUnit();
-                                        jp = ((IJavaModelAware)declarationUnit).getTypeRoot().getJavaProject();
+                                        jp = ((IJavaModelAware<IProject, ITypeRoot, IJavaElement>)declarationUnit).getTypeRoot().getJavaProject();
                                         hasFoundAJavaImplementation = true;
                                     }
                                 }
@@ -168,13 +168,13 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                         }
                     }
                     else {
-                        final IJavaModelAware havaModelAware = 
-                                (IJavaModelAware)declarationUnit;
+                        final IJavaModelAware<IProject, ITypeRoot, IJavaElement> havaModelAware = 
+                                (IJavaModelAware<IProject, ITypeRoot, IJavaElement>)declarationUnit;
                         jp = havaModelAware.getTypeRoot().getJavaProject();
                     }
                     if (declarationUnit instanceof CeylonBinaryUnit) {
-                        CeylonBinaryUnit<IProject,IClassFile,ITypeRoot,IJavaElement> ceylonBinaryUnit = 
-                                (CeylonBinaryUnit<IProject,IClassFile,ITypeRoot,IJavaElement>) declarationUnit;
+                        CeylonBinaryUnit<IProject,ITypeRoot,IJavaElement> ceylonBinaryUnit = 
+                                (CeylonBinaryUnit<IProject,ITypeRoot,IJavaElement>) declarationUnit;
                         String path = toJavaString(ceylonBinaryUnit.getSourceRelativePath());
                         if (! JavaCore.isJavaLikeFileName(path)) {
                             return null; 

@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.action.IAction;
@@ -40,14 +41,15 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
-import com.redhat.ceylon.eclipse.core.model.JavaUnit;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.util.utilJ2C;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.CeylonUnit;
 import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
+import com.redhat.ceylon.ide.common.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.IResourceAware;
+import com.redhat.ceylon.ide.common.model.JavaUnit;
 import com.redhat.ceylon.ide.common.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
@@ -423,10 +425,10 @@ public class Navigation {
             declaration = fun.getTypeDeclaration();
         }
         if (declaration.getUnit() instanceof IJavaModelAware) {
-            final IJavaModelAware javaModelAware = 
-                    (IJavaModelAware) 
+            final IJavaModelAware<IProject, ITypeRoot, IJavaElement> javaModelAware = 
+                    (IJavaModelAware<IProject, ITypeRoot, IJavaElement>) 
                         declaration.getUnit();
-            return javaModelAware.toJavaElement(declaration, monitor);
+            return javaModelAware.toJavaElement(declaration, utilJ2C.newProgressMonitor(monitor));
         }
         return null;
     }

@@ -20,10 +20,10 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.model.IProjectAware;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
+import com.redhat.ceylon.ide.common.model.IProjectAware;
 import com.redhat.ceylon.ide.common.model.IResourceAware;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -78,7 +78,7 @@ public class ModelProxy {
             // I wonder whether it's not better to keep per-project ModelProxys.
         }
         else if (unit instanceof IProjectAware) {
-            project = ((IProjectAware) unit).getProject();
+            project = ((IProjectAware<IProject>) unit).getProject();
         }
         else {
             project = null;

@@ -4,7 +4,7 @@
    <extension-point id="ceylonBuildHook" name="Ceylon Build Hook" 
                     schema="schema/ceylonBuildHook.exsd"/>
 
-   <extension
+   <I
          point="org.eclipse.core.contenttype.contentTypes">
        <content-type
              id="com.redhat.ceylon.eclipse.ui.ceylonSource"
@@ -3345,7 +3345,7 @@
             adaptableType="org.eclipse.jdt.core.IJavaElement">
             
             <adapter type="com.redhat.ceylon.ide.common.model.IUnit"/>
-            <adapter type="com.redhat.ceylon.eclipse.core.model.IJavaModelAware"/>
+            <adapter type="com.redhat.ceylon.ide.common.model.IJavaModelAware"/>
             <adapter type="com.redhat.ceylon.ide.common.model.BaseIdeModule"/>
             <adapter type="com.redhat.ceylon.model.typechecker.model.Package"/>
 		</factory>

@@ -39,7 +39,9 @@ import java.util.WeakHashMap;
 import org.eclipse.core.internal.jobs.InternalJob;
 import org.eclipse.core.internal.utils.Cache;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -119,10 +121,13 @@ import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTMethod;
 import com.redhat.ceylon.eclipse.core.model.mirror.SourceClass;
 import com.redhat.ceylon.eclipse.core.model.mirror.SourceDeclarationHolder;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.BaseIdeModuleManager;
 import com.redhat.ceylon.ide.common.model.BaseIdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.IdeModelLoader;
+import com.redhat.ceylon.ide.common.model.JavaCompilationUnit;
+import com.redhat.ceylon.ide.common.model.SourceFile;
 import com.redhat.ceylon.model.cmr.ArtifactResult;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.loader.JvmBackendUtil;
@@ -802,19 +807,19 @@ public class JDTModelLoader extends IdeModelLoader {
                         !forceLoadFromBinaries(cachedMirror))) {
             return false;
         }
-        if (module instanceof JDTModule) {
-            JDTModule jdtModule = (JDTModule) module;
-            if (jdtModule.isCeylonBinaryArchive() || jdtModule.isJavaBinaryArchive()) {
+        if (module instanceof BaseIdeModule) {
+            BaseIdeModule jdtModule = (BaseIdeModule) module;
+            if (jdtModule.getIsCeylonBinaryArchive() || jdtModule.getIsJavaBinaryArchive()) {
                 String classRelativePath = name.replace('.', '/');
                 return jdtModule.containsClass(classRelativePath + ".class") || jdtModule.containsClass(classRelativePath + "_.class");
-            } else if (jdtModule.isProjectModule()) {
+            } else if (jdtModule.getIsProjectModule()) {
                 int nameLength = name.length();
                 int packageEnd = name.lastIndexOf('.');
                 int classNameStart = packageEnd + 1;
                 String packageName = packageEnd > 0 ? name.substring(0, packageEnd) : "";
                 String className = classNameStart < nameLength ? name.substring(classNameStart) : "";
                 boolean moduleContainsJava = false;
-                for (IPackageFragmentRoot root : jdtModule.getPackageFragmentRoots()) {
+                for (IPackageFragmentRoot root : modelJ2C.getModulePackageFragmentRoots(jdtModule)) {
                     try {
                         IPackageFragment pf = root.getPackageFragment(packageName);
                         if (pf.exists() && 
@@ -853,7 +858,7 @@ public class JDTModelLoader extends IdeModelLoader {
     }
 
     private boolean forceLoadFromBinaries(boolean isNativeDeclaration) {
-        return getModuleManager().isLoadDependenciesFromModelLoaderFirst() 
+        return getModuleManager().getLoadDependenciesFromModelLoaderFirst() 
                     && isNativeDeclaration;
     }
 
@@ -961,7 +966,7 @@ public class JDTModelLoader extends IdeModelLoader {
                             if (loader == null) {
                                 continue;
                             }
-                            JDTModuleManager moduleManager = loader.getModuleManager();
+                            BaseIdeModuleManager moduleManager = loader.getModuleManager();
                             if (moduleManager == null) {
                                 continue;
                             }
@@ -1330,9 +1335,9 @@ public class JDTModelLoader extends IdeModelLoader {
         if(artifact != null && module instanceof LazyModule)
             ((LazyModule)module).loadPackageList(artifact);
                     
-        if (module instanceof JDTModule) {
-            JDTModule jdtModule = (JDTModule) module;
-            if (! jdtModule.equals(getLanguageModule()) && (jdtModule.isCeylonBinaryArchive() || jdtModule.isJavaBinaryArchive())) {
+        if (module instanceof BaseIdeModule) {
+            BaseIdeModule jdtModule = (BaseIdeModule) module;
+            if (! jdtModule.equals(getLanguageModule()) && (jdtModule.getIsCeylonBinaryArchive() || jdtModule.getIsJavaBinaryArchive())) {
                 CeylonProjectModulesContainer container = CeylonClasspathUtil.getCeylonProjectModulesClasspathContainer(javaProject);
 
                 if (container != null) {
@@ -1397,9 +1402,9 @@ public class JDTModelLoader extends IdeModelLoader {
 
     public void setModuleAndPackageUnits() {
         for (Module module : moduleManager.getModules().getListOfModules()) {
-            if (module instanceof JDTModule) {
-                JDTModule jdtModule = (JDTModule) module;
-                if (jdtModule.isCeylonBinaryArchive()) {
+            if (module instanceof BaseIdeModule) {
+                BaseIdeModule jdtModule = (BaseIdeModule) module;
+                if (jdtModule.getIsCeylonBinaryArchive()) {
                     for (Package p : jdtModule.getPackages()) {
                         if (p.getUnit() == null) {
                             ClassMirror packageClassMirror = lookupClassMirror(jdtModule, p.getQualifiedNameString() + "." + Naming.PACKAGE_DESCRIPTOR_CLASS_NAME);
@@ -1457,8 +1462,8 @@ public class JDTModelLoader extends IdeModelLoader {
         }
         else {
             if (jdtClass.isCeylon()) {
-                if (pkg.getModule() instanceof JDTModule) {
-                    JDTModule module = (JDTModule) pkg.getModule();
+                if (pkg.getModule() instanceof BaseIdeModule) {
+                    BaseIdeModule module = (BaseIdeModule) pkg.getModule();
                     IProject originalProject = module.getOriginalProject();
                     if (originalProject != null) {
                         unit = new CrossProjectBinaryUnit((IClassFile)typeRoot, fileName, relativePath, fullPath, pkg);
@@ -1655,7 +1660,7 @@ public class JDTModelLoader extends IdeModelLoader {
         }
     }
 
-    public void clearClassMirrorCacheForClass(JDTModule module, String classNameToRemove) {
+    public void clearClassMirrorCacheForClass(BaseIdeModule module, String classNameToRemove) {
         synchronized (getLock()) {
             classMirrorCache.remove(cacheKeyByModule(module, classNameToRemove));        
             mustResetLookupEnvironment = true;
@@ -1719,11 +1724,11 @@ public class JDTModelLoader extends IdeModelLoader {
     @Override
     public boolean isModuleInClassPath(Module module) {
         return modulesInClassPath.contains(module)
-                || ((module instanceof JDTModule) && 
-                        ((JDTModule) module).isProjectModule())
-                || ((module instanceof JDTModule) && 
-                        ((JDTModule) module).getOriginalModule() != null && 
-                                ((JDTModule) module).getOriginalModule().isProjectModule()) ;
+                || ((module instanceof BaseIdeModule) && 
+                        ((BaseIdeModule) module).getIsProjectModule())
+                || ((module instanceof BaseIdeModule) && 
+                        ((BaseIdeModule) module).getOriginalModule() != null && 
+                                ((BaseIdeModule) module).getOriginalModule().getIsProjectModule()) ;
     }
     
     @Override
@@ -1731,14 +1736,15 @@ public class JDTModelLoader extends IdeModelLoader {
         return false;
     }
 
-    void addJDKModuleToClassPath(Module module) {
+    public Object addJDKModuleToClassPath(Module module) {
         modulesInClassPath.add(module);
+        return null;
     }
 
     @Override
     protected boolean isAutoExportMavenDependencies() {
         if (javaProject != null) {
-            CeylonProject<IProject> ceylonProject = modelJ2C.ceylonModel().getProject(javaProject.getProject());
+            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C.ceylonModel().getProject(javaProject.getProject());
             if (ceylonProject != null) {
                 return ceylonProject.getConfiguration().getAutoExportMavenDependencies();
             }
@@ -1750,7 +1756,7 @@ public class JDTModelLoader extends IdeModelLoader {
     @Override
     protected boolean isFlatClasspath() {
         if (javaProject != null) {
-            CeylonProject<IProject> ceylonProject = modelJ2C.ceylonModel().getProject(javaProject.getProject());
+            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C.ceylonModel().getProject(javaProject.getProject());
             if (ceylonProject != null) {
                 return ceylonProject.getConfiguration().getFlatClasspath();
             }

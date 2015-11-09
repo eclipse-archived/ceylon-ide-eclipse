@@ -102,8 +102,8 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
-import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
+import com.redhat.ceylon.ide.common.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.IResourceAware;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.util.toJavaString_;
@@ -385,7 +385,7 @@ public class EditorUtil {
             if (classFile != null) {
                 IJavaModelAware unit = CeylonBuilder.getUnit(classFile);
                 if (unit instanceof CeylonBinaryUnit) {                
-                    CeylonBinaryUnit<IProject, IClassFile, ITypeRoot, IJavaElement> ceylonUnit = (CeylonBinaryUnit<IProject, IClassFile, ITypeRoot, IJavaElement>) unit;
+                    CeylonBinaryUnit<IProject, ITypeRoot, IJavaElement> ceylonUnit = (CeylonBinaryUnit<IProject, ITypeRoot, IJavaElement>) unit;
                     if (! isJavaLikeFileName(toJavaString(ceylonUnit.getSourceRelativePath()))) {
                         return getEditorInput(Path.fromOSString(toJavaString(ceylonUnit.getSourceFullPath())));
                     }

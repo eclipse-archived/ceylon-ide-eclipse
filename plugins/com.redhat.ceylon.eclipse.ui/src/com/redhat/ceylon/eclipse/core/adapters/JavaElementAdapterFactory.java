@@ -6,8 +6,8 @@ import org.eclipse.jdt.core.IPackageFragment;
 
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.IUnit;
 
 

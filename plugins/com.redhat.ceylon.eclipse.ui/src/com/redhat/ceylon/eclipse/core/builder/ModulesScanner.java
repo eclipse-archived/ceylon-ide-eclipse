@@ -20,6 +20,8 @@ import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.IdeModuleManager;
 import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
+import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -36,7 +38,7 @@ final class ModulesScanner implements IResourceVisitor {
     private final JDTModelLoader modelLoader;
     private final IdeModuleManager<IProject, IResource, IFolder, IFile> moduleManager;
     private final IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper;
-    private final ResourceVirtualFile<IResource, IFolder, IFile> srcDir;
+    private final FolderVirtualFile<IResource, IFolder, IFile> srcDir;
     private final TypeChecker typeChecker;
     private Module module;
     private SubMonitor monitor;
@@ -44,7 +46,7 @@ final class ModulesScanner implements IResourceVisitor {
     ModulesScanner(Module defaultModule, JDTModelLoader modelLoader,
             IdeModuleManager<IProject, IResource, IFolder, IFile> moduleManager, 
             IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper, 
-            ResourceVirtualFile<IResource, IFolder, IFile> srcDir, 
+            FolderVirtualFile<IResource, IFolder, IFile> srcDir, 
             TypeChecker typeChecker, SubMonitor monitor) {
         this.defaultModule = defaultModule;
         this.modelLoader = modelLoader;
@@ -96,7 +98,7 @@ final class ModulesScanner implements IResourceVisitor {
                 pkg.setName(pkgName);
                 
                 IFile file = moduleFile;
-                final ResourceVirtualFile<IResource, IFolder, IFile> virtualFile = vfsJ2C.createVirtualFile(file);
+                final FileVirtualFile<IResource, IFolder, IFile> virtualFile = vfsJ2C.createVirtualFile(file);
                 try {
                     PhasedUnit tempPhasedUnit = null;
                     tempPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, moduleSourceMapper, 

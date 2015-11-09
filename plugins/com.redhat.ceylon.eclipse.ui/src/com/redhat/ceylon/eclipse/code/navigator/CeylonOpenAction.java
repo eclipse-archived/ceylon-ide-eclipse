@@ -48,9 +48,9 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
-import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
+import com.redhat.ceylon.ide.common.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.IdeModelLoader;
 
 public class CeylonOpenAction extends OpenAction {
@@ -143,7 +143,7 @@ public class CeylonOpenAction extends OpenAction {
                         if (part instanceof CeylonEditor) {
                             IJavaModelAware unit = CeylonBuilder.getUnit((IJavaElement)elementToOpen);
                             if (unit instanceof CeylonBinaryUnit) {
-                                CeylonBinaryUnit<IProject,IClassFile,ITypeRoot,IJavaElement> ceylonUnit = (CeylonBinaryUnit<IProject,IClassFile,ITypeRoot,IJavaElement>) unit;
+                                CeylonBinaryUnit<IProject,ITypeRoot,IJavaElement> ceylonUnit = (CeylonBinaryUnit<IProject,ITypeRoot,IJavaElement>) unit;
                                 CeylonEditor ceylonEditor = (CeylonEditor) part;
                                 IMember member = null;
                                 if (elementToOpen instanceof IClassFile) {

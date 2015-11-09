@@ -39,12 +39,12 @@ import org.eclipse.swt.graphics.Image;
 
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
-import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
+import com.redhat.ceylon.ide.common.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.IdeUnit;
+import com.redhat.ceylon.ide.common.model.JavaClassFile;
 import com.redhat.ceylon.ide.common.util.toCeylonString_;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;

@@ -4,7 +4,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.jdt.core.IJavaElement;
 
-import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
+import com.redhat.ceylon.ide.common.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.IResourceAware;
 import com.redhat.ceylon.ide.common.model.IUnit;
 
