@@ -103,7 +103,7 @@ final class FormatAction extends Action {
                 /* inherit = */ false,
                 /* baseDir = */ pc.getProject().getLocation().toOSString());
         
-        TextChange change = eclipseFormatAction_.get_().format(pc.getParsedRootNode(),
+        TextChange change = editorJ2C.eclipseFormatAction().format(pc.getParsedRootNode(),
                 pc.getTokens(), document, document.getLength(),
                 new DefaultRegion(ts.getOffset(), ts.getLength()),
                 CeylonStyle.getEclipseWsOptions(document),

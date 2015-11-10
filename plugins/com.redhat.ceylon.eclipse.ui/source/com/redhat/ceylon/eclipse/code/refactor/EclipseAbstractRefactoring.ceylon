@@ -102,7 +102,7 @@ abstract class EclipseAbstractRefactoring<RefactoringData>(IEditorPart editorPar
     shared Boolean inSameProject(Declaration declaration) {
         value unit = declaration.unit;
         if (unit is CrossProjectSourceFile<IProject,IResource,IFolder,IFile> || 
-            unit is CrossProjectBinaryUnit<IProject,IResource,IFolder,IFile, out Anything, out Anything, out Anything>) {
+            unit is CrossProjectBinaryUnit<IProject,IResource,IFolder,IFile, out Anything, out Anything>) {
             return false;
         }
         if (is IResourceAware<out Anything, out Anything, out Anything> unit) {

@@ -11,6 +11,9 @@
 	<property name="src.dir"
         value="${basedir}/src" />
 
+    <property name="java-to-ceylon-source.dir"
+        value="${basedir}/java-to-ceylon-source" />
+
     <property name="generated-source.dir"
         value="${basedir}/generated-source" />
 
@@ -67,7 +70,7 @@
         	<reposet refid="repos"/>
         </ceylon-compile>
         <ceylon-compile
-            src="${source.dir}${path.separator}${src.dir}"
+            src="${source.dir}${path.separator}${src.dir}${path.separator}${java-to-ceylon-source.dir}"
             out="${modules.dir}"
             executable="${ceylon.executable}"
             verbose="${ceylon.verbosity}"

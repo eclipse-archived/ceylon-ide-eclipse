@@ -95,7 +95,7 @@ final class CeylonLocationListener implements LocationListener {
             if (target!=null) {
                 CeylonParseController cpc = editor.getParseController();
                 String text = 
-                        new EclipseDocGenerator(null).getDocumentationText(target, 
+                        hoverJ2C.newEclipseDocGenerator(null).getDocumentationText(target, 
                                 null, cpc.getLastCompilationUnit(), cpc).toString();
                 CeylonBrowserInput input = 
                         new CeylonBrowserInput(

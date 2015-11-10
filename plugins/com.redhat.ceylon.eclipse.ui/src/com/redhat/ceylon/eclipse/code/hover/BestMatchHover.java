@@ -13,6 +13,7 @@ package com.redhat.ceylon.eclipse.code.hover;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
@@ -22,6 +23,7 @@ import org.eclipse.jface.text.ITextViewer;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.debug.hover.CeylonDebugHover;
+import com.redhat.ceylon.ide.common.doc.DocGenerator;
 
 /**
  * Caution: this implementation is a layer breaker and 
@@ -46,7 +48,7 @@ public class BestMatchHover
         fInstantiatedTextHovers.add(new CeylonDebugHover(editor));
         fInstantiatedTextHovers.add(new AnnotationHover(editor, false));
         //fInstantiatedTextHovers.add(new DocumentationHover(editor));
-        fInstantiatedTextHovers.add(new EclipseDocGenerator(editor));
+        fInstantiatedTextHovers.add(hoverJ2C.newEclipseDocGeneratorAsSourceInfoHover(editor));
     }
     
     @Override
@@ -160,10 +162,10 @@ public class BestMatchHover
 //                    (DocumentationHover) hover;
 //            return documentationHover.getInformationPresenterControlCreator();
 //        }
-        if (hover instanceof EclipseDocGenerator) {
-            EclipseDocGenerator docGenerator =
-                    (EclipseDocGenerator) hover;
-            return docGenerator.getInformationPresenterControlCreator();
+        if (hover instanceof DocGenerator) {
+            DocGenerator<IDocument> docGenerator =
+                    (DocGenerator<IDocument>) hover;
+            return hoverJ2C.getInformationPresenterControlCreator(docGenerator);
         }
         else {
             return null;

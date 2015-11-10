@@ -48,7 +48,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 editor.getCeylonSourceViewer()
                       .getDocument();
         
-        eclipseImportsCleaner_.get_().cleanEditorImports(editor.getParseController(), doc);
+        importsJ2C.cleanImports(editor.getParseController(), doc);
 
         return null;
     }
