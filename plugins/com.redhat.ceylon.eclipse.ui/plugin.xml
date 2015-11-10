@@ -4,7 +4,7 @@
    <extension-point id="ceylonBuildHook" name="Ceylon Build Hook" 
                     schema="schema/ceylonBuildHook.exsd"/>
 
-   <I
+   <extension
          point="org.eclipse.core.contenttype.contentTypes">
        <content-type
              id="com.redhat.ceylon.eclipse.ui.ceylonSource"
