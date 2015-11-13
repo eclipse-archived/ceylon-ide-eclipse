@@ -26,7 +26,6 @@ import static org.eclipse.jface.viewers.IDecoration.BOTTOM_LEFT;
 import static org.eclipse.jface.viewers.IDecoration.BOTTOM_RIGHT;
 import static org.eclipse.jface.viewers.IDecoration.TOP_LEFT;
 import static org.eclipse.jface.viewers.IDecoration.TOP_RIGHT;
-import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -794,8 +793,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                             .append(toPath(p), PACKAGE_STYLER);
                 Tree.ModuleDescriptor md = 
                         (Tree.ModuleDescriptor) node;
-                Tree.QuotedLiteral version = 
-                        md.getVersion();
+                Tree.QuotedLiteral version = md.getVersion();
                 if (version!=null) {
                     styledString.append(" ")
                         .append(version.getText(), STRING_STYLER);
@@ -831,16 +829,22 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else if (node instanceof Tree.ImportModule) {
             Tree.ImportModule i = (Tree.ImportModule) node;
+            StyledString styledString = 
+                    new StyledString("import ", KW_STYLER);
             Tree.ImportPath p = i.getImportPath();
             if (isNonempty(p)) {
-                return new StyledString("import ", KW_STYLER)
-                        .append(toPath(p), PACKAGE_STYLER);
+                styledString.append(toPath(p), PACKAGE_STYLER);
             }
             Tree.QuotedLiteral ql = i.getQuotedLiteral();
             if (ql!=null) {
-                String text = ql.getText().replace("'", "");
-                return new StyledString(text, QUALIFIER_STYLER);
+                styledString.append(ql.getText(), STRING_STYLER);
             }
+            Tree.QuotedLiteral version = i.getVersion();
+            if (version!=null) {
+                styledString.append(" ")
+                    .append(version.getText(), STRING_STYLER);
+            }
+            return styledString;
         }
         else if (node instanceof PackageNode) {
             PackageNode packageNode = (PackageNode) node;
