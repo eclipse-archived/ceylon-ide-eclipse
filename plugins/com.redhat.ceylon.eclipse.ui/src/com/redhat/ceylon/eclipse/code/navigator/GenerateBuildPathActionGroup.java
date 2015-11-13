@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
 
 import java.util.ArrayList;
@@ -338,7 +338,7 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
 			return;
 		}
 		
-		BaseCeylonProject ceylonProject = ceylonModel().getProject(project);
+		BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
         CeylonProjectConfig config = ceylonProject.getConfiguration();
 
         if (! ceylonProject.getSynchronizedWithConfiguration()) {

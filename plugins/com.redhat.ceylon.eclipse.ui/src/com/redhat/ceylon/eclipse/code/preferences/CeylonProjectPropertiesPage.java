@@ -6,7 +6,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonSystemRepo;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getVerbose;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.ide.common.util.toJavaBoolean_.toJavaBoolean;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
@@ -84,7 +84,7 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
                     backendJava, backendJs, astAwareIncrementalBuids, verbose)
                     .addToProject(project);
 
-            CeylonProjectConfig config = ceylonModel().getProject(project).getConfiguration();
+            CeylonProjectConfig config = modelJ2C().ceylonModel().getProject(project).getConfiguration();
             if (offlineOption!=null) {
                 config.setProjectOffline(ceylon.language.Boolean.instance(offlineOption));
             }
@@ -345,7 +345,7 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
                 backendJs = compileToJs(project);
                 backendJava = compileToJava(project);
                 verbose = getVerbose(project);
-                offlineOption = toJavaBoolean(ceylonModel().getProject(project).getConfiguration().getProjectOffline());
+                offlineOption = toJavaBoolean(modelJ2C().ceylonModel().getProject(project).getConfiguration().getProjectOffline());
             }
         }
 

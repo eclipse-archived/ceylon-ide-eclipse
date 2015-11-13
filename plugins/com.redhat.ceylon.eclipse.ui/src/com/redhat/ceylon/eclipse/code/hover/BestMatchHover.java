@@ -10,6 +10,8 @@
  *******************************************************************************/
 package com.redhat.ceylon.eclipse.code.hover;
 
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +50,7 @@ public class BestMatchHover
         fInstantiatedTextHovers.add(new CeylonDebugHover(editor));
         fInstantiatedTextHovers.add(new AnnotationHover(editor, false));
         //fInstantiatedTextHovers.add(new DocumentationHover(editor));
-        fInstantiatedTextHovers.add(hoverJ2C.newEclipseDocGeneratorAsSourceInfoHover(editor));
+        fInstantiatedTextHovers.add(hoverJ2C().newEclipseDocGeneratorAsSourceInfoHover(editor));
     }
     
     @Override
@@ -165,7 +167,7 @@ public class BestMatchHover
         if (hover instanceof DocGenerator) {
             DocGenerator<IDocument> docGenerator =
                     (DocGenerator<IDocument>) hover;
-            return hoverJ2C.getInformationPresenterControlCreator(docGenerator);
+            return hoverJ2C().getInformationPresenterControlCreator(docGenerator);
         }
         else {
             return null;

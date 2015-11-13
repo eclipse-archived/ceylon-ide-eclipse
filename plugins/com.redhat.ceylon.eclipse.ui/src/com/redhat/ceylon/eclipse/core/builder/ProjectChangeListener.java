@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import org.eclipse.core.resources.IProject;
@@ -30,17 +30,17 @@ public class ProjectChangeListener implements IResourceChangeListener {
                     }
                     if (resource instanceof IProject && delta.getKind()==IResourceDelta.REMOVED) {
                         CeylonBuilder.removeProject((IProject) resource);
-                        ceylonModel().removeProject((IProject) resource); 
+                        modelJ2C().ceylonModel().removeProject((IProject) resource); 
                     }
                     else if (resource instanceof IProject && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
                         final IProject project = (IProject) resource;
                         if (!project.isOpen()) {
                             CeylonBuilder.removeProject(project);
-                            ceylonModel().removeProject((IProject) resource); 
+                            modelJ2C().ceylonModel().removeProject((IProject) resource); 
                         }
                         else if (CeylonNature.isEnabled(project)) {
                             IJavaProject javaProject = JavaCore.create(project);
-                            ceylonModel().addProject((IProject) resource); 
+                            modelJ2C().ceylonModel().addProject((IProject) resource); 
                             if (javaProject != null) {
                                 getCeylonClasspathContainers(javaProject);
                             }

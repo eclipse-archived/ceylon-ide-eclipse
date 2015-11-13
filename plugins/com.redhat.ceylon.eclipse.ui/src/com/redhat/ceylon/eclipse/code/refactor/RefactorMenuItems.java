@@ -10,6 +10,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_MOVE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_RENAME;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REORDER;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.refactorJ2C;
 
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;
@@ -80,7 +81,7 @@ public class RefactorMenuItems extends CompoundContributionItem {
                         COMP_CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.extractValue", 
                         "Extract &Value...",
-                        editor!=null && refactorJ2C.newExtractValueRefactoring(editor).getEnabled(),
+                        editor!=null && refactorJ2C().newExtractValueRefactoring(editor).getEnabled(),
                         CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.extractFunction", 
                         "Extract &Function...",

@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.core.builder;
 
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.formatPath;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isCompilable;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -28,7 +29,6 @@ import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 
 final class RootFolderScanner implements IResourceVisitor {
     private final Module defaultModule;
@@ -127,7 +127,7 @@ final class RootFolderScanner implements IResourceVisitor {
                     
                     if (isSourceFile) {
                         if (CeylonBuilder.isCeylon(file)) {
-                            FileVirtualFile<IResource, IFolder, IFile> virtualFile = vfsJ2C.createVirtualFile(file);
+                            FileVirtualFile<IResource, IFolder, IFile> virtualFile = vfsJ2C().createVirtualFile(file);
                             try {
                                 PhasedUnit newPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, moduleSourceMapper,
                                         typeChecker, virtualFile, rootDir, pkg);

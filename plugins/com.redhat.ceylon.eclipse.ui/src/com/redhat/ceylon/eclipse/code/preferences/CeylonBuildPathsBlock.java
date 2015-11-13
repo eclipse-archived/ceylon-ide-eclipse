@@ -15,9 +15,9 @@ package com.redhat.ceylon.eclipse.code.preferences;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_RESOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static com.redhat.ceylon.ide.common.util.toCeylonStringIterable_.toCeylonStringIterable;
 import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.io.File;
 import java.io.IOException;
@@ -131,7 +131,6 @@ import com.redhat.ceylon.common.config.CeylonConfig;
 import com.redhat.ceylon.common.config.CeylonConfigFinder;
 import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
-import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
@@ -579,7 +578,7 @@ public class CeylonBuildPathsBlock {
             Set<String> sourceFoldersFromEclipseProject,
             Set<String> resourceFoldersFromCeylonConfig,
             Set<String> resourceFoldersFromEclipseProject) {
-        CeylonProjectConfig ceylonConfig = modelJ2C.ceylonModel().getProject(project).getConfiguration();
+        CeylonProjectConfig ceylonConfig = modelJ2C().ceylonModel().getProject(project).getConfiguration();
         for (String path : toJavaStringList(ceylonConfig.getProjectSourceDirectories())) {
             sourceFoldersFromCeylonConfig.add(Path.fromOSString(path).toString());
         }
@@ -749,7 +748,7 @@ public class CeylonBuildPathsBlock {
         List<String> configResourceDirectories;
         if (projectExists) {
             CeylonProjectConfig config;
-            CeylonProject ceylonProject = ceylonModel().getProject(project);
+            CeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
             if (ceylonProject != null) {
                 config = ceylonProject.getConfiguration();
             } else {
@@ -1599,7 +1598,7 @@ public class CeylonBuildPathsBlock {
             javaProject.setRawClasspath(classpath, javaOutputLocation, 
                     new SubProgressMonitor(monitor, 2));
             
-            BaseCeylonProject ceylonProject = ceylonModel().getProject(project);
+            BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
             CeylonProjectConfig config = ceylonProject.getConfiguration();
             List<String> srcDirs = new ArrayList<String>();
             for (CPListElement cpe: classPathEntries) {
@@ -1845,7 +1844,7 @@ public class CeylonBuildPathsBlock {
 
     private void refreshSourcePathsFromConfigFile() {
         final IProject project = fCurrJProject.getProject();
-        BaseCeylonProject ceylonProject = ceylonModel().getProject(project);
+        BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
         if (ceylonProject != null) {
             CeylonProjectConfig config = ceylonProject.getConfiguration();
             List<String> sourceDirectories = toJavaStringList(config.getProjectSourceDirectories());

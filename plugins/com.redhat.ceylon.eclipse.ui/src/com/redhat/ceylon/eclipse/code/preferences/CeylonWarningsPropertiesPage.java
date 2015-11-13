@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.preferences;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSuppressedWarnings;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class CeylonWarningsPropertiesPage extends PropertyPage {
     public boolean performOk() {
         IProject project = getSelectedProject();
         if (CeylonNature.isEnabled(project)) {
-            CeylonProjectConfig config = ceylonModel().getProject(project).getConfiguration();
+            CeylonProjectConfig config = modelJ2C().ceylonModel().getProject(project).getConfiguration();
             if (suppressedWarnings.isEmpty()) {
                 config.setProjectSuppressWarnings(null);
             }

@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
 import java.util.Set;
@@ -156,7 +156,7 @@ public class CeylonNavigatorLabelProvider extends
             stringToDisplay = "Output Modules";
         }
         
-        BaseCeylonProject ceylonProject = ceylonModel().getProject(repoNode.project);
+        BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(repoNode.project);
         Repositories mergedRepos = ceylonProject != null ? 
                 ceylonProject.getConfiguration().getRepositories() :
                     Repositories.get();

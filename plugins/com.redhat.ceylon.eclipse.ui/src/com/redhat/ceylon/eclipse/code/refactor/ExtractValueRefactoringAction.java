@@ -3,6 +3,9 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ui.IEditorPart;
 
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.refactorJ2C;
+
+
 public class ExtractValueRefactoringAction extends AbstractRefactoringAction {
     
     public ExtractValueRefactoringAction(IEditorPart editor) {
@@ -11,7 +14,7 @@ public class ExtractValueRefactoringAction extends AbstractRefactoringAction {
     
     @Override
     public Refactoring createRefactoring() {
-        return (Refactoring) refactorJ2C.newExtractValueRefactoring(editor);
+        return (Refactoring) refactorJ2C().newExtractValueRefactoring(editor);
     }
     
     @Override

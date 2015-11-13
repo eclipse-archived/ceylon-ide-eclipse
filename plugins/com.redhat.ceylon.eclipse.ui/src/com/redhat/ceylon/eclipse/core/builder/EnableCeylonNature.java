@@ -8,7 +8,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
-import com.redhat.ceylon.eclipse.core.model.modelJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 
 public class EnableCeylonNature implements IWorkbenchWindowActionDelegate {
@@ -20,7 +20,7 @@ public class EnableCeylonNature implements IWorkbenchWindowActionDelegate {
     public void init(IWorkbenchWindow window) {}
     
     public void run(IAction action) {
-        modelJ2C.ceylonModel().addProject(fProject);
+        modelJ2C().ceylonModel().addProject(fProject);
         new CeylonNature().addToProject(fProject);
     }
     

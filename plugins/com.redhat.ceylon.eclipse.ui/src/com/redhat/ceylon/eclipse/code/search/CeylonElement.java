@@ -9,6 +9,8 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
+
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -19,7 +21,6 @@ import org.eclipse.swt.graphics.Font;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
@@ -167,8 +168,8 @@ public class CeylonElement {
     }
     
     public IFile getFile() {
-        if (vfsJ2C.instanceOfIFileVirtualFile(file)) {
-            return vfsJ2C.getIFileVirtualFile(file).getNativeResource();
+        if (vfsJ2C().instanceOfIFileVirtualFile(file)) {
+            return vfsJ2C().getIFileVirtualFile(file).getNativeResource();
         }
         else {
             return null;

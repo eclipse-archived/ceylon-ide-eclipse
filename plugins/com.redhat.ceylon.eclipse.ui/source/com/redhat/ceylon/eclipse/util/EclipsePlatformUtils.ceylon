@@ -1,7 +1,6 @@
 import com.redhat.ceylon.ide.common.util {
     IdePlatformUtils,
-    Status,
-    platformUtils
+    Status
 }
 import org.eclipse.core.runtime {
     Plugin,

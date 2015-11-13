@@ -2,7 +2,8 @@ package com.redhat.ceylon.eclipse.ui;
 
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ALTERNATE_ICONS;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER;
@@ -59,7 +60,6 @@ import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
 import com.redhat.ceylon.eclipse.core.debug.CeylonDebugElementAdapterFactory;
 import com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugOptionsManager;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
-import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 
 
 public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
@@ -148,7 +148,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
                         ceylonRepositoryProperty);
         addResourceFilterPreference();
         
-        modelJ2C.platformUtils().register();
+        utilJ2C().platformUtils().register();
         
         final IWorkspace workspace = getWorkspace();
         IWorkspaceRoot root = workspace.getRoot();
@@ -166,7 +166,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         for (IProject project: root.getProjects()) {
             if (project.isAccessible() && 
                     CeylonNature.isEnabled(project)) {
-                ceylonModel().addProject(project);
+                modelJ2C().ceylonModel().addProject(project);
             }
         }
         

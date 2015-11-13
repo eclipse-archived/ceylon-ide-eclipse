@@ -14,6 +14,8 @@ import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
+
 
 import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.bindings.keys.KeyStroke;
@@ -50,7 +52,6 @@ import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 
 import com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl;
 import com.redhat.ceylon.eclipse.code.complete.EclipseCompletionProcessor;
-import com.redhat.ceylon.eclipse.code.complete.completionJ2C;
 import com.redhat.ceylon.eclipse.code.correct.CeylonCorrectionProcessor;
 import com.redhat.ceylon.eclipse.code.hover.AnnotationHover;
 import com.redhat.ceylon.eclipse.code.hover.BestMatchHover;
@@ -145,7 +146,7 @@ public class CeylonSourceViewerConfiguration
                 getOrCreateSection(getSettings(),
                 "completion_proposal_popup"));
         EclipseCompletionProcessor completionProcessor = 
-                completionJ2C.newCompletionProcessor(editor);
+                completionJ2C().newCompletionProcessor(editor);
 //        CeylonCompletionProcessor completionProcessor =
 //            new CeylonCompletionProcessor(editor);
         CompletionListener listener = 

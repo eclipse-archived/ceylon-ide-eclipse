@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -103,7 +104,7 @@ final class FormatAction extends Action {
                 /* inherit = */ false,
                 /* baseDir = */ pc.getProject().getLocation().toOSString());
         
-        TextChange change = editorJ2C.eclipseFormatAction().format(pc.getParsedRootNode(),
+        TextChange change = editorJ2C().eclipseFormatAction().format(pc.getParsedRootNode(),
                 pc.getTokens(), document, document.getLength(),
                 new DefaultRegion(ts.getOffset(), ts.getLength()),
                 CeylonStyle.getEclipseWsOptions(document),

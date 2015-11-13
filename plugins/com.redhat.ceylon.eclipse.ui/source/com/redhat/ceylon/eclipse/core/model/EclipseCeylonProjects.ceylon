@@ -1,6 +1,7 @@
 import com.redhat.ceylon.ide.common.model {
     CeylonProjects,
-    ModelAliases
+    ModelAliases,
+    CeylonProject
 }
 import org.eclipse.core.resources {
     IProject,
@@ -19,8 +20,7 @@ import com.redhat.ceylon.eclipse.util {
     toEclipsePath
 }
 
-shared object ceylonModel extends CeylonProjects<IProject,IResource,IFolder,IFile>()
-        satisfies ModelAliases<IProject, IResource, IFolder, IFile> {
+shared object ceylonModel extends CeylonProjects<IProject,IResource,IFolder,IFile>() {
     variable VirtualFileSystem? _vfs = null;
     
     shared actual class VirtualFileSystem() extends super.VirtualFileSystem() {
@@ -47,7 +47,7 @@ shared object ceylonModel extends CeylonProjects<IProject,IResource,IFolder,IFil
         }
     }
     
-    shared actual CeylonProjectAlias newNativeProject(IProject nativeProject)
+    shared actual CeylonProject<IProject,IResource,IFolder,IFile> newNativeProject(IProject nativeProject)
             => EclipseCeylonProject(nativeProject);
     
 }

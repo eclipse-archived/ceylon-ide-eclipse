@@ -22,14 +22,13 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isModelTypeCh
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.isTheSourceArchiveProject;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.toFullPath;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.newModuleManager;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.newModuleSourceMapper;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getPreferences;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static java.util.Arrays.asList;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.core.runtime.jobs.Job.getJobManager;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -88,7 +87,6 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.eclipse.util.PathUtils;
@@ -277,16 +275,20 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
             ModuleSourceMapper moduleSourceMapper, 
             TypeChecker typeChecker, List<CommonToken> tokens,
             ProjectPhasedUnit<IProject,IResource,IFolder,IFile> savedPhasedUnit) {
-        return new EditedPhasedUnit<IProject,IResource,IFolder,IFile>(
-                TypeDescriptor.klass(IProject.class),
-                TypeDescriptor.klass(IResource.class), 
-                TypeDescriptor.klass(IFolder.class), 
-                TypeDescriptor.klass(IFile.class), 
-                file, srcDir, 
-                cu, pkg, 
-                moduleManager, moduleSourceMapper,
-                typeChecker, tokens, savedPhasedUnit
-                );
+        EditedPhasedUnit<IProject, IResource, IFolder, IFile> editedPhasedUnit = new EditedPhasedUnit<IProject,IResource,IFolder,IFile>(
+                        TypeDescriptor.klass(IProject.class),
+                        TypeDescriptor.klass(IResource.class), 
+                        TypeDescriptor.klass(IFolder.class), 
+                        TypeDescriptor.klass(IFile.class), 
+                        file, srcDir, 
+                        cu, pkg, 
+                        moduleManager, moduleSourceMapper,
+                        typeChecker, tokens, savedPhasedUnit
+                        );
+        if (savedPhasedUnit != null) {
+            savedPhasedUnit.addWorkingCopy(editedPhasedUnit);
+        }
+        return editedPhasedUnit;
     }
 
     private PhasedUnit typecheck(IPath path, 
@@ -398,7 +400,7 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
     private static TypeChecker createTypeChecker(IProject project, 
             boolean showWarnings) 
             throws CoreException {
-        final CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = ceylonModel().getProject(project);
+        final CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
         
         final IJavaProject javaProject = 
                 project != null ? JavaCore.create(project) : null;
@@ -408,12 +410,12 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
                 .moduleManagerFactory(new ModuleManagerFactory(){
                     @Override
                     public ModuleManager createModuleManager(Context context) {
-                        return newModuleManager(context, ceylonProject);
+                        return modelJ2C().newModuleManager(context, ceylonProject);
                     }
 
                     @Override
                     public ModuleSourceMapper createModuleManagerUtil(Context context, ModuleManager moduleManager) {
-                        return newModuleSourceMapper(context, (IdeModuleManager) moduleManager);
+                        return modelJ2C().newModuleSourceMapper(context, (IdeModuleManager) moduleManager);
                     }
                 })
                 .usageWarnings(showWarnings);
@@ -432,7 +434,7 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
         else {
             cwd = project.getLocation().toFile();
             systemRepo = getInterpolatedCeylonSystemRepo(project);
-            offline = ceylonModel().getProject(project).getConfiguration().getOffline();
+            offline = modelJ2C().ceylonModel().getProject(project).getConfiguration().getOffline();
         }
         
         RepositoryManager repositoryManager = repoManager()
@@ -601,7 +603,7 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
     private FolderVirtualFile getSourceFolder(IProject project, IPath resolvedPath) {
         for (IFolder sourceFolder: getSourceFolders(project)) {
             if (sourceFolder.getFullPath().isPrefixOf(resolvedPath)) {
-                return vfsJ2C.createVirtualFolder(project, 
+                return vfsJ2C().createVirtualFolder(project, 
                         sourceFolder.getProjectRelativePath());
             }
         }
@@ -916,7 +918,7 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
 
     @Override
     public BaseCeylonProject getCeylonProject() {
-        return ceylonModel().getProject(project);
+        return modelJ2C().ceylonModel().getProject(project);
     }
 
     @Override

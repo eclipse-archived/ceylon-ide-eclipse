@@ -7,7 +7,7 @@ import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.getSelectedJavaEl
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getInterpolatedCeylonSystemRepo;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getReferencedProjectsOutputRepositories;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.AUTO_BUILD;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -102,7 +102,7 @@ public class ExportModuleWizard extends Wizard implements IExportWizard {
             return false;
         }
 
-        final BaseCeylonProject ceylonProject = ceylonModel().getProject(project);
+        final BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
         if (ceylonProject == null) {
             MessageDialog.openError(getShell(), "Export Module Error", 
                     "The selected project is not a Ceylon project.");

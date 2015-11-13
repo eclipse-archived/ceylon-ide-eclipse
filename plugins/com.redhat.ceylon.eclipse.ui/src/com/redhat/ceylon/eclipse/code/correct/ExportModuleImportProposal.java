@@ -3,6 +3,8 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
+
 
 import java.util.Collection;
 import java.util.List;
@@ -18,7 +20,6 @@ import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.imports.importsJ2C;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -44,7 +45,7 @@ public class ExportModuleImportProposal implements ICompletionProposal,
     
     @Override
     public void apply(IDocument document) {
-        importsJ2C.importUtil().exportModuleImports(project, 
+        importsJ2C().importUtil().exportModuleImports(project, 
                 unit.getPackage().getModule(), 
                 name);
     }

@@ -5,23 +5,28 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControlCreator;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.java2ceylon.HoverJ2C;
 import com.redhat.ceylon.ide.common.doc.DocGenerator;
 
-public class hoverJ2C {
+public class hoverJ2C implements HoverJ2C {
 
-    public static DocGenerator<IDocument> getDocGenerator() {
+    @Override
+    public DocGenerator<IDocument> getDocGenerator() {
         return eclipseDocGenerator_.get_();
     }
     
-    public static SourceInfoHover newEclipseDocGeneratorAsSourceInfoHover(CeylonEditor editor) {
+    @Override
+    public SourceInfoHover newEclipseDocGeneratorAsSourceInfoHover(CeylonEditor editor) {
         return new EclipseDocGenerator(editor);
     }
     
-    public static DocGenerator<IDocument> newEclipseDocGenerator(CeylonEditor editor) {
+    @Override
+    public DocGenerator<IDocument> newEclipseDocGenerator(CeylonEditor editor) {
         return new EclipseDocGenerator(editor);
     }
     
-    public static IInformationControlCreator getInformationPresenterControlCreator(DocGenerator<IDocument> docGenerator) {
+    @Override
+    public IInformationControlCreator getInformationPresenterControlCreator(DocGenerator<IDocument> docGenerator) {
         if (docGenerator instanceof EclipseDocGenerator) {
             EclipseDocGenerator eclipseDocGenerator =
                     (EclipseDocGenerator) docGenerator;

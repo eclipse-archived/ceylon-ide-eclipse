@@ -18,7 +18,7 @@
 package com.redhat.ceylon.eclipse.core.classpath;
 
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathEntry;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.JavaCore.getClasspathContainer;
 import static org.eclipse.jdt.core.JavaCore.setClasspathContainer;
@@ -55,7 +55,7 @@ public class CeylonProjectModulesInitializer extends ClasspathContainerInitializ
         int size = containerPath.segmentCount();
         if (size > 0) {
             if (containerPath.segment(0).equals(CeylonProjectModulesContainer.CONTAINER_ID)) {
-                ceylonModel().addProject(project.getProject());
+                modelJ2C().ceylonModel().addProject(project.getProject());
                 IClasspathContainer c = getClasspathContainer(containerPath, project);
                 CeylonProjectModulesContainer container;
                 if (c instanceof CeylonProjectModulesContainer) {

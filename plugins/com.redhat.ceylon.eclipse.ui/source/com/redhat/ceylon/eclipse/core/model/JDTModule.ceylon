@@ -61,6 +61,9 @@ shared class JDTModule(
     shared actual JDTModuleManager moduleManager = jdtModuleManager;
     shared actual JDTModuleSourceMapper moduleSourceMapper = jdtModuleSourceMapper;
     MutableList<IPackageFragmentRoot> _packageFragmentRoots=thePackageFragmentRoots;
+    
+    value currentModule => this;
+    
     shared List<IPackageFragmentRoot> packageFragmentRoots {
         return synchronize {
             on = _packageFragmentRoots;
@@ -70,7 +73,7 @@ shared class JDTModule(
                     value ceylonProject = moduleManager.ceylonProject;
                     if (exists ceylonProject) {
                         value javaProject = JavaCore.create(ceylonProject.ideArtifact);
-                        if (this.equals(languageModule)) {
+                        if (currentModule.equals(languageModule)) {
                             variable IClasspathEntry? runtimeClasspathEntry = null;
                             try {
                                 for (entry in javaProject.rawClasspath.array.coalesced) {
@@ -98,7 +101,7 @@ shared class JDTModule(
                                 if (! jarToSearch exists) {
                                     RepositoryManager? repoMgr = CeylonBuilder.getProjectRepositoryManager(ceylonProject.ideArtifact);
                                     if (exists repoMgr) {
-                                        jarToSearch = CeylonProjectModulesContainer.getModuleArtifact(repoMgr, this);
+                                        jarToSearch = CeylonProjectModulesContainer.getModuleArtifact(repoMgr, currentModule);
                                     }
                                 }
                                 if (exists foundJar = jarToSearch) {

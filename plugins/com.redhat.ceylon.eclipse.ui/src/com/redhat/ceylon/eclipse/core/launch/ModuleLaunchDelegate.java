@@ -9,9 +9,9 @@ import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationCo
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.DEFAULT_RUN_MARKER;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVASCRIPT_MODULE;
 import static com.redhat.ceylon.eclipse.core.launch.LaunchHelper.getStartLocation;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -160,7 +160,7 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
             args.add("run");
         }
         
-        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = ceylonModel().getProject(project);
+        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
         prepareRepositoryArguments(args, ceylonProject, workingRepos);
         prepareOverridesArgument(args, ceylonProject);
         prepareFlatClasspathArgument(args, ceylonProject);

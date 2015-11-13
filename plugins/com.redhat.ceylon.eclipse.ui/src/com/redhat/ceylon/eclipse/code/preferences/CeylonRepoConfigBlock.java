@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
 import static com.redhat.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE_VERSION;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static org.eclipse.jface.layout.GridDataFactory.swtDefaults;
 
 import java.io.File;
@@ -139,7 +139,7 @@ public class CeylonRepoConfigBlock extends CeylonRepositoryConfigurator {
         
         if (isCeylonNatureEnabled) {
             CeylonProjectConfig config = 
-                    ceylonModel().getProject(project).getConfiguration();
+                    modelJ2C().ceylonModel().getProject(project).getConfiguration();
 
             loadFromConfiguration(config);
             outputRepoText.setText(config.getOutputRepo());

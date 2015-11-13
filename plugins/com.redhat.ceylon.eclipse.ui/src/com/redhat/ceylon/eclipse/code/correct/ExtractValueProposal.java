@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.refactor.ExtractLinkedMode.useLinkedMode;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CHANGE;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 import java.util.Collection;
 
@@ -19,7 +20,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.ExtractValueLinkedMode;
 import com.redhat.ceylon.eclipse.code.refactor.ExtractValueRefactoringAction;
-import com.redhat.ceylon.eclipse.code.refactor.refactorJ2C;
 import com.redhat.ceylon.ide.common.refactoring.ExtractValueRefactoring;
 
 
@@ -80,7 +80,7 @@ public class ExtractValueProposal
             }
         }
         ExtractValueRefactoring evr = 
-                refactorJ2C.newExtractValueRefactoring(editor);
+                refactorJ2C().newExtractValueRefactoring(editor);
         if (evr.getEnabled()) {
             proposals.add(new ExtractValueProposal(editor));
         }

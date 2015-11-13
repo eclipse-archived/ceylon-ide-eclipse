@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.hover;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static java.lang.Integer.parseInt;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
@@ -76,7 +77,7 @@ final class CeylonLocationListener implements LocationListener {
     }
     
     private void handleLink(String location) {
-        DocGenerator<IDocument> gen = hoverJ2C.getDocGenerator();
+        DocGenerator<IDocument> gen = hoverJ2C().getDocGenerator();
         if (location.startsWith("dec:")) {
             Referenceable target = 
                     gen.getLinkedModel(
@@ -95,7 +96,7 @@ final class CeylonLocationListener implements LocationListener {
             if (target!=null) {
                 CeylonParseController cpc = editor.getParseController();
                 String text = 
-                        hoverJ2C.newEclipseDocGenerator(null).getDocumentationText(target, 
+                        hoverJ2C().newEclipseDocGenerator(null).getDocumentationText(target, 
                                 null, cpc.getLastCompilationUnit(), cpc).toString();
                 CeylonBrowserInput input = 
                         new CeylonBrowserInput(

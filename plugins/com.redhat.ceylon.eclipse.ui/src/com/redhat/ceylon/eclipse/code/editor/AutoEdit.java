@@ -24,6 +24,7 @@ import static java.lang.Character.isLetter;
 import static java.lang.Character.isUpperCase;
 import static java.lang.Character.isWhitespace;
 import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 
 import java.util.Iterator;
 import java.util.List;
@@ -40,7 +41,6 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
-import static com.redhat.ceylon.eclipse.util.utilJ2C.indents;
 
 class AutoEdit {
     
@@ -119,15 +119,15 @@ class AutoEdit {
     }
 
     private String getDefaultIndent() {
-        return indents().getDefaultIndent();
+        return utilJ2C().indents().getDefaultIndent();
     }
 
     private int getIndentSpaces() {
-        return (int) indents().getIndentSpaces();
+        return (int) utilJ2C().indents().getIndentSpaces();
     }
 
     private boolean getIndentWithSpaces() {
-        return indents().getIndentWithSpaces();
+        return utilJ2C().indents().getIndentWithSpaces();
     }
 
     private static String[][] FENCES = {
@@ -1073,7 +1073,7 @@ class AutoEdit {
     }
 
     private static String getDefaultLineDelimiter(IDocument document) {
-        return indents().getDefaultLineDelimiter(document);
+        return utilJ2C().indents().getDefaultLineDelimiter(document);
     }
 
     private String getIndent(int start, int end) 
@@ -1150,7 +1150,7 @@ class AutoEdit {
     }
 
     private void initialIndent(StringBuilder buf) {
-        indents().initialIndent(buf);
+        utilJ2C().indents().initialIndent(buf);
     }
 
     private boolean endsWithTab(String indent) {

@@ -6,8 +6,8 @@ import static com.redhat.ceylon.compiler.java.util.Util.getModulePath;
 import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.*;
-import static com.redhat.ceylon.eclipse.core.vfs.vfsJ2C.*;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
@@ -157,7 +157,6 @@ import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.mirror.SourceClass;
-import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
@@ -836,7 +835,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     protected IProject[] build(final int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor mon) 
             throws CoreException {
         final IProject project = getProject();
-        ceylonModel().addProject(project.getProject());
+        modelJ2C().ceylonModel().addProject(project.getProject());
         final IJavaProject javaProject = JavaCore.create(project);
         final SubMonitor monitor = SubMonitor.convert(new ProgressMonitorWrapper(mon) {
             @Override
@@ -1157,7 +1156,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             final IJavaProject javaProject,
             List<IClasspathContainer> cpContainers) throws CoreException,
             JavaModelException {
-        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = ceylonModel().getProject(javaProject.getProject());
+        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(javaProject.getProject());
         boolean languageModuleContainerFound = false;
         boolean applicationModulesContainerFound = false;
         
@@ -1344,7 +1343,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         for (IFile fileToRemove: filesToRemove) {
             if(isCeylon(fileToRemove)) {
                 // Remove the ceylon phasedUnit (which will also remove the unit from the package)
-                PhasedUnit phasedUnitToDelete = phasedUnits.getPhasedUnit(createVirtualResource(fileToRemove));
+                PhasedUnit phasedUnitToDelete = phasedUnits.getPhasedUnit(vfsJ2C().createVirtualResource(fileToRemove));
                 if (phasedUnitToDelete != null) {
                     assert(phasedUnitToDelete instanceof ProjectPhasedUnit);
                     ((ProjectPhasedUnit) phasedUnitToDelete).remove();
@@ -1398,7 +1397,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 TypecheckerUnit unit = phasedUnit.getUnit();
                 if (!unit.getUnresolvedReferences().isEmpty() ||
                         !unit.getMissingNativeImplementations().isEmpty()) {
-                    IFile fileToAdd = getIFileVirtualFile(phasedUnit.getUnitFile()).getNativeResource();
+                    IFile fileToAdd = vfsJ2C().getIFileVirtualFile(phasedUnit.getUnitFile()).getNativeResource();
                     if (fileToAdd.exists()) {
                         filesToAddInTypecheck.add(fileToAdd);
                         filesToAddInCompile.add(fileToAdd);
@@ -1406,7 +1405,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 }
                 Set<Declaration> duplicateDeclarations = unit.getDuplicateDeclarations();
                 if (!duplicateDeclarations.isEmpty()) {
-                    IFile fileToAdd = getIFileVirtualFile(phasedUnit.getUnitFile()).getNativeResource();
+                    IFile fileToAdd = vfsJ2C().getIFileVirtualFile(phasedUnit.getUnitFile()).getNativeResource();
                     if (fileToAdd.exists()) {
                         filesToAddInTypecheck.add(fileToAdd);
                         filesToAddInCompile.add(fileToAdd);
@@ -1697,7 +1696,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         
         if (isCeylon(srcFile)) {
             PhasedUnit phasedUnit = currentFileTypeChecker.getPhasedUnits()
-                    .getPhasedUnit(vfsJ2C.createVirtualResource(srcFile));
+                    .getPhasedUnit(vfsJ2C().createVirtualResource(srcFile));
             if (phasedUnit != null && phasedUnit.getUnit() != null) {
                 return phasedUnit.getUnit().getDependentsOf();
             }
@@ -1841,7 +1840,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         continue;
                     }
                     
-                    FileVirtualFile<IResource, IFolder, IFile> file = vfsJ2C.createVirtualFile(fileToUpdate);
+                    FileVirtualFile<IResource, IFolder, IFile> file = vfsJ2C().createVirtualFile(fileToUpdate);
                     IFolder srcFolder = getRootFolder(fileToUpdate);
 
                     ProjectPhasedUnit alreadyBuiltPhasedUnit = (ProjectPhasedUnit) pus.getPhasedUnit(file);
@@ -1858,7 +1857,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     if (srcFolder == null || pkg == null) {
                         continue;
                     }
-                    FolderVirtualFile<IResource, IFolder, IFile> srcDir = vfsJ2C.createVirtualFolder(project, srcFolder.getProjectRelativePath());
+                    FolderVirtualFile<IResource, IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(project, srcFolder.getProjectRelativePath());
                     PhasedUnit newPhasedUnit = parseFileToPhasedUnit(moduleManager, moduleSourceMapper, typeChecker, file, srcDir, pkg);
                     phasedUnitsToUpdate.add(newPhasedUnit);
                 }
@@ -2409,12 +2408,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             .moduleManagerFactory(new ModuleManagerFactory(){
                 @Override
                 public ModuleManager createModuleManager(Context context) {
-                    return newModuleManager(context, ceylonModel().getProject(project));
+                    return modelJ2C().newModuleManager(context, modelJ2C().ceylonModel().getProject(project));
                 }
 
                 @Override
                 public ModuleSourceMapper createModuleManagerUtil(Context context, ModuleManager moduleManager) {
-                    return newModuleSourceMapper(context, (IdeModuleManager<IProject,IResource,IFolder,IFile>) moduleManager);
+                    return modelJ2C().newModuleSourceMapper(context, (IdeModuleManager<IProject,IResource,IFolder,IFile>) moduleManager);
                 }
             });
         
@@ -2452,7 +2451,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 throw new OperationCanceledException();
             }
 
-            final FolderVirtualFile<IResource,IFolder, IFile> srcDir = vfsJ2C.createVirtualFolder(srcFolder);
+            final FolderVirtualFile<IResource,IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(srcFolder);
             srcFolder.accept(new ModulesScanner(defaultModule, modelLoader, moduleManager, moduleSourceMapper,
                     srcDir, typeChecker, monitor));
         }
@@ -2463,7 +2462,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 throw new OperationCanceledException();
             }
 
-            final FolderVirtualFile<IResource,IFolder, IFile> srcDir = vfsJ2C.createVirtualFolder(sourceFolder);
+            final FolderVirtualFile<IResource,IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(sourceFolder);
             sourceFolder.accept(new RootFolderScanner(RootFolderType.SOURCE, defaultModule, modelLoader, moduleManager,
                     moduleSourceMapper,
                     srcDir, typeChecker, projectFiles,
@@ -2476,7 +2475,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 throw new OperationCanceledException();
             }
 
-            final FolderVirtualFile<IResource,IFolder, IFile> srcDir = vfsJ2C.createVirtualFolder(resourceFolder);
+            final FolderVirtualFile<IResource,IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(resourceFolder);
             resourceFolder.accept(new RootFolderScanner(RootFolderType.RESOURCE, defaultModule, modelLoader, moduleManager,
                     moduleSourceMapper,
                     srcDir, typeChecker, projectFiles,
@@ -2510,7 +2509,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         String js_outRepo = null;
 
         IProject project = javaProject.getProject();
-        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = ceylonModel().getProject(project);
+        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
         
         String srcPath = "";
         for (IFolder sourceFolder : getSourceFolders(project)) {
@@ -2768,8 +2767,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             
             public File getFullPath(PhasedUnit pu) {
                 VirtualFile virtualFile = pu.getUnitFile();
-                if (vfsJ2C.instanceOfIFileVirtualFile(virtualFile)) {
-                    return vfsJ2C.getIFileVirtualFile(virtualFile).getNativeResource().getLocation().toFile();
+                if (vfsJ2C().instanceOfIFileVirtualFile(virtualFile)) {
+                    return vfsJ2C().getIFileVirtualFile(virtualFile).getNativeResource().getLocation().toFile();
                 } else {
                     return new File(virtualFile.getPath());
                 }
@@ -3091,7 +3090,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
     public static EnumSet<Warning> getSuppressedWarnings(IProject project) {
         if (project!=null) {
-            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = ceylonModel().getProject(project);
+            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
             if (ceylonProject != null) {
                 return ceylonProject.getConfiguration().getSuppressWarningsEnum();
             }
@@ -3150,7 +3149,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static List<String> getCeylonRepositories(IProject project) {
-        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = ceylonModel().getProject(project);
+        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
         if (ceylonProject != null) {
             return toJavaStringList(ceylonProject.getCeylonRepositories());
         } else {
@@ -3602,8 +3601,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
     // TODO ABSTRACTION : should be moved to the CeylonProject class
     public static RepositoryManager createProjectRepositoryManager(final IProject project) throws CoreException {
-        ceylonModel().addProject(project);
-        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = ceylonModel().getProject(project);
+        modelJ2C().ceylonModel().addProject(project);
+        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
 
         RepositoryManager repositoryManager = new CeylonUtils.CeylonRepoManagerBuilder() {
                     protected com.redhat.ceylon.cmr.api.Overrides getOverrides(String path) {
@@ -3724,7 +3723,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     public static List<IFolder> getResourceFolders(IProject project) {
         LinkedList<IFolder> resourceFolers = new LinkedList<>();
         if (project.exists()) {
-            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject  = ceylonModel().getProject(project);
+            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject  = modelJ2C().ceylonModel().getProject(project);
             if (ceylonProject != null) {
                 for (String resourceInConfig : toJavaStringList(ceylonProject.getConfiguration().getResourceDirectories())) {
                     class FolderHolder {
@@ -3941,11 +3940,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }    
 
     public static Package getPackage(VirtualFile virtualFile) {
-        if (vfsJ2C.instanceOfIFileVirtualFile(virtualFile)) {
-            return getPackage(vfsJ2C.getIFileVirtualFile(virtualFile).getNativeResource());
+        if (vfsJ2C().instanceOfIFileVirtualFile(virtualFile)) {
+            return getPackage(vfsJ2C().getIFileVirtualFile(virtualFile).getNativeResource());
         }
-        if (vfsJ2C.instanceOfIFolderVirtualFile(virtualFile)) {
-            return getPackage(vfsJ2C.getIFolderVirtualFile(virtualFile).getNativeResource());
+        if (vfsJ2C().instanceOfIFolderVirtualFile(virtualFile)) {
+            return getPackage(vfsJ2C().getIFolderVirtualFile(virtualFile).getNativeResource());
         }
         String virtualPath = virtualFile.getPath();
         if (virtualPath.contains("!/")) { // TODO : this test could be replaced by an instanceof if the ZipEntryVirtualFile was public
@@ -3959,8 +3958,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
 
     public static SourceFile getUnit(VirtualFile virtualFile) {
-        if (vfsJ2C.instanceOfIFileVirtualFile(virtualFile)) {
-            IFile file = vfsJ2C.getIFileVirtualFile(virtualFile).getNativeResource();
+        if (vfsJ2C().instanceOfIFileVirtualFile(virtualFile)) {
+            IFile file = vfsJ2C().getIFileVirtualFile(virtualFile).getNativeResource();
             Package p = getPackage(file);
             if (p != null) {
                 for (Unit u : p.getUnits()) {
@@ -4023,7 +4022,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         for (Module m : projectModules.getListOfModules()) {
             if (m instanceof BaseIdeModule && ! m.getNameAsString().equals(Module.DEFAULT_MODULE_NAME)) {
                 BaseIdeModule module = (BaseIdeModule) m;
-                for (IPackageFragmentRoot moduleRoot : getModulePackageFragmentRoots(module)) {
+                for (IPackageFragmentRoot moduleRoot : modelJ2C().getModulePackageFragmentRoots(module)) {
                     if (root.getPath().equals(moduleRoot.getPath())) {
                         Package result = module.getDirectPackage(packageFragment.getElementName());
                         if (result != null) {
@@ -4034,7 +4033,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
         }
         BaseIdeModule defaultModule = (BaseIdeModule) projectModules.getDefaultModule();
-        for (IPackageFragmentRoot moduleRoot : getModulePackageFragmentRoots(defaultModule)) {
+        for (IPackageFragmentRoot moduleRoot : modelJ2C().getModulePackageFragmentRoots(defaultModule)) {
             if (root.getPath().equals(moduleRoot.getPath())) {
                 Package result = defaultModule.getDirectPackage(packageFragment.getElementName());
                 if (result != null) {
@@ -4343,10 +4342,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     public static IFolder getCeylonModulesOutputFolder(IProject project) {
-        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = ceylonModel().getProject(project);
+        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
         String outputRepoRelativePath;
         if (ceylonProject != null) {
-            CeylonProjectConfig config = ceylonModel().getProject(project).getConfiguration();
+            CeylonProjectConfig config = modelJ2C().ceylonModel().getProject(project).getConfiguration();
             outputRepoRelativePath = config.getOutputRepoProjectRelativePath();
         } else {
             outputRepoRelativePath = "modules";

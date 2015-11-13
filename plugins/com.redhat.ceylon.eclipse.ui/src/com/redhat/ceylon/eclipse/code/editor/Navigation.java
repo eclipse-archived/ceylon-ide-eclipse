@@ -10,6 +10,7 @@ import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEditor;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.TOGGLE_SHOW_SELECTED_ELEMENT_ONLY;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +44,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.utilJ2C;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.CeylonUnit;
 import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
@@ -428,7 +428,7 @@ public class Navigation {
             final IJavaModelAware<IProject, ITypeRoot, IJavaElement> javaModelAware = 
                     (IJavaModelAware<IProject, ITypeRoot, IJavaElement>) 
                         declaration.getUnit();
-            return javaModelAware.toJavaElement(declaration, utilJ2C.newProgressMonitor(monitor));
+            return javaModelAware.toJavaElement(declaration, utilJ2C().newProgressMonitor(monitor));
         }
         return null;
     }

@@ -101,6 +101,8 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findOperator;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
+
 
 /*******************************************************************************
  * Copyright (c) 2000, 2010 IBM Corporation and others.
@@ -140,7 +142,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.quickassist.IQuickAssistInvocationContext;
 import org.eclipse.jface.text.quickassist.IQuickAssistProcessor;
 import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
@@ -148,12 +149,10 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.text.edits.TextEdit;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -176,8 +175,6 @@ import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.MarkerUtils;
-import com.redhat.ceylon.ide.common.correct.IdeQuickFixManager;
-import com.redhat.ceylon.ide.common.correct.QuickFixData;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.NamedArgumentList;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
@@ -620,9 +617,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         int end = start + problem.getLength();
         Node node = findNode(rootNode, null, start, end);
 
-        QuickFixData<IProject> data =
-                correctJ2C.newEclipseQuickFixData(problem, rootNode, node, project, proposals, editor);
-        correctJ2C.eclipseQuickFixManager().addQuickFixes(data, tc, file);
+        correctJ2C().addQuickFixes(problem, rootNode, node, project, proposals, editor, tc, file);
 
         switch (problem.getProblemId()) {
 //        case 100:

@@ -6,6 +6,7 @@ import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.compile;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,7 +40,6 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.eclipse.util.SearchVisitor;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
@@ -340,9 +340,9 @@ class CeylonSearchQuery implements ISearchQuery {
         else {
             for (IResource r: resources) {
                 VirtualFile unitFile = pu.getUnitFile();
-                if (vfsJ2C.instanceOfIFileVirtualFile(unitFile)) {
+                if (vfsJ2C().instanceOfIFileVirtualFile(unitFile)) {
                     IPath loc = 
-                            vfsJ2C.getIFileVirtualFile(unitFile).getNativeResource().getLocation();
+                            vfsJ2C().getIFileVirtualFile(unitFile).getNativeResource().getLocation();
                     if (r.getLocation().isPrefixOf(loc)) {
                         return true;
                     }

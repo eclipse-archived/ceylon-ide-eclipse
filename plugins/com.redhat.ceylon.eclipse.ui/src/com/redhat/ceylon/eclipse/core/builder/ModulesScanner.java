@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.formatPath;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +23,6 @@ import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
-import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -30,7 +30,6 @@ import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 
 final class ModulesScanner implements IResourceVisitor {
@@ -98,7 +97,7 @@ final class ModulesScanner implements IResourceVisitor {
                 pkg.setName(pkgName);
                 
                 IFile file = moduleFile;
-                final FileVirtualFile<IResource, IFolder, IFile> virtualFile = vfsJ2C.createVirtualFile(file);
+                final FileVirtualFile<IResource, IFolder, IFile> virtualFile = vfsJ2C().createVirtualFile(file);
                 try {
                     PhasedUnit tempPhasedUnit = null;
                     tempPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, moduleSourceMapper, 

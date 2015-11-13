@@ -2,7 +2,8 @@ package com.redhat.ceylon.eclipse.code.modulesearch;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.importsJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_ADD;
 
 import java.util.ArrayList;
@@ -82,7 +83,6 @@ import com.redhat.ceylon.eclipse.code.hover.CeylonBlockEmitter;
 import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
-import com.redhat.ceylon.eclipse.code.imports.importsJ2C;
 import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
@@ -300,7 +300,7 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
                         MessageDialog.openInformation(parent.getShell(), "Information", "Can not add module import, because module '" + 
                                 target.getNameAsString() + "' contains it already.");
                     } else {
-                        importsJ2C.importUtil()
+                        importsJ2C().importUtil()
                             .addModuleImport(moduleMap.get(target), target, moduleName, moduleVersion);
                     }
                 }
@@ -385,7 +385,7 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
             Repositories repositories;
             IProject selectedProject = getSelectedProject();
             if( selectedProject != null ) {
-                repositories = ceylonModel().getProject(selectedProject).getConfiguration().getRepositories();
+                repositories = modelJ2C().ceylonModel().getProject(selectedProject).getConfiguration().getRepositories();
             } else {
                 repositories = Repositories.get();
             }

@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.preferences;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.openInEditor;
 import static org.eclipse.jface.layout.GridDataFactory.fillDefaults;
 import static org.eclipse.jface.layout.GridDataFactory.swtDefaults;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
@@ -39,7 +40,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
-import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
@@ -89,7 +89,7 @@ public class CeylonModuleResolutionBlock {
         
         ceylon.language.String overrides = null;
         if (isCeylonNatureEnabled) {
-            BaseCeylonProject ceylonProject = modelJ2C.ceylonModel().getProject(project);
+            BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
             if (project != null) {
                 
             }

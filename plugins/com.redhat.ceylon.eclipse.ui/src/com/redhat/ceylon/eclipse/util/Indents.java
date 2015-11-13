@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.util;
 
 import org.eclipse.jface.text.IDocument;
-
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 //import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 //import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH;
 //
@@ -16,7 +16,7 @@ import org.eclipse.jface.text.IDocument;
 //
 public class Indents {
     
-    private final static com.redhat.ceylon.ide.common.util.Indents<IDocument> indents = utilJ2C.indents();
+    private final static com.redhat.ceylon.ide.common.util.Indents<IDocument> indents = utilJ2C().indents();
     
     public static com.redhat.ceylon.ide.common.util.Indents<IDocument> indents() {
         return indents;

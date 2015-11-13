@@ -21,6 +21,7 @@
 package com.redhat.ceylon.eclipse.core.model;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
@@ -124,8 +125,12 @@ import com.redhat.ceylon.eclipse.core.model.mirror.SourceDeclarationHolder;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.BaseIdeModuleManager;
 import com.redhat.ceylon.ide.common.model.BaseIdeModuleSourceMapper;
+import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.CrossProjectBinaryUnit;
 import com.redhat.ceylon.ide.common.model.IdeModelLoader;
+import com.redhat.ceylon.ide.common.model.IdeModule;
+import com.redhat.ceylon.ide.common.model.JavaClassFile;
 import com.redhat.ceylon.ide.common.model.JavaCompilationUnit;
 import com.redhat.ceylon.ide.common.model.SourceFile;
 import com.redhat.ceylon.model.cmr.ArtifactResult;
@@ -177,12 +182,25 @@ public class JDTModelLoader extends IdeModelLoader {
     private AnnotationLoader annotationLoader;
     private BaseIdeModuleSourceMapper moduleSourceMapper;
     
+    private static IJavaProject getJavaProject(BaseIdeModuleManager moduleManager) {
+        CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = 
+                (CeylonProject<IProject, IResource, IFolder, IFile>) moduleManager.getCeylonProject();
+        
+        if (ceylonProject != null) {
+            IProject project = ceylonProject.getIdeArtifact();
+            return JavaCore.create(project);
+        }
+        return null;
+    }
+    
     public JDTModelLoader(final BaseIdeModuleManager moduleManager, BaseIdeModuleSourceMapper moduleSourceMapper, final Modules modules){
         this.moduleSourceMapper = moduleSourceMapper;
         this.moduleManager = moduleManager;
         moduleManager.setModelLoader(this);
         this.modules = modules;
-        javaProject = moduleManager.getJavaProject();
+
+        javaProject = getJavaProject(moduleManager);
+        
         if (javaProject != null) {
             compilerOptions = new CompilerOptions(javaProject.getOptions(true));
             compilerOptions.ignoreMethodBodies = true;
@@ -272,7 +290,7 @@ public class JDTModelLoader extends IdeModelLoader {
     @Override
     protected Module loadLanguageModuleAndPackage() {
         Module languageModule = getLanguageModule();
-        if (getModuleManager().isLoadDependenciesFromModelLoaderFirst() && !isBootstrap) {
+        if (getModuleManager().getLoadDependenciesFromModelLoaderFirst() && !isBootstrap) {
             findOrCreatePackage(languageModule, CEYLON_LANGUAGE);
         }
         return languageModule;
@@ -306,9 +324,9 @@ public class JDTModelLoader extends IdeModelLoader {
                 return true;
             }
             
-            if (module instanceof JDTModule) {
-                JDTModule jdtModule = (JDTModule) module;
-                List<IPackageFragmentRoot> roots = jdtModule.getPackageFragmentRoots();
+            if (module instanceof BaseIdeModule) {
+                BaseIdeModule jdtModule = (BaseIdeModule) module;
+                List<IPackageFragmentRoot> roots = modelJ2C().getModulePackageFragmentRoots(jdtModule);
                 IPackageFragment packageFragment = null;
                 for (IPackageFragmentRoot root : roots) {
                     // skip packages that are not present
@@ -819,7 +837,7 @@ public class JDTModelLoader extends IdeModelLoader {
                 String packageName = packageEnd > 0 ? name.substring(0, packageEnd) : "";
                 String className = classNameStart < nameLength ? name.substring(classNameStart) : "";
                 boolean moduleContainsJava = false;
-                for (IPackageFragmentRoot root : modelJ2C.getModulePackageFragmentRoots(jdtModule)) {
+                for (IPackageFragmentRoot root : modelJ2C().getModulePackageFragmentRoots(jdtModule)) {
                     try {
                         IPackageFragment pf = root.getPackageFragment(packageName);
                         if (pf.exists() && 
@@ -970,7 +988,7 @@ public class JDTModelLoader extends IdeModelLoader {
                             if (moduleManager == null) {
                                 continue;
                             }
-                            IJavaProject javaProject = moduleManager.getJavaProject();
+                            IJavaProject javaProject = getJavaProject(moduleManager);
                             if (javaProject == null) {
                                 continue;
                             }
@@ -1458,24 +1476,28 @@ public class JDTModelLoader extends IdeModelLoader {
         String fullPath = jdtClass.getFullPath();
         
         if (!jdtClass.isBinary()) {
-            unit = new JavaCompilationUnit((org.eclipse.jdt.core.ICompilationUnit)typeRoot, fileName, relativePath, fullPath, pkg);
+            unit = modelJ2C().newJavaCompilationUnit(typeRoot, relativePath, fileName,
+                    fullPath, pkg);
         }
         else {
             if (jdtClass.isCeylon()) {
-                if (pkg.getModule() instanceof BaseIdeModule) {
-                    BaseIdeModule module = (BaseIdeModule) pkg.getModule();
-                    IProject originalProject = module.getOriginalProject();
+                if (pkg.getModule() instanceof IdeModule) {
+                    IdeModule<IProject, IResource, IFolder, IFile> module = (IdeModule<IProject, IResource, IFolder, IFile>) pkg.getModule();
+                    CeylonProject<IProject, IResource, IFolder, IFile> originalProject = module.getOriginalProject();
                     if (originalProject != null) {
-                        unit = new CrossProjectBinaryUnit((IClassFile)typeRoot, fileName, relativePath, fullPath, pkg);
+                        unit = modelJ2C().newCrossProjectBinaryUnit(typeRoot, relativePath,
+                                fileName, fullPath, pkg);
                     } else {
-                        unit = new CeylonBinaryUnit((IClassFile)typeRoot, fileName, relativePath, fullPath, pkg);
+                        unit = modelJ2C().newCeylonBinaryUnit(typeRoot, relativePath,
+                                fileName, fullPath, pkg);
                     }
                 } else {
-                    unit = new CeylonBinaryUnit((IClassFile)typeRoot, fileName, relativePath, fullPath, pkg);
+                    unit = modelJ2C().newCeylonBinaryUnit(typeRoot, fileName, relativePath, fullPath, pkg);
                 }
             }
             else {
-                unit = new JavaClassFile((IClassFile)typeRoot, fileName, relativePath, fullPath, pkg);
+                unit = modelJ2C().newJavaClassFile(typeRoot, relativePath, fileName,
+                        fullPath, pkg);
             }
         }
 
@@ -1744,7 +1766,7 @@ public class JDTModelLoader extends IdeModelLoader {
     @Override
     protected boolean isAutoExportMavenDependencies() {
         if (javaProject != null) {
-            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C.ceylonModel().getProject(javaProject.getProject());
+            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(javaProject.getProject());
             if (ceylonProject != null) {
                 return ceylonProject.getConfiguration().getAutoExportMavenDependencies();
             }
@@ -1756,7 +1778,7 @@ public class JDTModelLoader extends IdeModelLoader {
     @Override
     protected boolean isFlatClasspath() {
         if (javaProject != null) {
-            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C.ceylonModel().getProject(javaProject.getProject());
+            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(javaProject.getProject());
             if (ceylonProject != null) {
                 return ceylonProject.getConfiguration().getFlatClasspath();
             }

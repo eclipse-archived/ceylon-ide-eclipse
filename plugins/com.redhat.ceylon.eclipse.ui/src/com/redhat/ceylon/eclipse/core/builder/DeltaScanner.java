@@ -6,7 +6,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRootFolder
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInSourceFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isResourceFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isSourceFile;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 
 import java.io.File;
@@ -58,7 +58,7 @@ final class DeltaScanner implements IResourceDeltaVisitor {
         modulesDirPathByProject.put(project, modulesDirPath);
         try {
             for (IProject referencedProject : project.getReferencedProjects()) {
-                if (ceylonModel().getProject(referencedProject) != null) {
+                if (modelJ2C().ceylonModel().getProject(referencedProject) != null) {
                     modulesFolder = CeylonBuilder.getCeylonModulesOutputFolder(referencedProject);
                 }
                 modulesDirPath = modulesFolder != null ? modulesFolder.getFullPath() : null;
@@ -67,7 +67,7 @@ final class DeltaScanner implements IResourceDeltaVisitor {
         } catch (CoreException e) {
         }
         astAwareIncrementalBuild = CeylonBuilder.areAstAwareIncrementalBuildsEnabled(project);
-        CeylonProjectConfig projectConfig = ceylonModel().getProject(project).getConfiguration();
+        CeylonProjectConfig projectConfig = modelJ2C().ceylonModel().getProject(project).getConfiguration();
         if (projectConfig != null) {
             String overridesFilePath = toJavaString(projectConfig.getOverrides());
             if (overridesFilePath != null) {

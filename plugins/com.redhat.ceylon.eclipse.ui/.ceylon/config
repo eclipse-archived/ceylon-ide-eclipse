@@ -1,10 +1,10 @@
 
 [compiler]
 source=generated-source
-source=java-to-ceylon-source
 source=source
-resource=resource
 source=src
+resource=resource
+source=java-to-ceylon-source
 
 [defaults]
 encoding=UTF-8

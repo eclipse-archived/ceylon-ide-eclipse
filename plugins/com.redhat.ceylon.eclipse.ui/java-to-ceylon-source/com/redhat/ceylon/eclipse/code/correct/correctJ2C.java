@@ -12,30 +12,37 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.TextEdit;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.java2ceylon.CorrectJ2C;
 import com.redhat.ceylon.ide.common.correct.IdeQuickFixManager;
 import com.redhat.ceylon.ide.common.correct.ImportProposals;
 import com.redhat.ceylon.ide.common.correct.QuickFixData;
 
-public class correctJ2C {
-    public static ImportProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange>
+public class correctJ2C implements CorrectJ2C {
+    public ImportProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange>
         importProposals() {
         return eclipseImportProposals_.get_();
     }
     
-    public static IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,IFile,ICompletionProposal,QuickFixData<IProject>,LinkedModeModel> eclipseQuickFixManager() {
+    public IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,IFile,ICompletionProposal,? extends QuickFixData<IProject>,LinkedModeModel> eclipseQuickFixManager() {
         return eclipseQuickFixManager_.get_();
     }
     
-    public static QuickFixData<IProject> newEclipseQuickFixData(
+    public void addQuickFixes(
             ProblemLocation problem,
             Tree.CompilationUnit rootNode,
             Node node,
             IProject project,
             Collection<ICompletionProposal> proposals,
-            CeylonEditor editor) {
-        return new EclipseQuickFixData(problem, rootNode, node, project, proposals, editor);
+            CeylonEditor editor, 
+            TypeChecker tc, 
+            IFile file) {
+        EclipseQuickFixData data =
+                new EclipseQuickFixData(problem, rootNode, node, project, proposals, editor);
+
+        eclipseQuickFixManager_.get_().addQuickFixes(data, tc, file);
     }
 }

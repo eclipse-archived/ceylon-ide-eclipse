@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.imports;
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.Indents.indents;
-
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.importsJ2C;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,7 +48,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 editor.getCeylonSourceViewer()
                       .getDocument();
         
-        importsJ2C.cleanImports(editor.getParseController(), doc);
+        importsJ2C().cleanImports(editor.getParseController(), doc);
 
         return null;
     }

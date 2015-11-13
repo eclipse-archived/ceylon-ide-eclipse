@@ -2,6 +2,8 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,7 +48,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class MoveFileRefactoringParticipant extends MoveParticipant {
@@ -367,7 +368,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             Map<Declaration, String> imports) {
         try {
             FileVirtualFile<IResource, IFolder, IFile> virtualFile = 
-                    vfsJ2C.getIFileVirtualFile( movedPhasedUnit.getUnitFile());
+                    vfsJ2C().getIFileVirtualFile( movedPhasedUnit.getUnitFile());
             IFile file = virtualFile.getNativeResource();
             String path = file.getProjectRelativePath().toPortableString();
             TextFileChange change = fileChanges.get(path);
@@ -407,7 +408,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                     phasedUnit.getCompilationUnit();
             if (!imports.isEmpty()) {
                 FileVirtualFile<IResource, IFolder, IFile> virtualFile = 
-                        vfsJ2C.getIFileVirtualFile(phasedUnit.getUnitFile());
+                        vfsJ2C().getIFileVirtualFile(phasedUnit.getUnitFile());
                 IFile file = virtualFile.getNativeResource();
                 String path = file.getProjectRelativePath().toPortableString();
                 TextFileChange change = fileChanges.get(path);

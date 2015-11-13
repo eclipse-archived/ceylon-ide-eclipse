@@ -5,6 +5,7 @@ import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
 import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,7 +28,6 @@ import org.eclipse.text.edits.InsertEdit;
 
 import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.imports.importsJ2C;
 import com.redhat.ceylon.eclipse.code.refactor.CreateUnitChange;
 import com.redhat.ceylon.eclipse.code.wizard.SelectNewUnitWizard;
 import com.redhat.ceylon.eclipse.util.Highlights;
@@ -152,7 +152,7 @@ class CreateInNewUnitProposal implements ICompletionProposal,
         if (dg.getParameters()!=null) {
             resolveImports(imports, dg.getParameters().values());
         }
-        String imps = importsJ2C.importCleaner().createImports(
+        String imps = importsJ2C().importCleaner().createImports(
                 new CeylonList<>(TypeDescriptor.klass(Declaration.class), imports),
                 doc);
         if (!imps.isEmpty()) {

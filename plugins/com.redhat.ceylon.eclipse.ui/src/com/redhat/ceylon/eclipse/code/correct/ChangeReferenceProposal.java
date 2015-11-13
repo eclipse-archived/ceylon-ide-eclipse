@@ -10,6 +10,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getOccurrenceLocation;
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.IMPORT;
 import static java.lang.Character.isUpperCase;
 import static java.util.Collections.singleton;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 import java.util.Collection;
 import java.util.List;
@@ -27,7 +28,6 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.complete.completionJ2C;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -118,7 +118,7 @@ class ChangeReferenceProposal extends CorrectionProposal {
                     !brokenName.isEmpty()) {
                 Scope scope = node.getScope();
                 Collection<DeclarationWithProximity> dwps = 
-                        completionJ2C.getProposals(node, scope, rootNode)
+                        completionJ2C().getProposals(node, scope, rootNode)
                             .values();
                 for (DeclarationWithProximity dwp: dwps) {
                     processProposal(rootNode, problem,

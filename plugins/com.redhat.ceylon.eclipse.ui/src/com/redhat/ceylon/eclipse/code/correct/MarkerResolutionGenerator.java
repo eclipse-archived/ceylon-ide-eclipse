@@ -3,9 +3,9 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.openInEditor;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CEYLON_CONFIG_NOT_IN_SYNC_MARKER;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CHARSET_PROBLEM_MARKER_ID;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 import java.util.ArrayList;
 
@@ -140,7 +140,7 @@ public class MarkerResolutionGenerator
                 IProject project = (IProject) marker.getResource();
                 String encoding = project.getDefaultCharset();
                 String ceylonEncoding = 
-                        ceylonModel().getProject(project).getDefaultCharset();
+                        modelJ2C().ceylonModel().getProject(project).getDefaultCharset();
                 return new IMarkerResolution[] {
                     new CharsetCorrection(project, encoding),
                     new CharsetCorrection(project, ceylonEncoding),

@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_PROJECT;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static com.redhat.ceylon.ide.common.util.toCeylonBoolean_.toCeylonBoolean;
@@ -150,7 +150,7 @@ public class NewProjectWizard extends NewElementWizard
             IProject project = getCreatedElement().getProject();
             
             BaseCeylonProject ceylonProject = 
-                    ceylonModel().getProject(project);
+                    modelJ2C().ceylonModel().getProject(project);
             CeylonProjectConfig projectConfig = 
                     ceylonProject.getConfiguration();
             

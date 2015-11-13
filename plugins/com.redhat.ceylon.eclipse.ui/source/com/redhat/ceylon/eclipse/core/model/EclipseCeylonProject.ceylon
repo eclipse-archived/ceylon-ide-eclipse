@@ -1,17 +1,40 @@
+import ceylon.collection {
+    HashSet
+}
+import ceylon.interop.java {
+    CeylonIterable
+}
+
+import com.redhat.ceylon.common {
+    Constants
+}
+import com.redhat.ceylon.compiler.typechecker {
+    TypeChecker
+}
+import com.redhat.ceylon.eclipse.core.builder {
+    CeylonBuilder
+}
+import com.redhat.ceylon.eclipse.ui {
+    CeylonEncodingSynchronizer
+}
 import com.redhat.ceylon.ide.common.model {
     CeylonProject,
     ModuleDependencies,
     CeylonProjectConfig,
-    ModelAliases
+    ModelAliases,
+    CeylonProjects
 }
+
+import java.io {
+    File
+}
+
 import org.eclipse.core.resources {
-    IProject, IResource,
+    IProject,
+    IResource,
     IFolder,
     IContainer,
     IFile
-}
-import java.io {
-    File
 }
 import org.eclipse.core.runtime {
     NullProgressMonitor,
@@ -19,35 +42,21 @@ import org.eclipse.core.runtime {
     IProgressMonitor,
     Path
 }
+import org.eclipse.jdt.core {
+    JavaCore
+}
 import org.eclipse.jface.dialogs {
     MessageDialog
 }
 import org.eclipse.swt.widgets {
     Display
 }
-import com.redhat.ceylon.eclipse.ui {
-    CeylonEncodingSynchronizer
-}
-import ceylon.collection {
-    HashSet
-}
-import com.redhat.ceylon.eclipse.core.builder {
-    CeylonBuilder
-}
-import ceylon.interop.java {
-    CeylonIterable
-}
-import com.redhat.ceylon.common {
-    Constants
-}
-import org.eclipse.jdt.core {
-    JavaCore
-}
 
 shared class EclipseCeylonProject(ideArtifact) 
         extends CeylonProject<IProject, IResource, IFolder, IFile>() {
     shared actual IProject ideArtifact;
 
+    
     shared actual File rootDirectory => ideArtifact.location.toFile();
 
     shared actual Boolean hasConfigFile
@@ -171,7 +180,7 @@ shared class EclipseCeylonProject(ideArtifact)
         };
     }
     
-    shared actual CeylonProjectsAlias model => ceylonModel;
+    shared actual CeylonProjects<IProject,IResource,IFolder,IFile> model => ceylonModel;
     
     shared actual Boolean nativeProjectIsAccessible => ideArtifact.accessible;
 
@@ -200,4 +209,6 @@ shared class EclipseCeylonProject(ideArtifact)
     shared actual Boolean compileToJava => CeylonBuilder.compileToJava(ideArtifact);
     
     shared actual ModuleDependencies moduleDependencies => CeylonBuilder.getModuleDependenciesForProject(ideArtifact);
+    
+    shared actual TypeChecker? typechecker => CeylonBuilder.getProjectTypeChecker(ideArtifact);
  }

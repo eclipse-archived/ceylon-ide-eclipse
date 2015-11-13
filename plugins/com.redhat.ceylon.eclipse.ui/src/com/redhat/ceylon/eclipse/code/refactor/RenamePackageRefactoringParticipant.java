@@ -4,6 +4,7 @@ import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.DocLinks.packageName;
 import static com.redhat.ceylon.eclipse.util.DocLinks.packageRegion;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +36,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 
 public class RenamePackageRefactoringParticipant extends RenameParticipant {
@@ -143,7 +143,7 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
                 if (!edits.isEmpty()) {
                     try {
                         FileVirtualFile<IResource, IFolder, IFile> virtualFile = 
-                                vfsJ2C.getIFileVirtualFile(phasedUnit.getUnitFile());
+                                vfsJ2C().getIFileVirtualFile(phasedUnit.getUnitFile());
                         IFile file = virtualFile.getNativeResource();
                         String path = file.getProjectRelativePath().toPortableString();
                         TextFileChange change = fileChanges.get(path);

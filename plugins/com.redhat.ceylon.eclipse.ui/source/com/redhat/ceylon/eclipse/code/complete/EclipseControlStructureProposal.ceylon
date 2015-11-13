@@ -48,7 +48,7 @@ import com.redhat.ceylon.eclipse.ui {
 
 class EclipseControlStructureProposal(Integer offset, String prefix, String desc,
     String text, Declaration declaration, CeylonParseController cpc, Node? node)
-        extends ControlStructureProposal<CeylonParseController,IProject,IFile,
+        extends ControlStructureProposal<CeylonParseController,IFile,
         ICompletionProposal,IDocument, InsertEdit, TextEdit, TextChange,Point,LinkedModeModel>
         (offset, prefix, desc, text, node, declaration, cpc)
                 satisfies EclipseDocumentChanges & EclipseCompletionProposal {

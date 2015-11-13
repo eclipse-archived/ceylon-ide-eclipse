@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.refactor.refactorJ2C.newExtractValueRefactoring;
-import static com.redhat.ceylon.eclipse.code.refactor.refactorJ2C.toExtractLinkedModeEnabled;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.refactorJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
@@ -29,7 +28,7 @@ public final class ExtractValueLinkedMode
     
     public ExtractValueLinkedMode(CeylonEditor editor) {
         super(editor);
-        this.refactoring = newExtractValueRefactoring(editor);
+        this.refactoring = refactorJ2C().newExtractValueRefactoring(editor);
     }
     
     @Override
@@ -49,22 +48,22 @@ public final class ExtractValueLinkedMode
     
     @Override
     protected int getNameOffset() {
-        return toExtractLinkedModeEnabled(refactoring).getDecRegion().getOffset();
+        return refactorJ2C().toExtractLinkedModeEnabled(refactoring).getDecRegion().getOffset();
     }
     
     @Override
     protected int getTypeOffset() {
-        return toExtractLinkedModeEnabled(refactoring).getTypeRegion().getOffset();
+        return refactorJ2C().toExtractLinkedModeEnabled(refactoring).getTypeRegion().getOffset();
     }
     
     @Override
     protected int getExitPosition(int selectionOffset, int adjust) {
-        return toExtractLinkedModeEnabled(refactoring).getRefRegion().getOffset();
+        return refactorJ2C().toExtractLinkedModeEnabled(refactoring).getRefRegion().getOffset();
     }
     
     @Override
     protected String[] getNameProposals() {
-    	return toExtractLinkedModeEnabled(refactoring).getNameProposals();
+    	return refactorJ2C().toExtractLinkedModeEnabled(refactoring).getNameProposals();
     }
     
     @Override
@@ -72,14 +71,14 @@ public final class ExtractValueLinkedMode
             CompilationUnit rootNode, int adjust) {
         
         addNamePosition(document, 
-                toExtractLinkedModeEnabled(refactoring).getRefRegion().getOffset(),
-                toExtractLinkedModeEnabled(refactoring).getRefRegion().getLength());
+                refactorJ2C().toExtractLinkedModeEnabled(refactoring).getRefRegion().getOffset(),
+                refactorJ2C().toExtractLinkedModeEnabled(refactoring).getRefRegion().getLength());
         
         Type type = refactoring.getType();
         if (!isTypeUnknown(type)) {
             addTypePosition(document, type, 
-            toExtractLinkedModeEnabled(refactoring).getTypeRegion().getOffset(), 
-            toExtractLinkedModeEnabled(refactoring).getTypeRegion().getLength());
+            refactorJ2C().toExtractLinkedModeEnabled(refactoring).getTypeRegion().getOffset(), 
+            refactorJ2C().toExtractLinkedModeEnabled(refactoring).getTypeRegion().getLength());
         }
         
     }

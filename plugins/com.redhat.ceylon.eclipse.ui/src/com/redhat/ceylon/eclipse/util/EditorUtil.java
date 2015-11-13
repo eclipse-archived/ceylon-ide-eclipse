@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.util;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRootFolderType;
-import static com.redhat.ceylon.eclipse.core.vfs.vfsJ2C.instanceOfIFileVirtualFile;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static org.eclipse.jdt.core.JavaCore.isJavaLikeFileName;
 import static org.eclipse.jface.preference.PreferenceConverter.getColor;
@@ -726,7 +726,7 @@ public class EditorUtil {
                                                     sourcePhasedUnits.getPhasedUnitFromRelativePath(
                                                             relativePath.toString());
                                             if (unit instanceof ProjectPhasedUnit) {
-                                                if (instanceOfIFileVirtualFile(unit.getUnitFile())) {
+                                                if (vfsJ2C().instanceOfIFileVirtualFile(unit.getUnitFile())) {
                                                     ProjectPhasedUnit<IProject,IResource,IFolder,IFile> ppu = 
                                                             (ProjectPhasedUnit<IProject,IResource,IFolder,IFile>) unit;
                                                     IFile newFile = ppu.getResourceFile();

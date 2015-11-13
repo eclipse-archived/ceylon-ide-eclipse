@@ -3,6 +3,8 @@ package com.redhat.ceylon.eclipse.code.editor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
+
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -33,7 +35,6 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractHandler;
 import com.redhat.ceylon.eclipse.code.style.CeylonStyle;
-import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.StringBuilderWriter;
 import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
@@ -70,7 +71,7 @@ public class PasteAsCeylonHandler extends AbstractHandler {
             monitor.beginTask("Converting Java to Ceylon", -1);
             try {
                 CeylonIdeConfig ideConfig = 
-                        modelJ2C.ceylonModel()
+                        modelJ2C().ceylonModel()
                             .getProject(project)
                             .getIdeConfiguration();
                 ceylonCode = 

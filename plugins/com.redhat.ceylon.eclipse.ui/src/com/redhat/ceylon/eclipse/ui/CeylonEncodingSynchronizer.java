@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.ui;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CHARSET_PROBLEM_MARKER_ID;
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static org.eclipse.core.resources.IResource.DEPTH_ONE;
@@ -85,7 +85,7 @@ public class CeylonEncodingSynchronizer {
             removeProblemMarker(project);
             
             String eclipseEncoding = project.getDefaultCharset();
-            String configEncoding = toJavaString(ceylonModel().getProject(project)
+            String configEncoding = toJavaString(modelJ2C().ceylonModel().getProject(project)
                     .getConfiguration().getProjectEncoding());
 
             if (forceEclipseEncoding) {
@@ -230,7 +230,7 @@ public class CeylonEncodingSynchronizer {
                         synchronizeEncoding(project, false);
                     }
                     if (filePath.equals(".ceylon/config")) {
-                        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = ceylonModel().getProject(project);
+                        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
                         if (ceylonProject != null) {
                             ceylonProject.getConfiguration().refresh();
                             synchronizeEncoding(project, false);
@@ -259,7 +259,7 @@ public class CeylonEncodingSynchronizer {
             refresh(project.getFolder(".settings"), monitor);
             refresh(project.getFolder(".ceylon"), monitor);
             
-            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = ceylonModel().getProject(project);
+            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
             if (ceylonProject != null) {
                 CeylonProjectConfig config = ceylonProject.getConfiguration();
                 config.refresh();

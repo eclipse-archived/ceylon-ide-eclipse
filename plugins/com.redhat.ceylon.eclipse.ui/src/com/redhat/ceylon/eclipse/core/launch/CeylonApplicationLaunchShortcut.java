@@ -9,6 +9,7 @@ import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationCo
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,7 +68,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -166,7 +166,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
             TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
             if (typeChecker != null) {
                 PhasedUnit phasedUnit = typeChecker.getPhasedUnits()
-                        .getPhasedUnit(vfsJ2C.createVirtualFile(file));
+                        .getPhasedUnit(vfsJ2C().createVirtualFile(file));
                 if (phasedUnit!=null) {
                     List<Declaration> declarations = phasedUnit.getDeclarations();
                     for (Declaration d : declarations) {

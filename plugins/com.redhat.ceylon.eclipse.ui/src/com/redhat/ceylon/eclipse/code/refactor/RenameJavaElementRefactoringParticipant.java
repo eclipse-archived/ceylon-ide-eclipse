@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +41,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedMemberOrTypeExp
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.QualifiedType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.util.DocLinks;
 
 public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
@@ -173,7 +173,7 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
                 if (!edits.isEmpty()) {
                     try {
                         FileVirtualFile<IResource, IFolder, IFile> unitFile = 
-                                vfsJ2C.getIFileVirtualFile(phasedUnit.getUnitFile());
+                                vfsJ2C().getIFileVirtualFile(phasedUnit.getUnitFile());
                         IFile file = unitFile.getNativeResource();
                         TextFileChange change = 
                                 new TextFileChange(file.getName(), file);

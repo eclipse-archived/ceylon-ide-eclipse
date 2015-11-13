@@ -28,6 +28,8 @@ import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isOverloadedVersion;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
+
 
 import java.io.File;
 import java.util.ArrayList;
@@ -72,7 +74,6 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
-import com.redhat.ceylon.eclipse.code.hover.hoverJ2C;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
@@ -1364,7 +1365,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         Referenceable target = null;
         CeylonEditor editor = null;
         IEditorPart currentEditor = getCurrentEditor();
-        DocGenerator<IDocument> gen = hoverJ2C.getDocGenerator();
+        DocGenerator<IDocument> gen = hoverJ2C().getDocGenerator();
         if (currentEditor instanceof CeylonEditor) {
             editor = (CeylonEditor) currentEditor;
             target = gen.getLinkedModel(

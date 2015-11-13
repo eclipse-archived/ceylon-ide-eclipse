@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.redhat.ceylon.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -293,8 +293,8 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
                 }
             }
 
-            if (ceylonModel().getProject(fCurrProject) == null) {
-                ceylonModel().addProject(fCurrProject);
+            if (modelJ2C().ceylonModel().getProject(fCurrProject) == null) {
+                modelJ2C().ceylonModel().addProject(fCurrProject);
             }
             
             if (monitor.isCanceled()) {
@@ -565,7 +565,7 @@ public class NewCeylonProjectWizardPageTwo extends CapabilityConfigurationPage {
     protected void removeProvisonalProject() {
         if (!fCurrProject.exists()) {
             fCurrProject = null;
-            ceylonModel().removeProject(fCurrProject);
+            modelJ2C().ceylonModel().removeProject(fCurrProject);
             return;
         }
 

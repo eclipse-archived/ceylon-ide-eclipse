@@ -4,6 +4,7 @@ import static com.redhat.ceylon.common.Versions.JVM_BINARY_MAJOR_VERSION;
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,7 +25,6 @@ import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.imports.importsJ2C;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -57,7 +57,7 @@ class AddModuleImportProposal
     
     @Override
     public void apply(IDocument document) {
-        importsJ2C.importUtil().addModuleImport(project, 
+        importsJ2C().importUtil().addModuleImport(project, 
                 unit.getPackage().getModule(), 
                 name, version);
     }

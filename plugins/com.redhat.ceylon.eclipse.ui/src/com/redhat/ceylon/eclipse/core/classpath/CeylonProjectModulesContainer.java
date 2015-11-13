@@ -17,6 +17,7 @@
  */
 package com.redhat.ceylon.eclipse.core.classpath;
 
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
@@ -73,7 +74,6 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
 import com.redhat.ceylon.model.cmr.ArtifactResultType;
@@ -413,7 +413,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
                     srcPath = getSourceArchive(provider, jdtModule);
                     if ((srcPath == null || srcPath.equals(modulePath))
                             && jdtModule.getIsJavaBinaryArchive()) {
-                        CeylonIdeConfig ideConfig = modelJ2C.ideConfig(project);
+                        CeylonIdeConfig ideConfig = modelJ2C().ideConfig(project);
                         if (ideConfig != null) {
                             ceylon.language.String attachment = 
                                     ideConfig.getSourceAttachment(

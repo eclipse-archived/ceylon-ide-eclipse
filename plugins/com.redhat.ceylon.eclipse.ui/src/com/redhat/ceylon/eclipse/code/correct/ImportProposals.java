@@ -7,6 +7,8 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.TextEdit;
 
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
+
 /*
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
 import static com.redhat.ceylon.eclipse.util.Indents.indents;
@@ -57,7 +59,7 @@ import com.redhat.ceylon.ide.common.util.nodes_;
 */
 public class ImportProposals {
     private final static com.redhat.ceylon.ide.common.correct.ImportProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange> importProposals
-        = correctJ2C.importProposals();
+        = correctJ2C().importProposals();
     
     public static com.redhat.ceylon.ide.common.correct.ImportProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange> importProposals() {
         return importProposals;

@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -51,7 +53,6 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
-import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 
@@ -88,7 +89,7 @@ public class CeylonNavigatorContentProvider implements
                                 for (ExternalModuleNode emn : rn.getModules()) {
                                     BaseIdeModule module = emn.getModule();
                                     if (module != null &&
-                                            modelJ2C.getModulePackageFragmentRoots(module)
+                                            modelJ2C().getModulePackageFragmentRoots(module)
                                             .contains(pfr)) {
                                         emn.getBinaryArchives().add(pfr);
                                     }
@@ -232,7 +233,7 @@ public class CeylonNavigatorContentProvider implements
         for (Module m : CeylonBuilder.getProjectSourceModules(sourceRoot.getJavaProject().getProject())) {
             if (m instanceof BaseIdeModule) {
                 BaseIdeModule module = (BaseIdeModule) m;
-                if (modelJ2C.getModulePackageFragmentRoots(module).contains(sourceRoot)) {
+                if (modelJ2C().getModulePackageFragmentRoots(module).contains(sourceRoot)) {
                     String signature = module.getSignature();
                     SourceModuleNode sourceModuleNode = sourceDirectoryModules.get(signature);
                     if (sourceModuleNode == null) {
@@ -262,7 +263,7 @@ public class CeylonNavigatorContentProvider implements
                     for (ExternalModuleNode emn : rn.getModules()) {
                         BaseIdeModule module = emn.getModule();
                         if (module != null) {
-                            if (modelJ2C.getModulePackageFragmentRoots(module)
+                            if (modelJ2C().getModulePackageFragmentRoots(module)
                                     .contains(pfr)) {
                                 return rn;
                             }

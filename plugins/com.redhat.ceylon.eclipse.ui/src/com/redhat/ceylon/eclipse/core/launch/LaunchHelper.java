@@ -15,6 +15,8 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getShell;
 import static java.lang.Character.charCount;
 import static java.lang.Character.isUpperCase;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
+
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -50,7 +52,6 @@ import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
@@ -95,7 +96,7 @@ public class LaunchHelper {
                     getProjectTypeChecker(project);
             if (typeChecker != null) {
                 FileVirtualFile<IResource, IFolder, IFile> virtualFile = 
-                        vfsJ2C.createVirtualFile(file);
+                        vfsJ2C().createVirtualFile(file);
                 PhasedUnit phasedUnit = 
                         typeChecker.getPhasedUnits()
                             .getPhasedUnit(virtualFile);
