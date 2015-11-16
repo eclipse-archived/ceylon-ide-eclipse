@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClassFile;
@@ -31,20 +34,20 @@ import org.junit.Test;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
-import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
-import com.redhat.ceylon.eclipse.core.model.CrossProjectBinaryUnit;
-import com.redhat.ceylon.eclipse.core.model.CrossProjectSourceFile;
-import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
-import com.redhat.ceylon.eclipse.core.model.ICrossProjectReference;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
-import com.redhat.ceylon.eclipse.core.model.JavaClassFile;
-import com.redhat.ceylon.eclipse.core.model.JavaCompilationUnit;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
-import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.ui.test.AbstractMultiProjectTest;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
+import com.redhat.ceylon.ide.common.model.CeylonUnit;
+import com.redhat.ceylon.ide.common.model.CrossProjectBinaryUnit;
+import com.redhat.ceylon.ide.common.model.CrossProjectSourceFile;
+import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
+import com.redhat.ceylon.ide.common.model.ICrossProjectReference;
+import com.redhat.ceylon.ide.common.model.JavaClassFile;
+import com.redhat.ceylon.ide.common.model.JavaCompilationUnit;
+import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
+import com.redhat.ceylon.ide.common.typechecker.CrossProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
@@ -70,7 +73,7 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
     private <T extends PhasedUnit> T checkExternalPhasedUnitClass(String moduleName, String phasedUnitPath, Class<T> expectedPhasedUnitClass) {
         PhasedUnit pu = null;
         
-        JDTModule module = (JDTModule) modelLoader.getLoadedModule(moduleName, null);
+        BaseIdeModule module = (BaseIdeModule) modelLoader.getLoadedModule(moduleName, null);
         pu = module.getPhasedUnitFromRelativePath(phasedUnitPath);
         Assert.assertNotNull("No phased unit for path : " + phasedUnitPath, pu);
         Class<? extends PhasedUnit> phasedUnitClass = pu.getClass();
@@ -126,8 +129,8 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
             throw compilationError;
         }
         
-        CrossProjectPhasedUnit pu;
-        ProjectPhasedUnit opu;
+        CrossProjectPhasedUnit<IProject,IResource,IFolder,IFile> pu;
+        ProjectPhasedUnit<IProject,IResource,IFolder,IFile> opu;
 
         pu = checkExternalPhasedUnitClass("referencedCeylonProject", "referencedCeylonProject/CeylonDeclarations_Referenced_Ceylon_Project.ceylon", 
                 CrossProjectPhasedUnit.class);
