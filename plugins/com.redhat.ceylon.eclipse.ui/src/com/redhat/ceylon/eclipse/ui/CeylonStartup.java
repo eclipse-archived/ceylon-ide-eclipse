@@ -90,7 +90,9 @@ public class CeylonStartup implements IStartup {
     @Override
     public void earlyStartup() {
         final String version = System.getProperty("java.version");
-        if (!version.startsWith("1.7") && !version.startsWith("1.8")) {
+        if (!version.startsWith("1.7") && 
+            !version.startsWith("1.8") && 
+            !version.startsWith("1.9")) {
             final Display display = getWorkbench().getDisplay();
             display.asyncExec(new Runnable() {
                 @Override
