@@ -1,6 +1,6 @@
 <project name="RequiredProject" default="publish-for-ide">
     <target name="publish-for-ide">
-        <ant dir="../../../ceylon-dist" antfile="build.xml">
+        <ant dir="../../../ceylon/dist" antfile="build.xml">
             <target name="publish-all"/>
             <target name="ide-quick"/>
         </ant>

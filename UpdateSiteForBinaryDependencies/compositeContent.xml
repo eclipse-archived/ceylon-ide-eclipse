@@ -5,7 +5,7 @@
    <property name="p2.timestamp" value="1316559185000"/>
  </properties>
  <children size="5">
-   <child location="../../ceylon-dist/osgi/build/dist"/>
+   <child location="../../ceylon/dist/osgi/build/dist"/>
    <child location="../../ceylon-sdk/osgi/dist"/>
    <child location="../../ceylon.formatter/osgi/dist"/>
    <child location="../../ceylon.tool.converter.java2ceylon/osgi/dist"/>

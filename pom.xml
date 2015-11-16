@@ -218,7 +218,7 @@
            <repository>
              <id>ceylon-dist</id>
              <layout>p2</layout>
-             <url>file:../ceylon-dist/osgi/build/dist</url>
+             <url>file:../ceylon/dist/osgi/build/dist</url>
            </repository>
         
            <repository>
