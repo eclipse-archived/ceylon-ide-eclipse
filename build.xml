@@ -6,6 +6,7 @@
     </tstamp>
 
     <property file="build.properties"/>
+    <property name="ceylon.executable" value="${dist.bin.dir}/ceylon"/>
 
     <path id="maven-ant-tasks.classpath" path="${basedir}/lib/maven-ant-tasks-2.1.3.jar" />
     <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
