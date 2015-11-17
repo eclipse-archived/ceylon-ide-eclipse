@@ -22,11 +22,15 @@
 
     <target name="build"
             description="Builds the IDE plugin">
+        <echo>${ceylon.executable}</echo>
+        <echo>${ceylon.ant.lib}</echo>
         <mvn:mvn pom="${basedir}/pom.xml" mavenVersion="3.2.2" fork="true" dir="${basedir}" failonerror="true">
             <arg value="clean" />
             <arg value="install" />
             <arg value="-DskipTests" />
             <arg value="-Dbuild-against=${build-against}"/>
+            <arg value="-Dceylon.executable=${ceylon.executable}" />
+            <arg value="-Dceylon.ant.lib=${ceylon.ant.lib}"/>
         </mvn:mvn>
     </target>
 
