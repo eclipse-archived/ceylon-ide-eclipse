@@ -7,6 +7,6 @@
 		</accessrules>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="lib/compiler-tests-1.2.0.jar" sourcepath="/ceylon-compiler/test/src"/>
+	<classpathentry kind="lib" path="lib/compiler-tests-1.2.1.jar" sourcepath="/ceylon-compiler/test/src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
