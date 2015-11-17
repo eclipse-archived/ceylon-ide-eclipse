@@ -14,6 +14,12 @@ import com.redhat.ceylon.eclipse.code.editor {
 import com.redhat.ceylon.eclipse.core.builder {
     CeylonBuilder
 }
+import com.redhat.ceylon.eclipse.core.model {
+    ModifiableSourceFile
+}
+import com.redhat.ceylon.eclipse.core.typechecker {
+    ModifiablePhasedUnit
+}
 import com.redhat.ceylon.eclipse.util {
     eclipseIndents
 }
@@ -26,6 +32,9 @@ import com.redhat.ceylon.ide.common.correct {
 }
 import com.redhat.ceylon.ide.common.util {
     Indents
+}
+import com.redhat.ceylon.model.typechecker.model {
+    Unit
 }
 
 import org.eclipse.core.resources {
@@ -48,12 +57,9 @@ import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
 }
-import com.redhat.ceylon.eclipse.core.typechecker {
-    ModifiablePhasedUnit
-}
 
 interface EclipseAbstractQuickFix
-        satisfies AbstractQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,ICompletionProposal> {
+        satisfies AbstractQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> {
     
     shared actual IdeCompletionManager<out Anything,out Anything,out ICompletionProposal,IDocument> completionManager 
             => EclipseCompletionManager(CeylonEditor());
@@ -78,5 +84,12 @@ interface EclipseAbstractQuickFix
         } else {
             return TextFileChange(desc, u);
         }
+    }
+    
+    shared actual PhasedUnit? getPhasedUnit(Unit? u, EclipseQuickFixData data) {
+        if (is ModifiableSourceFile u) {
+            return u.phasedUnit;
+        }
+        return null;
     }
 }
