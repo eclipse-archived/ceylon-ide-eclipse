@@ -14,12 +14,6 @@ import com.redhat.ceylon.eclipse.code.editor {
 import com.redhat.ceylon.eclipse.core.builder {
     CeylonBuilder
 }
-import com.redhat.ceylon.eclipse.core.model {
-    ModifiableSourceFile
-}
-import com.redhat.ceylon.eclipse.core.typechecker {
-    ModifiablePhasedUnit
-}
 import com.redhat.ceylon.eclipse.util {
     eclipseIndents
 }
@@ -62,6 +56,9 @@ import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
 }
+import com.redhat.ceylon.ide.common.model {
+    ModifiableSourceFile
+}
 
 interface EclipseAbstractQuickFix
         satisfies AbstractQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> {
@@ -92,7 +89,7 @@ interface EclipseAbstractQuickFix
     }
     
     shared actual PhasedUnit? getPhasedUnit(Unit? u, EclipseQuickFixData data) {
-        if (is ModifiableSourceFile u) {
+        if (is ModifiableSourceFile<IProject, IResource, IFolder, IFile> u) {
             return u.phasedUnit;
         }
         return null;
