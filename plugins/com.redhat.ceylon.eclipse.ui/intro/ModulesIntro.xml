@@ -66,9 +66,9 @@
             <br/>
             Alternatively, you can add this dependency by selecting your
             module in the Ceylon Explorer and then selecting
-            <b>File > Properties</b>, clicking <b>Add imports...</b>,
-            and choosing the module "ceylon.math" in the popup
-            dialog. 
+            <b>File > Properties</b>, selecting <b>Ceylon Module</b>, 
+            clicking <b>Add imports...</b>, and choosing the module 
+            "ceylon.math" in the popup dialog. 
         </description>
     </item>
 
