@@ -898,8 +898,10 @@ public class DocumentationHover extends SourceInfoHover {
                     String base = 
                             getBaseURL(mem, mem.isBinary());
                     int endHeadIdx= sb.indexOf("</head>");
-                    sb.insert(endHeadIdx, 
-                            "\n<base href='" + base + "'>\n");
+                    if (endHeadIdx>0) {
+                        sb.insert(endHeadIdx, 
+                                "\n<base href='" + base + "'>\n");
+                    }
                 }
             } 
             catch (JavaModelException e) {
