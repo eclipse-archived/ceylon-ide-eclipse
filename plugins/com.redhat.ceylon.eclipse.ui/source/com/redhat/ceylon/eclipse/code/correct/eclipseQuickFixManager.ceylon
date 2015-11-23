@@ -91,5 +91,16 @@ object eclipseQuickFixManager
     shared actual SpecifyTypeQuickFix<IFile,IDocument,InsertEdit,TextEdit,
         TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal,
         LinkedModeModel> specifyTypeQuickFix => nothing; // TODO
+
+    shared actual void addCreateTypeParameterProposal<Data>(Data data,
+        Tree.BaseType bt, String brokenName)
+            given Data satisfies QuickFixData<IProject> {
+        
+        assert(is EclipseQuickFixData data);
+        
+        CreateTypeParameterProposal.addCreateTypeParameterProposal(
+            data.proposals, data.project, data.rootNode, bt, brokenName);
+    }
+     
     
 }
