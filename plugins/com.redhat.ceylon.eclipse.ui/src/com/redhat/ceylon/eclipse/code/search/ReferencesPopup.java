@@ -95,8 +95,8 @@ import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
-import com.redhat.ceylon.eclipse.util.FindSubtypesVisitor;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.ide.common.util.FindSubtypesVisitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -920,8 +920,8 @@ public final class ReferencesPopup extends PopupDialog
                         FindSubtypesVisitor frv = 
                                 new FindSubtypesVisitor(td);
                         frv.visit(cu);
-                        Set<Tree.Declaration> dns = 
-                                frv.getDeclarationNodes();
+                        @SuppressWarnings("unchecked")
+                        Set<Node> dns = frv.getDeclarationNodes();
                         nodes = new HashSet<Node>(dns);
                     }
                     else {

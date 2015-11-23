@@ -16,7 +16,7 @@ import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.FindSubtypesVisitor;
+import com.redhat.ceylon.ide.common.util.FindSubtypesVisitor;
 
 public class FindSubtypesAction extends AbstractFindAction {
 
@@ -32,7 +32,8 @@ public class FindSubtypesAction extends AbstractFindAction {
             FindSubtypesVisitor frv = 
                     new FindSubtypesVisitor((TypeDeclaration) referencedDeclaration);
             cu.visit(frv);
-            Set<Tree.Declaration> nodes = frv.getDeclarationNodes();
+            @SuppressWarnings("unchecked")
+            Set<Node> nodes = frv.getDeclarationNodes();
             return Collections.<Node>unmodifiableSet(nodes);
         }
 
