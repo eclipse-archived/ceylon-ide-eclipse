@@ -326,7 +326,7 @@ public class JDTModule extends LazyModule {
         if (isJavaBinaryArchive()){
             String carPath = artifact.getPath();
             sourceArchivePath = carPath.substring(0, carPath.length()-ArtifactContext.JAR.length())
-                    + (artifactResult.type().equals(ArtifactResultType.MAVEN) ? ArtifactContext.MAVEN_SRC : ArtifactContext.SRC);
+                    + (artifactResult.type().equals(ArtifactResultType.MAVEN) ? ArtifactContext.LEGACY_SRC : ArtifactContext.SRC);
         }
     }
     
