@@ -750,11 +750,9 @@ public class TestsPanel extends Composite {
                     TestElement testElement = (TestElement) selectedElement;
                     if (testElement.getState().isFailureOrError() && testElement.getException() != null) {
                         List<String> lines = StackTracePanel.parseStackTraceLine(testElement.getException());
-                        if( !lines.isEmpty() ) {
-                            lines.remove(0); // skip line with exception
-                        }
                         for (String line : lines) {
-                            if (!line.contains("at ceylon.test")) {
+                            String trimmedLine = line.trim();
+                            if( trimmedLine.startsWith("at ") && !trimmedLine.startsWith("at ceylon.test") ) {
                                 StackTracePanel.gotoStackTraceLine(line);
                                 return;
                             }
