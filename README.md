@@ -29,8 +29,8 @@ all Ceylon projects, this is the recommended method.
 
 1. Make sure that you are using Java 7 or 8 by running `javac -version`.
    
-2. Make sure that `ant` (latest version) and `maven` (version from 3.0.5 to 3.2.1) 
-   can be run on the command line.
+2. Make sure that `ant` (latest version or Ant) and `mvn` (some Maven version from 
+   3.0.5 to 3.2.1) can be run on the command line.
    
 3. First clone the [Ceylon command line distribution](https://github.com/ceylon/ceylon) 
    locally. Type the following command in the directory of your choice:
