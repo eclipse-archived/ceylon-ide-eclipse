@@ -8,21 +8,21 @@ For more information about Ceylon IDE for Eclipse, go to:
 
 [Ceylon]: http://ceylon-lang.org/
 
-## Installing the Eclipse Plugin
+## Installing the Ceylon plugin
 
 [sdk]: https://github.com/ceylon/ceylon-sdk
 [formatter]: https://github.com/ceylon/ceylon.formatter
 [java2ceylon]: https://github.com/ceylon/ceylon.tool.converter.java2ceylon
 [common]: https://github.com/ceylon/ceylon-ide-common
 
-### From the update site
+### Installing from the main update site
 
-The is the simplest way to install the Ceyon IDE Eclipse plugin is simply to follow the 
-instructions found there:
+The simplest way to install the Ceyon IDE Eclipse plugin is simply to follow the 
+instructions found here:
 
 <http://ceylon-lang.org/documentation/1.2/ide/install>
 
-### From a local snapshot site built with Tycho/Maven 3
+### Installing from a local snapshot site built with Tycho/Maven 3
 
 If you want to have an up-to-date version of the Ceylon IDE based on the latest code of 
 all Ceylon projects, this is the recommended method.
@@ -66,48 +66,48 @@ all Ceylon projects, this is the recommended method.
    <http://ceylon-lang.org/documentation/1.2/ide/install/> but use the full path 
    to this directory instead as the URL of the update site.
 
-## Developing the Ceylon Plugin
+## Developing the Ceylon plugin
     
 ### Building project per project
 
 If you make modifications on one of Ceylon IDE's dependencies, you can rebuild projects separately:
 
-1.  Build a full Ceylon distribution locally (see [here][building the distribution] for more details):
-    - In the `.../ceylon` directory run: `ant clean dist`
-    - This should have produced an eclipse update site available at the following path:
-    
-    `./osgi/build/dist`
+1. Build a full Ceylon distribution locally (see [here][building the distribution] for more details):
+   - In the `.../ceylon` directory run: `ant clean dist`
+   - This should have produced an eclipse update site available at the following path:
+   
+   `./osgi/build/dist`
 
-2.  Build the Ceylon SDK locally:
-    - In the `.../ceylon` directory run: `ant clean-sdk sdk`
-    - This should have produced an eclipse update site available at the following path:
-    
-    `../ceylon-sdk/osgi/dist`
+2. Build the Ceylon SDK locally:
+   - In the `.../ceylon` directory run: `ant clean-sdk sdk`
+   - This should have produced an eclipse update site available at the following path:
+   
+   `../ceylon-sdk/osgi/dist`
 
-3.  Build the Ceylon Formatter locally (see [here][formatter] for more details):
-    - In the `.../ceylon.formatter` directory run: `ant clean publish ide-quick`
-    - This should have produced an eclipse update site available at the following path:
-    
-    `.../ceylon.formatter/osgi/dist`
+3. Build the Ceylon Formatter locally (see [here][formatter] for more details):
+   - In the `.../ceylon.formatter` directory run: `ant clean publish ide-quick`
+   - This should have produced an eclipse update site available at the following path:
+   
+   `.../ceylon.formatter/osgi/dist`
 
-4.  Build the Ceylon IDE Common components locally (see [here][common] for more details):
-    - In the `.../ceylon-ide-common` directory run: `ant clean publish ide-quick`
-    - This should have produced an eclipse update site available at the following path:
-    
-    `.../ceylon-ide-common/osgi/dist`
+4. Build the Ceylon IDE Common components locally (see [here][common] for more details):
+   - In the `.../ceylon-ide-common` directory run: `ant clean publish ide-quick`
+   - This should have produced an eclipse update site available at the following path:
+   
+   `.../ceylon-ide-common/osgi/dist`
 
-5.  Build the Java To Ceylon Converter components locally (see [here][java2ceylon] for more details):
-    - In the `.../ceylon.tool.converter.java2ceylon` directory run: `ant clean publish ide-quick`
-    - This should have produced an eclipse update site available at the following path:
-    
-    `.../ceylon.tool.converter.java2ceylon/osgi/dist`
+5. Build the Java To Ceylon Converter components locally (see [here][java2ceylon] for more details):
+   - In the `.../ceylon.tool.converter.java2ceylon` directory run: `ant clean publish ide-quick`
+   - This should have produced an eclipse update site available at the following path:
+   
+   `.../ceylon.tool.converter.java2ceylon/osgi/dist`
 
-6.  From the directory `.../ceylon-ide-eclipse`, type:
-    
+6. From the directory `.../ceylon-ide-eclipse`, type:
+   
         mvn clean install -fae
 
-    Faster alternative: To skip tests completely you can run:
-
+   Faster alternative: To skip tests completely you can run:
+   
         mvn clean install -DskipTests
 
 [building the distribution]: https://github.com/ceylon/ceylon/blob/master/dist/README.md#building-the-distribution
