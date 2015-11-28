@@ -29,7 +29,7 @@ all Ceylon projects, this is the recommended method.
 
 1. Make sure that you are using Java 7 or 8 by running `javac -version`.
    
-2. Make sure that `ant` (latest version or Ant) and `mvn` (some Maven version from 
+2. Make sure that `ant` (latest version of Ant) and `mvn` (some Maven version from 
    3.0.5 to 3.2.1) can be run on the command line.
    
 3. First clone the [Ceylon command line distribution](https://github.com/ceylon/ceylon) 
@@ -78,7 +78,7 @@ If you make modifications on one of Ceylon IDE's dependencies, you can rebuild p
    
    `./osgi/build/dist`
 
-2. Build the Ceylon SDK locally:
+2. Build the Ceylon SDK locally  (see [here][sdk] for more details):
    - In the `.../ceylon` directory run: `ant clean-sdk sdk`
    - This should have produced an eclipse update site at the following path:
    
@@ -116,7 +116,7 @@ If you make modifications on one of Ceylon IDE's dependencies, you can rebuild p
 
 _This implies some **additional complexity**, and is only useful if you want to debug the Ceylon IDE plugin._
 
-**_Preliminary remark_**: Now, parts of the Ceylon IDE project itself are written in Ceylon. Thus, in order to 
+**_Preliminary remark_**: Parts of the Ceylon IDE project itself are written in Ceylon. Thus, in order to 
 develop the Ceylon IDE plugin, you must have a previous version of the plugin installed in your main Eclipse 
 (preferably downloaded from the stable update site, or built with Maven).
 
