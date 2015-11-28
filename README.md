@@ -33,7 +33,7 @@ all Ceylon projects, this is the recommended method.
    can be run on the command line.
    
 3. First clone the [Ceylon command line distribution](https://github.com/ceylon/ceylon) 
-   locally. For this purpose type the following command in the directory of your choice:
+   locally. Type the following command in the directory of your choice:
    
         git clone https://github.com/ceylon/ceylon.git
    
@@ -74,31 +74,31 @@ If you make modifications on one of Ceylon IDE's dependencies, you can rebuild p
 
 1. Build a full Ceylon distribution locally (see [here][building the distribution] for more details):
    - In the `.../ceylon` directory run: `ant clean dist`
-   - This should have produced an eclipse update site available at the following path:
+   - This should have produced an eclipse update site at the following path:
    
    `./osgi/build/dist`
 
 2. Build the Ceylon SDK locally:
    - In the `.../ceylon` directory run: `ant clean-sdk sdk`
-   - This should have produced an eclipse update site available at the following path:
+   - This should have produced an eclipse update site at the following path:
    
    `../ceylon-sdk/osgi/dist`
 
 3. Build the Ceylon Formatter locally (see [here][formatter] for more details):
    - In the `.../ceylon.formatter` directory run: `ant clean publish ide-quick`
-   - This should have produced an eclipse update site available at the following path:
+   - This should have produced an eclipse update site at the following path:
    
    `.../ceylon.formatter/osgi/dist`
 
 4. Build the Ceylon IDE Common components locally (see [here][common] for more details):
    - In the `.../ceylon-ide-common` directory run: `ant clean publish ide-quick`
-   - This should have produced an eclipse update site available at the following path:
+   - This should have produced an eclipse update site at the following path:
    
    `.../ceylon-ide-common/osgi/dist`
 
 5. Build the Java To Ceylon Converter components locally (see [here][java2ceylon] for more details):
    - In the `.../ceylon.tool.converter.java2ceylon` directory run: `ant clean publish ide-quick`
-   - This should have produced an eclipse update site available at the following path:
+   - This should have produced an eclipse update site at the following path:
    
    `.../ceylon.tool.converter.java2ceylon/osgi/dist`
 
@@ -167,7 +167,7 @@ main Eclipse (preferably downloaded from the stable update site, or built with M
     
     In order to be able to build you projects, you will have to allow cycles in the Java build paths by setting the following Eclipse preference:
 
-    `Java -> Compiler -> Build -> Circular Dependencies`to `warning`
+    `Java > Compiler > Build > Circular Dependencies` to `warning`
 
 9. During the development, you should be aware of these rules:
     - If you _change some of the fixed jars included in the Ceylon distribution_ (such as `org.antlr`, `org.apache.commons.logging`, etc...), then you should :
@@ -194,7 +194,7 @@ main Eclipse (preferably downloaded from the stable update site, or built with M
 
 ### Building the next maintenance update of the last released version
 
-By default, when [building the plugin from Maven](#building-with-tychomaven-3) and developping it, all the code is built against the *master* branch of all the dependencies (incuding the Ceylon command line distribution).
+By default, when [building the plugin from Maven](#building-with-tychomaven-3) and developing it, all the code is built against the *master* branch of all the dependencies (incuding the Ceylon command line distribution).
 However, after a release, we create GitHub maintenance branches for the two following projects:
 
 - `.../ceylon-ide-common`
@@ -221,11 +221,7 @@ In order to come back to the master branches, run the following command from the
     
 ### Updating the Ceylon version
 
-1. Total panic
-
-2. It's a nightmare
-
-3. For proxy bundles, I used:
+For proxy bundles, I used:
 
     for f in *-1.1.0.?ar; do newf=${f/1.1.0/1.1.1}; if test \! -d $newf; then mkdir $newf; fi; cp $f/{.classpath,.project,.gitignore} $newf/; perl -pi -e 's/1\.1\.0/1.1.1/g' $newf/{.classpath,.project,.gitignore}; done
 
