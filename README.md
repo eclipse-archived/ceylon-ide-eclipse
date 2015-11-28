@@ -70,9 +70,11 @@ all Ceylon projects, this is the recommended method.
     
 ### Building project per project
 
-If you make modifications on one of Ceylon IDE's dependencies, you can rebuild projects separately:
+If you make modifications on one of Ceylon IDE's dependencies, you can rebuild projects 
+separately:
 
-1. Build a full Ceylon distribution locally (see [here][building the distribution] for more details):
+1. Build a full Ceylon distribution locally (see [here][building the distribution] for 
+   more details):
    - In the `.../ceylon` directory run: `ant clean dist`
    - This should have produced an eclipse update site at the following path:
    
@@ -96,7 +98,8 @@ If you make modifications on one of Ceylon IDE's dependencies, you can rebuild p
    
    `.../ceylon-ide-common/osgi/dist`
 
-5. Build the Java To Ceylon Converter components locally (see [here][java2ceylon] for more details):
+5. Build the Java To Ceylon Converter components locally (see [here][java2ceylon] for 
+   more details):
    - In the `.../ceylon.tool.converter.java2ceylon` directory run: `ant clean publish ide-quick`
    - This should have produced an eclipse update site at the following path:
    
@@ -114,11 +117,13 @@ If you make modifications on one of Ceylon IDE's dependencies, you can rebuild p
 
 ### Developing the plugin inside Eclipse
 
-_This implies some **additional complexity**, and is only useful if you want to debug the Ceylon IDE plugin._
+_This implies some **additional complexity**, and is only useful if you want to debug 
+the Ceylon IDE plugin._
 
-**_Preliminary remark_**: Parts of the Ceylon IDE project itself are written in Ceylon. Thus, in order to 
-develop the Ceylon IDE plugin, you must have a previous version of the plugin installed in your main Eclipse 
-(preferably downloaded from the stable update site, or built with Maven).
+**_Preliminary remark_**: Parts of the Ceylon IDE project itself are written in Ceylon. 
+Thus, in order to develop the Ceylon IDE plugin, you must have a previous version of the 
+plugin installed in your main Eclipse (preferably downloaded from the stable update site, 
+or built with Maven).
 
 1.  Perform steps 1 to 4 of section : [Building with Tycho / Maven 3](#building-with-tychomaven-3).
 
@@ -126,30 +131,39 @@ develop the Ceylon IDE plugin, you must have a previous version of the plugin in
 
     <http://www.eclipse.org/downloads/>
 
-3.  Install the following feature: _Graphical Editing Framework Zest Visualization Toolkit SDK_. It is available here: 
+3.  Install the following feature: _Graphical Editing Framework Zest Visualization Toolkit SDK_.
+    It is available here: 
 
     <http://download.eclipse.org/tools/gef/updates/releases/>
 
-4.  Make sure you have the following feature: _Eclipse Plug-in Development Environment_. It is normally included inside the Eclipse Standard Package.
+4.  Make sure you have the following feature: _Eclipse Plug-in Development Environment_. 
+    It is normally included inside the Eclipse Standard Package.
 
-5.  Install a previous version of the Ceylon IDE, preferably downloaded from the stable update site (see [here](#installing-from-the-update-site)), or built with Maven (see [here](#building-with-tychomaven-3)).
+5.  Install a previous version of the Ceylon IDE, preferably downloaded from the stable 
+    update site (see [here](#installing-from-the-update-site)), or built with Maven (see 
+    [here](#building-with-tychomaven-3)).
 
-6.  Use `File > Import... > Existing Projects into Workspace` to import the Java and Ceylon Eclipse projects that are in these directories:
+6.  Use `File > Import... > Existing Projects into Workspace` to import the Java and 
+    Ceylon Eclipse projects that are in these directories:
     - `.../ceylon-ide-common`
     - `.../ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui.jdt.debug.fragment`
     - `.../ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui`
     - `.../ceylon-ide-eclipse/plugins/com.redhat.ceylon.test.eclipse.plugin`
     - `.../ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.android.plugin`
 
-7. Add the following folder as a local update site in your Eclipse _Available Software Sites_ list:
-
+7.  Add the following folder as a local update site in your Eclipse _Available Software Sites_ 
+    list:
+    
     `.../ceylon-ide-eclipse/UpdateSiteForBinaryDependencies/`
         
-    From this new update site, install _*only*_ the elements that are under the categories whose name contains : '` - Only Binary Dependencies`'.
-    This provides (as OSGI bundles) only the external archives required by the various siblings projects required by the IDE Plugin (jboss modules, antlr-runtime v4, etc ...).
+    From this new update site, install _*only*_ the elements that are under the categories 
+    whose name contains : '` - Only Binary Dependencies`'. This provides (as OSGI bundles) 
+    only the external archives required by the various siblings projects required by the 
+    IDE plugin (jboss modules, antlr-runtime v4, etc ...).
 
 
-8. Use `File > Import... > Existing Projects into Workspace` to import the Eclipse projects that are in these directories: 
+8.  Use `File > Import... > Existing Projects into Workspace` to import the Eclipse projects 
+    that are in these directories: 
     - the `ceylon-dist-osgi` project found at the following location:
     
         `.../ceyon/osgi`
@@ -163,23 +177,36 @@ develop the Ceylon IDE plugin, you must have a previous version of the plugin in
         `.../ceyon-ide-eclipse/required-bundle-proxies`
     
     #### _Important Note:_
-
-    Since the Ceylon Distribution modules have circular dependencies on each others, it happens that those circular dependencies are reproduced by the _ceylon-dist-osgi_ and _bundle-proxys_ projects.
     
-    In order to be able to build you projects, you will have to allow cycles in the Java build paths by setting the following Eclipse preference:
+    Since the Ceylon Distribution modules have circular dependencies on each others, it 
+    happens that those circular dependencies are reproduced by the _ceylon-dist-osgi_ and 
+    _bundle-proxys_ projects.
+    
+    In order to be able to build you projects, you will have to allow cycles in the Java 
+    build paths by setting the following Eclipse preference:
 
     `Java > Compiler > Build > Circular Dependencies` to `warning`
 
 9. During the development, you should be aware of these rules:
-    - If you _change some of the fixed jars included in the Ceylon distribution_ (such as `org.antlr`, `org.apache.commons.logging`, etc...), then you should :
-        - **rebuild/publish** the distribution by running the `ant clean publish ide-quick` command in the `ceylon/dist` directory,
-        - **update, inside Eclipse,** the `Ceylon Distribution Binary Dependencies Feature` feature from the `.../ceylon/dist/osgi/build/dist` update site.
-    - If you _have modified code inside one of the projects required by the Ceylon IDE plugin_ (distribution project, SDK, formatter, java2ceylon converter, ceylon-ide-common, ...), you should:
-        - **rebuild/publish** the modified project by running the `ant clean publish ide-quick` command in the project directory,
-    - Each time you _rebuild/publish one of the projects required by the Ceylon IDE plugin_ (distribution project, SDK, formatter, java2ceylon converter, ceylon-ide-common, ...), you should:
-        - **refresh inside Eclipse** the `ceylon-dist-osgi` project, as well as the _bundle proxy projects_ related to the rebuilt project. This is necessary so that Eclipse will see the changes, especially when running/debugging the CeylonIDE.
+    - If you _change some of the fixed jars included in the Ceylon distribution_ (such as 
+      `org.antlr`, `org.apache.commons.logging`, etc...), then you should :
+        - **rebuild/publish** the distribution by running the `ant clean publish ide-quick` 
+          command in the `ceylon/dist` directory,
+        - **update, inside Eclipse,** the `Ceylon Distribution Binary Dependencies Feature` 
+          feature from the `.../ceylon/dist/osgi/build/dist` update site.
+    - If you _have modified code inside one of the projects required by the Ceylon IDE plugin_ 
+      (distribution project, SDK, formatter, java2ceylon converter, ceylon-ide-common, ...), 
+      you should:
+        - **rebuild/publish** the modified project by running the `ant clean publish ide-quick` 
+          command in the project directory,
+    - Each time you _rebuild/publish one of the projects required by the Ceylon IDE plugin_ 
+      (distribution project, SDK, formatter, java2ceylon converter, ceylon-ide-common, ...), 
+      you should:
+        - **refresh inside Eclipse** the `ceylon-dist-osgi` project, as well as the _bundle 
+          proxy projects_ related to the rebuilt project. This is necessary so that Eclipse 
+          will see the changes, especially when running/debugging the CeylonIDE.
 
-9. If you want to modify / add IDE tests, you should also add the test plugin. For this purpose
+9. If you want to modify / add IDE tests, you should also add the test plugin:
     - Add the SWTBot Eclipse features, which are required to compile and run the Ceylon IDE
       interactive tests.
       Install all the features available at the following update site:
@@ -195,17 +222,23 @@ develop the Ceylon IDE plugin, you must have a previous version of the plugin in
 
 ### Building the next maintenance update of the last released version
 
-By default, when [building the plugin from Maven](#building-with-tychomaven-3) and developing it, all the code is built against the *master* branch of all the dependencies (incuding the Ceylon command line distribution).
-However, after a release, we create GitHub maintenance branches for the two following projects:
+By default, when [building the plugin from Maven](#building-with-tychomaven-3) and developing it, 
+all the code is built against the *master* branch of all the dependencies (incuding the Ceylon 
+command line distribution). However, after a release, we create GitHub maintenance branches for 
+the two following projects:
 
 - `.../ceylon-ide-common`
 - `.../ceylon-ide-eclipse`
     
-These branches allow pushing only changes that are fully compatible with the release available at the main updatesite: http://ceylon-lang.org/eclipse/updatesite/.
+These branches allow pushing only changes that are fully compatible with the release available at 
+the main updatesite: <http://ceylon-lang.org/eclipse/updatesite/>.
 
-In order to work on these branches and build these 2 projects against the dependencies found in the release update site (instead of building against the local master branch of each project), you should:
+In order to work on these branches and build these 2 projects against the dependencies found in 
+the release update site (instead of building against the local master branch of each project), 
+you should:
 
-- switch to the last release maintenance branch by going into the `.../ceylon/dist` directory and typing:
+- switch to the last release maintenance branch by going into the `.../ceylon/dist` directory and 
+  typing:
     
         ant eclipse-switch-to-last-release-updates
         
@@ -214,11 +247,14 @@ In order to work on these branches and build these 2 projects against the depend
     
         ant eclipse-rebuild-last-release-updates
     
-The generated update site generated in directory `.../ceylon-ide-eclipse/site/target/repository` now contains a maintenance release fully compatible with the last release published in the [official Ceylon Eclipse update site](http://ceylon-lang.org/eclipse/updatesite/)  
+The generated update site generated in directory `.../ceylon-ide-eclipse/site/target/repository` 
+now contains a maintenance release fully compatible with the last release published in the 
+[official Ceylon Eclipse update site](http://ceylon-lang.org/eclipse/updatesite/)  
 
-In order to come back to the master branches, run the following command from the `.../ceylon/dist` directory:
+In order to come back to the master branches, run the following command from the `.../ceylon/dist` 
+directory:
     
-        ant eclipse-switch-back-to-master
+    ant eclipse-switch-back-to-master
     
 ### Updating the Ceylon version
 
@@ -232,11 +268,11 @@ For proxy bundles, I used:
 
 2.  Copy (through sftp) the content of the directory `site/target/repository` onto the server:
 
-        www.ceylon-lang.org
+    `www.ceylon-lang.org`
 
     to the following directory:
 
-        /var/www/downloads.ceylonlang/ide/dev
+    `/var/www/downloads.ceylonlang/ide/dev`
 
 ## License
 
