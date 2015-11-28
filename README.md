@@ -1,61 +1,72 @@
-# Eclipse plugin for Ceylon
+# Ceylon IDE for Eclipse
 
-This project contains the Eclipse-based IDE for the [Ceylon language](http://ceylon-lang.org/).
+This project is an Eclipse-based IDE for the [Ceylon programming language][Ceylon].
 
-It is made of several Eclipse features and plugins.
+For more information about Ceylon IDE for Eclipse, go to:
 
-For more information about the Eclipse Ceylon IDE, go to :
+<http://ceylon-lang.org/documentation/ide>
 
-http://ceylon-lang.org/documentation/ide
-
+[Ceylon]: http://ceylon-lang.org/
 
 ## Installing the Eclipse Plugin
+
+[sdk]: https://github.com/ceylon/ceylon-sdk
+[formatter]: https://github.com/ceylon/ceylon.formatter
+[java2ceylon]: https://github.com/ceylon/ceylon.tool.converter.java2ceylon
+[common]: https://github.com/ceylon/ceylon-ide-common
 
 ### From the update site
 
 This is the simplest way to install the Ceyon IDE Eclipse plugin.
 
 1.  Follow the instructions found there:
-    
     <http://ceylon-lang.org/documentation/1.2/ide/install>
-
 2.  Restart Eclipse.
-
 5.  Go to `Help > Welcome to Ceylon` to get started.
 
 ### From a local snapshot site built with Tycho/Maven 3
 
-If you want to have an up-to-date version of the Ceylon IDE based on the lastest code of all Ceylon projects, this is the recommended method.
+If you want to have an up-to-date version of the Ceylon IDE based on the latest code of 
+all Ceylon projects, this is the recommended method.
 
-1.  Make sure that you are using Java 7 or 8 by running `javac -version`.
-
-2.  Make sure that `ant` (latest version) and `maven` (version from 3.0.5 to 3.2.1) can be run on the command line.
-
-3.  First clone the [Ceylon command line distribution](https://github.com/ceylon/ceylon) locally. For this purpose type the following command in the directory of your choice :
-    
-    `git clone https://github.com/ceylon/ceylon.git`
-
-    This has created the `ceylon` local repository.
-
-4.  Then the Eclipse plugin GitHub repository should be cloned locally, along with the repositories of other required projects ([Ceylon SDK](https://github.com/ceylon/ceylon-sdk), [Ceylon Formatter](https://github.com/ceylon/ceylon.formatter), [Java To Ceylon Converter](https://github.com/ceylon/ceylon.tool.converter.java2ceylon) and [Common code for Ceylon IDEs](https://github.com/ceylon/ceylon-ide-common)). To setup all these projects go to the `ceylon` directory ceated in the previous step, and type:
-
-    `ant setup-sdk setup-ide`
-    
-    This has cloned the following GitHub repositories :
-    
-    - `ceylon-sdk`
-    - `ceylon.formatter`
-    - `ceylon.tool.converter.java2ceylon`
-    - `ceylon-ide-common`
-    - `ceylon-ide-eclipse`
-    
-    in the parent directory.
-
-5. Finally to build all the above projects, stay in the `ceylon` directory and type:
-
-    `ant clean-all dist sdk eclipse`
-
-6.  The directory `../ceylon-ide-eclipse/site/target/repository` now contains an update site you can install from. The update process is decribed at http://ceylon-lang.org/documentation/1.2/ide/install/ but use the full path to this directory instead of the url of the web update site.
+1. Make sure that you are using Java 7 or 8 by running `javac -version`.
+   
+2. Make sure that `ant` (latest version) and `maven` (version from 3.0.5 to 3.2.1) 
+   can be run on the command line.
+   
+3. First clone the [Ceylon command line distribution](https://github.com/ceylon/ceylon) 
+   locally. For this purpose type the following command in the directory of your choice:
+   
+       git clone https://github.com/ceylon/ceylon.git
+   
+   This has created the `ceylon` local repository.
+   
+4. Next, this Git repository should be cloned locally, along with the repositories of 
+   the following required projects: [Ceylon SDK][sdk], [Ceylon Formatter][formatter], 
+   [Java To Ceylon Converter][java2ceylon], and [Common code for Ceylon IDEs][common]. 
+   To clone all these projects at once, go to the `ceylon/` directory ceated in the 
+   previous step, and type:
+   
+       ant setup-sdk setup-ide
+   
+   This command will have cloned the following Git repositories:
+   
+   - `ceylon-sdk`
+   - `ceylon.formatter`
+   - `ceylon-ide-common`
+   - `ceylon.tool.converter.java2ceylon`
+   - `ceylon-ide-eclipse`
+   
+   at the same directory level as the `ceylon` local repository.
+   
+5. Finally, to build all the above projects, stay in the `ceylon/` directory and type:
+   
+       ant clean-all dist sdk eclipse
+   
+6. The directory `../ceylon-ide-eclipse/site/target/repository` now contains an 
+   Eclipse update site you can install from. The update process is decribed at 
+   <http://ceylon-lang.org/documentation/1.2/ide/install/> but use the full path 
+   to this directory instead as the URL of the update site.
 
 ## Developing the Ceylon Plugin
     
