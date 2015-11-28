@@ -31,32 +31,31 @@ If you want to have an up-to-date version of the Ceylon IDE based on the lastest
 
 2.  Make sure that `ant` (latest version) and `maven` (version from 3.0.5 to 3.2.1) can be run on the command line.
 
-3.  First clone the [Ceylon command line distribution](https://github.com/ceylon/ceylon-dist) locally. For this purpose type the following command in the directory of your choice :
+3.  First clone the [Ceylon command line distribution](https://github.com/ceylon/ceylon) locally. For this purpose type the following command in the directory of your choice :
     
-    `git clone https://github.com/ceylon/ceylon-dist.git`
+    `git clone https://github.com/ceylon/ceylon.git`
 
-    This has created the `ceylon-dist` local repository.
+    This has created the `ceylon` local repository.
 
-4.  Then the Eclipse plugin GitHub repository should be cloned locally, along with the repositories of other required projects ([Ceylon SDK](https://github.com/ceylon/ceylon-sdk), [Ceylon Formatter](https://github.com/ceylon/ceylon.formatter), [Java To Ceylon Converter](https://github.com/ceylon/ceylon.tool.converter.java2ceylon) and [Common code for Ceylon IDEs](https://github.com/ceylon/ceylon-ide-common)). To setup all these projects go to the `.../ceylon-dist` directory ceated in the previous step, and type:
+4.  Then the Eclipse plugin GitHub repository should be cloned locally, along with the repositories of other required projects ([Ceylon SDK](https://github.com/ceylon/ceylon-sdk), [Ceylon Formatter](https://github.com/ceylon/ceylon.formatter), [Java To Ceylon Converter](https://github.com/ceylon/ceylon.tool.converter.java2ceylon) and [Common code for Ceylon IDEs](https://github.com/ceylon/ceylon-ide-common)). To setup all these projects go to the `ceylon` directory ceated in the previous step, and type:
 
-    `ant setup setup-sdk setup-ide`
+    `ant setup-sdk setup-ide`
     
     This has cloned the following GitHub repositories :
     
-    - `ceylon-dist`
     - `ceylon-sdk`
     - `ceylon.formatter`
-    - `ceylon-ide-common`
     - `ceylon.tool.converter.java2ceylon`
+    - `ceylon-ide-common`
     - `ceylon-ide-eclipse`
     
-    at the same directory level as the `.../ceylon-dist` local repository.
+    in the parent directory.
 
-5. Finally to build all the above projects, go into the `.../ceylon-dist` directory and type:
+5. Finally to build all the above projects, stay in the `ceylon` directory and type:
 
-    `ant clean clean-sdk clean-ide dist sdk eclipse`
+    `ant clean-all dist sdk eclipse`
 
-6.  The directory `.../ceylon-ide-eclipse/site/target/repository` now contains an update site you can install from. The update process is decribed at http://ceylon-lang.org/documentation/1.2/ide/install/ but use the full path to this directory instead of the url of the web update site.
+6.  The directory `../ceylon-ide-eclipse/site/target/repository` now contains an update site you can install from. The update process is decribed at http://ceylon-lang.org/documentation/1.2/ide/install/ but use the full path to this directory instead of the url of the web update site.
 
 ## Developing the Ceylon Plugin
     
@@ -64,17 +63,17 @@ If you want to have an up-to-date version of the Ceylon IDE based on the lastest
 
 If you make modifications on one of Ceylon IDE's dependencies, you can rebuild projects separately:
 
-1.  Build a full Ceylon distribution locally (see [here](https://github.com/ceylon/ceylon-dist/blob/master/README.md#building-the-distribution) for more details):
-    - In the `.../ceylon-dist` directory run: `ant clean dist`
+1.  Build a full Ceylon distribution locally (see [here](https://github.com/ceylon/ceylon/blob/master/dist/README.md#building-the-distribution) for more details):
+    - In the `.../ceylon` directory run: `ant clean dist`
     - This should have produced an eclipse update site available at the following path:
     
-      `.../ceylon-dist/osgi/build/dist`
+      `./osgi/build/dist`
 
 2.  Build the Ceylon SDK locally:
-    - In the `.../ceylon-dist` directory run: `ant clean-sdk sdk`
+    - In the `.../ceylon` directory run: `ant clean-sdk sdk`
     - This should have produced an eclipse update site available at the following path:
     
-      `.../ceylon-sdk/osgi/dist`
+      `../ceylon-sdk/osgi/dist`
 
 3.  Build the Ceylon Formatter locally (see [here](https://github.com/ceylon/ceylon.formatter) for more details):
     - In the `.../ceylon.formatter` directory run: `ant clean publish ide-quick`
@@ -141,11 +140,11 @@ main Eclipse (preferably downloaded from the stable update site, or built with M
 8. Use `File > Import... > Existing Projects into Workspace` to import the Eclipse projects that are in these directories: 
     - the `ceylon-dist-osgi` project found at the following location:
     
-        `.../ceyon-dist/osgi`
+        `.../ceyon/osgi`
         
     - the `ceylon-dist-osgi-embedded-repository` project found at the following location:
         
-        `.../ceyon-dist/osgi/embeddedRepository`
+        `.../ceyon/osgi/embeddedRepository`
         
     - all the required _bundle-proxys_ projects found under the following location:
     
@@ -161,8 +160,8 @@ main Eclipse (preferably downloaded from the stable update site, or built with M
 
 9. During the development, you should be aware of these rules:
     - If you _change some of the fixed jars included in the Ceylon distribution_ (such as `org.antlr`, `org.apache.commons.logging`, etc...), then you should :
-        - **rebuild/publish** the distribution by running the `ant clean publish ide-quick` command in the `ceylon-dist` directory,
-        - **update, inside Eclipse,** the `Ceylon Distribution Binary Dependencies Feature` feature from the `.../ceylon-dist/osgi/build/dist` update site.
+        - **rebuild/publish** the distribution by running the `ant clean publish ide-quick` command in the `ceylon/dist` directory,
+        - **update, inside Eclipse,** the `Ceylon Distribution Binary Dependencies Feature` feature from the `.../ceylon/dist/osgi/build/dist` update site.
     - If you _have modified code inside one of the projects required by the Ceylon IDE plugin_ (distribution project, SDK, formatter, java2ceylon converter, ceylon-ide-common, ...), you should:
         - **rebuild/publish** the modified project by running the `ant clean publish ide-quick` command in the project directory,
     - Each time you _rebuild/publish one of the projects required by the Ceylon IDE plugin_ (distribution project, SDK, formatter, java2ceylon converter, ceylon-ide-common, ...), you should:
@@ -194,18 +193,18 @@ These branches allow pushing only changes that are fully compatible with the rel
 
 In order to work on these branches and build these 2 projects against the dependencies found in the release update site (instead of building against the local master branch of each project), you should:
 
-- switch to the last release maintenance branch by going into the `.../ceylon-dist` directory and typing:
+- switch to the last release maintenance branch by going into the `.../ceylon/dist` directory and typing:
     
         ant eclipse-switch-to-last-release-updates
         
 - implement your maintenance changes inside the the IDE as usual.  
-- build the IDE with the following command run from the `.../ceylon-dist` directory:
+- build the IDE with the following command run from the `.../ceylon/dist` directory:
     
         ant eclipse-rebuild-last-release-updates
     
 The generated update site generated in directory `.../ceylon-ide-eclipse/site/target/repository` now contains a maintenance release fully compatible with the last release published in the [official Ceylon Eclipse update site](http://ceylon-lang.org/eclipse/updatesite/)  
 
-In order to come back to the master branches, run the following command from the `.../ceylon-dist` directory:
+In order to come back to the master branches, run the following command from the `.../ceylon/dist` directory:
     
         ant eclipse-switch-back-to-master
     
