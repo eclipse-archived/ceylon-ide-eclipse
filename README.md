@@ -116,20 +116,21 @@ If you make modifications on one of Ceylon IDE's dependencies, you can rebuild p
 
 _This implies some **additional complexity**, and is only useful if you want to debug the Ceylon IDE plugin._
 
-**_Prelimiary remark_**: Now, parts of the Ceylon IDE project itself are written in Ceylon. Thus, in order to develop the Ceylon IDE plugin, you must have a previous version of the plugin installed in your
-main Eclipse (preferably downloaded from the stable update site, or built with Maven).
+**_Preliminary remark_**: Now, parts of the Ceylon IDE project itself are written in Ceylon. Thus, in order to 
+develop the Ceylon IDE plugin, you must have a previous version of the plugin installed in your main Eclipse 
+(preferably downloaded from the stable update site, or built with Maven).
 
 1.  Perform steps 1 to 4 of section : [Building with Tycho / Maven 3](#building-with-tychomaven-3).
 
-2.  Start preferably with a clean install of Eclipse Kepler, Luna or Mars.
+2.  Start with a (preferably clean) install of Eclipse Kepler, Luna or Mars.
 
     <http://www.eclipse.org/downloads/>
 
-3.  Install the following feature: _Graphical Editing Framework Zest Visualization Toolkit SDK_ available here : 
+3.  Install the following feature: _Graphical Editing Framework Zest Visualization Toolkit SDK_. It is available here: 
 
-    http://download.eclipse.org/tools/gef/updates/releases/
+    <http://download.eclipse.org/tools/gef/updates/releases/>
 
-4.  Make sure you have the following feature: _Eclipse Plug-in Development Environment_. This is normally included inside the Eclipse Standard Package.
+4.  Make sure you have the following feature: _Eclipse Plug-in Development Environment_. It is normally included inside the Eclipse Standard Package.
 
 5.  Install a previous version of the Ceylon IDE, preferably downloaded from the stable update site (see [here](#installing-from-the-update-site)), or built with Maven (see [here](#building-with-tychomaven-3)).
 
