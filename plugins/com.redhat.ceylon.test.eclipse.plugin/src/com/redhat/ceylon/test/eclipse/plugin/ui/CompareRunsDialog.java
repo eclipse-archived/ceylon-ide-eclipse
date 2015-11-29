@@ -443,12 +443,12 @@ public class CompareRunsDialog extends TrayDialog {
                 if (comparedElement != null) {
                     if (comparedElement.getTestElement1() != null && 
                             comparedElement.getTestElement1().getException() != null && 
-                            comparedElement.getTestElement1().getState() != State.IGNORED) {
+                            comparedElement.getTestElement1().getState() != State.IGNORED_OR_ABORTED) {
                         exception1 = comparedElement.getTestElement1().getException();
                     }
                     if (comparedElement.getTestElement2() != null && 
                             comparedElement.getTestElement2().getException() != null && 
-                            comparedElement.getTestElement2().getState() != State.IGNORED) {
+                            comparedElement.getTestElement2().getState() != State.IGNORED_OR_ABORTED) {
                         exception2 = comparedElement.getTestElement2().getException();
                     }
                 }
@@ -738,7 +738,7 @@ public class CompareRunsDialog extends TrayDialog {
                 state = ComparedState.REMOVED;
             } else if (testElement1.getState() == State.SUCCESS && testElement2.getState() == State.SUCCESS) {
                 state = ComparedState.UNCHANGED;
-            } else if (testElement1.getState() == State.IGNORED && testElement2.getState() == State.IGNORED) {
+            } else if (testElement1.getState() == State.IGNORED_OR_ABORTED && testElement2.getState() == State.IGNORED_OR_ABORTED) {
                 state = ComparedState.UNCHANGED;
             } else if (testElement1.getState() == State.ERROR && testElement2.getState() == State.ERROR) {
                 state = isUnchangedException() ? ComparedState.UNCHANGED : ComparedState.CHANGED;
@@ -748,7 +748,7 @@ public class CompareRunsDialog extends TrayDialog {
                 state = ComparedState.REGRESSED_ERROR;
             } else if (testElement1.getState() != State.FAILURE && testElement2.getState() == State.FAILURE) {
                 state = ComparedState.REGRESSED_FAILURE;
-            } else if (testElement1.getState() != State.SUCCESS && testElement1.getState() != State.IGNORED && testElement2.getState() == State.SUCCESS) {
+            } else if (testElement1.getState() != State.SUCCESS && testElement1.getState() != State.IGNORED_OR_ABORTED && testElement2.getState() == State.SUCCESS) {
                 state = ComparedState.FIXED;
             } else {
                 state = ComparedState.CHANGED;

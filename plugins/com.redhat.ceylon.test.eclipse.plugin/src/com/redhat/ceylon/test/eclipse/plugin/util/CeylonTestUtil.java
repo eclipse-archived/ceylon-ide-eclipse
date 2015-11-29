@@ -293,7 +293,7 @@ public class CeylonTestUtil {
                 case SUCCESS: image = getImage(TEST_SUCCESS); break;
                 case FAILURE: image = getImage(TEST_FAILED); break;
                 case ERROR: image = getImage(TEST_ERROR); break;
-                case IGNORED: image = getImage(TEST_IGNORED); break;
+                case IGNORED_OR_ABORTED: image = getImage(TEST_IGNORED); break;
                 default: image = getImage(TEST); break;
                 }
             } else {
@@ -302,7 +302,7 @@ public class CeylonTestUtil {
                 case SUCCESS: image = getImage(TESTS_SUCCESS); break;
                 case FAILURE: image = getImage(TESTS_FAILED); break;
                 case ERROR: image = getImage(TESTS_ERROR); break;
-                case IGNORED: image = getImage(TESTS_IGNORED); break;
+                case IGNORED_OR_ABORTED: image = getImage(TESTS_IGNORED); break;
                 default: image = getImage(TESTS); break;
                 }
             }

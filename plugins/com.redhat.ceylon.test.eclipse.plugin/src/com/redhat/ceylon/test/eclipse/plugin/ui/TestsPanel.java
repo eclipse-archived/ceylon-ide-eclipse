@@ -512,7 +512,7 @@ public class TestsPanel extends Composite {
                 case SUCCESS: image = getImage(TESTS_SUCCESS); break;
                 case FAILURE: image = getImage(TESTS_FAILED); break;
                 case ERROR: image = getImage(TESTS_ERROR); break;
-                case IGNORED: image = getImage(TESTS_IGNORED); break;
+                case IGNORED_OR_ABORTED: image = getImage(TESTS_IGNORED); break;
                 default: image = getImage(TESTS); break;
                 }
 
@@ -748,7 +748,7 @@ public class TestsPanel extends Composite {
             if (selectedElement instanceof TestElement) {
                 try {
                     TestElement testElement = (TestElement) selectedElement;
-                    if (testElement.getState().isFailureOrError() && testElement.getException() != null) {
+                    if (testElement.getState().canShowStackTrace() && testElement.getException() != null) {
                         List<String> lines = StackTracePanel.parseStackTraceLine(testElement.getException());
                         for (String line : lines) {
                             String trimmedLine = line.trim();
