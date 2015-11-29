@@ -13,14 +13,18 @@ public class TestElement implements Serializable {
         SUCCESS,
         FAILURE,
         ERROR,
-        IGNORED;
+        IGNORED_OR_ABORTED;
 
         public boolean isFinished() {
-            return this == SUCCESS || this == FAILURE || this == ERROR || this == IGNORED;
+            return this == SUCCESS || this == FAILURE || this == ERROR || this == IGNORED_OR_ABORTED;
         }
 
         public boolean isFailureOrError() {
             return this == FAILURE || this == ERROR;
+        }
+        
+        public boolean canShowStackTrace() {
+            return this == FAILURE || this == ERROR || this == State.IGNORED_OR_ABORTED;
         }
 
     }

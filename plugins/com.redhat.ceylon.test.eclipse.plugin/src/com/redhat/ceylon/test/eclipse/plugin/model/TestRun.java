@@ -33,7 +33,7 @@ public class TestRun {
     private int successCount = 0;
     private int failureCount = 0;
     private int errorCount = 0;
-    private int ignoreCount = 0;
+    private int ignoreOrAbortedCount = 0;
 
     public TestRun(ILaunch launch) {
         this.launch = launch;
@@ -105,7 +105,7 @@ public class TestRun {
     }
     
     public int getIgnoreCount() {
-        return ignoreCount;
+        return ignoreOrAbortedCount;
     }
 
     public int getFinishedCount() {
@@ -117,7 +117,7 @@ public class TestRun {
         int success = 0;
         int failure = 0;
         int error = 0;
-        int ignored = 0;
+        int ignoredOrAborted = 0;
         int total = 0;
         
         List<TestElement> testsInPackage = testsByPackages.get(packageName);
@@ -129,7 +129,7 @@ public class TestRun {
                     case SUCCESS: success++; break;
                     case FAILURE: failure++; break;
                     case ERROR: error++; break;
-                    case IGNORED: ignored++; break;
+                    case IGNORED_OR_ABORTED: ignoredOrAborted++; break;
                     default: /* noop */ break;
                 }
             }
@@ -139,11 +139,11 @@ public class TestRun {
             return State.ERROR;
         } else if (failure > 0) {
             return State.FAILURE;
-        } else if (ignored == total) {
-            return State.IGNORED;
+        } else if (ignoredOrAborted == total) {
+            return State.IGNORED_OR_ABORTED;
         } else if (undefined == total) {
             return State.UNDEFINED;
-        } else if (success + ignored == total) {
+        } else if (success + ignoredOrAborted == total) {
             return State.SUCCESS;
         } else if (total > 0) {
             return State.RUNNING;
@@ -302,8 +302,8 @@ public class TestRun {
                     errorCount++;
                 }
                 break;
-            case IGNORED:
-                ignoreCount++;
+            case IGNORED_OR_ABORTED:
+                ignoreOrAbortedCount++;
                 break;
             default:
                 throw new IllegalStateException(element.toString());

@@ -2,7 +2,7 @@ package com.redhat.ceylon.test.eclipse.plugin.model;
 
 import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.ERROR;
 import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.FAILURE;
-import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.IGNORED;
+import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.IGNORED_OR_ABORTED;
 import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.RUNNING;
 import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.UNDEFINED;
@@ -16,13 +16,13 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
-import net.minidev.json.JSONValue;
-
 import org.eclipse.debug.core.ILaunch;
 
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
 
 public class TestEventListener {
     
@@ -104,6 +104,7 @@ public class TestEventListener {
                 case "testFinish":
                 case "testError":
                 case "testIgnore":
+                case "testAborted":
                     return TestEventType.TEST_FINISHED;
                 default:
                     throw new IllegalArgumentException(event);
@@ -131,7 +132,10 @@ public class TestEventListener {
                             e.setState(ERROR);
                             break;
                         case "ignored":
-                            e.setState(IGNORED);
+                            e.setState(IGNORED_OR_ABORTED);
+                            break;
+                        case "aborted":
+                            e.setState(IGNORED_OR_ABORTED);
                             break;
                         default:
                             e.setState(UNDEFINED);

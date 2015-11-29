@@ -231,7 +231,7 @@ public class StackTracePanel extends Composite {
     private boolean isStackTraceAvailable() {
         if (selectedTestElement != null &&
                 selectedTestElement.getException() != null &&
-                selectedTestElement.getState().isFailureOrError()) {
+                selectedTestElement.getState().canShowStackTrace()) {
             return true;
         }        
         return false;
