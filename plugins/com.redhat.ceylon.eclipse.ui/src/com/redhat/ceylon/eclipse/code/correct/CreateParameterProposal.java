@@ -7,7 +7,6 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importPropo
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
 import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
-import static com.redhat.ceylon.ide.common.util.Escaping.toInitialLowercase;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -32,6 +31,7 @@ import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.ide.common.util.FindDeclarationNodeVisitor;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
@@ -202,7 +202,7 @@ class CreateParameterProposal extends InitializerProposal {
                                     .getName();
                         if (parameterName!=null) {
                             parameterName = 
-                                    toInitialLowercase(
+                                    escaping_.get_().toInitialLowercase(
                                             parameterName)
                                         .replace("?", "")
                                         .replace("[]", "");

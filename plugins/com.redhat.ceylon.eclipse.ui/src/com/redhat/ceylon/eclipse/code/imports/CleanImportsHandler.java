@@ -3,9 +3,6 @@ package com.redhat.ceylon.eclipse.code.imports;
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.Indents.indents;
-import static com.redhat.ceylon.ide.common.util.Escaping.escapeAliasedName;
-import static com.redhat.ceylon.ide.common.util.Escaping.escapeName;
-import static com.redhat.ceylon.ide.common.util.Escaping.escapePackageName;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +31,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -190,7 +188,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 if (packageModel instanceof Package) {
                     Package p = (Package) packageModel;
                     escapedPackageName = 
-                            escapePackageName(p);
+                            escaping_.get_().escapePackageName(p);
                 }
                 else {
                     escapedPackageName = packageName;
@@ -255,11 +253,11 @@ public class CleanImportsHandler extends AbstractHandler {
                         i.getImportModel().getAlias();
                 if (!alias.equals(d.getName())) {
                     String escapedAlias = 
-                            escapeAliasedName(d, alias);
+                            escaping_.get_().escapeAliasedName(d, new ceylon.language.String(alias));
                     builder.append(escapedAlias)
                            .append("=");
                 }
-                builder.append(escapeName(d));
+                builder.append(escaping_.get_().escapeName(d));
                 appendNestedImportElements(i, 
                         unused, builder, doc);
                 builder.append(",");
@@ -271,7 +269,7 @@ public class CleanImportsHandler extends AbstractHandler {
                     .equals(packageName)) {
                 builder.append(delim)
                        .append(indent);
-                builder.append(escapeName(d)).append(",");
+                builder.append(escaping_.get_().escapeName(d)).append(",");
             }
         }
         if (hasWildcard) {
@@ -309,11 +307,11 @@ public class CleanImportsHandler extends AbstractHandler {
                                 nimt.getImportModel().getAlias();
                         if (!alias.equals(d.getName())) {
                             String escapedAlias = 
-                                    escapeAliasedName(d, alias);
+                                    escaping_.get_().escapeAliasedName(d, new ceylon.language.String(alias));
                             builder.append(escapedAlias)
                                    .append("=");
                         }
-                        builder.append(escapeName(d))
+                        builder.append(escaping_.get_().escapeName(d))
                                .append(",");
                     }
                 }

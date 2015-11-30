@@ -51,7 +51,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.ide.common.util.Escaping;
+import com.redhat.ceylon.ide.common.util.escaping_;
 
 class NewUnitWizardPage extends WizardPage {
 
@@ -804,15 +804,8 @@ class NewUnitWizardPage extends WizardPage {
         return "Please select a source folder.";
     }
     
-    private static final String KEYWORDS;
-    static {
-        StringBuilder sb = new StringBuilder();
-        for (String kw: Escaping.KEYWORDS) {
-            sb.append(kw).append('|');
-        }
-        sb.setLength(sb.length()-1);
-        KEYWORDS = sb.toString();
-    }
+    private static final String KEYWORDS
+            = escaping_.get_().concatenateKeywords("|");
     
     static final String KEYWORD_PATTERN = 
             ".*\\b(" + KEYWORDS + ")\\b.*";

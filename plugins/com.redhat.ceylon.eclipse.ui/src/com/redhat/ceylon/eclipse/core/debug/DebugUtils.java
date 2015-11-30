@@ -54,7 +54,7 @@ import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
 import com.redhat.ceylon.eclipse.util.JavaSearch.DefaultArgumentMethodSearch;
-import com.redhat.ceylon.ide.common.util.Escaping;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.model.loader.NamingBase.Suffix;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -899,7 +899,7 @@ public class DebugUtils {
             if (declaringType instanceof ClassType) {
                 ClassType classType = (ClassType) declaringType;
                 String fieldName = methodName.substring(3, methodName.length() - Suffix.$priv$.name().length());
-                fieldName = Escaping.toInitialLowercase(fieldName);
+                fieldName = escaping_.get_().toInitialLowercase(fieldName);
 
                 Field field = classType.fieldByName(fieldName);
                 if (field != null) {

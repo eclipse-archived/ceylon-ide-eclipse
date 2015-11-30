@@ -21,7 +21,7 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.ide.common.refactoring.ExtractValueRefactoring;
-import com.redhat.ceylon.ide.common.util.Escaping;
+import com.redhat.ceylon.ide.common.util.escaping_;
 
 public class ExtractValueInputPage extends UserInputWizardPage {
     public ExtractValueInputPage(String name) {
@@ -82,7 +82,7 @@ public class ExtractValueInputPage extends UserInputWizardPage {
             setErrorMessage("Not a legal Ceylon identifier");
             setPageComplete(false);
         }
-        else if (Escaping.KEYWORDS.contains(name)) {
+        else if (escaping_.get_().isKeyword(name)) {
             setErrorMessage("'" + name + "' is a Ceylon keyword");
             setPageComplete(false);
         }

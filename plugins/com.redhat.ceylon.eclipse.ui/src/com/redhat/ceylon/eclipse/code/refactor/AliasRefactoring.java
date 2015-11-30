@@ -27,8 +27,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.ide.common.util.Escaping;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -149,7 +149,7 @@ public class AliasRefactoring extends AbstractRefactoring {
             return createErrorStatus(
                     "Not a legal Ceylon identifier");
         }
-        else if (Escaping.KEYWORDS.contains(newName)) {
+        else if (escaping_.get_().isKeyword(newName)) {
             return createErrorStatus(
                     "'" + newName + "' is a Ceylon keyword");
         }

@@ -27,7 +27,6 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.Highlights.FontStyler;
-import com.redhat.ceylon.ide.common.util.Escaping;
 import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
 
 public class KeywordCompletionProposal extends CompletionProposal {
@@ -66,7 +65,7 @@ public class KeywordCompletionProposal extends CompletionProposal {
                 keywords = postfix ? postfixKeywords : expressionKeywords;
             }
             else {
-                keywords = Escaping.KEYWORDS;
+                keywords = null; // Escaping.KEYWORDS;
             }
             for (String keyword: keywords) {
                 if (keyword.startsWith(prefix)) {

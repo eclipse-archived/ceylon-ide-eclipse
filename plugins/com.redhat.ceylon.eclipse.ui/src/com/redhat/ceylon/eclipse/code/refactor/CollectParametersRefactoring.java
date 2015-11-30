@@ -28,7 +28,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.TreeUtil;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.ide.common.util.Escaping;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
@@ -149,7 +149,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
         if (rootNode!=null) {
             new FindParametersVisitor().visit(rootNode);
             if (declaration!=null) {
-                newName = Escaping.toInitialUppercase(declaration.getName());
+                newName = escaping_.get_().toInitialUppercase(declaration.getName());
             }
         }
     }
@@ -219,7 +219,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
         tfc.setEdit(new MultiTextEdit());
         if (declaration!=null) {
             String paramName = 
-                    Escaping.toInitialLowercase(newName);
+                    escaping_.get_().toInitialLowercase(newName);
             FindInvocationsVisitor fiv = 
                     new FindInvocationsVisitor(declaration);
             root.visit(fiv);

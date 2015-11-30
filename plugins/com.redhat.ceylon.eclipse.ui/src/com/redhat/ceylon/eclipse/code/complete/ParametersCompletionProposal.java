@@ -54,7 +54,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
-import com.redhat.ceylon.ide.common.util.Escaping;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -793,7 +793,7 @@ class ParametersCompletionProposal extends CompletionProposal {
                             String n = 
                                     argType.getDeclaration()
                                         .getName(unit);
-                            name = Escaping.toInitialLowercase(n);
+                            name = escaping_.get_().toInitialLowercase(n);
                         }
                         else {
                             name = "it";

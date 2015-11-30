@@ -51,7 +51,7 @@ import org.eclipse.ui.wizards.IWizardDescriptor;
 import com.redhat.ceylon.eclipse.code.select.PackageSelectionDialog;
 import com.redhat.ceylon.eclipse.code.wizard.EditDialog;
 import com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard;
-import com.redhat.ceylon.ide.common.util.Escaping;
+import com.redhat.ceylon.ide.common.util.escaping_;
 
 /*
  * TODO: this class is a huge copy/paste job of NewUnitWizardPage
@@ -703,15 +703,8 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
         return "Please select a source folder.";
     }
     
-    private static final String KEYWORDS;
-    static {
-        StringBuilder sb = new StringBuilder();
-        for (String kw: Escaping.KEYWORDS) {
-            sb.append(kw).append('|');
-        }
-        sb.setLength(sb.length()-1);
-        KEYWORDS = sb.toString();
-    }
+    private static final String KEYWORDS 
+            = escaping_.get_().concatenateKeywords("|");
 
     boolean packageNameIsLegal(String packageName) {
         return packageName.isEmpty() || 

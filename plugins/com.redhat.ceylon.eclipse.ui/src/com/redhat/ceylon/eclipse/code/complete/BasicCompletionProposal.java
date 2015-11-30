@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.complete;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextForDocLink;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.ide.common.util.Escaping.escapeName;
 
 import java.util.List;
 
@@ -13,6 +12,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.ide.common.util.escaping_;
 
 class BasicCompletionProposal extends CompletionProposal {
     
@@ -21,7 +21,7 @@ class BasicCompletionProposal extends CompletionProposal {
             CeylonParseController cpc, List<ICompletionProposal> result, 
             Declaration dec, Scope scope) {
         result.add(new BasicCompletionProposal(offset, prefix,
-                dec.getName(), escapeName(dec), dec, cpc));
+                dec.getName(), escaping_.get_().escapeName(dec), dec, cpc));
     }
 
     @Deprecated

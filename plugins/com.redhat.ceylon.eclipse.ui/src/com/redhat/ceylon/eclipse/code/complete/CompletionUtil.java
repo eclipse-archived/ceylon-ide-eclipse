@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.complete;
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 import static com.redhat.ceylon.eclipse.code.complete.ParameterContextValidator.findCharCount;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
-import static com.redhat.ceylon.ide.common.util.Escaping.escapeName;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 import static java.util.Collections.singletonList;
 
@@ -24,6 +23,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -401,7 +401,7 @@ public class CompletionUtil {
             Unit unit) {
         StringBuilder buf = new StringBuilder();
         if (qualifier!=null) {
-            buf.append(escapeName(qualifier, unit))
+            buf.append(escaping_.get_().escapeName(qualifier, unit))
               .append('.');
         }
         if (dec instanceof Constructor) {
@@ -410,10 +410,10 @@ public class CompletionUtil {
             TypeDeclaration clazz = 
                     constructor.getExtendedType()
                         .getDeclaration();
-            buf.append(escapeName(clazz, unit))
+            buf.append(escaping_.get_().escapeName(clazz, unit))
                     .append('.');
         }
-        buf.append(escapeName(dec, unit));
+        buf.append(escaping_.get_().escapeName(dec, unit));
         return buf.toString();
     }
 

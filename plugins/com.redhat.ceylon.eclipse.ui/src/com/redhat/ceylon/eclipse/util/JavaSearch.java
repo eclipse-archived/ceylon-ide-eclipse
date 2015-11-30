@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClas
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
-import static com.redhat.ceylon.ide.common.util.Escaping.toInitialLowercase;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_ATTRIBUTE_ANNOTATION;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_CEYLON_ANNOTATION;
 import static com.redhat.ceylon.model.loader.AbstractModelLoader.CEYLON_LOCAL_DECLARATION_ANNOTATION;
@@ -70,6 +69,7 @@ import com.redhat.ceylon.eclipse.core.model.IJavaModelAware;
 import com.redhat.ceylon.eclipse.core.model.IUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader.ActionOnResolvedGeneratedType;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.model.loader.NamingBase;
@@ -256,7 +256,7 @@ public class JavaSearch {
             }
             else if (name.startsWith("get") ||
                      name.startsWith("set")) {
-                name = toInitialLowercase(name.substring(3));
+                name = escaping_.get_().toInitialLowercase(name.substring(3));
             }
         }
         

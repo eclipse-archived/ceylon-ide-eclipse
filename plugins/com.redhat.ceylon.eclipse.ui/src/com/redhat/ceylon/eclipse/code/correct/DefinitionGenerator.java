@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.ide.common.util.Escaping.toInitialLowercase;
-
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,6 +10,7 @@ import org.eclipse.swt.graphics.Image;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
@@ -68,13 +67,13 @@ public abstract class DefinitionGenerator {
             String id = 
                     smte.getIdentifier()
                         .getText();
-            return toInitialLowercase(id);
+            return escaping_.get_().toInitialLowercase(id);
         }
         else {
             if (et.isClassOrInterface() || 
                 et.isTypeParameter()) {
                 String tn = et.getDeclaration().getName();
-                return toInitialLowercase(tn);
+                return escaping_.get_().toInitialLowercase(tn);
             }
             else {
                 return "it";

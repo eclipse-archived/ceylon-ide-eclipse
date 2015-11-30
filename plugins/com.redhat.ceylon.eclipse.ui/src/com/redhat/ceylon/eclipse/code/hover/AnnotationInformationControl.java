@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
-import static com.redhat.ceylon.ide.common.util.Escaping.toInitialUppercase;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -65,6 +64,7 @@ import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.ide.common.util.escaping_;
 
 /**
  * The annotation information control shows informations about a given
@@ -440,7 +440,7 @@ class AnnotationInformationControl
                 text.setLayoutData(gd3);
                 String message = annotation.getText();
                 if (message!=null && !message.isEmpty()) {
-                    message = toInitialUppercase(message);
+                    message = escaping_.get_().toInitialUppercase(message);
                     StyledString styled =
                             Highlights.styleProposal(
                                     message, true, true);

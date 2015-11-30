@@ -50,9 +50,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.ide.common.util.Escaping;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
@@ -297,7 +297,7 @@ public class RenameRefactoring extends AbstractRefactoring {
             return createErrorStatus(
                     "Not a legal Ceylon identifier");
         }
-        else if (Escaping.KEYWORDS.contains(newName)) {
+        else if (escaping_.get_().isKeyword(newName)) {
             return createErrorStatus(
                     "'" + newName + "' is a Ceylon keyword");
         }
@@ -419,7 +419,7 @@ public class RenameRefactoring extends AbstractRefactoring {
                                 change.addEdit(new ReplaceEdit(
                                         match.getOffset() + 3, 
                                         oldName.length() - 3, 
-                                        Escaping.toInitialUppercase(newName)));
+                                        escaping_.get_().toInitialUppercase(newName)));
                             }
                             else {
                                 change.addEdit(new ReplaceEdit(
@@ -566,7 +566,7 @@ public class RenameRefactoring extends AbstractRefactoring {
         else {
             tfc.addEdit(new ReplaceEdit(
                     start, len,
-                    Escaping.toInitialLowercase(newName)));
+                    escaping_.get_().toInitialLowercase(newName)));
         }
     }
 

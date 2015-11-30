@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CHANGE;
-import static com.redhat.ceylon.ide.common.util.Escaping.escapePackageName;
 
 import java.util.Collection;
 
@@ -14,13 +13,14 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.ide.common.util.escaping_;
 
 class RenameDescriptorProposal {
     
     static void addRenameDescriptorProposal(Tree.CompilationUnit cu,
             IQuickAssistInvocationContext context, ProblemLocation problem,
             Collection<ICompletionProposal> proposals, IFile file) {
-        String pn = escapePackageName(cu.getUnit().getPackage());
+        String pn = escaping_.get_().escapePackageName(cu.getUnit().getPackage());
         //TODO: DocumentChange doesn't work for Problems View
         TextFileChange change = new TextFileChange("Rename", file);
 //        DocumentChange change = new DocumentChange("Rename", context.getSourceViewer().getDocument());

@@ -34,7 +34,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.ide.common.util.Escaping;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 
 
@@ -217,7 +217,7 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
         String newName = getNewNameFromNamePosition();
         return !getInitialName().equals(newName) &&
                 newName.matches("^\\w(\\w|\\d)*$") &&
-                !Escaping.KEYWORDS.contains(newName);
+                !escaping_.get_().isKeyword(newName);
     }
 
     @Override

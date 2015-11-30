@@ -24,7 +24,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.AbstractLinkedMode;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.ide.common.util.Escaping;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
 class ConvertToClassProposal extends AbstractLinkedMode implements ICompletionProposal {
@@ -68,7 +68,7 @@ class ConvertToClassProposal extends AbstractLinkedMode implements ICompletionPr
     public void apply(IDocument doc) {
         Value declaration = node.getDeclarationModel();
         String name = declaration.getName();
-        String initialName = Escaping.toInitialUppercase(name);
+        String initialName = escaping_.get_().toInitialUppercase(name);
         TextChange change = new DocumentChange("Convert to Class", doc);
         change.setEdit(new MultiTextEdit());
         Tree.ObjectDefinition od = (Tree.ObjectDefinition) node;

@@ -14,7 +14,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE;
 import static com.redhat.ceylon.eclipse.util.Highlights.MEMBER_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
-import static com.redhat.ceylon.ide.common.util.Escaping.escapePackageName;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isOverloadedVersion;
 
@@ -52,6 +51,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.ImportList;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
@@ -373,7 +373,7 @@ public class PackageCompletions {
                 //if (!packages.contains(p)) {
                     //packages.add(p);
                 //if ( p.getModule().equals(module) || p.isShared() ) {
-                    String packageName = escapePackageName(candidate);
+                    String packageName = escaping_.get_().escapePackageName(candidate);
                     if (!packageName.isEmpty() && 
                             packageName.startsWith(fullPrefix)) {
                         boolean already = false;

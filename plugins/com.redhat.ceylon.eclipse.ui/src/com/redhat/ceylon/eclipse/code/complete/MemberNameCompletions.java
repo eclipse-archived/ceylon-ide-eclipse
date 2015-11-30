@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_NAME;
 import static com.redhat.ceylon.eclipse.util.Nodes.addNameProposals;
-import static com.redhat.ceylon.ide.common.util.Escaping.toInitialUppercase;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.LinkedHashSet;
@@ -15,6 +14,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
@@ -160,7 +160,7 @@ public class MemberNameCompletions {
                 if (text.startsWith("\\i")) {
                     text = text.substring(2);
                 }
-                proposals.add("maybe" + toInitialUppercase(text));
+                proposals.add("maybe" + escaping_.get_().toInitialUppercase(text));
             }
         }
         else if (node instanceof Tree.SequenceType) {
@@ -260,7 +260,7 @@ public class MemberNameCompletions {
                 }
                 if (sb.length()>0) {
                     sb.append(join)
-                      .append(toInitialUppercase(text));
+                      .append(escaping_.get_().toInitialUppercase(text));
                 }
                 else {
                     sb.append(text);

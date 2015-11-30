@@ -12,7 +12,6 @@ import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.styleIdentifier;
 import static com.redhat.ceylon.eclipse.util.Indents.indents;
-import static com.redhat.ceylon.ide.common.util.Escaping.escapeName;
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
@@ -27,6 +26,7 @@ import org.eclipse.swt.graphics.Font;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -113,7 +113,7 @@ public class CodeCompletions {
     
     public static String getTextFor(Declaration dec, Unit unit) {
         StringBuilder result = new StringBuilder();
-        result.append(escapeName(dec, unit));
+        result.append(escaping_.get_().escapeName(dec, unit));
         appendTypeParameters(dec, result);
         return result.toString();
     }
@@ -123,7 +123,7 @@ public class CodeCompletions {
             Reference pr, Unit unit, boolean includeDefaulted,
             String typeArgs) {
         StringBuilder result =
-                new StringBuilder(escapeName(dec, unit));
+                new StringBuilder(escaping_.get_().escapeName(dec, unit));
         if (typeArgs!=null) {
             result.append(typeArgs);
         }
@@ -141,7 +141,7 @@ public class CodeCompletions {
             boolean includeDefaulted,
             String typeArgs) {
         StringBuilder result =
-                new StringBuilder(escapeName(dec, unit));
+                new StringBuilder(escaping_.get_().escapeName(dec, unit));
         if (typeArgs!=null) {
             result.append(typeArgs);
         }
@@ -260,7 +260,7 @@ public class CodeCompletions {
                             containsNewline);
             result.append(extraIndent)
                 .append(" extends super.")
-                .append(escapeName(d));
+                .append(escaping_.get_().escapeName(d));
             appendPositionalArgs(d, pr, unit, result, true, false);
         }
         appendConstraints(d, pr, unit, indent, containsNewline, result);
@@ -585,7 +585,7 @@ public class CodeCompletions {
                             result.append("*");
                         }
                         result.append(descriptionOnly || p.getModel()==null ? 
-                                p.getName() : escapeName(p.getModel()));
+                                p.getName() : escaping_.get_().escapeName(p.getModel()));
                     }
                     result.append(", ");
                 }
@@ -611,7 +611,7 @@ public class CodeCompletions {
                     if (p.isSequenced()) {
                         result.append("*");
                     }
-                    result.append(escapeName(p.getModel()))
+                    result.append(escaping_.get_().escapeName(p.getModel()))
                         .append(", ");
                 }
                 result.setLength(result.length()-2);
@@ -653,7 +653,7 @@ public class CodeCompletions {
                 for (Parameter p: params) {
                     String name = descriptionOnly ? 
                             p.getName() : 
-                            escapeName(p.getModel());
+                                escaping_.get_().escapeName(p.getModel());
                     if (p.getModel() instanceof Functional) {
                         if (p.isDeclaredVoid()) {
                             result.append("void ");
@@ -939,7 +939,7 @@ public class CodeCompletions {
         result.append(" ");
         if (d.getName()!=null) {
             result.append(descriptionOnly ? 
-                    d.getName() : escapeName(d));
+                    d.getName() : escaping_.get_().escapeName(d));
         }
     }
     
@@ -957,7 +957,7 @@ public class CodeCompletions {
         result.append(" ")
             .append(descriptionOnly ? 
                     p.getName() :
-                    escapeName(p.getModel()));
+                        escaping_.get_().escapeName(p.getModel()));
     }
     
     private static void appendDeclarationDescription(

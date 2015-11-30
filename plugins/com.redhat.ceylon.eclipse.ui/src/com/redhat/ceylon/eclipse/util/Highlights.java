@@ -32,7 +32,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil.Task;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.ide.common.util.Escaping;
+import com.redhat.ceylon.ide.common.util.escaping_;
 
 public class Highlights  {
     
@@ -179,7 +179,7 @@ public class Highlights  {
             case CeylonParser.WS:
                 return null;
             default:
-                if (Escaping.KEYWORDS.contains(token.getText())) {
+                if (escaping_.get_().isKeyword(token.getText())) {
                     return keywordAttribute;
                 }
                 else {
@@ -266,7 +266,7 @@ public class Highlights  {
                 	}
                 }
                 else if (isLowerCase(initial)) {
-                    if (Escaping.KEYWORDS.contains(token)) {
+                    if (escaping_.get_().isKeyword(token)) {
                         append(result, token, font, 
                                 KW_STYLER);
                     }

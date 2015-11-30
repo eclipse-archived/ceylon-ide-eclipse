@@ -33,7 +33,7 @@ import org.osgi.framework.Bundle;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.ide.common.util.Escaping;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -295,7 +295,7 @@ public class HTML {
             case CeylonLexer.MODULE:
                 inPackageName = true; //then fall through!
             default:
-                if (Escaping.KEYWORDS.contains(s)) {
+                if (escaping_.get_().isKeyword(s)) {
                     result.append("<span style='color:"+kwc+"'>").append(s).append("</span>");
                 }
                 else {

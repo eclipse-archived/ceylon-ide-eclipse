@@ -15,7 +15,7 @@ import com.redhat.ceylon.eclipse.code.correct.LinkedModeImporter;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
-import com.redhat.ceylon.ide.common.util.Escaping;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
@@ -53,7 +53,7 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
     public boolean isEnabled() {
         String newName = getNewNameFromNamePosition();
         return newName.matches("^\\w(\\w|\\d)*$") &&
-                !Escaping.KEYWORDS.contains(newName);
+                !escaping_.get_().isKeyword(newName);
     }
     
     protected abstract int getNameOffset();

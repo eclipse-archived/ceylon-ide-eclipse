@@ -34,7 +34,6 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.addLinkedPosition;
 import static com.redhat.ceylon.eclipse.util.LinkedMode.installLinkedMode;
-import static com.redhat.ceylon.ide.common.util.Escaping.escapeName;
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.CLASS_ALIAS;
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.SATISFIES;
@@ -75,6 +74,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
@@ -112,7 +112,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         Unit unit = controller.getLastCompilationUnit().getUnit();
         result.add(new InvocationCompletionProposal(
                 offset, prefix,
-                dec.getName(unit), escapeName(dec, unit),
+                dec.getName(unit), escaping_.get_().escapeName(dec, unit),
                 dec, dec.getReference(), scope, controller,
                 true, false, false, false, isMember, null));
     }
@@ -156,7 +156,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             result.add(new InvocationCompletionProposal(
                     offset, prefix,
                     getDescriptionFor(dwp, unit, false),
-                    escapeName(dec, unit), 
+                    escaping_.get_().escapeName(dec, unit), 
                     dec, pr, scope, controller,
                     true, false, false, false,
                     isMember, null));

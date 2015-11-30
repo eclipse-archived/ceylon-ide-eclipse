@@ -148,8 +148,8 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.Types;
 import com.redhat.ceylon.ide.common.completion.FindScopeVisitor;
-import com.redhat.ceylon.ide.common.util.Escaping;
 import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
@@ -707,7 +707,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                 type==UIDENTIFIER ||
                 type==AIDENTIFIER ||
                 type==PIDENTIFIER ||
-                Escaping.KEYWORDS.contains(token.getText());
+                escaping_.get_().isKeyword(token.getText());
     }
     
     private static ICompletionProposal[] 
