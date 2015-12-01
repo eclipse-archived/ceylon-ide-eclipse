@@ -5,12 +5,12 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_ERROR;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_FAILED;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_IGNORED;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SKIPPED;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_RUNNING;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_ERROR;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_FAILED;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_IGNORED;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_SKIPPED;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_RUNNING;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
@@ -293,7 +293,7 @@ public class CeylonTestUtil {
                 case SUCCESS: image = getImage(TEST_SUCCESS); break;
                 case FAILURE: image = getImage(TEST_FAILED); break;
                 case ERROR: image = getImage(TEST_ERROR); break;
-                case IGNORED_OR_ABORTED: image = getImage(TEST_IGNORED); break;
+                case SKIPPED_OR_ABORTED: image = getImage(TEST_SKIPPED); break;
                 default: image = getImage(TEST); break;
                 }
             } else {
@@ -302,7 +302,7 @@ public class CeylonTestUtil {
                 case SUCCESS: image = getImage(TESTS_SUCCESS); break;
                 case FAILURE: image = getImage(TESTS_FAILED); break;
                 case ERROR: image = getImage(TESTS_ERROR); break;
-                case IGNORED_OR_ABORTED: image = getImage(TESTS_IGNORED); break;
+                case SKIPPED_OR_ABORTED: image = getImage(TESTS_SKIPPED); break;
                 default: image = getImage(TESTS); break;
                 }
             }

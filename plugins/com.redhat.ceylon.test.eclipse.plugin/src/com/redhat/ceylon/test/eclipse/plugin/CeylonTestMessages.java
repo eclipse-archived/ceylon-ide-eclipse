@@ -70,7 +70,7 @@ public class CeylonTestMessages extends NLS {
     public static String historyColumnSuccess;
     public static String historyColumnFailures;
     public static String historyColumnErrors;
-    public static String historyColumnIgnored;
+    public static String historyColumnSkipped;
     public static String historyPinLabel;
     public static String historyPinTooltip;
     public static String historyUnpinLabel;
@@ -91,7 +91,7 @@ public class CeylonTestMessages extends NLS {
     public static String compareRunsDlgSuccess;
     public static String compareRunsDlgFailures;
     public static String compareRunsDlgErrors;
-    public static String compareRunsDlgIgnored;
+    public static String compareRunsDlgSkipped;
     public static String compareRunsDlgShowOnly;
     public static String compareRunsDlgFixed;
     public static String compareRunsDlgRegressedError;

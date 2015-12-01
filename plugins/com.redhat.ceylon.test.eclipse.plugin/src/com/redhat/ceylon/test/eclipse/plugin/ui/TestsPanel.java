@@ -9,7 +9,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SHOW
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_ERROR;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_FAILED;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_IGNORED;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SKIPPED;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_RUNNING;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
@@ -512,7 +512,7 @@ public class TestsPanel extends Composite {
                 case SUCCESS: image = getImage(TESTS_SUCCESS); break;
                 case FAILURE: image = getImage(TESTS_FAILED); break;
                 case ERROR: image = getImage(TESTS_ERROR); break;
-                case IGNORED_OR_ABORTED: image = getImage(TESTS_IGNORED); break;
+                case SKIPPED_OR_ABORTED: image = getImage(TESTS_SKIPPED); break;
                 default: image = getImage(TESTS); break;
                 }
 

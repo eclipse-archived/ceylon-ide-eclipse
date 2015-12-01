@@ -13,10 +13,10 @@ public class TestElement implements Serializable {
         SUCCESS,
         FAILURE,
         ERROR,
-        IGNORED_OR_ABORTED;
+        SKIPPED_OR_ABORTED;
 
         public boolean isFinished() {
-            return this == SUCCESS || this == FAILURE || this == ERROR || this == IGNORED_OR_ABORTED;
+            return this == SUCCESS || this == FAILURE || this == ERROR || this == SKIPPED_OR_ABORTED;
         }
 
         public boolean isFailureOrError() {
@@ -24,7 +24,7 @@ public class TestElement implements Serializable {
         }
         
         public boolean canShowStackTrace() {
-            return this == FAILURE || this == ERROR || this == State.IGNORED_OR_ABORTED;
+            return this == FAILURE || this == ERROR || this == State.SKIPPED_OR_ABORTED;
         }
 
     }

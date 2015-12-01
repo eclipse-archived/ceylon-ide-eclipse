@@ -2,7 +2,7 @@ package com.redhat.ceylon.test.eclipse.plugin.model;
 
 import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.ERROR;
 import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.FAILURE;
-import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.IGNORED_OR_ABORTED;
+import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.SKIPPED_OR_ABORTED;
 import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.RUNNING;
 import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.UNDEFINED;
@@ -95,15 +95,15 @@ public class TestEventListener {
         
         private TestEventType parseTestEventType(String event) {
             switch (event) {
-                case "testRunStart":
+                case "testRunStarted":
                     return TestEventType.TEST_RUN_STARTED;
-                case "testRunFinish":
+                case "testRunFinished":
                     return TestEventType.TEST_RUN_FINISHED;
-                case "testStart":
+                case "testStarted":
                     return TestEventType.TEST_STARTED;
-                case "testFinish":
+                case "testFinished":
                 case "testError":
-                case "testIgnore":
+                case "testSkipped":
                 case "testAborted":
                     return TestEventType.TEST_FINISHED;
                 default:
@@ -131,11 +131,11 @@ public class TestEventListener {
                         case "error":
                             e.setState(ERROR);
                             break;
-                        case "ignored":
-                            e.setState(IGNORED_OR_ABORTED);
+                        case "skipped":
+                            e.setState(SKIPPED_OR_ABORTED);
                             break;
                         case "aborted":
-                            e.setState(IGNORED_OR_ABORTED);
+                            e.setState(SKIPPED_OR_ABORTED);
                             break;
                         default:
                             e.setState(UNDEFINED);
