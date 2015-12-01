@@ -9,7 +9,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compare;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnErrors;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnFailures;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnIgnored;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnSkipped;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnName;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnPlatform;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnStartDate;
@@ -78,7 +78,7 @@ public class HistoryDialog extends TitleAreaDialog {
     private DateFormat startDateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
     private Color successColor = new Color(getDisplay(), 95, 191, 95);
     private Color failureColor = new Color(getDisplay(), 159, 63, 63);
-    private Color ignoredColor = new Color(getDisplay(), 160, 160, 160);
+    private Color skippedColor = new Color(getDisplay(), 160, 160, 160);
 
     public HistoryDialog(Shell shell) {
         super(shell);
@@ -291,17 +291,17 @@ public class HistoryDialog extends TitleAreaDialog {
             }
         });
         
-        TableViewerColumn colIgnored = new TableViewerColumn(tableViewer, SWT.NONE);
-        colIgnored.getColumn().setWidth(65);
-        colIgnored.getColumn().setText(historyColumnIgnored);
-        colIgnored.setLabelProvider(new ColumnLabelProvider() {
+        TableViewerColumn colSkipped = new TableViewerColumn(tableViewer, SWT.NONE);
+        colSkipped.getColumn().setWidth(65);
+        colSkipped.getColumn().setText(historyColumnSkipped);
+        colSkipped.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
-                return Integer.toString(((TestRun) element).getIgnoreCount());
+                return Integer.toString(((TestRun) element).getSkippedOrAbortedCount());
             }
             @Override
             public Color getForeground(Object element) {
-                return ignoredColor;
+                return skippedColor;
             }
         });
         
@@ -413,7 +413,7 @@ public class HistoryDialog extends TitleAreaDialog {
         testRunContainer.removeTestRunListener(testRunListener);
         successColor.dispose();
         failureColor.dispose();
-        ignoredColor.dispose();
+        skippedColor.dispose();
         return super.close();
     }
 

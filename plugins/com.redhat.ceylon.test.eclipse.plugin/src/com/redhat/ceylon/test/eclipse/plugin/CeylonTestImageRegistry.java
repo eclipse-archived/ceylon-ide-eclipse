@@ -19,14 +19,14 @@ public class CeylonTestImageRegistry {
     public static final String TEST = "test.gif";
     public static final String TEST_ERROR = "test_error.gif";
     public static final String TEST_FAILED = "test_failed.gif";
-    public static final String TEST_IGNORED = "test_ignored.gif";
+    public static final String TEST_SKIPPED = "test_skipped.gif";
     public static final String TEST_RUNNING = "test_running.gif";
     public static final String TEST_SUCCESS = "test_success.gif";
     
     public static final String TESTS = "tests.gif";
     public static final String TESTS_ERROR = "tests_error.gif";
     public static final String TESTS_FAILED = "tests_failed.gif";
-    public static final String TESTS_IGNORED = "tests_ignored.gif";
+    public static final String TESTS_SKIPPED = "tests_skipped.gif";
     public static final String TESTS_RUNNING = "tests_running.gif";
     public static final String TESTS_SUCCESS = "tests_success.gif";
     public static final String TESTS_INTERRUPTED = "tests_interrupted.gif";
@@ -74,14 +74,14 @@ public class CeylonTestImageRegistry {
         imageRegistry.put(TEST, image(TEST));
         imageRegistry.put(TEST_ERROR, image(TEST_ERROR));
         imageRegistry.put(TEST_FAILED, image(TEST_FAILED));
-        imageRegistry.put(TEST_IGNORED, image(TEST_IGNORED));
+        imageRegistry.put(TEST_SKIPPED, image(TEST_SKIPPED));
         imageRegistry.put(TEST_RUNNING, image(TEST_RUNNING));
         imageRegistry.put(TEST_SUCCESS, image(TEST_SUCCESS));
         
         imageRegistry.put(TESTS, image(TESTS));
         imageRegistry.put(TESTS_ERROR, image(TESTS_ERROR));
         imageRegistry.put(TESTS_FAILED, image(TESTS_FAILED));
-        imageRegistry.put(TESTS_IGNORED, image(TESTS_IGNORED));
+        imageRegistry.put(TESTS_SKIPPED, image(TESTS_SKIPPED));
         imageRegistry.put(TESTS_RUNNING, image(TESTS_RUNNING));
         imageRegistry.put(TESTS_SUCCESS, image(TESTS_SUCCESS));
         imageRegistry.put(TESTS_INTERRUPTED, image(TESTS_INTERRUPTED));

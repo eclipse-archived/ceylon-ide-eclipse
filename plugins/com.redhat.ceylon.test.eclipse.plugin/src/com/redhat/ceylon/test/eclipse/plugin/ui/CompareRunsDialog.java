@@ -10,7 +10,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STAT
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_ERROR;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_FAILED;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_IGNORED;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_SKIPPED;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgAdded;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgChanged;
@@ -18,7 +18,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRu
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgErrors;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgFailures;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgFixed;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgIgnored;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgSkipped;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgPlatform;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgRegressedError;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareRunsDlgRegressedFailure;
@@ -323,19 +323,19 @@ public class CompareRunsDialog extends TrayDialog {
         Label span1 = new Label(c, SWT.NONE);
         span1.setLayoutData(GridDataFactory.swtDefaults().span(3, 1).create());
 
-        Label ignoredIcon = new Label(c, SWT.NONE);
-        ignoredIcon.setImage(CeylonTestImageRegistry.getImage(TEST_IGNORED));
-        ignoredIcon.setBackground(backgroundColor);
-        ignoredIcon.setLayoutData(GridDataFactory.swtDefaults().indent(50, 0).create());
+        Label skippedIcon = new Label(c, SWT.NONE);
+        skippedIcon.setImage(CeylonTestImageRegistry.getImage(TEST_SKIPPED));
+        skippedIcon.setBackground(backgroundColor);
+        skippedIcon.setLayoutData(GridDataFactory.swtDefaults().indent(50, 0).create());
 
-        Label ignoredLabel = new Label(c, SWT.NONE);
-        ignoredLabel.setText(compareRunsDlgIgnored);
-        ignoredLabel.setBackground(backgroundColor);
-        ignoredLabel.setForeground(labelForegroundColor);
+        Label skippedLabel = new Label(c, SWT.NONE);
+        skippedLabel.setText(compareRunsDlgSkipped);
+        skippedLabel.setBackground(backgroundColor);
+        skippedLabel.setForeground(labelForegroundColor);
 
-        Text ignoredText = new Text(c, SWT.READ_ONLY);
-        ignoredText.setText(Integer.toString(testRun.getIgnoreCount()));
-        ignoredText.setBackground(backgroundColor);
+        Text skippedText = new Text(c, SWT.READ_ONLY);
+        skippedText.setText(Integer.toString(testRun.getSkippedOrAbortedCount()));
+        skippedText.setBackground(backgroundColor);
         
         Label errorIcon = new Label(c, SWT.NONE);
         errorIcon.setImage(CeylonTestImageRegistry.getImage(TEST_ERROR));
@@ -443,12 +443,12 @@ public class CompareRunsDialog extends TrayDialog {
                 if (comparedElement != null) {
                     if (comparedElement.getTestElement1() != null && 
                             comparedElement.getTestElement1().getException() != null && 
-                            comparedElement.getTestElement1().getState() != State.IGNORED_OR_ABORTED) {
+                            comparedElement.getTestElement1().getState() != State.SKIPPED_OR_ABORTED) {
                         exception1 = comparedElement.getTestElement1().getException();
                     }
                     if (comparedElement.getTestElement2() != null && 
                             comparedElement.getTestElement2().getException() != null && 
-                            comparedElement.getTestElement2().getState() != State.IGNORED_OR_ABORTED) {
+                            comparedElement.getTestElement2().getState() != State.SKIPPED_OR_ABORTED) {
                         exception2 = comparedElement.getTestElement2().getException();
                     }
                 }
@@ -738,7 +738,7 @@ public class CompareRunsDialog extends TrayDialog {
                 state = ComparedState.REMOVED;
             } else if (testElement1.getState() == State.SUCCESS && testElement2.getState() == State.SUCCESS) {
                 state = ComparedState.UNCHANGED;
-            } else if (testElement1.getState() == State.IGNORED_OR_ABORTED && testElement2.getState() == State.IGNORED_OR_ABORTED) {
+            } else if (testElement1.getState() == State.SKIPPED_OR_ABORTED && testElement2.getState() == State.SKIPPED_OR_ABORTED) {
                 state = ComparedState.UNCHANGED;
             } else if (testElement1.getState() == State.ERROR && testElement2.getState() == State.ERROR) {
                 state = isUnchangedException() ? ComparedState.UNCHANGED : ComparedState.CHANGED;
@@ -748,7 +748,7 @@ public class CompareRunsDialog extends TrayDialog {
                 state = ComparedState.REGRESSED_ERROR;
             } else if (testElement1.getState() != State.FAILURE && testElement2.getState() == State.FAILURE) {
                 state = ComparedState.REGRESSED_FAILURE;
-            } else if (testElement1.getState() != State.SUCCESS && testElement1.getState() != State.IGNORED_OR_ABORTED && testElement2.getState() == State.SUCCESS) {
+            } else if (testElement1.getState() != State.SUCCESS && testElement1.getState() != State.SKIPPED_OR_ABORTED && testElement2.getState() == State.SUCCESS) {
                 state = ComparedState.FIXED;
             } else {
                 state = ComparedState.CHANGED;
