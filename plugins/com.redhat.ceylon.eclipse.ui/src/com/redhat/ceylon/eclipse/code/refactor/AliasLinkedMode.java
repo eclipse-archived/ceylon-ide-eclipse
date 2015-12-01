@@ -137,11 +137,14 @@ public final class AliasLinkedMode
         int i=2;
         for (Node type: refactoring.getNodesToRename(rootNode)) {
             try {
-                linkedPositionGroup.addPosition(
-                        new LinkedPosition(document, 
-                            type.getStartIndex()+offset, 
-                            type.getDistance(), 
-                            i++));
+                Integer start = type.getStartIndex();
+                Integer length = type.getDistance();
+                if (start!=null && length!=null) {
+                    linkedPositionGroup.addPosition(
+                            new LinkedPosition(document, 
+                                start+offset, length, 
+                                i++));
+                }
             } 
             catch (BadLocationException e) {
                 e.printStackTrace();
