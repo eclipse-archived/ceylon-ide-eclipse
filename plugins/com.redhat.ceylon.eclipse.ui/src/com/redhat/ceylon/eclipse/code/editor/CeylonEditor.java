@@ -433,7 +433,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         action.setActionDefinitionId(EditorActionIds.SHOW_CEYLON_CODE);
         setAction(EditorActionIds.SHOW_CEYLON_CODE, action);
         
-        action = new TerminateStatementAction(this);
+        action = new EclipseTerminateStatementAction(this);
         action.setActionDefinitionId(EditorActionIds.TERMINATE_STATEMENT);
         setAction(EditorActionIds.TERMINATE_STATEMENT, action);
 

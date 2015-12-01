@@ -47,4 +47,7 @@ shared interface EclipseDocumentChanges
 
     shared actual String getInsertedText(InsertEdit edit)
             => edit.text;
+    
+    shared actual Boolean hasChildren(TextChange change)
+            => change.edit.hasChildren();
 }

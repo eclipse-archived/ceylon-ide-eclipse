@@ -26,6 +26,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 
+@Deprecated
 final class TerminateStatementAction extends Action {
     private final CeylonEditor editor;
     private int line;

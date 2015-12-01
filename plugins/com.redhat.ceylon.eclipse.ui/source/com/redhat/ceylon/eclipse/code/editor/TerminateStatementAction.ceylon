@@ -1,0 +1,84 @@
+import com.redhat.ceylon.ide.common.editor {
+    AbstractTerminateStatementAction
+}
+import org.eclipse.jface.text {
+    IDocument
+}
+import org.eclipse.text.edits {
+    InsertEdit,
+    TextEdit
+}
+import org.eclipse.ltk.core.refactoring {
+    TextChange,
+    DocumentChange
+}
+import com.redhat.ceylon.eclipse.code.correct {
+    EclipseDocumentChanges
+}
+import com.redhat.ceylon.ide.common.typechecker {
+    LocalAnalysisResult
+}
+import com.redhat.ceylon.ide.common.refactoring {
+    DefaultRegion
+}
+import org.eclipse.jface.action {
+    Action
+}
+import com.redhat.ceylon.eclipse.util {
+    EditorUtil
+}
+import com.redhat.ceylon.eclipse.code.parse {
+    CeylonParseController
+}
+import org.eclipse.core.runtime {
+    NullProgressMonitor
+}
+
+class EclipseTerminateStatementAction(CeylonEditor editor)
+        extends Action(null)
+        satisfies AbstractTerminateStatementAction<IDocument,InsertEdit,TextEdit,TextChange>
+                & EclipseDocumentChanges {
+    
+    value doc => editor.ceylonSourceViewer.document;
+    
+    shared actual void run() {
+        value ts = EditorUtil.getSelection(editor);
+        String before = editor.selectionText;
+
+        terminateStatement(doc, ts.endLine);
+        
+        if (editor.selectionText != before) {
+            //if the caret was at the end of the line, 
+            //and a semi was added, it winds up selected
+            //so move the caret after the semi
+            value selection = editor.selection;
+            Integer start = selection.offset + 1;
+            editor.ceylonSourceViewer.setSelectedRange(start, 0);
+        }
+        
+        editor.scheduleParsing();
+    }
+    
+    shared actual void applyChange(TextChange change) {
+        EditorUtil.performChange(change);
+    }
+    
+    shared actual [DefaultRegion, String] getLineInfo(Integer line)
+            => let(li = doc.getLineInformation(line)) 
+                [DefaultRegion(li.offset, li.length),
+                    doc.get(li.offset, li.length)];
+    
+    shared actual TextChange newChange(String desc, IDocument doc)
+            => DocumentChange(desc, doc);
+    
+    shared actual LocalAnalysisResult<IDocument,out Anything> parse() {
+        value cpc = CeylonParseController();
+        cpc.initialize(editor.parseController.path,
+            editor.parseController.project, null);
+        cpc.parseAndTypecheck(doc,
+            0, // don't wait for the source model since we don't even need it.
+            NullProgressMonitor(), null);
+        return cpc;
+    }
+    
+}
