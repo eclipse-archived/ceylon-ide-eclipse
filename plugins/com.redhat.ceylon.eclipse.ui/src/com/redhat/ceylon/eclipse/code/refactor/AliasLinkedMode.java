@@ -121,7 +121,8 @@ public final class AliasLinkedMode
                     throws BadLocationException {
         
         Node selectedNode = refactoring.getNode();
-        int offset = refactoring.getInserted();
+        int insertedLength = refactoring.getInsertedLength();
+        int insertedLocation = refactoring.getInsertedLocation();
         namePosition = 
                 new LinkedPosition(document, 
                         refactoring.getAliasOffset(), 
@@ -131,7 +132,7 @@ public final class AliasLinkedMode
         
         linkedPositionGroup.addPosition(
                 new LinkedPosition(document, 
-                    selectedNode.getStartIndex()+offset, 
+                    selectedNode.getStartIndex()+insertedLength, 
                     selectedNode.getDistance(), 
                     1));
         int i=2;
@@ -140,10 +141,14 @@ public final class AliasLinkedMode
                 Integer start = type.getStartIndex();
                 Integer length = type.getDistance();
                 if (start!=null && length!=null) {
+                    int offset = 
+                            start>=insertedLocation ? 
+                                    start+insertedLength : 
+                                    start;
                     linkedPositionGroup.addPosition(
                             new LinkedPosition(document, 
-                                start+offset, length, 
-                                i++));
+                                    offset, length, 
+                                    i++));
                 }
             } 
             catch (BadLocationException e) {

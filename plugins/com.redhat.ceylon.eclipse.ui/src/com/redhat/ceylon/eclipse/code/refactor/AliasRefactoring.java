@@ -207,7 +207,8 @@ public class AliasRefactoring extends AbstractRefactoring {
     }
     
     private int aliasOffset;
-    private int inserted;
+    private int insertedLength;
+    private int insertedLocation;
     
     int getAliasOffset() {
         return aliasOffset;
@@ -217,8 +218,12 @@ public class AliasRefactoring extends AbstractRefactoring {
         return typeString.length();
     }
     
-    public int getInserted() {
-        return inserted;
+    public int getInsertedLength() {
+        return insertedLength;
+    }
+    
+    public int getInsertedLocation() {
+        return insertedLocation;
     }
     
     void renameInFile(TextChange tfc, 
@@ -313,7 +318,8 @@ public class AliasRefactoring extends AbstractRefactoring {
                             "=> " + t.asString(unit) + 
                             args + ";" +
                             delim + delim;
-                    inserted = text.length();
+                    insertedLength = text.length();
+                    insertedLocation = insertLoc;
                     tfc.addEdit(new InsertEdit(
                             insertLoc, text));
                 }
