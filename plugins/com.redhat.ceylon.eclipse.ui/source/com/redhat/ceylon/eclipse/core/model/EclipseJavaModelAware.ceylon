@@ -68,6 +68,9 @@ import org.eclipse.jdt.core.dom {
     IBinding,
     ITypeBinding
 }
+import org.eclipse.ui.internal.keys.model {
+    ModelElement
+}
 shared interface EclipseJavaModelAware 
         satisfies IJavaModelAware<IProject, ITypeRoot, IJavaElement> {
     shared actual IJavaElement? toJavaElement(Declaration ceylonDeclaration, BaseProgressMonitor? monitor) {
@@ -79,8 +82,8 @@ shared interface EclipseJavaModelAware
             javaClassRoot.javaProject.project;
 
     shared interface ResolvedElements {
-        shared formal ObjectArray<IJavaElement&Identifiable> modelElements;
-        shared formal ObjectArray<IBinding&Identifiable> bindings;
+        shared formal ObjectArray<IJavaElement> modelElements;
+        shared formal ObjectArray<IBinding> bindings;
     }
     
     shared formal variable SoftReference<ResolvedElements> resolvedElementsRef;
@@ -97,8 +100,8 @@ shared interface EclipseJavaModelAware
                         parser.setProject(typeRoot.javaProject);
                         value list = LinkedList<IJavaElement>();
                         traverseModel(typeRoot.primaryElement, list);
-                        assert (is ObjectArray<IBinding&Identifiable> theModelElements = createJavaObjectArray(list));
-                        assert (is ObjectArray<IBinding&Identifiable> theBindings = parser.createBindings(theModelElements, monitor?.wrapped));
+                        value theModelElements = createJavaObjectArray(list);
+                        value theBindings = parser.createBindings(theModelElements, monitor?.wrapped);
                         assert (theBindings.size == theModelElements.size);
                         value newResolvedElements = object satisfies ResolvedElements {
                             modelElements => theModelElements;
@@ -245,13 +248,16 @@ shared interface EclipseJavaModelAware
         IBindingProvider? mirror, 
         ResolvedElements resolvedElements) {
         if (exists mirror, is Identifiable javaElement) {
-            ObjectArray<IJavaElement & Identifiable> modelElements = resolvedElements.modelElements;
+            ObjectArray<IJavaElement> modelElements = resolvedElements.modelElements;
             ObjectArray<IBinding> bindings = resolvedElements.bindings;
             variable Integer javaElementIndex = -1;
             for (i in 0 : modelElements.size) {
-                if (modelElements.get(i) === javaElement) {
-                    javaElementIndex = i;
-                    break;
+                if (exists modelElement = modelElements.get(i)) {
+                    assert(is Identifiable modelElement);
+                    if (modelElement === javaElement) {
+                        javaElementIndex = i;
+                        break;
+                    }
                 }
             }
             if (javaElementIndex >=0) {
