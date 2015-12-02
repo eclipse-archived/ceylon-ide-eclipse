@@ -33,6 +33,15 @@ import com.redhat.ceylon.eclipse.code.parse {
 import org.eclipse.core.runtime {
     NullProgressMonitor
 }
+import java.util {
+    List
+}
+import org.antlr.runtime {
+    CommonToken
+}
+import com.redhat.ceylon.compiler.typechecker.tree {
+    Tree
+}
 
 class EclipseTerminateStatementAction(CeylonEditor editor)
         extends Action(null)
@@ -63,7 +72,7 @@ class EclipseTerminateStatementAction(CeylonEditor editor)
         EditorUtil.performChange(change);
     }
     
-    shared actual [DefaultRegion, String] getLineInfo(Integer line)
+    shared actual [DefaultRegion, String] getLineInfo(IDocument doc, Integer line)
             => let(li = doc.getLineInformation(line)) 
                 [DefaultRegion(li.offset, li.length),
                     doc.get(li.offset, li.length)];
@@ -71,14 +80,18 @@ class EclipseTerminateStatementAction(CeylonEditor editor)
     shared actual TextChange newChange(String desc, IDocument doc)
             => DocumentChange(desc, doc);
     
-    shared actual LocalAnalysisResult<IDocument,out Anything> parse() {
+    shared actual [Tree.CompilationUnit, List<CommonToken>] parse(IDocument doc) {
         value cpc = CeylonParseController();
         cpc.initialize(editor.parseController.path,
             editor.parseController.project, null);
         cpc.parseAndTypecheck(doc,
             0, // don't wait for the source model since we don't even need it.
             NullProgressMonitor(), null);
-        return cpc;
+        return [cpc.parsedRootNode, cpc.tokens];
     }
+    
+    shared actual Character getChar(IDocument doc, Integer offset)
+            => doc.getChar(offset);
+    
     
 }
