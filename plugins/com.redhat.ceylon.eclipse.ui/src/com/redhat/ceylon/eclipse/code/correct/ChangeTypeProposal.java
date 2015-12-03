@@ -191,16 +191,15 @@ class ChangeTypeProposal extends CorrectionProposal {
                 }
                 ArgumentListVisitor vis = new ArgumentListVisitor();
                 vis.visit(rootNode);
-                TypeParameter stTypeParam = null;
-                Tree.TypeArgumentList tal = vis.typeArgs;
                 Declaration std = vis.declaration;
                 if (std instanceof Generic) {
                     Generic g = (Generic) std;
                     List<TypeParameter> tps = 
                             g.getTypeParameters();
+                    Tree.TypeArgumentList tal = vis.typeArgs;
                     int i = tal.getTypes().indexOf(stn);
                     if (tps!=null && tps.size()>i) {
-                        stTypeParam = tps.get(i);
+                        TypeParameter  stTypeParam = tps.get(i);
                         List<Type> sts = 
                                 stTypeParam.getSatisfiedTypes();
                         if (!sts.isEmpty()) {
