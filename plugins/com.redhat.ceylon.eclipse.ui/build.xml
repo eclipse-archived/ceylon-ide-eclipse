@@ -28,7 +28,7 @@
 
     <taskdef resource="net/sf/antcontrib/antcontrib.properties">
         <classpath>
-            <pathelement location="${dist.root.dir}/lib/ant-contrib-1.0b3.jar"/>
+            <pathelement location="${ceylon.root.dir}/lib/ant-contrib-1.0b3.jar"/>
         </classpath>
     </taskdef>
 
