@@ -29,6 +29,7 @@ import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
@@ -460,30 +461,64 @@ public class AddSatisfiesProposal extends CorrectionProposal {
     }
 
     private static List<TypeParameter> determineSatisfiedTypesTypeParams(
-            Tree.CompilationUnit rootNode, Node typeParamNode, 
+            Tree.CompilationUnit rootNode, final Node typeParamNode, 
             final TypeDeclaration typeDec) {
         final List<TypeParameter> stTypeParams = 
                 new ArrayList<TypeParameter>();
         
-        FindContainerVisitor fcv = 
-                new FindContainerVisitor(typeParamNode);
-        fcv.visit(rootNode);
-        Tree.StatementOrArgument soa = 
-                fcv.getStatementOrArgument();
-        soa.visit(new Visitor() {
+        new Visitor() {
+            private void determineSatisfiedTypesTypeParams(
+                    TypeDeclaration typeParam, 
+                    Declaration stDecl,
+                    Tree.TypeArguments args, 
+                    List<TypeParameter> stTypeParams, 
+                    Node typeParamNode) {
+                if (args instanceof Tree.TypeArgumentList) {
+                    Tree.TypeArgumentList tal = 
+                            (Tree.TypeArgumentList) args;
+                    List<Tree.Type> stTypeArguments = tal.getTypes();
+                    if (stTypeArguments.contains(typeParamNode) &&
+                            stDecl instanceof Generic) {
+                        for (int i=0; i<stTypeArguments.size(); i++) {
+                            Tree.Type type = stTypeArguments.get(i);
+                            if (type instanceof Tree.SimpleType) {
+                                Tree.SimpleType st = 
+                                        (Tree.SimpleType) type;
+                                TypeDeclaration td = 
+                                        st.getDeclarationModel();
+                                if (td!=null && 
+                                        typeParam.equals(td)) {
+                                    Generic g = (Generic) stDecl;
+                                    List<TypeParameter> typeParameters = 
+                                            g.getTypeParameters();
+                                    if (typeParameters!=null && 
+                                            typeParameters.size()>i) {
+                                        stTypeParams.add(typeParameters.get(i));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             @Override
             public void visit(Tree.SimpleType that) {
                 super.visit(that);
-                determineSatisfiedTypesTypeParams(typeDec, 
-                        that, stTypeParams);
+                determineSatisfiedTypesTypeParams(typeDec,
+                        that.getDeclarationModel(),
+                        that.getTypeArgumentList(), 
+                        stTypeParams, typeParamNode);
             }
             @Override
             public void visit(Tree.StaticMemberOrTypeExpression that) {
                 super.visit(that);
-                determineSatisfiedTypesTypeParams(typeDec, 
-                        that, stTypeParams);
+                determineSatisfiedTypesTypeParams(typeDec,
+                        that.getDeclaration(),
+                        that.getTypeArguments(), 
+                        stTypeParams, typeParamNode);
             }
-        });
+        }.visit(rootNode);
+        
 //        if (soa instanceof Tree.ClassOrInterface) {
 //            Tree.ClassOrInterface coi = (Tree.ClassOrInterface) soa;
 //            if (coi.getSatisfiedTypes() != null) {
@@ -506,60 +541,6 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         return stTypeParams;
     }
     
-    private static void determineSatisfiedTypesTypeParams(
-            TypeDeclaration typeParam, Tree.SimpleType st, 
-            List<TypeParameter> stTypeParams) {
-        Tree.TypeArgumentList args = st.getTypeArgumentList();
-        if (args != null) {
-            List<Tree.Type> stTypeArguments = 
-                    args.getTypes();
-            for (int i=0; i<stTypeArguments.size(); i++) {
-                Type stTypeArgument = 
-                        stTypeArguments.get(i)
-                            .getTypeModel();
-                if (stTypeArgument!=null && 
-                        typeParam.equals(stTypeArgument.getDeclaration())) {
-                    TypeDeclaration stDecl = st.getDeclarationModel();
-                    if (stDecl!=null) {
-                        if (stDecl.getTypeParameters()!=null && 
-                                stDecl.getTypeParameters().size()>i) {
-                            stTypeParams.add(stDecl.getTypeParameters().get(i));
-                        }
-                    }                            
-                }
-            }                    
-        }
-    }
-
-    private static void determineSatisfiedTypesTypeParams(
-            TypeDeclaration typeParam, 
-            Tree.StaticMemberOrTypeExpression st, 
-            List<TypeParameter> stTypeParams) {
-        Tree.TypeArguments args = st.getTypeArguments();
-        if (args instanceof Tree.TypeArgumentList) {
-            Tree.TypeArgumentList tal = 
-                    (Tree.TypeArgumentList) args;
-            List<Tree.Type> stTypeArguments = tal.getTypes();
-            for (int i=0; i<stTypeArguments.size(); i++) {
-                Type stTypeArgument = 
-                        stTypeArguments.get(i)
-                            .getTypeModel();
-                if (stTypeArgument!=null && 
-                        typeParam.equals(stTypeArgument.getDeclaration())) {
-                    Declaration stDecl = st.getDeclaration();
-                    if (stDecl instanceof TypeDeclaration) {
-                        TypeDeclaration td = 
-                                (TypeDeclaration) stDecl;
-                        if (td.getTypeParameters()!=null && 
-                                td.getTypeParameters().size()>i) {
-                            stTypeParams.add(td.getTypeParameters().get(i));
-                        }
-                    }                            
-                }
-            }                    
-        }
-    }
-
     private final TypeDeclaration typeParam;
     private final String missingSatisfiedTypeText;
 
