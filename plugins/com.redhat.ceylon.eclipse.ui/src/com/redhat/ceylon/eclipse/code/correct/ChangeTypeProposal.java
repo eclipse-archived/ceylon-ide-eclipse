@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImport
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importType;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.intersectionType;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.unionType;
@@ -25,6 +24,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.model.ModifiableSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
@@ -32,6 +32,7 @@ import com.redhat.ceylon.eclipse.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.IntersectionType;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -149,65 +150,69 @@ class ChangeTypeProposal extends CorrectionProposal {
     }
     
     static void addChangeTypeArgProposals(
-            Tree.CompilationUnit cu, Node node, 
-            ProblemLocation problem, 
+            Tree.CompilationUnit rootNode, Node node, 
+            ProblemLocation problem,
             Collection<ICompletionProposal> proposals, 
             IProject project) {
         if (node instanceof Tree.SimpleType) {
-            Tree.SimpleType stn = (Tree.SimpleType) node;
-            TypeDeclaration decl = stn.getDeclarationModel();
-            if (decl instanceof TypeParameter) {
-                Tree.Statement statement = 
-                        findStatement(cu, node);
-                if (statement instanceof Tree.TypedDeclaration) {
-                    Tree.TypedDeclaration ad = 
-                            (Tree.TypedDeclaration) 
-                                statement;
-                    Tree.Type adt = ad.getType();
-                    if (adt instanceof Tree.SimpleType) {
-                        Tree.SimpleType st = 
-                                (Tree.SimpleType) adt;
-                        TypeParameter stTypeParam = null;
-                        Tree.TypeArgumentList tal = 
-                                st.getTypeArgumentList();
-                        if (tal!=null) {
-                            List<Tree.Type> stas = 
-                                    tal.getTypes();
-                            for (int i=0; i<stas.size(); i++) {
-                                Tree.Type sta = stas.get(i);
-                                Tree.SimpleType ssta = 
-                                        (Tree.SimpleType) sta;
-                                TypeDeclaration d = 
-                                        ssta.getDeclarationModel();
-                                if (decl.getName()
-                                        .equals(d.getName())) {
-                                    TypeDeclaration std = 
-                                            st.getDeclarationModel();
-                                    if (std!=null) {
-                                        List<TypeParameter> tps = 
-                                                std.getTypeParameters();
-                                        if (tps!=null && tps.size()>i) {
-                                            stTypeParam = tps.get(i);
-                                            break;
-                                        }
-                                    }                            
-                                }
-                            }                    
-                        }
-                        
-                        if (stTypeParam!=null) {
-                            List<Type> sts = 
-                                    stTypeParam.getSatisfiedTypes();
-                            if (!sts.isEmpty()) {
-                                IntersectionType it = 
-                                        new IntersectionType(
-                                                cu.getUnit());
-                                it.setSatisfiedTypes(sts);
-                                addChangeTypeProposals(proposals, 
-                                        problem, project, node, 
-                                        it.canonicalize().getType(), 
-                                        decl, true);
+            final Tree.SimpleType stn = (Tree.SimpleType) node;
+            TypeDeclaration dec = stn.getDeclarationModel();
+            if (dec instanceof TypeParameter) {
+                class ArgumentListVisitor extends Visitor {
+                    Declaration declaration;
+                    Tree.TypeArgumentList typeArgs;
+                    @Override
+                    public void visit(Tree.StaticMemberOrTypeExpression that) {
+                        super.visit(that);
+                        Tree.TypeArguments args = 
+                                that.getTypeArguments();
+                        if (args instanceof Tree.TypeArgumentList) {
+                            Tree.TypeArgumentList tal = 
+                                    (Tree.TypeArgumentList) args;
+                            if (tal.getTypes().contains(stn)) {
+                                declaration = that.getDeclaration();
+                                typeArgs = tal;
                             }
+                        }
+                    }
+                    @Override
+                    public void visit(Tree.SimpleType that) {
+                        super.visit(that);
+                        Tree.TypeArguments args = 
+                                that.getTypeArgumentList();
+                        if (args instanceof Tree.TypeArgumentList) {
+                            Tree.TypeArgumentList tal = 
+                                    (Tree.TypeArgumentList) args;
+                            if (tal.getTypes().contains(stn)) {
+                                declaration = that.getDeclarationModel();
+                                typeArgs = tal;
+                            }
+                        }
+                    }
+                }
+                ArgumentListVisitor vis = new ArgumentListVisitor();
+                vis.visit(rootNode);
+                TypeParameter stTypeParam = null;
+                Tree.TypeArgumentList tal = vis.typeArgs;
+                Declaration std = vis.declaration;
+                if (std instanceof Generic) {
+                    Generic g = (Generic) std;
+                    List<TypeParameter> tps = 
+                            g.getTypeParameters();
+                    int i = tal.getTypes().indexOf(stn);
+                    if (tps!=null && tps.size()>i) {
+                        stTypeParam = tps.get(i);
+                        List<Type> sts = 
+                                stTypeParam.getSatisfiedTypes();
+                        if (!sts.isEmpty()) {
+                            IntersectionType it = 
+                                    new IntersectionType(
+                                            rootNode.getUnit());
+                            it.setSatisfiedTypes(sts);
+                            addChangeTypeProposals(proposals, 
+                                    problem, project, node, 
+                                    it.canonicalize().getType(), 
+                                    dec, true);
                         }
                     }
                 }
