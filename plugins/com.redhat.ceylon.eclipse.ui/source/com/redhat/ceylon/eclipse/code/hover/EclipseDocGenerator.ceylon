@@ -122,7 +122,7 @@ class EclipseDocGenerator(CeylonEditor? editor) extends SourceInfoHover(editor)
                 if (offset <= hoffset, offset+length >= hoffset+hlength) {
                     variable value node = Nodes.findNode(rootNode, parseController.tokens, selection);
                     value document = editor.ceylonSourceViewer.document;
-                    value project = editor.parseController.project;
+                    IProject? project = editor.parseController.project;
                     if (is Tree.Type n = node) {
                         return DocumentationHover.getTypeHoverText(n, 
                             selection.text, document, project);
