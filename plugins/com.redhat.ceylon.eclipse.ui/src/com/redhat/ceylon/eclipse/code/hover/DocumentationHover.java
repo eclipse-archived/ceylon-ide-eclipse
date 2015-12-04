@@ -482,6 +482,8 @@ public class DocumentationHover extends SourceInfoHover {
                 PRINTER.print(t,unit);
         String unabbreviated = 
                 VERBOSE_PRINTER.print(t,unit);
+        String simplified = 
+                PRINTER.print(unit.denotableType(t),unit);
         StringBuilder buffer = new StringBuilder();
         HTMLPrinter.insertPageProlog(buffer, 0, 
                 HTML.getStyleSheet());
@@ -491,9 +493,14 @@ public class DocumentationHover extends SourceInfoHover {
                 "<tt>" + producedTypeLink(t,unit) + "</tt> ", 
                 20, 4);
         if (!abbreviated.equals(unabbreviated)) {
-            buffer.append("<br/>")
-                  .append("Abbreviation&nbsp;of:&nbsp;")
-                  .append(unabbreviated);
+            buffer.append("<p>Abbreviation&nbsp;of:&nbsp;")
+                  .append(unabbreviated)
+                  .append("</p>");
+        }
+        if (!simplified.equals(unabbreviated)) {
+            buffer.append("<p>Simplifies&nbsp;to:&nbsp;")
+                  .append(simplified)
+                  .append("</p>");
         }
         HTMLPrinter.addPageEpilog(buffer);
         return buffer.toString();
