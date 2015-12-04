@@ -62,18 +62,14 @@ shared class JDTModule(
     shared actual JDTModuleSourceMapper moduleSourceMapper = jdtModuleSourceMapper;
     MutableList<IPackageFragmentRoot> _packageFragmentRoots=thePackageFragmentRoots;
     
-    value currentModule => this;
-    
-    shared List<IPackageFragmentRoot> packageFragmentRoots {
-        return synchronize {
-            on = _packageFragmentRoots;
-            function do() {
+    shared List<IPackageFragmentRoot> packageFragmentRoots =>
+            let (do = () {
                 if (_packageFragmentRoots.empty 
                     && !moduleManager.isExternalModuleLoadedFromSource(nameAsString)) {
                     value ceylonProject = moduleManager.ceylonProject;
                     if (exists ceylonProject) {
                         value javaProject = JavaCore.create(ceylonProject.ideArtifact);
-                        if (currentModule.equals(languageModule)) {
+                        if (this.equals(languageModule)) {
                             variable IClasspathEntry? runtimeClasspathEntry = null;
                             try {
                                 for (entry in javaProject.rawClasspath.array.coalesced) {
@@ -101,7 +97,7 @@ shared class JDTModule(
                                 if (! jarToSearch exists) {
                                     RepositoryManager? repoMgr = CeylonBuilder.getProjectRepositoryManager(ceylonProject.ideArtifact);
                                     if (exists repoMgr) {
-                                        jarToSearch = CeylonProjectModulesContainer.getModuleArtifact(repoMgr, currentModule);
+                                        jarToSearch = CeylonProjectModulesContainer.getModuleArtifact(repoMgr, this);
                                     }
                                 }
                                 if (exists foundJar = jarToSearch) {
@@ -123,14 +119,10 @@ shared class JDTModule(
                     }
                 }
                 return _packageFragmentRoots;
-            }
-        };
-    }
+            }) synchronize(_packageFragmentRoots, do);
     
-    shared actual JDTModelLoader modelLoader {
-        assert (is JDTModelLoader jml=moduleManager.modelLoader);
-        return jml;
-    }
+    shared actual JDTModelLoader modelLoader =>
+            unsafeCast<JDTModelLoader>(moduleManager.modelLoader);
     
     shared actual Set<String> listPackages() {
         MutableSet<String> packageList = HashSet<String>();
