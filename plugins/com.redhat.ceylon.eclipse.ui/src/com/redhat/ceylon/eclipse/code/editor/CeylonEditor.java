@@ -51,6 +51,7 @@ import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.WORD_NEXT
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.WORD_PREVIOUS;
 
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.importsJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.editorJ2C;
 
 
 import java.lang.reflect.Method;
@@ -435,7 +436,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         action.setActionDefinitionId(EditorActionIds.SHOW_CEYLON_CODE);
         setAction(EditorActionIds.SHOW_CEYLON_CODE, action);
         
-        action = new EclipseTerminateStatementAction(this);
+        action = editorJ2C().newEclipseTerminateStatementAction(this);
         action.setActionDefinitionId(EditorActionIds.TERMINATE_STATEMENT);
         setAction(EditorActionIds.TERMINATE_STATEMENT, action);
 
