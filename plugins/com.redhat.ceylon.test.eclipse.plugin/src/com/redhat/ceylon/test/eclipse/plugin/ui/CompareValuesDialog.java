@@ -60,8 +60,8 @@ public class CompareValuesDialog extends TrayDialog {
     private CompareViewerPane compareViewerPane;
     private TextMergeViewer viewer;
     private String testName;
-    private String expectedValue;
     private String actualValue;
+    private String expectedValue;
 
     public CompareValuesDialog(Shell parentShell) {
         super(parentShell);
@@ -72,8 +72,8 @@ public class CompareValuesDialog extends TrayDialog {
 
     public void setTestElement(TestElement testElement) {
         testName = testElement.getQualifiedName();
-        expectedValue = testElement.getExpectedValue();
         actualValue = testElement.getActualValue();
+        expectedValue = testElement.getExpectedValue();
 
         updateView();
     }
@@ -126,9 +126,9 @@ public class CompareValuesDialog extends TrayDialog {
 
     private void createPreviewer() {
         final CompareConfiguration compareConfiguration = new CompareConfiguration();
-        compareConfiguration.setLeftLabel(compareValuesDlgExpected);
+        compareConfiguration.setLeftLabel(compareValuesDlgActual);
         compareConfiguration.setLeftEditable(false);
-        compareConfiguration.setRightLabel(compareValuesDlgActual);
+        compareConfiguration.setRightLabel(compareValuesDlgExpected);
         compareConfiguration.setRightEditable(false);
         compareConfiguration.setProperty(CompareConfiguration.IGNORE_WHITESPACE, Boolean.FALSE);
         compareConfiguration.setProperty(PREFIX_SUFFIX_PROPERTY, prefixSuffix);
@@ -150,24 +150,24 @@ public class CompareValuesDialog extends TrayDialog {
         updatePrefixSuffix();
 
         if (!viewer.getControl().isDisposed()) {
-            viewer.setInput(new DiffNode(new CompareValueElement(expectedValue), new CompareValueElement(actualValue)));
+            viewer.setInput(new DiffNode(new CompareValueElement(actualValue), new CompareValueElement(expectedValue)));
             compareViewerPane.setText(testName);
         }
     }
 
     private void updatePrefixSuffix() {
-        int end = Math.min(expectedValue.length(), actualValue.length());
+        int end = Math.min(actualValue.length(), expectedValue.length());
         int i = 0;
         for (; i < end; i++)
-            if (expectedValue.charAt(i) != actualValue.charAt(i))
+            if (actualValue.charAt(i) != expectedValue.charAt(i))
                 break;
         prefixSuffix[0] = i;
 
-        int j = expectedValue.length() - 1;
-        int k = actualValue.length() - 1;
+        int j = actualValue.length() - 1;
+        int k = expectedValue.length() - 1;
         int l = 0;
         for (; k >= i && j >= i; k--, j--) {
-            if (expectedValue.charAt(j) != actualValue.charAt(k))
+            if (actualValue.charAt(j) != expectedValue.charAt(k))
                 break;
             l++;
         }
