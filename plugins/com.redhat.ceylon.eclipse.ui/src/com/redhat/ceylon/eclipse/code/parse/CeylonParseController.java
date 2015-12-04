@@ -102,6 +102,7 @@ import com.redhat.ceylon.ide.common.typechecker.EditedPhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.LocalAnalysisResult;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.util.Path;
 import com.redhat.ceylon.ide.common.util.SingleSourceUnitPackage;
 import com.redhat.ceylon.ide.common.vfs.BaseFolderVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.DummyFolder;
@@ -694,9 +695,10 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
 
                   BaseIdeModuleManager moduleManager = (BaseIdeModuleManager)
                           getProjectTypeChecker(p).getPhasedUnits().getModuleManager();
-                  BaseIdeModule module = moduleManager.getArchiveModuleFromSourcePath(path);
+                  Path commonPath = PathUtils.toCommonPath(path);
+                  BaseIdeModule module = moduleManager.getArchiveModuleFromSourcePath(commonPath);
                   if (module != null) {
-                      builtPhasedUnit = module.getPhasedUnit(path);
+                      builtPhasedUnit = module.getPhasedUnit(commonPath);
                       if (builtPhasedUnit != null) {
                           if (project == p) {
                               break;
