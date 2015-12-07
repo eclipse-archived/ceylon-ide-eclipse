@@ -140,6 +140,8 @@ import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
+import com.redhat.ceylon.compiler.typechecker.io.ClosableVirtualFile;
+import com.redhat.ceylon.compiler.typechecker.io.VFS;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
@@ -209,6 +211,7 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
+
 
 /**
  * A builder may be activated on a file containing ceylon code every time it has
@@ -2403,7 +2406,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     private static TypeChecker buildTypeChecker(final IProject project,
             final IJavaProject javaProject) {
-        TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder()
+        TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder(
+                modelJ2C().ceylonModel().getVfs())
             .verbose(false)
             .moduleManagerFactory(new ModuleManagerFactory(){
                 @Override
