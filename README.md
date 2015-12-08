@@ -39,9 +39,9 @@ all Ceylon projects, this is the recommended method.
    
    This has created the `ceylon` local repository.
    
-4. Next, this Git repository should be cloned locally, along with the repositories of 
-   the following required projects: [Ceylon SDK][sdk], [Ceylon Formatter][formatter], 
-   [Java To Ceylon Converter][java2ceylon], and [Common code for Ceylon IDEs][common]. 
+4. Next, the following required projects should also be cloned: [Ceylon SDK][sdk],
+   [Ceylon Formatter][formatter], [Java To Ceylon Converter][java2ceylon], and
+   [Common code for Ceylon IDEs][common]. 
    To clone all these projects at once, go to the `ceylon/` directory ceated in the 
    previous step, and type:
    
@@ -57,11 +57,11 @@ all Ceylon projects, this is the recommended method.
    
    at the same directory level as the `ceylon` local repository.
    
-5. Finally, to build all the above projects, stay in the `ceylon/` directory and type:
+5. Finally, to build all the above projects, stay in the `.../ceylon/` directory and type:
    
         ant clean-all dist sdk eclipse
    
-6. The directory `../ceylon-ide-eclipse/site/target/repository` now contains an 
+6. The directory `.../ceylon-ide-eclipse/site/target/repository` now contains an 
    Eclipse update site you can install from. The update process is decribed at 
    <http://ceylon-lang.org/documentation/1.2/ide/install/> but use the full path 
    to this directory instead as the URL of the update site.
@@ -78,13 +78,13 @@ separately:
    - In the `.../ceylon` directory run: `ant clean dist`
    - This should have produced an eclipse update site at the following path:
    
-   `./osgi/build/dist`
+   `.../ceylon/dist/osgi/build/dist`
 
 2. Build the Ceylon SDK locally  (see [here][sdk] for more details):
    - In the `.../ceylon` directory run: `ant clean-sdk sdk`
    - This should have produced an eclipse update site at the following path:
    
-   `../ceylon-sdk/osgi/dist`
+   `.../ceylon-sdk/osgi/dist`
 
 3. Build the Ceylon Formatter locally (see [here][formatter] for more details):
    - In the `.../ceylon.formatter` directory run: `ant clean publish ide-quick`
@@ -166,11 +166,11 @@ or built with Maven).
     that are in these directories: 
     - the `ceylon-dist-osgi` project found at the following location:
     
-        `.../ceyon/osgi`
+        `.../ceylon/dist/osgi`
         
     - the `ceylon-dist-osgi-embedded-repository` project found at the following location:
         
-        `.../ceyon/osgi/embeddedRepository`
+        `.../ceyon/dist/osgi/embeddedRepository`
         
     - all the required _bundle-proxys_ projects found under the following location:
     
@@ -213,7 +213,7 @@ or built with Maven).
         `http://download.eclipse.org/technology/swtbot/releases/latest/`
     - Use `File > Import... > Existing Projects into Workspace`
       to import the project from this root directory:
-        `ceylon-ide-eclipse/tests/com.redhat.ceylon.eclipse.ui.test`
+        `.../ceylon-ide-eclipse/tests/com.redhat.ceylon.eclipse.ui.test`
 
 
 10.  Select the `com.redhat.ceylon.eclipse.ui` project and run it using
