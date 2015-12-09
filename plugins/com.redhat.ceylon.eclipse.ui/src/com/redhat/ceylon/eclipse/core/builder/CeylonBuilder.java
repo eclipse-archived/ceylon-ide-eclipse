@@ -163,6 +163,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
+import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.BaseIdeModuleManager;
 import com.redhat.ceylon.ide.common.model.BaseIdeModuleSourceMapper;
@@ -286,12 +287,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     private static ReadWriteLock getProjectSourceModelLock(IProject project) {
-        synchronized (projectSourceModelLocks) {
-            if (! projectSourceModelLocks.containsKey(project)) {
-                projectSourceModelLocks.put(project, new ReentrantReadWriteLock());
-            }
-            return projectSourceModelLocks.get(project);
-        }
+        BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
+        return ceylonProject != null ? ceylonProject.getSourceModelLock() : null;
     }
 
     /*

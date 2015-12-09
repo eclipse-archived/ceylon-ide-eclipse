@@ -56,6 +56,7 @@ shared class EclipseCeylonProject(ideArtifact)
         extends CeylonProject<IProject, IResource, IFolder, IFile>() {
     shared actual IProject ideArtifact;
 
+    shared actual String name => ideArtifact.name;
     
     shared actual File rootDirectory => ideArtifact.location.toFile();
 

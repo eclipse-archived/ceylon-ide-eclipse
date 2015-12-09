@@ -5,10 +5,14 @@ import com.redhat.ceylon.ide.common.util {
 import org.eclipse.core.runtime {
     Plugin,
     EclipseStatus=Status,
-    IStatus
+    IStatus,
+    OperationCanceledException
 }
 import com.redhat.ceylon.eclipse.ui {
     CeylonPlugin
+}
+import java.lang {
+    RuntimeException
 }
 
 shared object eclipsePlatformUtils satisfies IdePlatformUtils {
@@ -19,6 +23,11 @@ shared object eclipsePlatformUtils satisfies IdePlatformUtils {
             case(Status._ERROR) IStatus.\iERROR
             case(Status._WARNING) IStatus.\iWARNING;
 
-    shared actual void log(Status status, String message, Exception? e) => (CeylonPlugin.instance of Plugin)
+    shared actual void log(Status status, String message, Exception? e) =>
+            (CeylonPlugin.instance of Plugin)
                 .log.log(EclipseStatus(toEcliseStatus(status), CeylonPlugin.\iPLUGIN_ID, message, e));
+
+    shared actual RuntimeException newOperationCanceledException(String message) => 
+            OperationCanceledException("Operation Cancelled : ``message``");
+    
 }
