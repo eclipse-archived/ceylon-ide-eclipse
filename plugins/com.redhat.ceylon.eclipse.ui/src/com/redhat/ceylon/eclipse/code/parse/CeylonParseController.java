@@ -104,7 +104,6 @@ import com.redhat.ceylon.ide.common.typechecker.LocalAnalysisResult;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.util.Path;
 import com.redhat.ceylon.ide.common.util.SingleSourceUnitPackage;
-import com.redhat.ceylon.ide.common.vfs.BaseFolderVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.DummyFolder;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
@@ -406,7 +405,7 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
         final IJavaProject javaProject = 
                 project != null ? JavaCore.create(project) : null;
 
-        TypeCheckerBuilder tcb = new TypeCheckerBuilder()
+        TypeCheckerBuilder tcb = new TypeCheckerBuilder(modelJ2C().ceylonModel().getVfs())
                 .verbose(false)
                 .moduleManagerFactory(new ModuleManagerFactory(){
                     @Override
