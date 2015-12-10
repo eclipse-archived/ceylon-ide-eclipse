@@ -198,7 +198,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                             parameterName = nameToReturn;
                         }
                         givenNames.add(parameterName);
-                        parameters.add(new JDTVariable(parameterName, new JDTType(parameterTypeBinding), parameterAnnotations));
+                        parameters.add(new JDTVariable(parameterName, JDTType.newJDTType(parameterTypeBinding), parameterAnnotations));
                     }
                 }
             });
@@ -224,7 +224,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                 @Override
                 public void doWithBinding(IType declaringClassModel,
                         ReferenceBinding declaringClassBinding, MethodBinding methodBinding) {
-                    returnType = new JDTType(methodBinding.returnType);
+                    returnType = JDTType.newJDTType(methodBinding.returnType);
                 }
             });
         }

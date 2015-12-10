@@ -30,7 +30,7 @@ import com.redhat.ceylon.model.loader.mirror.TypeMirror;
 
 public class JDTField implements FieldMirror {
 
-    private JDTType type;
+    private TypeMirror type;
     private Map<String, AnnotationMirror> annotations;
     String name;
     int modifiers;
@@ -39,7 +39,7 @@ public class JDTField implements FieldMirror {
         annotations = JDTUtils.getAnnotations(field.getAnnotations());
         name = new String(field.readableName());
         modifiers = field.modifiers;
-        type = new JDTType(field.type);
+        type = JDTType.newJDTType(field.type);
     }
 
     @Override

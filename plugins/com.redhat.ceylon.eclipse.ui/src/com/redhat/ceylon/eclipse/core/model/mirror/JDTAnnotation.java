@@ -98,7 +98,7 @@ public class JDTAnnotation implements AnnotationMirror {
             return new JDTAnnotation((AnnotationBinding) value);
         }
         if(value instanceof TypeBinding){
-            return new JDTType((TypeBinding) value);
+            return JDTType.newJDTType((TypeBinding) value);
         }
         if(value instanceof FieldBinding){
             return new String(((FieldBinding) value).name);

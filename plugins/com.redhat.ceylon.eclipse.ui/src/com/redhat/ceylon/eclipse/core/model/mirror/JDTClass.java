@@ -442,7 +442,7 @@ public class JDTClass implements ClassMirror, IBindingProvider {
                         if (superClassBinding != null) {
                             superClassBinding = JDTUtils.inferTypeParametersFromSuperClass(klass,
                                     superClassBinding);
-                            superclass = new JDTType(superClassBinding);
+                            superclass = JDTType.newJDTType(superClassBinding);
                         }
                     }
                 }
@@ -461,7 +461,7 @@ public class JDTClass implements ClassMirror, IBindingProvider {
                     ReferenceBinding[] superInterfaces = klass.superInterfaces();
                     interfaces = new ArrayList<TypeMirror>(superInterfaces.length);
                     for(ReferenceBinding superInterface : superInterfaces)
-                        interfaces.add(new JDTType(superInterface));
+                        interfaces.add(JDTType.newJDTType(superInterface));
                 }
             });
         }
