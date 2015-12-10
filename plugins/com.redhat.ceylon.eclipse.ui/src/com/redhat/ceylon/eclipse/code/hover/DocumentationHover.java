@@ -259,24 +259,26 @@ public class DocumentationHover extends SourceInfoHover {
 
     public static Referenceable getLinkedModel(String location, 
             TypeChecker typeChecker) {
-        String[] bits = location.split(":");
+        int firstColumnIndex = location.indexOf(':');
+        int moduleVersionSeparator = location.indexOf('/', firstColumnIndex);
+        String moduleName = location.substring(firstColumnIndex+1, moduleVersionSeparator);
+        int secondColumnIndex = location.indexOf(':', moduleVersionSeparator);
+        String moduleVersion = location.substring(moduleVersionSeparator+1, secondColumnIndex);
+        String remainingLocation = location.substring(secondColumnIndex+1);
+
         JDTModelLoader modelLoader = 
                 getModelLoader(typeChecker);
-        String moduleNameAndVersion = bits[1];
-        int loc = moduleNameAndVersion.indexOf('/');
-        String moduleName = 
-                moduleNameAndVersion.substring(0,loc);
-        String moduleVersion = 
-                moduleNameAndVersion.substring(loc+1);
         Module module = 
                 modelLoader.getLoadedModule(moduleName, 
                         moduleVersion);
-        if (module==null || bits.length==2) {
+        if (module==null || remainingLocation.isEmpty()) {
             return module;
         }
+
+        String[] bits = remainingLocation.split(":");
         Referenceable target = 
-                module.getPackage(bits[2]);
-        for (int i=3; i<bits.length; i++) {
+                module.getPackage(bits[0]);
+        for (int i=1; i<bits.length; i++) {
             Scope scope;
             if (target instanceof Scope) {
                 scope = (Scope) target;
