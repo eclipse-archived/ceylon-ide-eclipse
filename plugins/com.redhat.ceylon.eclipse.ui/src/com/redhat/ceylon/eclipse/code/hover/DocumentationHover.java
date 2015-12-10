@@ -478,20 +478,40 @@ public class DocumentationHover extends SourceInfoHover {
 //        catch (BadLocationException e) {
 //            e.printStackTrace();
 //        }
-        Unit unit = node.getUnit();
-        String abbreviated = 
-                PRINTER.print(t,unit);
-        String unabbreviated = 
-                VERBOSE_PRINTER.print(t,unit);
-        String simplified = 
-                PRINTER.print(unit.denotableType(t),unit);
         StringBuilder buffer = new StringBuilder();
         HTMLPrinter.insertPageProlog(buffer, 0, 
                 HTML.getStyleSheet());
+        appendTypeInfo(buffer, node, t);
+        HTMLPrinter.addPageEpilog(buffer);
+        return buffer.toString();
+
+    }
+
+    private static void appendTypeInfo(StringBuilder buffer,
+            Node node, Type type) {
+        Unit unit = node.getUnit();
+        String abbreviated = 
+                PRINTER.print(type,unit);
+        String unabbreviated = 
+                VERBOSE_PRINTER.print(type,unit);
+        String simplified = 
+                PRINTER.print(unit.denotableType(type),unit);
+        String desc;
+        if (node instanceof Tree.Term) {
+            desc = node instanceof Tree.Literal ? 
+                        "Literal of type" : 
+                        "Expression of type";
+        }
+        else {
+            desc = "Type";
+        }
         HTML.addImageAndLabel(buffer, null, 
                 HTML.fileUrl("types.png").toExternalForm(), 
                 16, 16, 
-                "<tt>" + producedTypeLink(t,unit) + "</tt> ", 
+                desc + 
+                "&nbsp;<tt>" + 
+                producedTypeLink(type,unit) + 
+                "</tt> ", 
                 20, 4);
         if (!abbreviated.equals(unabbreviated)) {
             buffer.append("<p>Abbreviation&nbsp;of:&nbsp;")
@@ -503,9 +523,6 @@ public class DocumentationHover extends SourceInfoHover {
                   .append(simplified)
                   .append("</p>");
         }
-        HTMLPrinter.addPageEpilog(buffer);
-        return buffer.toString();
-
     }
     
     private static String escape(String string) {
@@ -526,22 +543,7 @@ public class DocumentationHover extends SourceInfoHover {
         Type type = term.getTypeModel();
         if (type==null) return null;
         StringBuilder buffer = new StringBuilder();
-        HTMLPrinter.insertPageProlog(buffer, 0, 
-                HTML.getStyleSheet());
-        String desc = 
-                node instanceof Tree.Literal ? 
-                        "Literal of type" : 
-                        "Expression of type";
-        Unit unit = node.getUnit();
-        HTML.addImageAndLabel(buffer, null, 
-                HTML.fileUrl("types.png")
-                    .toExternalForm(), 
-                16, 16, 
-                desc + 
-                "&nbsp;<tt>" + 
-                producedTypeLink(type, unit) + 
-                "</tt> ",
-                20, 4);
+        appendTypeInfo(buffer, node, type);
         String text = node.getText();
         if (node instanceof Tree.StringLiteral) {
             appendStringHoverInfo(buffer, text);
