@@ -443,12 +443,7 @@ public class DocumentationHover extends SourceInfoHover {
         StringBuilder buffer = new StringBuilder();
         HTMLPrinter.insertPageProlog(buffer, 0, 
                 HTML.getStyleSheet());
-        HTML.addImageAndLabel(buffer, null, 
-                HTML.fileUrl("types.png").toExternalForm(), 
-                16, 16, 
-                "Inferred type&nbsp;<tt>" + 
-                producedTypeLink(t, node.getUnit()) + "</tt>", 
-                20, 4);
+        appendTypeInfo(buffer, node, t);
         buffer.append("<br/>");
         if (!t.containsUnknowns()) {
             buffer.append("One quick assist available:<br/>");
@@ -499,8 +494,11 @@ public class DocumentationHover extends SourceInfoHover {
         String desc;
         if (node instanceof Tree.Term) {
             desc = node instanceof Tree.Literal ? 
-                        "Literal of type" : 
-                        "Expression of type";
+                        "Literaln&nbsp;ofn&nbsp;type" : 
+                        "Expressionn&nbsp;ofn&nbsp;type";
+        }
+        else if (node instanceof Tree.LocalModifier) {
+            desc = "Inferredn&nbsp;type";
         }
         else {
             desc = "Type";
@@ -514,12 +512,12 @@ public class DocumentationHover extends SourceInfoHover {
                 "</tt> ", 
                 20, 4);
         if (!abbreviated.equals(unabbreviated)) {
-            buffer.append("<p>Abbreviation&nbsp;of:&nbsp;")
+            buffer.append("<p>Abbreviation&nbsp;of&nbsp;")
                   .append(unabbreviated)
                   .append("</p>");
         }
         if (!simplified.equals(unabbreviated)) {
-            buffer.append("<p>Simplifies&nbsp;to:&nbsp;")
+            buffer.append("<p>Simplifies&nbsp;to&nbsp;")
                   .append(simplified)
                   .append("</p>");
         }
@@ -543,6 +541,8 @@ public class DocumentationHover extends SourceInfoHover {
         Type type = term.getTypeModel();
         if (type==null) return null;
         StringBuilder buffer = new StringBuilder();
+        HTMLPrinter.insertPageProlog(buffer, 0, 
+                HTML.getStyleSheet());
         appendTypeInfo(buffer, node, type);
         String text = node.getText();
         if (node instanceof Tree.StringLiteral) {
@@ -1716,8 +1716,8 @@ public class DocumentationHover extends SourceInfoHover {
         };
     }
     
-    private static TypePrinter PRINTER = printer(true);
-    private static TypePrinter VERBOSE_PRINTER = printer(false);
+    static TypePrinter PRINTER = printer(true);
+    static TypePrinter VERBOSE_PRINTER = printer(false);
     
     private static String producedTypeLink(Type pt, Unit unit) {
         return PRINTER.print(pt, unit);
