@@ -31,7 +31,9 @@ import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.MissingTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.ProblemReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.RawTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
@@ -47,6 +49,15 @@ import com.redhat.ceylon.model.loader.mirror.TypeMirror;
 import com.redhat.ceylon.model.loader.mirror.TypeParameterMirror;
 
 class UnknownTypeMirror implements TypeMirror {
+    String qualifiedName = UnknownClassMirror.unknown;
+	
+    public UnknownTypeMirror() {
+	}
+
+    public UnknownTypeMirror(String qualifiedName) {
+    	this.qualifiedName = qualifiedName;
+	}
+    
     @Override
     public String getQualifiedName() {
         return UnknownClassMirror.unknown;
@@ -107,14 +118,52 @@ public class JDTType implements TypeMirror {
     private boolean isPrimitive;
     private boolean isRaw;
 
-    private JDTType qualifyingType;
+    private TypeMirror qualifyingType;
     
-
-    public JDTType(TypeBinding type) {
-        this(type, new IdentityHashMap<TypeBinding, JDTType>());
+    public static TypeMirror newJDTType(TypeBinding type) {
+        return newJDTType(type, new IdentityHashMap<TypeBinding, JDTType>());
     }
 
-    public static JDTType toTypeMirror(TypeBinding typeBinding, TypeBinding currentBinding, JDTType currentType, IdentityHashMap<TypeBinding, JDTType> originatingTypes) {
+    private static TypeMirror unknownTypeMirror(TypeBinding type) {
+    	try {
+    		if (type.qualifiedSourceName() != null) {
+                return new UnknownTypeMirror(JDTUtils.getFullyQualifiedName(type));
+        	} 
+    	} catch(Exception e) {
+    		e.printStackTrace();
+    	}
+        return UNKNOWN_TYPE;
+    }
+    
+    public static TypeMirror newJDTType(TypeBinding type, IdentityHashMap<TypeBinding, JDTType> originatingTypes) {
+		if (type instanceof UnresolvedReferenceBinding) {
+            type = BinaryTypeBinding.resolveType(type, type.getPackage().environment, false);
+        }
+
+        if (type instanceof MissingTypeBinding) {
+        	return unknownTypeMirror(type);
+        }
+
+        if (type instanceof ParameterizedTypeBinding) {
+        	TypeBinding genericType = ((ParameterizedTypeBinding)type).genericType();
+            if (genericType instanceof MissingTypeBinding) {
+            	return unknownTypeMirror(genericType);
+            }
+        }
+
+        if (type instanceof ProblemReferenceBinding) {
+        	ProblemReferenceBinding prb = (ProblemReferenceBinding) type;
+        	TypeBinding closestMatch = prb.closestMatch();
+        	if (closestMatch != null && closestMatch != type) {
+        		return newJDTType(closestMatch, originatingTypes);
+        	}
+            return unknownTypeMirror(type);
+        }
+        
+		return new JDTType(type, originatingTypes);
+	}
+
+    public static TypeMirror toTypeMirror(TypeBinding typeBinding, TypeBinding currentBinding, JDTType currentType, IdentityHashMap<TypeBinding, JDTType> originatingTypes) {
         if (typeBinding == currentBinding && currentType != null) {
             return currentType;
         }
@@ -123,7 +172,7 @@ public class JDTType implements TypeMirror {
         if (originatingType != null) {
             return originatingType;
         }
-        return new JDTType(typeBinding, originatingTypes);
+        return newJDTType(typeBinding, originatingTypes);
     }
     
     public JDTType(TypeBinding type, IdentityHashMap<TypeBinding, JDTType> originatingTypes) {

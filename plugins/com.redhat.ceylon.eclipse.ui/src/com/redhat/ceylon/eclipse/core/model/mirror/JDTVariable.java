@@ -32,7 +32,7 @@ public class JDTVariable implements VariableMirror {
     private TypeMirror type;
     private String name;
 
-    public JDTVariable(String name, JDTType type, Map<String, AnnotationMirror> annotations) {
+    public JDTVariable(String name, TypeMirror type, Map<String, AnnotationMirror> annotations) {
         this.name = name;
         this.type = type;
         this.annotations = annotations;
