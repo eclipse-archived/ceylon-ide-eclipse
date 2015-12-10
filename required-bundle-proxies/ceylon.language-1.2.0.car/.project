@@ -29,7 +29,7 @@
 		<link>
 			<name>project</name>
 			<type>2</type>
-			<locationURI>PARENT-3-PROJECT_LOC/ceylon.language</locationURI>
+			<locationURI>PARENT-3-PROJECT_LOC/ceylon/language</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
