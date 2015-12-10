@@ -38,6 +38,7 @@ import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
+import org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
@@ -128,6 +129,10 @@ public class JDTType implements TypeMirror {
     public JDTType(TypeBinding type, IdentityHashMap<TypeBinding, JDTType> originatingTypes) {
         originatingTypes.put(type, this);
 
+        if (type instanceof UnresolvedReferenceBinding) {
+            type = BinaryTypeBinding.resolveType(type, type.getPackage().environment, false);
+        }
+        
         // type params are not qualified
         if(type instanceof TypeVariableBinding)
             qualifiedName = new String(type.qualifiedSourceName());
