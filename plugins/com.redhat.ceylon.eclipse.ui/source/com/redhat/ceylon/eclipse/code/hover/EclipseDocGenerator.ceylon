@@ -1,9 +1,5 @@
-import com.redhat.ceylon.compiler.typechecker.context {
-    PhasedUnit
-}
 import com.redhat.ceylon.compiler.typechecker.tree {
-    Tree,
-    Node
+    Tree
 }
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
@@ -30,6 +26,9 @@ import com.redhat.ceylon.ide.common.doc {
 import com.redhat.ceylon.ide.common.imports {
     AbstractModuleImportUtil
 }
+import com.redhat.ceylon.ide.common.model {
+    CeylonUnit
+}
 import com.redhat.ceylon.ide.common.typechecker {
     LocalAnalysisResult
 }
@@ -40,9 +39,6 @@ import com.redhat.ceylon.model.typechecker.model {
     Scope,
     Package,
     Module
-}
-import com.redhat.ceylon.model.typechecker.util {
-    TypePrinter
 }
 
 import java.lang {
@@ -61,15 +57,13 @@ import org.eclipse.jface.text {
     IInformationControlCreator,
     IDocument
 }
-import com.redhat.ceylon.ide.common.model {
-    CeylonUnit
-}
 
 object eclipseDocGenerator extends EclipseDocGenerator(null) {
     
 }
 
-class EclipseDocGenerator(CeylonEditor? editor) extends SourceInfoHover(editor)
+class EclipseDocGenerator(CeylonEditor? editor) 
+        extends SourceInfoHover(editor)
         satisfies DocGenerator<IDocument>{
     
     shared actual String? getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
@@ -103,7 +97,7 @@ class EclipseDocGenerator(CeylonEditor? editor) extends SourceInfoHover(editor)
         }        
     }
     
-    shared actual IInformationControlCreator hoverControlCreator
+    hoverControlCreator
             => CeylonInformationControlCreator(editor, "F2 for focus");
     
     String? getExpressionHoverText(CeylonEditor editor, IRegion hoverRegion) {
@@ -179,21 +173,18 @@ class EclipseDocGenerator(CeylonEditor? editor) extends SourceInfoHover(editor)
     
     shared actual void appendJavadoc(Declaration model, StringBuilder buffer) {
         JStringBuilder b = JStringBuilder();
-
         DocumentationHover.appendJavadoc(model, b, NullProgressMonitor());
         buffer.append(b.string);
     }
     
     shared actual void appendPageEpilog(StringBuilder builder) {
         JStringBuilder b = JStringBuilder();
-
         HTMLPrinter.addPageEpilog(b);
         builder.append(b.string);
     }
     
     shared actual void appendPageProlog(StringBuilder builder) {
         JStringBuilder b = JStringBuilder();
-        
         HTMLPrinter.insertPageProlog(b, 0, HTML.styleSheet);
         builder.append(b.string);
     }
@@ -221,40 +212,36 @@ class EclipseDocGenerator(CeylonEditor? editor) extends SourceInfoHover(editor)
         return "<span style='color:``myColor``'>``what?.string else "null"``</span>";
     }
     
-    shared actual String? getLiveValue(Declaration dec, Unit unit)
+    getLiveValue(Declaration dec, Unit unit)
             => DocumentationHover.getLiveValue(dec, unit);
     
-    shared actual PhasedUnit? getPhasedUnit(Unit u)
+    getPhasedUnit(Unit u)
         => if (is CeylonUnit u) then u.phasedUnit else null;
     
-    shared actual Node? getReferencedNode(Declaration dec) 
+    getReferencedNode(Declaration dec) 
             => Nodes.getReferencedNode(dec);
     
-    shared actual String getUnitName(Unit u)
+    getUnitName(Unit u)
             => if (is CeylonUnit u, 
                     exists ceylonFileName=u.ceylonFileName)
                 then ceylonFileName 
                 else u.filename;
     
-    shared actual String highlight(String text, LocalAnalysisResult<IDocument> cmp) {
-        return HTML.highlightLine(text);
-    }
+    highlight(String text, LocalAnalysisResult<IDocument> cmp) 
+            => HTML.highlightLine(text);
     
-    shared actual String markdown(String text, LocalAnalysisResult<IDocument> cmp,
-        Scope? linkScope, Unit? unit) {
-        
-        return DocumentationHover.markdown(text, linkScope, unit);
-    }
+    markdown(String text, LocalAnalysisResult<IDocument> cmp, Scope? linkScope, Unit? unit) 
+            => DocumentationHover.markdown(text, linkScope, unit);
     
-    shared actual TypePrinter printer => DocumentationHover.\iPRINTER;
+    printer => DocumentationHover.\iPRINTER;
+    verbosePrinter => DocumentationHover.\iVERBOSE_PRINTER;
     
-    shared actual Boolean showMembers => true;
+    showMembers => true;
     
-    shared IInformationControlCreator informationPresenterControlCreator {
-        return CeylonEnrichedInformationControlCreator(editor);
-    }
+    shared IInformationControlCreator informationPresenterControlCreator 
+            => CeylonEnrichedInformationControlCreator(editor);
     shared actual AbstractModuleImportUtil<out Anything,out Anything,out Anything,out Anything,out Anything,out Anything> moduleImportUtil
             => eclipseModuleImportUtils;
     
-    shared actual Boolean supportsQuickAssists => true;
+    supportsQuickAssists => true;
 }

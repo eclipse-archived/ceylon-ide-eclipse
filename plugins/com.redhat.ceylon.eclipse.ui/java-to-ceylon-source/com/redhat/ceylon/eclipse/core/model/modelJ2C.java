@@ -2,22 +2,18 @@ package com.redhat.ceylon.eclipse.core.model;
 
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.jdt.core.IClassFile;
-import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.ITypeRoot;
 
 import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.eclipse.java2ceylon.ModelJ2C;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-import com.redhat.ceylon.ide.common.model.BaseIdeModuleManager;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
@@ -28,10 +24,8 @@ import com.redhat.ceylon.ide.common.model.IdeModuleManager;
 import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.model.JavaClassFile;
 import com.redhat.ceylon.ide.common.model.JavaCompilationUnit;
-import com.redhat.ceylon.ide.common.util.IdePlatformUtils;
 import com.redhat.ceylon.ide.common.util.toJavaList_;
 import com.redhat.ceylon.model.loader.model.LazyPackage;
-import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
 public class modelJ2C implements ModelJ2C {
     @Override
