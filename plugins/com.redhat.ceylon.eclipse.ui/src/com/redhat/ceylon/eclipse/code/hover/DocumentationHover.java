@@ -493,11 +493,11 @@ public class DocumentationHover extends SourceInfoHover {
         String desc;
         if (node instanceof Tree.Term) {
             desc = node instanceof Tree.Literal ? 
-                        "Literaln&nbsp;ofn&nbsp;type" : 
-                        "Expressionn&nbsp;ofn&nbsp;type";
+                        "Literal&nbsp;of&nbsp;type" : 
+                        "Expression&nbsp;of&nbsp;type";
         }
         else if (node instanceof Tree.LocalModifier) {
-            desc = "Inferredn&nbsp;type";
+            desc = "Inferred&nbsp;type";
         }
         else {
             desc = "Type";
