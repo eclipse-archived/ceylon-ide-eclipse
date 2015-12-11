@@ -46,7 +46,6 @@ import com.redhat.ceylon.model.typechecker.model {
 }
 
 import org.eclipse.core.resources {
-    IProject,
     IFile
 }
 import org.eclipse.core.runtime {
