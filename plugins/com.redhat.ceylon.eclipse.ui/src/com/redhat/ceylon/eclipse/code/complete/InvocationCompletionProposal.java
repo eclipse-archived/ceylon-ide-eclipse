@@ -79,7 +79,6 @@ import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
-import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Function;
@@ -1159,11 +1158,12 @@ class InvocationCompletionProposal extends CompletionProposal {
                                 d, qdec, loc, index, false, op));
                     }
                     for (Declaration m: clazz.getMembers()) {
-                        if (m instanceof Constructor && 
+                        if (m instanceof FunctionOrValue &&
+                                isConstructor(m) &&
                                 m.isShared() &&
                                 m.getName()!=null) {
                             props.add(new NestedCompletionProposal(
-                                    m, qdec, loc, index, false, op));
+                                    m, d, loc, index, false, op));
                         }
                     }
                 }
