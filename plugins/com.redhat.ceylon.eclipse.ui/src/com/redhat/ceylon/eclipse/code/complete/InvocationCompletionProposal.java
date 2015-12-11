@@ -215,7 +215,8 @@ class InvocationCompletionProposal extends CompletionProposal {
                         type.getDeclaration()
                             .getMembers();
                 for (Declaration m: members) {
-                    if (m instanceof Constructor &&
+                    if (m instanceof FunctionOrValue &&
+                            isConstructor(m) &&
                             m.isShared() &&
                             m.getName()!=null) {
                         addSecondLevelProposal(
