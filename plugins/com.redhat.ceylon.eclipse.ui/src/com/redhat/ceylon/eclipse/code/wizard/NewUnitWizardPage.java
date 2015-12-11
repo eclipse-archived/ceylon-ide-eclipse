@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -50,7 +51,9 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
+import com.redhat.ceylon.eclipse.code.navigator.GenerateBuildPathActionGroup;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Escaping;
 
 class NewUnitWizardPage extends WizardPage {
@@ -349,35 +352,48 @@ class NewUnitWizardPage extends WizardPage {
         link.addSelectionListener(new SelectionListener() {            
             @Override
             public void widgetSelected(SelectionEvent e) {
-                IPackageFragmentRoot pfr = 
-                        (IPackageFragmentRoot) 
-                            openSourceFolderWizard();
-                if (pfr!=null) {
-                    sourceDir = pfr;
-                    String folderName = 
-                            sourceDir.getPath()
-                                .toPortableString();
-                    folder.setText(folderName);
-                    packageFragment = 
-                            sourceDir.getPackageFragment(
-                                    packageName);
-                    setPageComplete(isComplete());
-                }
-                if (sourceDir==null) {
-                    setErrorMessage(
-                            getSelectSourceFolderMessage());
-                }
-                else if (!packageNameIsLegal()) {
-                    setErrorMessage(
-                            getIllegalPackageNameMessage());
-                }
-                else if (!unitNameIsLegal()) {
-                    setErrorMessage(
-                            getIllegalUnitNameMessage());
-                }
-                else {
-                    setErrorMessage(null);
-                }
+            	Object firstElement = selection.getFirstElement();
+            	if (firstElement == null) {
+            		firstElement = EditorUtil.getProject(EditorUtil.getCurrentEditor());
+            	}
+            	
+            	GenerateBuildPathActionGroup.alsoManageCeylonConfigFile(
+            			new Runnable() {
+            				@Override
+            				public void run() {
+            	                IPackageFragmentRoot pfr = 
+            	                        (IPackageFragmentRoot) 
+            	                            openSourceFolderWizard();
+            	                if (pfr!=null) {
+            	                    sourceDir = pfr;
+            	                    String folderName = 
+            	                            sourceDir.getPath()
+            	                                .toPortableString();
+            	                    folder.setText(folderName);
+            	                    packageFragment = 
+            	                            sourceDir.getPackageFragment(
+            	                                    packageName);
+            	                    setPageComplete(isComplete());
+            	                }
+            	                if (sourceDir==null) {
+            	                    setErrorMessage(
+            	                            getSelectSourceFolderMessage());
+            	                }
+            	                else if (!packageNameIsLegal()) {
+            	                    setErrorMessage(
+            	                            getIllegalPackageNameMessage());
+            	                }
+            	                else if (!unitNameIsLegal()) {
+            	                    setErrorMessage(
+            	                            getIllegalUnitNameMessage());
+            	                }
+            	                else {
+            	                    setErrorMessage(null);
+            	                }
+            				}
+            			},
+            			workbench.getDisplay().getActiveShell(),
+            			Arrays.asList(firstElement));
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
