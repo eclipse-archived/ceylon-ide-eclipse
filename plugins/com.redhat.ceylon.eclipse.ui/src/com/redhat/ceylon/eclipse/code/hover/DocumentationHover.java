@@ -1361,6 +1361,14 @@ public class DocumentationHover extends SourceInfoHover {
         }
         Unit unit = controller==null ? null : 
             controller.getLastCompilationUnit().getUnit();
+        
+        Unit declarationUnit = dec.getUnit();
+        PhasedUnit declarationPhasedUnit = null;
+        if (declarationUnit instanceof CeylonUnit) {
+        	declarationPhasedUnit = ((CeylonUnit)declarationUnit).getPhasedUnit();
+        	declarationPhasedUnit.analyseTypes();
+        }
+        	
         StringBuilder buffer = new StringBuilder();
         insertPageProlog(buffer, 0, HTML.getStyleSheet());
         addMainDescription(buffer, dec, node, pr, controller, unit);
