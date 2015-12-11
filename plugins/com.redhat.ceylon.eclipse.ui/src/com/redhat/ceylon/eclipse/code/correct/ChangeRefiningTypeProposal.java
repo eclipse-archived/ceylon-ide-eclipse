@@ -94,22 +94,38 @@ public class ChangeRefiningTypeProposal {
             IFile file, Tree.CompilationUnit cu, 
             Collection<ICompletionProposal> proposals,
             Node node) {
-        Tree.Declaration decNode = 
-                (Tree.Declaration) 
+        Tree.Statement decNode =
+                (Tree.Statement)
                     findStatement(cu, node);
         Tree.ParameterList list;
+        Declaration dec;
         if (decNode instanceof Tree.AnyMethod) {
             Tree.AnyMethod am = (Tree.AnyMethod) decNode;
             list = am.getParameterLists().get(0);
+            dec = am.getDeclarationModel();
         }
         else if (decNode instanceof Tree.AnyClass) {
             Tree.AnyClass ac = (Tree.AnyClass) decNode;
             list = ac.getParameterList();
+            dec = ac.getDeclarationModel();
+        }
+        else if (decNode instanceof Tree.SpecifierStatement) {
+            Tree.SpecifierStatement ss = 
+                    (Tree.SpecifierStatement) decNode;
+            Tree.Term lhs = ss.getBaseMemberExpression();
+            if (lhs instanceof Tree.ParameterizedExpression) {
+                Tree.ParameterizedExpression pe = 
+                        (Tree.ParameterizedExpression) lhs;
+                list = pe.getParameterLists().get(0);
+                dec = ss.getDeclaration();
+            }
+            else {
+                return;
+            }
         }
         else {
             return;
         }
-        Declaration dec = decNode.getDeclarationModel();
         Declaration rd = dec.getRefinedDeclaration();
         if (dec==rd) {
             rd = dec.getContainer()
