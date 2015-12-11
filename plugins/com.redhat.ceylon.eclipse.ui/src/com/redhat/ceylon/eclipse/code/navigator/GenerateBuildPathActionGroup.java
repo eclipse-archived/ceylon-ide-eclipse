@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -73,7 +72,7 @@ import org.eclipse.jdt.internal.ui.wizards.buildpaths.newsourcepage.RemoveFromBu
 import com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsBlock;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsPropertiesPage;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 
 /**
@@ -315,19 +314,18 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
 
     }
 
-	private void alsoManageCeylonConfigFile(Runnable runnable, Shell shell, List<?> selectedElements) {
+	public static void alsoManageCeylonConfigFile(Runnable runnable, Shell shell, List<?> selectedElements) {
 		// First check the the config is synchronized to authorize the action
 		IProject project = null;
 		IJavaProject javaProject = null;
 		Object object= selectedElements.get(0);
-		if (object instanceof IJavaProject) {
-			javaProject = (IJavaProject)object;
-		} else if (object instanceof IPackageFragmentRoot) {
-			IPackageFragmentRoot root= (IPackageFragmentRoot)object;
-			javaProject = root.getJavaProject();
-		} else if (object instanceof IFolder) {
-			IFolder folder= (IFolder)object;
-			javaProject= JavaCore.create(folder.getProject());
+		if (object instanceof IJavaElement) {
+			javaProject = ((IJavaElement)object).getJavaProject();
+		} else if (object instanceof IResource) {
+			IResource resource = (IResource)object;
+			if (! ExternalSourceArchiveManager.isInSourceArchive(resource)) {
+				javaProject= JavaCore.create(resource.getProject());
+			}
 		}
 		
 		if (javaProject != null) {
