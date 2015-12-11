@@ -147,7 +147,6 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.TreeUtil;
 import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.compiler.typechecker.util.WarningSuppressionVisitor;
@@ -3904,7 +3903,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     public static Package getPackage(IFolder resource) {
-        if (resource.isLinked(IResource.CHECK_ANCESTORS)) {
+        if (resource.isLinked(IResource.CHECK_ANCESTORS) 
+        		&& ExternalSourceArchiveManager.isInSourceArchive(resource)) {
             return null;
         }
         Object property = null;
