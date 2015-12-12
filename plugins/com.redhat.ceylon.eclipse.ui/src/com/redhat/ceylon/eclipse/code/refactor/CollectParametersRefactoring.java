@@ -8,6 +8,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.antlr.runtime.CommonToken;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -29,7 +34,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.TreeUtil;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
+import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
@@ -55,7 +62,9 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
             if (start>pl.getStartIndex() && start<pl.getEndIndex()) {
                 parameterListIndex = i;
                 declaration = that.getDeclarationModel();
-                for (int j=0; j<pl.getParameters().size(); j++) {
+                for (int j=0; 
+                        j<pl.getParameters().size(); 
+                        j++) {
                     Tree.Parameter p = pl.getParameters().get(j);
                     if (p.getStartIndex()>=start && p.getEndIndex()<=end) {
                         parameters.add(p);
@@ -68,7 +77,9 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
         }
         @Override
         public void visit(Tree.AnyMethod that) {
-            for (int i=0; i<that.getParameterLists().size(); i++) {
+            for (int i=0; 
+                    i<that.getParameterLists().size(); 
+                    i++) {
                 handleParamList(that, i, 
                         that.getParameterLists().get(i));
             }
@@ -97,7 +108,10 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
             super.visit(that);
             Tree.Primary primary = that.getPrimary();
             if (primary instanceof Tree.MemberOrTypeExpression) {
-                if (((Tree.MemberOrTypeExpression) primary).getDeclaration()
+                Tree.MemberOrTypeExpression mte = 
+                        (Tree.MemberOrTypeExpression) 
+                            primary;
+                if (mte.getDeclaration()
                         .equals(declaration)) {
                     Tree.PositionalArgumentList pal = 
                             that.getPositionalArgumentList();
@@ -162,9 +176,12 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
     
     @Override
     int countReferences(Tree.CompilationUnit cu) {
-        FindInvocationsVisitor frv = new FindInvocationsVisitor(declaration);
-        FindRefinementsVisitor fdv = new FindRefinementsVisitor(declaration);
-        FindArgumentsVisitor fav = new FindArgumentsVisitor(declaration);
+        FindInvocationsVisitor frv = 
+                new FindInvocationsVisitor(declaration);
+        FindRefinementsVisitor fdv = 
+                new FindRefinementsVisitor(declaration);
+        FindArgumentsVisitor fav = 
+                new FindArgumentsVisitor(declaration);
         cu.visit(frv);
         cu.visit(fdv);
         cu.visit(fav);
@@ -200,22 +217,26 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
         for (PhasedUnit pu: units) {
             if (searchInFile(pu)) {
                 TextFileChange tfc = newTextFileChange((ProjectPhasedUnit)pu);
-                refactorInFile(tfc, cc, pu.getCompilationUnit());
+                refactorInFile(tfc, cc, pu.getCompilationUnit(), pu.getTokens());
                 pm.worked(i++);
             }
         }
         if (searchInEditor()) {
             DocumentChange dc = newDocumentChange();
+            CeylonParseController pc = 
+                    editor.getParseController();
             refactorInFile(dc, cc, 
-                    editor.getParseController().getLastCompilationUnit());
+                    pc.getLastCompilationUnit(),
+                    pc.getTokens());
             pm.worked(i++);
         }
         pm.done();
         return cc;
     }
 
-    private void refactorInFile(final TextChange tfc, CompositeChange cc, 
-            Tree.CompilationUnit root) {
+    private void refactorInFile(final TextChange tfc, 
+            CompositeChange cc, Tree.CompilationUnit root, 
+            List<CommonToken> toks) {
         tfc.setEdit(new MultiTextEdit());
         if (declaration!=null) {
             String paramName = 
@@ -224,7 +245,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                     new FindInvocationsVisitor(declaration);
             root.visit(fiv);
             for (Tree.ArgumentList pal: fiv.getResults()) {
-                refactorInvocation(tfc, paramName, pal);
+                refactorInvocation(tfc, paramName, pal, toks);
             }
             FindRefinementsVisitor frv = 
                     new FindRefinementsVisitor(declaration);
@@ -247,7 +268,8 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
     }
 
     private void refactorInvocation(TextChange tfc,
-            String paramName, Tree.ArgumentList al) {
+            String paramName, Tree.ArgumentList al, 
+            List<CommonToken> toks) {
         if (al instanceof Tree.PositionalArgumentList) {
             Tree.PositionalArgumentList pal = 
                     (Tree.PositionalArgumentList) al;
@@ -255,10 +277,14 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                     pal.getPositionalArguments();
             if (pas.size()>firstParam) {
                 Integer startIndex = 
-                        pas.get(firstParam).getStartIndex();
+                        pas.get(firstParam)
+                            .getStartIndex();
                 tfc.addEdit(new InsertEdit(startIndex, newName + "("));
-                Integer stopIndex = pas.size()>lastParam && 
-                            !pas.get(lastParam).getParameter().isSequenced() ?
+                Integer stopIndex = 
+                        pas.size()>lastParam && 
+                            !pas.get(lastParam)
+                                .getParameter()
+                                .isSequenced() ?
                         pas.get(lastParam).getEndIndex():
                         pas.get(pas.size()-1).getEndIndex();
                 tfc.addEdit(new InsertEdit(stopIndex, ")"));
@@ -273,7 +299,9 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                     new ArrayList<Tree.StatementOrArgument>();
             Tree.NamedArgument prev = null;
             for (Tree.NamedArgument na: nas) {
-                if (models.contains(na.getParameter().getModel())) {
+                FunctionOrValue p = 
+                        na.getParameter().getModel();
+                if (models.contains(p)) {
                     int fromOffset = results.isEmpty() ? 
                             na.getStartIndex() : 
                             prev.getEndIndex();
@@ -284,9 +312,12 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                 }
                 prev = na;
             }
-            Tree.SequencedArgument sa = nal.getSequencedArgument();
+            Tree.SequencedArgument sa = 
+                    nal.getSequencedArgument();
             if (sa!=null) {
-                if (models.contains(sa.getParameter().getModel())) {
+                FunctionOrValue p = 
+                        sa.getParameter().getModel();
+                if (models.contains(p)) {
                     int fromOffset = sa.getStartIndex();
                     int toOffset = sa.getEndIndex();
                     tfc.addEdit(new DeleteEdit(fromOffset, 
@@ -296,9 +327,10 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
             }
             if (!results.isEmpty()) {
                 StringBuilder builder = new StringBuilder();
-                builder.append(paramName).append(" = ").append(newName).append(" { ");
+                builder.append(paramName).append(" = ")
+                       .append(newName).append(" { ");
                 for (Tree.StatementOrArgument na: results) {
-                    builder.append(toString(na)).append(" ");
+                    builder.append(Nodes.toString(na, toks)).append(" ");
                 }
                 builder.append("};");
                 tfc.addEdit(new InsertEdit(
@@ -345,38 +377,50 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
         }
     }
 
-    private void refactorArgument(TextChange tfc, String paramName,
-            Tree.MethodArgument decNode) {
+    private void refactorArgument(TextChange tfc, 
+            String paramName, Tree.MethodArgument decNode) {
         refactorDec(tfc, paramName, 
-                decNode.getParameterLists().get(parameterListIndex), 
+                decNode.getParameterLists()
+                    .get(parameterListIndex), 
                 decNode.getBlock());
     }
 
-    private void refactorDeclaration(TextChange tfc, String paramName, 
-            Tree.StatementOrArgument decNode) {
+    private void refactorDeclaration(TextChange tfc, 
+            String paramName, Tree.StatementOrArgument decNode) {
         Tree.ParameterList pl;
         Node body;
         if (decNode instanceof Tree.MethodDefinition) {
-            pl = ((Tree.AnyMethod) decNode).getParameterLists()
+            Tree.MethodDefinition md = 
+                    (Tree.MethodDefinition) 
+                        decNode;
+            pl = md.getParameterLists()
                     .get(parameterListIndex);
-            body = ((Tree.MethodDefinition) decNode).getBlock();
+            body = md.getBlock();
         }
         else if (decNode instanceof Tree.MethodDeclaration) {
-            pl = ((Tree.AnyMethod) decNode).getParameterLists()
+            Tree.MethodDeclaration md = 
+                    (Tree.MethodDeclaration) 
+                        decNode;
+            pl = md.getParameterLists()
                     .get(parameterListIndex);
-            body = ((Tree.MethodDeclaration) decNode).getSpecifierExpression();
+            body = md.getSpecifierExpression();
         }
         else if (decNode instanceof Tree.ClassDefinition) {
-            pl = ((Tree.ClassDefinition) decNode).getParameterList();
-            body = ((Tree.ClassDefinition) decNode).getClassBody();
+            Tree.ClassDefinition cd = 
+                    (Tree.ClassDefinition) decNode;
+            pl = cd.getParameterList();
+            body = cd.getClassBody();
         }
         else if (decNode instanceof Tree.SpecifierStatement) {
-            Tree.Term bme = 
-                    ((Tree.SpecifierStatement) decNode).getBaseMemberExpression();
-            body = ((Tree.SpecifierStatement) decNode).getSpecifierExpression();
+            Tree.SpecifierStatement ss = 
+                    (Tree.SpecifierStatement) 
+                        decNode;
+            Tree.Term bme = ss.getBaseMemberExpression();
+            body = ss.getSpecifierExpression();
             if (bme instanceof Tree.ParameterizedExpression) {
-                pl = ((Tree.ParameterizedExpression) bme)
-                        .getParameterLists().get(parameterListIndex);
+                Tree.ParameterizedExpression pe = 
+                        (Tree.ParameterizedExpression) bme;
+                pl = pe.getParameterLists().get(parameterListIndex);
             }
             else {
                 return;
@@ -388,12 +432,16 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
         refactorDec(tfc, paramName, pl, body);
     }
     
-    private void refactorDec(final TextChange tfc, final String paramName,
+    private void refactorDec(final TextChange tfc, 
+            final String paramName,
             Tree.ParameterList pl, Node body) {
         List<Tree.Parameter> ps = pl.getParameters();
-        final Set<FunctionOrValue> params = new HashSet<FunctionOrValue>();
+        final Set<FunctionOrValue> params = 
+                new HashSet<FunctionOrValue>();
         boolean allDefaulted = true;
-        for (int i=firstParam; i<ps.size()&&i<=lastParam; i++) {
+        for (int i=firstParam; 
+                i<ps.size()&&i<=lastParam; 
+                i++) {
             Parameter p = ps.get(i).getParameterModel();
             params.add(p.getModel());
             if (!p.isDefaulted()) {
@@ -415,7 +463,9 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
     }
 
     private void refactorLocalRefs(final TextChange tfc,
-            final String paramName, final Set<FunctionOrValue> params, Node node) {
+            final String paramName, 
+            final Set<FunctionOrValue> params, 
+            Node node) {
         node.visit(new Visitor() {
             @Override
             public void visit(Tree.BaseMemberExpression that) {
