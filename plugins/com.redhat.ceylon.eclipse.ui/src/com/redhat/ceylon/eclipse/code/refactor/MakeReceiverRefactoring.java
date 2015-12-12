@@ -8,10 +8,6 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
