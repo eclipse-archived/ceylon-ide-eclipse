@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getDefaultArgSpecifier;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static com.redhat.ceylon.eclipse.util.Nodes.text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +43,6 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
-import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -235,7 +235,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                             if (sie != null) {
                                 Tree.Expression e = 
                                         sie.getExpression();
-                                defaultArgs.put(pm, toString(e));
+                                defaultArgs.put(pm, text(e, tokens));
                             }
                             if (p instanceof Tree.FunctionalParameterDeclaration) {
                                 Tree.FunctionalParameterDeclaration fp = 
@@ -246,7 +246,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                                 Tree.ParameterList first = 
                                         pd.getParameterLists()
                                             .get(0);
-                                paramLists.put(pm, toString(first));
+                                paramLists.put(pm, text(first, tokens));
                             }
                         }
                         originalDefaultArgs.putAll(defaultArgs);
@@ -737,7 +737,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 argString = getInlinedArg(p, arg);
             }
             else {
-                argString = Nodes.toString(elem, tokens);
+                argString = text(elem, tokens);
             }
             sb.append(argString).append(", ");
         }
@@ -821,8 +821,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
 
     private String paramString(Tree.Parameter parameter, 
             String newName, List<CommonToken> tokens) {
-        String paramString = 
-                Nodes.toString(parameter, tokens);
+        String paramString = text(parameter, tokens);
         int loc = parameter.getStartIndex();
         Tree.Identifier id = getIdentifier(parameter);
         int start = id.getStartIndex() - loc;
@@ -834,8 +833,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
     private String paramStringWithoutDefaultArg(
             Tree.Parameter parameter,
             String newName, List<CommonToken> tokens) {
-        String paramString = 
-                Nodes.toString(parameter, tokens);
+        String paramString = text(parameter, tokens);
         // first remove the default arg
         Node sie = getDefaultArgSpecifier(parameter);
         int loc = parameter.getStartIndex();

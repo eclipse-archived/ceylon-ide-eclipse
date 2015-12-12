@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Nodes.findToplevelStatement;
+import static com.redhat.ceylon.eclipse.util.Nodes.text;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,10 +10,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -32,11 +29,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.TreeUtil;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.Escaping;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
-import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
@@ -330,7 +326,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                 builder.append(paramName).append(" = ")
                        .append(newName).append(" { ");
                 for (Tree.StatementOrArgument na: results) {
-                    builder.append(Nodes.toString(na, toks)).append(" ");
+                    builder.append(text(na, toks)).append(" ");
                 }
                 builder.append("};");
                 tfc.addEdit(new InsertEdit(
@@ -367,7 +363,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                 if (addShared) {
                     builder.append("shared ");
                 }
-                builder.append(toString(p)).append(", ");
+                builder.append(text(p, tokens)).append(", ");
             }
             if (builder.toString().endsWith(", ")) {
                 builder.setLength(builder.length()-2);

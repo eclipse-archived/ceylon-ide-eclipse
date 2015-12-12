@@ -8,6 +8,7 @@ import static com.redhat.ceylon.eclipse.util.Indents.getDefaultLineDelimiter;
 import static com.redhat.ceylon.eclipse.util.Indents.getIndent;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
+import static com.redhat.ceylon.eclipse.util.Nodes.text;
 
 import java.util.HashSet;
 import java.util.List;
@@ -259,11 +260,11 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
             Nodes.appendParameters(sb, fa, unit, tokens);
             if (fa.getBlock()!=null) {
                 sb.append(" ")
-                  .append(toString(fa.getBlock()));
+                  .append(text(fa.getBlock(), tokens));
             }
             else if (fa.getExpression()!=null) {
                 sb.append(" => ")
-                  .append(toString(fa.getExpression()))
+                  .append(text(fa.getExpression(), tokens))
                   .append(";");
             }
             else {
@@ -273,7 +274,7 @@ public class ExtractValueRefactoring extends AbstractRefactoring implements Extr
         }
         else {
             mod = "value";
-        	exp = toString(unparened) + ";";
+        	exp = text(unparened, tokens) + ";";
         }
         String typeDec;
         if (type==null || type.isUnknown()) {

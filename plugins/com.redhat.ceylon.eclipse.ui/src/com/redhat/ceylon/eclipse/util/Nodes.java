@@ -314,7 +314,7 @@ public class Nodes {
         return delegate.findReferencedNode(rootNode, model);
     }
     
-    public static String toString(Node term, List<CommonToken> tokens) {
+    public static String text(Node term, List<CommonToken> tokens) {
         int start = term.getStartIndex();
         int length = term.getDistance();
         Region region = new Region(start, length);
@@ -428,7 +428,7 @@ public class Nodes {
         delegate.appendParameters(result, fa, unit, new NodePrinter() {
             @Override
             public String $toString(Node node) {
-                return Nodes.toString(node, tokens);
+                return Nodes.text(node, tokens);
             }
         });
     }

@@ -249,12 +249,12 @@ public class ExtractParameterRefactoring extends AbstractRefactoring implements 
         if (anonfun) {
             Tree.FunctionArgument fa = (Tree.FunctionArgument) unparened;
             type = fa.getType().getTypeModel();
-            text = Nodes.toString(fa.getExpression(), tokens);
+            text = Nodes.text(fa.getExpression(), tokens);
         }
         else {
             type = node.getUnit()
                     .denotableType(term.getTypeModel());
-            text = Nodes.toString(unparened, tokens);
+            text = Nodes.text(unparened, tokens);
         }
         
         String typeDec;
@@ -315,7 +315,7 @@ public class ExtractParameterRefactoring extends AbstractRefactoring implements 
                     refStart = 0;
                 }
                 else {
-                    String header = Nodes.toString(cpl, tokens) + " => ";
+                    String header = Nodes.text(cpl, tokens) + " => ";
                     call = header + newName + "(" + args + ")";
                     refStart = header.length();
                 }

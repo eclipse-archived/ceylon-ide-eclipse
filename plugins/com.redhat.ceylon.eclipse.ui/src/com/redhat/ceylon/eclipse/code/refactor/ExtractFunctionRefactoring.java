@@ -12,6 +12,7 @@ import static com.redhat.ceylon.model.typechecker.model.ModelUtil.addToUnion;
 import static java.util.Collections.singletonList;
 import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
+import static com.redhat.ceylon.eclipse.util.Nodes.text;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -549,10 +550,10 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                     (Tree.FunctionArgument) unparened;
             returnType = fa.getType().getTypeModel();
             if (fa.getBlock()!=null) {
-                body = toString(fa.getBlock());
+                body = text(fa.getBlock(), tokens);
             }
             else if (fa.getExpression()!=null) {
-                body = "=> " + toString(fa.getExpression()) + ";";
+                body = "=> " + text(fa.getExpression(), tokens) + ";";
             }
             else {
                 body = "=>;";
@@ -561,7 +562,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         else {
             returnType = unit
                     .denotableType(term.getTypeModel());
-            body = "=> " + toString(unparened) + ";";
+            body = "=> " + text(unparened, tokens) + ";";
         }
         
         FindContainerVisitor fsv = 
@@ -692,7 +693,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
             }
             else {
                 String header = 
-                        Nodes.toString(cpl, tokens) + " => ";
+                        text(cpl, tokens) + " => ";
                 invocation = header + newName + "(" + args + ")";
                 refStart = start + header.length();
             }
@@ -891,7 +892,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                 statements.isEmpty() ? null : 
                     statements.get(statements.size()-1);
         for (Tree.Statement s: statements) {
-            content += extraIndent + toString(s);
+            content += extraIndent + text(s, tokens);
             int i = s.getEndToken().getTokenIndex();
             CommonToken tok;
             while ((tok=tokens.get(++i)).getChannel()==HIDDEN_CHANNEL) {

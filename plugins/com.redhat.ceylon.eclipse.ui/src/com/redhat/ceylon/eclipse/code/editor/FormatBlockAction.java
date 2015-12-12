@@ -76,7 +76,7 @@ final class FormatBlockAction extends Action {
                 builder.append(delim);
                 for (Tree.Statement st: body.getStatements()) {
                     builder.append(indent)
-                        .append(Nodes.toString(st, pc.getTokens()))
+                        .append(Nodes.text(st, pc.getTokens()))
                         .append(delim);
                 }
                 builder.append(bodyIndent);
@@ -92,7 +92,7 @@ final class FormatBlockAction extends Action {
                 for (Tree.NamedArgument st: 
                         body.getNamedArguments()) {
                     builder.append(indent)
-                        .append(Nodes.toString(st, pc.getTokens()))
+                        .append(Nodes.text(st, pc.getTokens()))
                         .append(delim);
                 }
             }
@@ -100,7 +100,7 @@ final class FormatBlockAction extends Action {
                     body.getSequencedArgument();
             if (sequencedArg!=null) {
                 builder.append(indent)
-                    .append(Nodes.toString(sequencedArg, 
+                    .append(Nodes.text(sequencedArg, 
                             pc.getTokens()))
                     .append(delim);
             }
@@ -119,7 +119,7 @@ final class FormatBlockAction extends Action {
                 for (Tree.ImportMemberOrType st: 
                         body.getImportMemberOrTypes()) {
                     builder.append(indent)
-                        .append(Nodes.toString(st, pc.getTokens()))
+                        .append(Nodes.text(st, pc.getTokens()))
                         .append(",")
                         .append(delim);
                 }
@@ -128,7 +128,7 @@ final class FormatBlockAction extends Action {
                     body.getImportWildcard();
             if (wildcard!=null) {
                 builder.append(indent)
-                    .append(Nodes.toString(wildcard, 
+                    .append(Nodes.text(wildcard, 
                             pc.getTokens()))
                     .append(delim);
             }

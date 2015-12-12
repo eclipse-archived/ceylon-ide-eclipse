@@ -19,8 +19,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
@@ -33,7 +31,8 @@ import com.redhat.ceylon.eclipse.core.model.IResourceAware;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 abstract class AbstractRefactoring extends Refactoring {
     
@@ -107,10 +106,6 @@ abstract class AbstractRefactoring extends Refactoring {
     boolean getEditable() {
         return rootNode.getUnit() instanceof EditedSourceFile ||
                 rootNode.getUnit() instanceof ProjectSourceFile;
-    }
-    
-    String toString(Node term) {
-        return Nodes.toString(term, tokens);
     }
     
     Tree.Term unparenthesize(Tree.Term term) {
