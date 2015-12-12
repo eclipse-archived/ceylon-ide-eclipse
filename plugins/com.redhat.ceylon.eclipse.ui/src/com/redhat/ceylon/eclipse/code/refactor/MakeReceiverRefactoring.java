@@ -7,6 +7,11 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
 
 import java.util.List;
 
+import org.antlr.runtime.CommonToken;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -28,6 +33,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.Indents;
+import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
@@ -48,26 +54,24 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         private final Tree.Declaration fun;
         private final Declaration parameter;
         private final TextChange tfc;
+        private List<CommonToken> localTokens;
 
-        private MoveVisitor(TypeDeclaration newOwner, 
-                IDocument doc, Declaration parameter, 
-                Tree.Declaration fun, Tree.Term defaultArg, 
-                TextChange tfc) {
+        private MoveVisitor(TypeDeclaration newOwner,
+                IDocument doc, Declaration parameter,
+                Tree.Declaration fun, Tree.Term defaultArg,
+                TextChange tfc, List<CommonToken> tokens) {
             this.newOwner = newOwner;
             this.doc = doc;
             this.parameter = parameter;
             this.fun = fun;
             this.defaultArg = defaultArg;
             this.tfc = tfc;
+            localTokens = tokens;
         }
         
-        private String string(Node node) {
-            return MakeReceiverRefactoring.this.toString(node);
-        }
-
         private String getDefinition() {
             final StringBuilder def = 
-                    new StringBuilder(string(fun));
+                    new StringBuilder(Nodes.toString(fun, tokens));
             new Visitor() {
                 int offset=0;
                 public void visit(Tree.Declaration that) {
@@ -223,8 +227,8 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                     .getModel()
                                     .equals(parameter)) {
                                 tfc.addEdit(new InsertEdit(
-                                        p.getStartIndex(), 
-                                        string(arg) + 
+                                        p.getStartIndex(),
+                                        Nodes.toString(arg, localTokens) +
                                         "."));
                                 int start, stop;
                                 if (i>0) {
@@ -246,7 +250,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                         if (defaultArg!=null) {
                             tfc.addEdit(new InsertEdit(
                                     p.getStartIndex(),
-                                    string(defaultArg) + "."));
+                                    Nodes.toString(defaultArg, tokens) + "."));
                         }
                     }
                     if (nal!=null) {
@@ -265,18 +269,18 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                             sa.getSpecifierExpression()
                                                 .getExpression();
                                     tfc.addEdit(new InsertEdit(
-                                            p.getStartIndex(), 
-                                            string(e) + "."));
+                                            p.getStartIndex(),
+                                            Nodes.toString(e, localTokens) + "."));
                                 }
                                 else {
                                     String name = 
                                             arg.getIdentifier()
                                                 .getText();
                                     tfc.addEdit(new InsertEdit(
-                                            p.getStartIndex(), 
-                                            string(arg) + 
-                                            getDefaultLineDelimiter(doc) + 
-                                            Indents.getIndent(that, doc) + 
+                                            p.getStartIndex(),
+                                            Nodes.toString(arg, localTokens) +
+                                            Indents.getDefaultLineDelimiter(doc) +
+                                            Indents.getIndent(that, doc) +
                                             name + "."));
                                 }
                                 int start, stop;
@@ -299,7 +303,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                         if (defaultArg!=null) {
                             tfc.addEdit(new InsertEdit(
                                     p.getStartIndex(),
-                                    string(defaultArg) + "."));
+                                    Nodes.toString(defaultArg, tokens) + "."));
                         }
                     }
                 }
@@ -384,8 +388,9 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                         deleteOld(pufc, fun);
                     }
                 }
-                new MoveVisitor(target, doc, param, fun, 
-                                defaultArg, pufc)
+                new MoveVisitor(target, doc, param, fun,
+                                defaultArg, pufc,
+                                pu.getTokens())
                         .visit(pu.getCompilationUnit());
                 if (pufc.getEdit().hasChildren()) {
                     cc.add(pufc);
@@ -401,8 +406,8 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
             else {
                 deleteOld(tfc, fun);
             }
-            new MoveVisitor(target, document, param, fun, 
-                            defaultArg, tfc)
+            new MoveVisitor(target, document, param, fun,
+                            defaultArg, tfc, tokens)
                     .visit(rootNode);
             cc.add(tfc);
         }
