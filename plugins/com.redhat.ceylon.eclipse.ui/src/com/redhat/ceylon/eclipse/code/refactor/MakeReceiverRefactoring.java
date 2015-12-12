@@ -28,7 +28,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -275,8 +274,8 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                     tfc.addEdit(new InsertEdit(
                                             p.getStartIndex(),
                                             Nodes.toString(arg, localTokens) +
-                                            Indents.getDefaultLineDelimiter(doc) +
-                                            Indents.getIndent(that, doc) +
+                                            getDefaultLineDelimiter(doc) +
+                                            getIndent(that, doc) +
                                             name + "."));
                                 }
                                 int start, stop;
