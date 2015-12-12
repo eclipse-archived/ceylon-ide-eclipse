@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.text;
 
 import java.util.List;
 
+import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -50,17 +51,19 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         private final Tree.Declaration fun;
         private final Declaration parameter;
         private final TextChange tfc;
+        private List<CommonToken> localTokens;
 
         private MoveVisitor(TypeDeclaration newOwner,
                 IDocument doc, Declaration parameter,
                 Tree.Declaration fun, Tree.Term defaultArg,
-                TextChange tfc) {
+                TextChange tfc, List<CommonToken> tokens) {
             this.newOwner = newOwner;
             this.doc = doc;
             this.parameter = parameter;
             this.fun = fun;
             this.defaultArg = defaultArg;
             this.tfc = tfc;
+            localTokens = tokens;
         }
 
         private String getDefinition() {
@@ -134,7 +137,8 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         }
 
         private void insert(Tree.Body body, Tree.Declaration that) {
-            String delim = indents().getDefaultLineDelimiter(document);
+            String delim = 
+                    indents().getDefaultLineDelimiter(document);
             String originalIndent =
                     delim+indents().getIndent(fun, document);
             String text;
@@ -142,7 +146,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
             int loc;
             if (sts.isEmpty()) {
                 String outerIndent =
-                        delim + indents().getIndent(that,doc);
+                        delim + indents().getIndent(that, doc);
                 String newIndent =
                         outerIndent + indents().getDefaultIndent();
                 String def =
@@ -222,7 +226,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                     .equals(parameter)) {
                                 tfc.addEdit(new InsertEdit(
                                         p.getStartIndex(),
-                                        text(arg, tokens) +
+                                        text(arg, localTokens) +
                                         "."));
                                 int start, stop;
                                 if (i>0) {
@@ -264,7 +268,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                                 .getExpression();
                                     tfc.addEdit(new InsertEdit(
                                             p.getStartIndex(),
-                                            text(e, tokens) + "."));
+                                            text(e, localTokens) + "."));
                                 }
                                 else {
                                     String name =
@@ -272,7 +276,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                                 .getText();
                                     tfc.addEdit(new InsertEdit(
                                             p.getStartIndex(),
-                                            text(arg, tokens) +
+                                            text(arg, localTokens) +
                                             indents().getDefaultLineDelimiter(doc) +
                                             indents().getIndent(that, doc) +
                                             name + "."));
@@ -370,7 +374,8 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         
         for (PhasedUnit pu: getAllUnits()) {
             if (searchInFile(pu)) {
-                ProjectPhasedUnit<IProject, IResource, IFolder, IFile> ppu = (ProjectPhasedUnit<IProject, IResource, IFolder, IFile>) pu;
+                ProjectPhasedUnit<IProject, IResource, IFolder, IFile> ppu = 
+                        (ProjectPhasedUnit<IProject, IResource, IFolder, IFile>) pu;
                 TextFileChange pufc = newTextFileChange(ppu);
                 IDocument doc = pufc.getCurrentDocument(null);
                 pufc.setEdit(new MultiTextEdit());
@@ -383,7 +388,8 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                     }
                 }
                 new MoveVisitor(target, doc, param, fun,
-                                defaultArg, pufc)
+                                defaultArg, pufc,
+                                pu.getTokens())
                         .visit(pu.getCompilationUnit());
                 if (pufc.getEdit().hasChildren()) {
                     cc.add(pufc);
@@ -400,7 +406,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                 deleteOld(tfc, fun);
             }
             new MoveVisitor(target, document, param, fun,
-                            defaultArg, tfc)
+                            defaultArg, tfc, tokens)
                     .visit(rootNode);
             cc.add(tfc);
         }
