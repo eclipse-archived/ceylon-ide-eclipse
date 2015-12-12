@@ -116,7 +116,8 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
             throws CoreException, OperationCanceledException {
         RefactoringStatus result = new RefactoringStatus();
-        Declaration dec = ((Tree.Declaration) node).getDeclarationModel();
+        Tree.Declaration decNode = (Tree.Declaration) node;
+        Declaration dec = decNode.getDeclarationModel();
         if (!(dec instanceof Functional) || 
                 ((Functional) dec).getParameterLists().isEmpty()) {
             result.merge(createErrorStatus("Selected declaration has no parameter list"));
@@ -138,20 +139,27 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     }
 
     public RefactoringStatus checkFinalConditions(IProgressMonitor pm)
-            throws CoreException, OperationCanceledException {
+            throws CoreException, 
+                   OperationCanceledException {
         return new RefactoringStatus();
     }
 
-    public Change createChange(IProgressMonitor pm) throws CoreException,
-            OperationCanceledException {
+    public Change createChange(IProgressMonitor pm) 
+            throws CoreException,
+                   OperationCanceledException {
         CompositeChange cc = new CompositeChange(getName());
         
         Declaration dec = declaration.getDeclarationModel();
-        Tree.TypeDeclaration owner = (Tree.TypeDeclaration) Nodes.getContainer(rootNode, dec);
+        Tree.TypeDeclaration owner = 
+                (Tree.TypeDeclaration) 
+                    Nodes.getContainer(rootNode, dec);
 
         for (PhasedUnit pu: getAllUnits()) {
             if (searchInFile(pu)) {
-                TextFileChange pufc = newTextFileChange((ProjectPhasedUnit<IProject, IResource, IFolder, IFile>)pu);
+                ProjectPhasedUnit<IProject, IResource, IFolder, IFile> ppu = 
+                        (ProjectPhasedUnit<IProject, IResource, IFolder, IFile>) pu;
+                TextFileChange pufc = 
+                        newTextFileChange(ppu);
                 pufc.setEdit(new MultiTextEdit());
                 if (declaration.getUnit().equals(pu.getUnit())) {
                     move(owner, pufc);
@@ -197,7 +205,8 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                 .append(text(md.getIdentifier(), tokens));
             if (md.getTypeParameterList()!=null)
             	sb.append(text(md.getTypeParameterList(), tokens));
-            List<Tree.ParameterList> parameterLists = md.getParameterLists();
+            List<Tree.ParameterList> parameterLists = 
+                    md.getParameterLists();
             Tree.ParameterList first = parameterLists.get(0);
             sb.append(text(first, tokens));
             if (!first.getParameters().isEmpty()) {
@@ -276,7 +285,8 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             leaveOriginal(tfc);
         }
         else {
-            tfc.addEdit(new DeleteEdit(declaration.getStartIndex(),
+            tfc.addEdit(new DeleteEdit(
+                    declaration.getStartIndex(),
                     declaration.getDistance()));
         }
     }
@@ -353,7 +363,8 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         new Visitor() {
             private void add(Declaration d) {
                 if (d!=null && !d.isShared() && 
-                        d.getContainer().equals(owner.getDeclarationModel())) {
+                        d.getContainer().equals(
+                                owner.getDeclarationModel())) {
                     decs.add(d);
                 }
             }
