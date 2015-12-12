@@ -12,6 +12,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.antlr.runtime.CommonToken;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -157,7 +162,10 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                     }
                 }
                 if (!leaveDelegate) {
-                    fixInvocations(dec, pu.getCompilationUnit(), pufc);
+                    fixInvocations(dec, 
+                            pu.getCompilationUnit(), 
+                            pu.getTokens(), 
+                            pufc);
                 }
                 if (pufc.getEdit().hasChildren()) {
                     cc.add(pufc);
@@ -170,7 +178,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             tfc.setEdit(new MultiTextEdit());
             move(owner, tfc);
             if (!leaveDelegate) {
-                fixInvocations(dec, rootNode, tfc);
+                fixInvocations(dec, rootNode, tokens, tfc);
             }
             cc.add(tfc);
             if (makeShared) {
@@ -399,8 +407,10 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         return paramName;
     }
 
-    private void fixInvocations(final Declaration dec, 
-            Tree.CompilationUnit cu, final TextChange tc) {
+    private void fixInvocations(final Declaration dec,
+            Tree.CompilationUnit cu, 
+            final List<CommonToken> tokens, 
+            final TextChange tc) {
         new Visitor() {
             
             public void visit(Tree.QualifiedType that) {
