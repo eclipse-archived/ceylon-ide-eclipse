@@ -323,7 +323,7 @@ public class CompletionUtil {
                         Unit unit = lcu.getUnit();
                         if (term.getUnit().equals(unit)) {
                             String impl = 
-                                    Nodes.toString(term, 
+                                    Nodes.text(term, 
                                             cpc.getTokens());
                             if (impl.length()<10) {
                                 return arrow + impl;

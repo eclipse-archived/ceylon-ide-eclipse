@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
+import static com.redhat.ceylon.eclipse.util.Nodes.text;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStatus;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
@@ -35,8 +36,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
@@ -192,19 +193,19 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         if (declaration instanceof Tree.AnyMethod) {
             Tree.AnyMethod md = (Tree.AnyMethod) declaration;
             appendAnnotations(sb, md, owner.getDeclarationModel());
-            sb.append(toString(md.getType())).append(" ")
-                .append(toString(md.getIdentifier()));
+            sb.append(text(md.getType(), tokens)).append(" ")
+                .append(text(md.getIdentifier(), tokens));
             if (md.getTypeParameterList()!=null)
-            	sb.append(toString(md.getTypeParameterList()));
+            	sb.append(text(md.getTypeParameterList(), tokens));
             List<Tree.ParameterList> parameterLists = md.getParameterLists();
             Tree.ParameterList first = parameterLists.get(0);
-            sb.append(toString(first));
+            sb.append(text(first, tokens));
             if (!first.getParameters().isEmpty()) {
                 sb.insert(sb.length()-1, ", ");
             }
             sb.insert(sb.length()-1, qtype+ " " + newName);
             for (int i=1; i<parameterLists.size(); i++) {
-                sb.append(toString(parameterLists.get(i)));
+                sb.append(text(parameterLists.get(i), tokens));
             }
             if (md.getTypeConstraintList()!=null) {
                 appendConstraints(indent, delim, sb, 
@@ -231,11 +232,11 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             Tree.ClassDefinition cd = (Tree.ClassDefinition) declaration;
             appendAnnotations(sb, cd, owner.getDeclarationModel());
             sb.append("class ")
-                .append(toString(cd.getIdentifier()));
+                .append(text(cd.getIdentifier(), tokens));
             if (cd.getTypeParameterList()!=null)
-            	sb.append(toString(cd.getTypeParameterList()));
+            	sb.append(text(cd.getTypeParameterList(), tokens));
             Tree.ParameterList first = cd.getParameterList();
-            sb.append(toString(first));
+            sb.append(text(first, tokens));
             if (!first.getParameters().isEmpty()) {
                 sb.insert(sb.length()-1, ", ");
             }
@@ -460,7 +461,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                                 primary;
                     if (qmte.getDeclaration().equals(dec)) {
                         Tree.Primary p = qmte.getPrimary();
-                        String pt = MoveOutRefactoring.this.toString(p);
+                        String pt = text(p, tokens);
                         tc.addEdit(new DeleteEdit(p.getStartIndex(), 
                                 qmte.getIdentifier().getStartIndex()-p.getStartIndex()));
                         if (pal!=null) {
@@ -506,7 +507,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     private void appendAnnotations(StringBuilder sb,
             Tree.Declaration d, TypeDeclaration od) {
         if (!d.getAnnotationList().getAnnotations().isEmpty()) {
-            String annotations = toString(d.getAnnotationList());
+            String annotations = text(d.getAnnotationList(), tokens);
             if (!od.isShared()) {
                 annotations = annotations.replaceAll("shared", "");
             }
@@ -530,14 +531,14 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         sb.append(delim).append(indent)
             .append(indents().getDefaultIndent())
             .append(indents().getDefaultIndent())
-            .append(toString(clause));
+            .append(text(clause, tokens));
     }
 
     private void appendBody(final Scope container,
             String indent, String originalIndent,
             String delim, StringBuilder sb, final Node body) {
         final StringBuilder stb =
-                new StringBuilder(toString(body));
+                new StringBuilder(text(body, tokens));
         body.visit(new Visitor() {
             int offset = 0;
             private int startIndex(Node that) {

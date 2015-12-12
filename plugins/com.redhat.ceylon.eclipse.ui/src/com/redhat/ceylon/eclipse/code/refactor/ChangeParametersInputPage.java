@@ -672,7 +672,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 pl.getStartIndex() - 
                 decNode.getStartIndex();
         String text = 
-                Nodes.toString(decNode, tokens)
+                Nodes.text(decNode, tokens)
                     .substring(start,end) 
                     + edit.getText();
         StyledString styledString = new StyledString();

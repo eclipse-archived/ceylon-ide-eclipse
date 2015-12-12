@@ -151,7 +151,7 @@ abstract class SelectExpressionPopup extends PopupDialog {
                         editor.getParseController()
                             .getTokens();
                 String text = 
-                        Nodes.toString(e, tokens)
+                        Nodes.text(e, tokens)
                             .replaceAll("\\s\\s+|\n|\r|\f", " ");
                 Highlights.styleFragment(result, 
                         text, false, null, 

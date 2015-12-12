@@ -74,7 +74,7 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
                 if (param.getModel().equals(p.getModel())) {
                     found = true;
                     result.append("{ ")
-                        .append(Nodes.toString(sa, tokens))
+                        .append(Nodes.text(sa, tokens))
                         .append(" }");
                 }
             }
@@ -91,7 +91,7 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
                         Tree.SpecifierExpression se = 
                                 sna.getSpecifierExpression();
                         if (se!=null && se.getExpression()!=null) {
-                            result.append(Nodes.toString(se.getExpression(), tokens));
+                            result.append(Nodes.text(se.getExpression(), tokens));
                         }
                         break;
                     }
@@ -103,18 +103,18 @@ class ConvertToPositionalArgumentsProposal extends CorrectionProposal {
                         }
                         for (Tree.ParameterList pl: 
                                 ma.getParameterLists()) {
-                            result.append(Nodes.toString(pl, tokens));
+                            result.append(Nodes.text(pl, tokens));
                         }
                         Tree.Block block = ma.getBlock();
                         if (block!=null) {
                             result.append(" ")
-                                .append(Nodes.toString(block, tokens));
+                                .append(Nodes.text(block, tokens));
                         }
                         Tree.SpecifierExpression se = 
                                 ma.getSpecifierExpression();
                         if (se!=null) {
                             result.append(" ")
-                                .append(Nodes.toString(se, tokens));
+                                .append(Nodes.text(se, tokens));
                         }
                     }
                     else {

@@ -712,11 +712,11 @@ public class InlineRefactoring extends AbstractRefactoring {
             		 }
             		 for (Tree.ParameterList pl: 
             		         decNode.getParameterLists()) {
-            			 text.append(Nodes.toString(pl, 
+            			 text.append(Nodes.text(pl, 
             			         declarationTokens));
             		 }
             		 text.append(" => ");
-            		 text.append(Nodes.toString(term, 
+            		 text.append(Nodes.text(term, 
             		         declarationTokens));
             		 tfc.addEdit(new ReplaceEdit(
             		         that.getStartIndex(), 
@@ -809,10 +809,10 @@ public class InlineRefactoring extends AbstractRefactoring {
                      }
                      Tree.ParameterList pl = 
                              decNode.getParameterList();
-                     text.append(Nodes.toString(pl, 
+                     text.append(Nodes.text(pl, 
                              declarationTokens));
                      text.append(" => ");
-                     text.append(Nodes.toString(term, 
+                     text.append(Nodes.text(term, 
                              declarationTokens));
                      tfc.addEdit(new ReplaceEdit(
                              that.getStartIndex(), 
@@ -932,7 +932,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                     if (types.size()>index) {
                         Tree.Type type = types.get(index);
                         result.append(
-                                Nodes.toString(type, 
+                                Nodes.text(type, 
                                         tokens));
                         return;
                     }
@@ -952,7 +952,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                             Tree.Type type = types.get(index);
                             if (type!=null) {
                                 result.append(
-                                        Nodes.toString(type, 
+                                        Nodes.text(type, 
                                                 tokens));
                             }
                             return;
@@ -973,7 +973,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                 }
             }
         }
-        result.append(Nodes.toString(it, declarationTokens));
+        result.append(Nodes.text(it, declarationTokens));
     }
     
     private void inlineDefinitionReference(
@@ -1003,14 +1003,14 @@ public class InlineRefactoring extends AbstractRefactoring {
         }
 
         String expressionText = 
-                Nodes.toString(it, declarationTokens);
+                Nodes.text(it, declarationTokens);
         if (reference 
                 instanceof Tree.QualifiedMemberOrTypeExpression) {
             Tree.QualifiedMemberOrTypeExpression qmtre = 
                     (Tree.QualifiedMemberOrTypeExpression) 
                         reference;
             String prim = 
-                    Nodes.toString(qmtre.getPrimary(), 
+                    Nodes.text(qmtre.getPrimary(), 
                             tokens);
             if (it instanceof Tree.QualifiedMemberOrTypeExpression) {
                 //TODO: handle more depth, for example, foo.bar.baz
@@ -1028,7 +1028,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                 }
                 else {
                     String primaryText = 
-                            Nodes.toString(p, 
+                            Nodes.text(p, 
                                     declarationTokens);
                     if (p instanceof Tree.MemberOrTypeExpression) {
                         Tree.MemberOrTypeExpression mte = 
@@ -1096,7 +1096,7 @@ public class InlineRefactoring extends AbstractRefactoring {
             class InterpolationVisitor extends Visitor {
                 int start = 0;
                 final String template = 
-                        Nodes.toString(definition, 
+                        Nodes.text(definition, 
                                 declarationTokens);
                 final int templateStart = 
                         definition.getStartIndex();
@@ -1194,7 +1194,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                     if (!first) result.append(", ");
                     first = false;
                 }
-                result.append(Nodes.toString(arg, tokens));
+                result.append(Nodes.text(arg, tokens));
                 found = true;
             }
         }
@@ -1227,7 +1227,7 @@ public class InlineRefactoring extends AbstractRefactoring {
 				            .getExpression()
 				            .getTerm();
                 result//.append(template.substring(start,it.getStartIndex()-templateStart))
-                    .append(Nodes.toString(argTerm, tokens));
+                    .append(Nodes.text(argTerm, tokens));
                 //start = it.getStopIndex()-templateStart+1;
                 found=true;
             }
@@ -1250,7 +1250,7 @@ public class InlineRefactoring extends AbstractRefactoring {
                     if (first) result.append(" ");
                     if (!first) result.append(", ");
                     first=false;
-                    result.append(Nodes.toString(pa, tokens));
+                    result.append(Nodes.text(pa, tokens));
                 }
                 if (!first) result.append(" ");
                 result.append("}");

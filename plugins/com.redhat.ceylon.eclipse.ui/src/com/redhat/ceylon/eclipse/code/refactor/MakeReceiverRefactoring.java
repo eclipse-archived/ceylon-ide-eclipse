@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
+import static com.redhat.ceylon.eclipse.util.Nodes.text;
 
 import java.util.List;
 
@@ -62,13 +63,9 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
             this.tfc = tfc;
         }
 
-        private String string(Node node) {
-            return MakeReceiverRefactoring.this.toString(node);
-        }
-
         private String getDefinition() {
             final StringBuilder def = 
-                    new StringBuilder(string(fun));
+                    new StringBuilder(text(fun, tokens));
             new Visitor() {
                 int offset=0;
                 public void visit(Tree.Declaration that) {
@@ -225,7 +222,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                     .equals(parameter)) {
                                 tfc.addEdit(new InsertEdit(
                                         p.getStartIndex(),
-                                        string(arg) +
+                                        text(arg, tokens) +
                                         "."));
                                 int start, stop;
                                 if (i>0) {
@@ -247,7 +244,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                         if (defaultArg!=null) {
                             tfc.addEdit(new InsertEdit(
                                     p.getStartIndex(),
-                                    string(defaultArg) + "."));
+                                    text(defaultArg, tokens) + "."));
                         }
                     }
                     if (nal!=null) {
@@ -267,7 +264,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                                 .getExpression();
                                     tfc.addEdit(new InsertEdit(
                                             p.getStartIndex(),
-                                            string(e) + "."));
+                                            text(e, tokens) + "."));
                                 }
                                 else {
                                     String name =
@@ -275,7 +272,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                                 .getText();
                                     tfc.addEdit(new InsertEdit(
                                             p.getStartIndex(),
-                                            string(arg) +
+                                            text(arg, tokens) +
                                             indents().getDefaultLineDelimiter(doc) +
                                             indents().getIndent(that, doc) +
                                             name + "."));
@@ -300,7 +297,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                         if (defaultArg!=null) {
                             tfc.addEdit(new InsertEdit(
                                     p.getStartIndex(),
-                                    string(defaultArg) + "."));
+                                    text(defaultArg, tokens) + "."));
                         }
                     }
                 }

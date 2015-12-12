@@ -102,7 +102,7 @@ public class AliasRefactoring extends AbstractRefactoring {
                 Tree.Type t = (Tree.Type) node;
                 type = t.getTypeModel();
                 newName = null;
-                typeString = Nodes.toString(t, tokens);
+                typeString = Nodes.text(t, tokens);
             }
             else {
                 type = null;

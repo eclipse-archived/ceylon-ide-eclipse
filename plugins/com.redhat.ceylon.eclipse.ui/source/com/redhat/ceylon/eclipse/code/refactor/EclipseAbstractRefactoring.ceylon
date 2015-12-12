@@ -120,7 +120,7 @@ abstract class EclipseAbstractRefactoring<RefactoringData>(IEditorPart editorPar
 
     shared actual String toString(Node term) {
         assert(editorData exists);
-        return Nodes.toString(term, editorData?.tokens);
+        return Nodes.text(term, editorData?.tokens);
     }
 
     shared DocumentChange? newDocumentChange() {

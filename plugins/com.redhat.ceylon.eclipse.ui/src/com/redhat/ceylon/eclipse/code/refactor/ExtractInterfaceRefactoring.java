@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.createEditorChang
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getImportText;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getImports;
 import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.util.Nodes.text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,8 +28,6 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraintList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeParameterList;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
@@ -173,7 +172,7 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
 
     private void collectExtractedTypeParametersFromTheirConstrains() {
         if (containerAsClassOrInter != null && !extractedTypeParameters.isEmpty()) {
-            TypeConstraintList typeConstraintList = typeConstraintList();
+            Tree.TypeConstraintList typeConstraintList = typeConstraintList();
             if (typeConstraintList != null) {
                 boolean repeat = true;
                 while (repeat) {
@@ -222,7 +221,7 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
 
     private void collectExtractedImports() {
         if (containerAsClassOrInter != null && !extractedTypeParameters.isEmpty()) {
-            TypeParameterList typeParameterList = containerAsClassOrInter.getTypeParameterList();
+            Tree.TypeParameterList typeParameterList = containerAsClassOrInter.getTypeParameterList();
             if (typeParameterList != null) {
                 for (Tree.TypeParameterDeclaration tp : typeParameterList.getTypeParameterDeclarations()) {
                     if (extractedTypeParameters.contains(tp.getDeclarationModel())) {
@@ -230,7 +229,7 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
                     }
                 }
             }
-            TypeConstraintList typeConstraintList = typeConstraintList();
+            Tree.TypeConstraintList typeConstraintList = typeConstraintList();
             if (typeConstraintList != null) {
                 for (Tree.TypeConstraint tc : typeConstraintList.getTypeConstraints()) {
                     if (extractedTypeParameters.contains(tc.getDeclarationModel())) {
@@ -281,7 +280,7 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
 
     private void addInterfaceTypeParameters(StringBuilder content) {
         if (containerAsClassOrInter != null && !extractedTypeParameters.isEmpty()) {
-            TypeParameterList typeParameterList = containerAsClassOrInter.getTypeParameterList();
+            Tree.TypeParameterList typeParameterList = containerAsClassOrInter.getTypeParameterList();
             if (typeParameterList != null) {
                 boolean first = true;
                 for (Tree.TypeParameterDeclaration tp : typeParameterList.getTypeParameterDeclarations()) {
@@ -292,7 +291,7 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
                         } else {
                             content.append(", ");
                         }
-                        content.append(toString(tp));
+                        content.append(text(tp, tokens));
                     }
                 }
                 if (!first) {
@@ -304,20 +303,20 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
 
     private void addInterfaceTypeConstraints(StringBuilder content) {
         if (containerAsClassOrInter != null && !extractedTypeParameters.isEmpty()) {
-            TypeConstraintList typeConstraintList = typeConstraintList();
+            Tree.TypeConstraintList typeConstraintList = typeConstraintList();
             if (typeConstraintList != null) {
                 for (Tree.TypeConstraint tc : typeConstraintList.getTypeConstraints()) {
                     if (extractedTypeParameters.contains(tc.getDeclarationModel())) {
                         content.append(" ");
-                        content.append(toString(tc));
+                        content.append(text(tc, tokens));
                     }
                 }
             }
         }
     }
 
-    private TypeConstraintList typeConstraintList() {
-        TypeConstraintList typeConstraintList = null;
+    private Tree.TypeConstraintList typeConstraintList() {
+        Tree.TypeConstraintList typeConstraintList = null;
         if (containerAsClassOrInter instanceof Tree.AnyClass) {
             Tree.AnyClass cl = (Tree.AnyClass) containerAsClassOrInter;
             typeConstraintList = cl.getTypeConstraintList();
@@ -343,14 +342,14 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
             Tree.AnnotationList annotationList = member.getAnnotationList();
             Tree.AnonymousAnnotation anonymousAnnotation = annotationList.getAnonymousAnnotation();
             if (anonymousAnnotation != null) {
-                content.append(toString(anonymousAnnotation)).append(delim).append(indent);
+                content.append(text(anonymousAnnotation, tokens)).append(delim).append(indent);
             }
             content.append("shared formal ");
             if(member.getDeclarationModel().isVariable()){
                 content.append("variable ");
             }
             for (Tree.Annotation annotation : annotationList.getAnnotations()) {
-                String annotationText = toString(annotation);
+                String annotationText = text(annotation, tokens);
                 if (annotationText.equals("shared") ||
                         annotationText.equals("variable") ||
                         annotationText.equals("late") ||
@@ -362,22 +361,22 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
                 content.append(annotationText).append(" ");
             }
 
-            content.append(toString(member.getType()));
+            content.append(text(member.getType(), tokens));
             content.append(" ");
-            content.append(toString(member.getIdentifier()));
+            content.append(text(member.getIdentifier(), tokens));
 
             if (member instanceof Tree.AnyMethod) {
                 Tree.AnyMethod method = (Tree.AnyMethod) member;
 
                 if (method.getTypeConstraintList() != null) {
-                    content.append(toString(method.getTypeParameterList()));
+                    content.append(text(method.getTypeParameterList(), tokens));
                 }
                 for (Tree.ParameterList parameterList : method.getParameterLists()) {
-                    content.append(toString(parameterList));
+                    content.append(text(parameterList, tokens));
                 }
                 if (method.getTypeConstraintList() != null) {
                     content.append(" ");
-                    content.append(toString(method.getTypeConstraintList()));
+                    content.append(text(method.getTypeConstraintList(), tokens));
                 }
             }
 
@@ -465,7 +464,7 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
                         } else {
                             sb.append(", ");
                         }
-                        sb.append(toString(tp.getIdentifier()));
+                        sb.append(text(tp.getIdentifier(), tokens));
                     }
                 }
                 if (!first) {

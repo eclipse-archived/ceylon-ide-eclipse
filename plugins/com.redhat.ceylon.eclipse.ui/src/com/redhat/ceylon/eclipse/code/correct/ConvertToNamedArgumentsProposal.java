@@ -75,7 +75,7 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                             .append(" = [");
                         sequencedArgs=true;
                     }
-                    result.append(Nodes.toString(arg, tokens));
+                    result.append(Nodes.text(arg, tokens));
                 }
                 else {
                     if (sequencedArgs) {
@@ -100,14 +100,14 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                                 Nodes.appendParameters(result, fa, unit, tokens);
                                 if (fa.getBlock()!=null) {
                                     result.append(" ")
-                                          .append(Nodes.toString(fa.getBlock(), tokens))
+                                          .append(Nodes.text(fa.getBlock(), tokens))
                                           .append(" ");
                                 }
                                 else {
                                     result.append(" => ");
                                 }
                                 if (fa.getExpression()!=null) {
-                                    result.append(Nodes.toString(fa.getExpression(), tokens))
+                                    result.append(Nodes.text(fa.getExpression(), tokens))
                                           .append("; ");
                                 }
                                 continue;
@@ -118,7 +118,7 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                                         (Tree.SequenceEnumeration) term;
                                 Tree.SequencedArgument sa = se.getSequencedArgument();
                                 if (sa!=null) {
-                                    result.append(Nodes.toString(sa, tokens))
+                                    result.append(Nodes.text(sa, tokens))
                                           .append(" ");
                                 }
                                 continue;
@@ -127,7 +127,7 @@ class ConvertToNamedArgumentsProposal extends CorrectionProposal {
                     }
                     result.append(param.getName())
                         .append(" = ")
-                        .append(Nodes.toString(arg, tokens))
+                        .append(Nodes.text(arg, tokens))
                         .append("; ");
                 }
             }
