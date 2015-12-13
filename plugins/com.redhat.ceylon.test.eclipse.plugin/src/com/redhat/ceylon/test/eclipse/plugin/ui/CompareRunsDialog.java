@@ -537,7 +537,10 @@ public class CompareRunsDialog extends TrayDialog {
         if( testElement != null ) {
             StyledString styledText = new StyledString();
             styledText.append(testElement.getQualifiedName());
-            styledText.append(" (" + getElapsedTimeInSeconds(testElement.getElapsedTimeInMilis()) + " s)", StyledString.COUNTER_STYLER);
+            if( testElement.getVariant() != null && testElement.getVariantIndex() != null ) {
+                styledText.append(" #"+testElement.getVariantIndex()+" "+testElement.getVariant(), StyledString.QUALIFIER_STYLER);
+            }
+            styledText.append(" [" + getElapsedTimeInSeconds(testElement.getElapsedTimeInMilis()) + " s]", StyledString.COUNTER_STYLER);
 
             cell.setText(styledText.getString());
             cell.setStyleRanges(styledText.getStyleRanges());

@@ -1,6 +1,10 @@
 package com.redhat.ceylon.test.eclipse.plugin.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 public class TestElement implements Serializable {
 
@@ -32,12 +36,14 @@ public class TestElement implements Serializable {
     private String shortName;
     private String packageName;
     private String qualifiedName;
+    private String variant;
+    private Long variantIndex;
     private State state;
     private String exception;
     private String expectedValue;
     private String actualValue;
     private long elapsedTimeInMilis;
-    private TestElement[] children;
+    private List<TestElement> children = new ArrayList<TestElement>();
 
     public String getShortName() {
         return shortName;
@@ -68,6 +74,22 @@ public class TestElement implements Serializable {
             shortName = qualifiedName;
             packageName = "";
         }
+    }
+    
+    public String getVariant() {
+        return variant;
+    }
+    
+    public void setVariant(String variant) {
+        this.variant = variant;
+    }
+    
+    public Long getVariantIndex() {
+        return variantIndex;
+    }
+    
+    public void setVariantIndex(Long variantIndex) {
+        this.variantIndex = variantIndex;
     }
 
     public State getState() {
@@ -110,12 +132,16 @@ public class TestElement implements Serializable {
         this.elapsedTimeInMilis = elapsedTimeInMilis;
     }
     
-    public TestElement[] getChildren() {
-        return children;
+    public List<TestElement> getChildren() {
+        return Collections.unmodifiableList(children);
     }
     
-    public void setChildren(TestElement[] children) {
-        this.children = children;
+    public void setChildren(List<TestElement> children) {
+        this.children = new ArrayList<TestElement>(children);
+    }
+    
+    public void addChild(TestElement testElement) {
+        children.add(testElement);
     }
     
     @Override
@@ -123,8 +149,10 @@ public class TestElement implements Serializable {
         if (obj == this) {
             return true;
         }
-        if (qualifiedName != null && obj instanceof TestElement) {
-            return qualifiedName.equals(((TestElement) obj).qualifiedName);
+        if(obj instanceof TestElement) {
+            TestElement e2 = (TestElement) obj;
+            return Objects.equals(qualifiedName, e2.qualifiedName) &&
+                    Objects.equals(variantIndex, e2.variantIndex);
         }
         return false;
     }
@@ -141,8 +169,12 @@ public class TestElement implements Serializable {
         builder.append("[");
         builder.append("name=").append(qualifiedName).append(", ");
         builder.append("state=").append(state);
+        if(variant != null) {
+            builder.append(", variant=").append(variant);
+        }
         builder.append("]");
         return builder.toString();
     }
+
 
 }

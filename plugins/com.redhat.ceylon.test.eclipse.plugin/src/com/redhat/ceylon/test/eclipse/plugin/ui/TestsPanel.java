@@ -449,7 +449,7 @@ public class TestsPanel extends Composite {
                         return testElementsInPackage.toArray();
                     }
                 } else {
-                    return ((TestElement)parentElement).getChildren(); 
+                    return ((TestElement)parentElement).getChildren().toArray(); 
                 }
             }
             return null;
@@ -462,7 +462,7 @@ public class TestsPanel extends Composite {
                     return true;
                 } else {
                     TestElement e = (TestElement) element;
-                    if (e.getChildren() != null && e.getChildren().length != 0) {
+                    if (e.getChildren() != null && e.getChildren().size() != 0) {
                         return true;
                     }
                 }
@@ -491,13 +491,16 @@ public class TestsPanel extends Composite {
         public void update(ViewerCell cell) {
             String text = null;
             Image image = null;
+            String variant = null;
+            Long variantIndex = null;
             long elapsedTimeInMilis = -1;
 
             if (cell.getElement() instanceof TestElement) {
                 TestElement testElement = (TestElement) cell.getElement();
-                text = showTestsInHierarchyAction.isChecked() ? testElement.getShortName() : testElement.getQualifiedName();
                 image = getTestStateImage(testElement);
-
+                variant = testElement.getVariant();
+                variantIndex = testElement.getVariantIndex();
+                text = showTestsInHierarchyAction.isChecked() ? testElement.getShortName() : testElement.getQualifiedName();
                 if( testElement.getState().isFinished() ) {
                     elapsedTimeInMilis = testElement.getElapsedTimeInMilis();
                 }
@@ -522,9 +525,23 @@ public class TestsPanel extends Composite {
             }
 
             StyledString styledText = new StyledString();
-            styledText.append(text);
+            if( showTestsInHierarchyAction.isChecked() ) {
+                if( variant != null && variantIndex != null ) {
+                    styledText.append("#"+variantIndex+" ", StyledString.QUALIFIER_STYLER);
+                    styledText.append(variant);
+                } else {
+                    styledText.append(text);
+                }
+            }
+            else {
+                styledText.append(text);
+                if( variant != null && variantIndex != null ) {
+                    styledText.append(" #"+variantIndex+" ", StyledString.QUALIFIER_STYLER);
+                    styledText.append(variant, StyledString.QUALIFIER_STYLER);
+                }
+            }
             if (showTestsElapsedTimeAction.isChecked() && elapsedTimeInMilis != -1) {
-                styledText.append(" (" + getElapsedTimeInSeconds(elapsedTimeInMilis) + " s)", StyledString.COUNTER_STYLER);
+                styledText.append(" [" + getElapsedTimeInSeconds(elapsedTimeInMilis) + " s]", StyledString.COUNTER_STYLER);
             }
 
             cell.setText(styledText.getString());
@@ -752,7 +769,7 @@ public class TestsPanel extends Composite {
                         List<String> lines = StackTracePanel.parseStackTraceLine(testElement.getException());
                         for (String line : lines) {
                             String trimmedLine = line.trim();
-                            if( trimmedLine.startsWith("at ") && !trimmedLine.startsWith("at ceylon.test") ) {
+                            if( trimmedLine.startsWith("at "+testElement.getPackageName()) ) {
                                 StackTracePanel.gotoStackTraceLine(line);
                                 return;
                             }
@@ -827,7 +844,7 @@ public class TestsPanel extends Composite {
                     return;
                 }
             }
-            if (isBehindCurrentSelection && next == null && (e.getChildren() == null || e.getChildren().length == 0) && e.getState().isFailureOrError()) {
+            if (isBehindCurrentSelection && next == null && (e.getChildren() == null || e.getChildren().size() == 0) && e.getState().isFailureOrError()) {
                 next = e;
             }
         }
@@ -853,7 +870,7 @@ public class TestsPanel extends Composite {
                     isBeforeCurrentSelection = false;
                 }
 
-                if (isBeforeCurrentSelection && (e.getChildren() == null || e.getChildren().length == 0) && e.getState().isFailureOrError()) {
+                if (isBeforeCurrentSelection && (e.getChildren() == null || e.getChildren().size() == 0) && e.getState().isFailureOrError()) {
                     previous = e;
                 }
             }

@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -209,12 +210,12 @@ public class TestRun {
             fireTestRunFinished();
             break;
         case TEST_STARTED:
-            updateTestElement(element);
+            updateTestElement(eventType, element);
             updateCounters(eventType, element);
             fireTestStarted(element);
             break;
         case TEST_FINISHED:
-            updateTestElement(element);
+            updateTestElement(eventType, element);
             updateCounters(eventType, element);
             fireTestFinished(element);
             break;
@@ -245,7 +246,7 @@ public class TestRun {
         new TestVisitor() {
             @Override
             public void visitElement(TestElement e) {
-                if (e != root && (e.getChildren() == null || e.getChildren().length == 0)) {
+                if (e != root && (e.getChildren() == null || e.getChildren().size() == 0)) {
                     atomicTests.add(e);
                 }
             }
@@ -265,7 +266,7 @@ public class TestRun {
         }
     }
 
-    private void updateTestElement(final TestElement testElement) {
+    private void updateTestElement(final TestEventType eventType, final TestElement testElement) {
         new TestVisitor() {
             @Override
             public void visitElement(TestElement e) {
@@ -275,6 +276,17 @@ public class TestRun {
                     e.setExpectedValue(testElement.getExpectedValue());
                     e.setActualValue(testElement.getActualValue());
                     e.setElapsedTimeInMilis(testElement.getElapsedTimeInMilis());
+                }
+                else if (eventType == TestEventType.TEST_STARTED 
+                        && testElement.getVariant() != null
+                        && testElement.getVariantIndex() != null
+                        && Objects.equals(e.getQualifiedName(), testElement.getQualifiedName())
+                        && e.getVariant() == null 
+                        && e.getVariantIndex() == null
+                        && !e.getChildren().contains(testElement)) {
+                    e.addChild(testElement);
+                    atomicTests.remove(e);
+                    atomicTests.add(testElement);
                 }
             }
         }.visitElements(root);
@@ -350,7 +362,7 @@ public class TestRun {
         public final void visitElements(TestElement e) {
             if (e != null) {
                 visitElement(e);
-                TestElement[] children = e.getChildren();
+                List<TestElement> children = e.getChildren();
                 if (children != null) {
                     for (TestElement child : children) {
                         visitElements(child);
