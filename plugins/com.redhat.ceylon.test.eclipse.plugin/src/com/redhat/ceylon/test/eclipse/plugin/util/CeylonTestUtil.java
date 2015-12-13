@@ -287,7 +287,7 @@ public class CeylonTestUtil {
     public static Image getTestStateImage(TestElement testElement) {
         Image image = null;
         if(testElement != null) {
-            if( testElement.getChildren() == null || testElement.getChildren().length == 0 ) {
+            if( testElement.getChildren() == null || testElement.getChildren().size() == 0 ) {
                 switch(testElement.getState()) {
                 case RUNNING: image = getImage(TEST_RUNNING); break;
                 case SUCCESS: image = getImage(TEST_SUCCESS); break;

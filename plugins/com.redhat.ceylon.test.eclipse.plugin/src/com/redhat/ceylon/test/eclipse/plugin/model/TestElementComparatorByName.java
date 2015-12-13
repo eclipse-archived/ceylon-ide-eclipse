@@ -24,7 +24,14 @@ public class TestElementComparatorByName implements Comparator<TestElement> {
         String name1 = testElement1.getQualifiedName();
         String name2 = testElement2.getQualifiedName();
 
-        return collator.compare(name1, name2);
+        int result = collator.compare(name1, name2);
+        if( result == 0 ) {
+            if( testElement1.getVariantIndex() != null && testElement2.getVariantIndex() != null ) {
+                result = testElement1.getVariantIndex().compareTo(testElement2.getVariantIndex());
+            }
+        }
+        
+        return result;
     }
 
 }

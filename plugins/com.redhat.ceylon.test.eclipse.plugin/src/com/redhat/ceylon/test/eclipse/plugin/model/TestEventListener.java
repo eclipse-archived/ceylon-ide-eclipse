@@ -116,6 +116,13 @@ public class TestEventListener {
             if (json != null) {
                 e = new TestElement();
                 e.setQualifiedName((String) json.get("name"));
+                if( json.containsKey("variant") ) {
+                    e.setVariant((String)json.get("variant"));
+                }
+                if( json.containsKey("variantIndex") ) {
+                    Number variantIndex = (Number) json.get("variantIndex");
+                    e.setVariantIndex(variantIndex.longValue());
+                }
                 if (json.containsKey("state")) {
                     String state = (String) json.get("state");
                     switch (state) {
@@ -149,7 +156,7 @@ public class TestEventListener {
                         for (Object child : children) {
                             childrenList.add(parseTestElement((JSONObject) child));
                         }
-                        e.setChildren(childrenList.toArray(new TestElement[] {}));
+                        e.setChildren(childrenList);
                     }
                 }
                 if (json.containsKey("elapsedTime")) {
