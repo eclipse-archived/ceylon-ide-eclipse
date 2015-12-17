@@ -47,6 +47,7 @@ import ceylon.language.Singleton;
 import ceylon.tool.converter.java2ceylon.Java8Lexer;
 import ceylon.tool.converter.java2ceylon.Java8Parser;
 import ceylon.tool.converter.java2ceylon.JavaToCeylonConverter;
+import ceylon.tool.converter.java2ceylon.ScopeTree;
 
 public class PasteAsCeylonHandler extends AbstractHandler {
 
@@ -133,12 +134,16 @@ public class PasteAsCeylonHandler extends AbstractHandler {
 		
 		JavaToCeylonConverterConfig config = 
 		        ideConfig.getConverterConfig();
+		
+        ScopeTree scopeTree = new ScopeTree();
+        tree.accept(scopeTree);
+		
         JavaToCeylonConverter converter = 
                 new JavaToCeylonConverter(out, 
     		        config.getTransformGetters(),
     		        config.getUseVariableInParameters(),
     		        config.getUseVariableInLocals(),
-    		        config.getUseValues());
+    		        config.getUseValues(), scopeTree);
 		
 		ideConfig.save();
 		tree.accept(converter);
