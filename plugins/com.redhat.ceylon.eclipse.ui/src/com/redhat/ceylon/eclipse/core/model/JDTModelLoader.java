@@ -26,15 +26,9 @@ import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
 import java.util.WeakHashMap;
 
 import org.eclipse.core.internal.jobs.InternalJob;
@@ -105,70 +99,45 @@ import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
 
 import com.redhat.ceylon.common.JVMModuleUtil;
 import com.redhat.ceylon.compiler.java.codegen.Naming;
-import com.redhat.ceylon.compiler.java.loader.AnnotationLoader;
-import com.redhat.ceylon.compiler.java.loader.TypeFactory;
+import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.java.util.Util;
-import com.redhat.ceylon.compiler.java.loader.SourceDeclarationVisitor;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTMethod;
-import com.redhat.ceylon.eclipse.core.model.mirror.SourceClass;
-import com.redhat.ceylon.eclipse.core.model.mirror.SourceDeclarationHolder;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.BaseIdeModuleManager;
-import com.redhat.ceylon.ide.common.model.BaseIdeModuleSourceMapper;
-import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
-import com.redhat.ceylon.ide.common.model.CrossProjectBinaryUnit;
 import com.redhat.ceylon.ide.common.model.IdeModelLoader;
 import com.redhat.ceylon.ide.common.model.IdeModule;
-import com.redhat.ceylon.ide.common.model.JavaClassFile;
-import com.redhat.ceylon.ide.common.model.JavaCompilationUnit;
-import com.redhat.ceylon.ide.common.model.SourceFile;
+import com.redhat.ceylon.ide.common.model.IdeModuleManager;
+import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
+import com.redhat.ceylon.ide.common.model.mirror.SourceClass;
+import com.redhat.ceylon.ide.common.model.mirror.SourceDeclarationHolder;
+import com.redhat.ceylon.ide.common.util.toCeylonString_;
 import com.redhat.ceylon.model.cmr.ArtifactResult;
-import com.redhat.ceylon.model.loader.AbstractModelLoader;
-import com.redhat.ceylon.model.loader.JvmBackendUtil;
 import com.redhat.ceylon.model.loader.ModelResolutionException;
-import com.redhat.ceylon.model.loader.Timer;
-import com.redhat.ceylon.model.loader.TypeParser;
 import com.redhat.ceylon.model.loader.mirror.AnnotatedMirror;
-import com.redhat.ceylon.model.loader.mirror.AnnotationMirror;
 import com.redhat.ceylon.model.loader.mirror.ClassMirror;
 import com.redhat.ceylon.model.loader.mirror.MethodMirror;
-import com.redhat.ceylon.model.loader.model.AnnotationProxyClass;
-import com.redhat.ceylon.model.loader.model.AnnotationProxyMethod;
-import com.redhat.ceylon.model.loader.model.LazyClass;
 import com.redhat.ceylon.model.loader.model.LazyElement;
-import com.redhat.ceylon.model.loader.model.LazyFunction;
-import com.redhat.ceylon.model.loader.model.LazyInterface;
 import com.redhat.ceylon.model.loader.model.LazyModule;
 import com.redhat.ceylon.model.loader.model.LazyPackage;
-import com.redhat.ceylon.model.loader.model.LazyValue;
-import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.UnknownType;
-import com.redhat.ceylon.model.typechecker.model.UnknownType.ErrorReporter;
 
 /**
  * A model loader which uses the JDT model.
  *
  * @author David Festal <david.festal@serli.com>
  */
-public class JDTModelLoader extends IdeModelLoader {
+public class JDTModelLoader extends IdeModelLoader<IProject, IResource, IFolder, IFile> {
 
     private IJavaProject javaProject;
     private CompilerOptions compilerOptions;
@@ -177,12 +146,9 @@ public class JDTModelLoader extends IdeModelLoader {
     private LookupEnvironment lookupEnvironment;
     private MissingTypeBinding missingTypeBinding;
     private final Object lookupEnvironmentMutex = new Object();
-    private boolean mustResetLookupEnvironment = false;
-    private Set<Module> modulesInClassPath = new HashSet<Module>();
-    private AnnotationLoader annotationLoader;
-    private BaseIdeModuleSourceMapper moduleSourceMapper;
     
     private static IJavaProject getJavaProject(BaseIdeModuleManager moduleManager) {
+        @SuppressWarnings("unchecked")
         CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = 
                 (CeylonProject<IProject, IResource, IFolder, IFile>) moduleManager.getCeylonProject();
         
@@ -193,11 +159,15 @@ public class JDTModelLoader extends IdeModelLoader {
         return null;
     }
     
-    public JDTModelLoader(final BaseIdeModuleManager moduleManager, BaseIdeModuleSourceMapper moduleSourceMapper, final Modules modules){
-        this.moduleSourceMapper = moduleSourceMapper;
-        this.moduleManager = moduleManager;
-        moduleManager.setModelLoader(this);
-        this.modules = modules;
+    public JDTModelLoader(final IdeModuleManager<IProject, IResource, IFolder, IFile> moduleManager,
+            IdeModuleSourceMapper<IProject, IResource, IFolder, IFile> moduleSourceMapper, 
+            final Modules modules){
+        super(
+                TypeDescriptor.klass(IProject.class),
+                TypeDescriptor.klass(IResource.class),
+                TypeDescriptor.klass(IFolder.class),
+                TypeDescriptor.klass(IFile.class),
+                moduleManager, moduleSourceMapper, modules);
 
         javaProject = getJavaProject(moduleManager);
         
@@ -210,23 +180,11 @@ public class JDTModelLoader extends IdeModelLoader {
                     compilerOptions,
                     new DefaultProblemFactory());
         }
-        this.timer = new Timer(false);
-        internalCreate();
+        
+        createLookupEnvironment();
         if (javaProject != null) {
             modelLoaders.put(javaProject.getProject(), new WeakReference<JDTModelLoader>(this));
         }
-        annotationLoader = new AnnotationLoader(this, typeFactory);
-    }
-
-    public BaseIdeModuleManager getModuleManager() {
-        return (BaseIdeModuleManager) moduleManager;
-    }
-    
-    private void internalCreate() {
-        this.typeFactory = new GlobalTypeFactory();
-        this.typeParser = new TypeParser(this);
-        this.timer = new Timer(false);
-        createLookupEnvironment();
     }
 
     public void createLookupEnvironment() {
@@ -266,56 +224,6 @@ public class JDTModelLoader extends IdeModelLoader {
         return null;
     }
     
-    // TODO : remove when the bug in the AbstractModelLoader is corrected
-    @Override
-    public synchronized LazyPackage findOrCreatePackage(Module module, String pkgName) {
-        LazyPackage pkg = super.findOrCreatePackage(module, pkgName);
-
-        if (pkg.getModule() != null 
-                && pkg.getModule().isJava()){
-            pkg.setShared(true);
-        }
-        Module currentModule = pkg.getModule();
-        if (currentModule.equals(modules.getDefaultModule()) && ! currentModule.equals(module)) {
-            currentModule.getPackages().remove(pkg);
-            pkg.setModule(null);
-            if (module != null) {
-                module.getPackages().add(pkg);
-                pkg.setModule(module);
-            }
-        }
-        return pkg;
-    }
-
-    @Override
-    protected Module loadLanguageModuleAndPackage() {
-        Module languageModule = getLanguageModule();
-        if (getModuleManager().getLoadDependenciesFromModelLoaderFirst() && !isBootstrap) {
-            findOrCreatePackage(languageModule, CEYLON_LANGUAGE);
-        }
-        return languageModule;
-    }
-    
-    private String getToplevelQualifiedName(final String pkgName, String name) {
-        if (name != null && ! JvmBackendUtil.isInitialLowerCase(name)) {
-            name = Util.quoteIfJavaKeyword(name);
-        }
-
-        String className = pkgName.isEmpty() ? name : Util.quoteJavaKeywords(pkgName) + "." + name;
-        return className;
-    }
-    
-    private String getToplevelQualifiedName(String fullyQualifiedName) {
-        String pkgName = "";
-        String name = fullyQualifiedName;
-        int lastDot = fullyQualifiedName.lastIndexOf('.');
-        if (lastDot > 0 && lastDot < fullyQualifiedName.length()-1) {
-            pkgName = fullyQualifiedName.substring(0, lastDot);
-            name = fullyQualifiedName.substring(lastDot+1, fullyQualifiedName.length());
-        }
-        return getToplevelQualifiedName(pkgName, name);
-    }
-
     @Override
     public boolean loadPackage(Module module, String packageName, boolean loadDeclarations) {
         synchronized (getLock()) {
@@ -408,7 +316,7 @@ public class JDTModelLoader extends IdeModelLoader {
                         }
                         
                         if (type.exists() 
-                                && !sourceDeclarations.containsKey(getToplevelQualifiedName(type.getPackageFragment().getElementName(), typeFullyQualifiedName))
+                                && !getSourceDeclarations().defines(toCeylonString_.toCeylonString(getToplevelQualifiedName(type.getPackageFragment().getElementName(), typeFullyQualifiedName)))
                                 && ! isTypeHidden(module, typeFullyQualifiedName)) {  
                             convertToDeclaration(module, typeFullyQualifiedName, DeclarationType.VALUE);
                         }
@@ -808,95 +716,51 @@ public class JDTModelLoader extends IdeModelLoader {
         return new ModelLoaderNameEnvironment(javaProject);
     }
     
-    synchronized private LookupEnvironment getLookupEnvironment() {
-        if (mustResetLookupEnvironment) {
-            synchronized (lookupEnvironment) {
-                createLookupEnvironment();
+    private LookupEnvironment getLookupEnvironment() {
+        resetJavaModelSourceIfNecessary(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (lookupEnvironment) {
+                    createLookupEnvironment();
+                }
             }
-            mustResetLookupEnvironment = false;
-        }
+        });
         return lookupEnvironment;
     }
     
     @Override
-    public boolean searchAgain(ClassMirror cachedMirror, Module module, String name) {
-        if (cachedMirror != null 
-                && ( !(cachedMirror instanceof SourceClass) || 
-                        !forceLoadFromBinaries(cachedMirror))) {
-            return false;
+    public boolean moduleContainsClass(BaseIdeModule ideModule, String packageName, String className) {
+        boolean moduleContainsJava = false;
+        for (IPackageFragmentRoot root : modelJ2C().getModulePackageFragmentRoots(ideModule)) {
+            try {
+                IPackageFragment pf = root.getPackageFragment(packageName);
+                if (pf.exists() && 
+                        javaProject.isOnClasspath(pf)) {
+                    if (((IPackageFragment)pf).containsJavaResources()) {
+                        moduleContainsJava = true;
+                        break;
+                    }
+                }
+            } catch (JavaModelException e) {
+                e.printStackTrace();
+                moduleContainsJava = true; // Just in case ...
+            }
         }
-        if (module instanceof BaseIdeModule) {
-            BaseIdeModule jdtModule = (BaseIdeModule) module;
-            if (jdtModule.getIsCeylonBinaryArchive() || jdtModule.getIsJavaBinaryArchive()) {
-                String classRelativePath = name.replace('.', '/');
-                return jdtModule.containsClass(classRelativePath + ".class") || jdtModule.containsClass(classRelativePath + "_.class");
-            } else if (jdtModule.getIsProjectModule()) {
-                int nameLength = name.length();
-                int packageEnd = name.lastIndexOf('.');
-                int classNameStart = packageEnd + 1;
-                String packageName = packageEnd > 0 ? name.substring(0, packageEnd) : "";
-                String className = classNameStart < nameLength ? name.substring(classNameStart) : "";
-                boolean moduleContainsJava = false;
-                for (IPackageFragmentRoot root : modelJ2C().getModulePackageFragmentRoots(jdtModule)) {
-                    try {
-                        IPackageFragment pf = root.getPackageFragment(packageName);
-                        if (pf.exists() && 
-                                javaProject.isOnClasspath(pf)) {
-                            if (((IPackageFragment)pf).containsJavaResources()) {
-                                moduleContainsJava = true;
-                                break;
-                            }
-                        }
-                    } catch (JavaModelException e) {
-                        e.printStackTrace();
-                        moduleContainsJava = true; // Just in case ...
-                    }
-                }
-                if (moduleContainsJava) {
-                    ModelLoaderNameEnvironment nameEnvironment = getNameEnvironment();
-                    if (nameEnvironment.findTypeInNameLookup(className, packageName) != null ||
-                            nameEnvironment.findTypeInNameLookup(className + "_", packageName) != null) {
-                        return true;
-                    }
-                }
-                return false;
+        if (moduleContainsJava) {
+            ModelLoaderNameEnvironment nameEnvironment = getNameEnvironment();
+            if (nameEnvironment.findTypeInNameLookup(className, packageName) != null ||
+                    nameEnvironment.findTypeInNameLookup(className + "_", packageName) != null) {
+                return true;
             }
         }
         return false;
     }
-    
-    @Override
-    public boolean searchAgain(Declaration cachedDeclaration, LazyPackage lazyPackage, String name) {
-        if (cachedDeclaration != null && 
-                (cachedDeclaration instanceof LazyElement || 
-                        !forceLoadFromBinaries(cachedDeclaration))) {
-            return false;
-        }
-        return searchAgain(null, lazyPackage.getModule(), lazyPackage.getQualifiedName(lazyPackage.getQualifiedNameString(), name));
-    }
 
-    private boolean forceLoadFromBinaries(boolean isNativeDeclaration) {
-        return getModuleManager().getLoadDependenciesFromModelLoaderFirst() 
-                    && isNativeDeclaration;
-    }
-
-    private boolean forceLoadFromBinaries(Tree.Declaration declarationNode) {
-        return forceLoadFromBinaries(getNative(declarationNode) != null);
-    }
-
-    private boolean forceLoadFromBinaries(Declaration declaration) {
-        return forceLoadFromBinaries(declaration.isNative());
-    }
-
-    private boolean forceLoadFromBinaries(ClassMirror classMirror) {
-        return forceLoadFromBinaries(getNative(classMirror) != null);
-    }
-    
     @Override
     public ClassMirror lookupNewClassMirror(Module module, String name) {
         synchronized(getLock()){
             String topLevelPartiallyQuotedName = getToplevelQualifiedName(name);
-            SourceDeclarationHolder foundSourceDeclaration = sourceDeclarations.get(topLevelPartiallyQuotedName);
+            SourceDeclarationHolder foundSourceDeclaration = getSourceDeclarations().get(toCeylonString_.toCeylonString(topLevelPartiallyQuotedName));
             if (foundSourceDeclaration != null
                     && !forceLoadFromBinaries(
                             foundSourceDeclaration.getAstDeclaration())) {
@@ -1323,32 +1187,6 @@ public class JDTModelLoader extends IdeModelLoader {
     }
     
     @Override
-    public Declaration convertToDeclaration(Module module, String typeName,
-            DeclarationType declarationType) {
-        synchronized (getLock()) {
-            String fqn = getToplevelQualifiedName(typeName);
-
-            SourceDeclarationHolder foundSourceDeclaration = sourceDeclarations.get(fqn);
-            if (foundSourceDeclaration != null
-                    && ! forceLoadFromBinaries(
-                            foundSourceDeclaration.getAstDeclaration())) {
-                return foundSourceDeclaration.getModelDeclaration();
-            }
-
-            Declaration result = null;
-            try {
-                result = super.convertToDeclaration(module, typeName, declarationType);
-            } catch(RuntimeException e) {
-                // FIXME: pretty sure this is plain wrong as it ignores problems and especially ModelResolutionException and just plain hides them
-            }
-            if (result == null && foundSourceDeclaration != null) {
-                result = foundSourceDeclaration.getModelDeclaration();
-            }
-            return result;
-        }
-    }
-
-    @Override
     public void addModuleToClassPath(Module module, ArtifactResult artifact) {
         if(artifact != null && module instanceof LazyModule)
             ((LazyModule)module).loadPackageList(artifact);
@@ -1374,7 +1212,7 @@ public class JDTModelLoader extends IdeModelLoader {
                 }
             }
         }
-        modulesInClassPath.add(module);
+        getModulesInClassPath().add(toCeylonString_.toCeylonString(module.getSignature()));
     }
     
     @Override
@@ -1410,7 +1248,7 @@ public class JDTModelLoader extends IdeModelLoader {
         if (unit == null) {
             unit = unitsByPackage.get(pkg);
             if(unit == null){
-                unit = new PackageTypeFactory(pkg);
+                unit = newPackageTypeFactory( pkg);
                 unit.setPackage(pkg);
                 unitsByPackage.put(pkg, unit);
             }
@@ -1419,7 +1257,7 @@ public class JDTModelLoader extends IdeModelLoader {
     }
 
     public void setModuleAndPackageUnits() {
-        for (Module module : moduleManager.getModules().getListOfModules()) {
+        for (Module module : getModuleManager().getModules().getListOfModules()) {
             if (module instanceof BaseIdeModule) {
                 BaseIdeModule jdtModule = (BaseIdeModule) module;
                 if (jdtModule.getIsCeylonBinaryArchive()) {
@@ -1518,68 +1356,8 @@ public class JDTModelLoader extends IdeModelLoader {
     protected void logVerbose(String message) {
         //System.err.println("NOTE: "+message);
     }
-    
-    @Override
-    public ClassMirror[] getClassMirrorsToRemove(com.redhat.ceylon.model.typechecker.model.Declaration declaration) {
-        ClassMirror[] mirrors = super.getClassMirrorsToRemove(declaration);
-        if (mirrors != null && mirrors.length == 0) {
-            Unit unit = declaration.getUnit();
-            if (unit instanceof SourceFile) {
-                String fqn = getToplevelQualifiedName(unit.getPackage().getNameAsString(), declaration.getNameAsString());
-                SourceDeclarationHolder holder = sourceDeclarations.get(fqn);
-                if (holder != null) {
-                    return new ClassMirror[] { new SourceClass(holder) };
-                }
-            }
-        }
-        return mirrors;
-    }
-    
-    @Override
-    public void removeDeclarations(List<Declaration> declarations) {
-        synchronized(getLock()){
-            List<Declaration> allDeclarations = new ArrayList<Declaration>(declarations.size());
-            Set<Package> changedPackages = new HashSet<Package>();
-            
-            allDeclarations.addAll(declarations);
 
-            for (Declaration declaration : declarations) {
-                Unit unit = declaration.getUnit();
-                if (unit != null) {
-                    changedPackages.add(unit.getPackage());
-                }
-                retrieveInnerDeclarations(declaration, allDeclarations);
-            }
-            
-            for (Declaration decl : allDeclarations) {
-                String fqn = getToplevelQualifiedName(decl.getContainer().getQualifiedNameString(), decl.getName());
-                sourceDeclarations.remove(fqn);
-            }
-            
-            super.removeDeclarations(allDeclarations);
-            for (Package changedPackage : changedPackages) {
-                loadedPackages.remove(cacheKeyByModule(changedPackage.getModule(), changedPackage.getNameAsString()));
-            }
-            mustResetLookupEnvironment = true;
-        }
-    }
-
-    private void retrieveInnerDeclarations(Declaration declaration,
-            List<Declaration> allDeclarations) {
-    	List<Declaration> members;
-    	try {
-            members = declaration.getMembers();
-    	} catch(Exception e) {
-    		members = Collections.emptyList();
-    	}
-        allDeclarations.addAll(members);
-        for (Declaration member : members) {
-            retrieveInnerDeclarations(member, allDeclarations);
-        }
-    }
-    
-    private final Map<String, SourceDeclarationHolder> sourceDeclarations = new TreeMap<String, SourceDeclarationHolder>();
-    
+/*    
     public synchronized Set<String> getSourceDeclarations() {
         Set<String> declarations  = new HashSet<String>();
         declarations.addAll(sourceDeclarations.keySet());
@@ -1590,279 +1368,10 @@ public class JDTModelLoader extends IdeModelLoader {
         return sourceDeclarations.get(declarationName);
     }
 
-    public class PackageTypeFactory extends TypeFactory {
-        public PackageTypeFactory(Package pkg) {
-            super(moduleSourceMapper.getContext());
-            assert (pkg != null);
-            setPackage(pkg);
-        }
-    }
-
-    
-    public class GlobalTypeFactory extends TypeFactory {
-        public GlobalTypeFactory() {
-            super(moduleSourceMapper.getContext());
-        }
-
-        @Override
-        public Package getPackage() {
-            synchronized (JDTModelLoader.this) {
-                if(super.getPackage() == null){
-                    super.setPackage(modules.getLanguageModule()
-                            .getDirectPackage(Module.LANGUAGE_MODULE_NAME));
-                }
-                return super.getPackage();
-            }
-        }
-    }
-
     public static interface SourceFileObjectManager {
         void setupSourceFileObjects(List<?> treeHolders);
     }
-    
-    public void setupSourceFileObjects(List<?> treeHolders) {
-        synchronized (getLock()) {
-            addSourcePhasedUnits(treeHolders, true);
-        }
-    }
-
-    public void addSourcePhasedUnits(List<?> treeHolders, final boolean isSourceToCompile) {
-        synchronized (getLock()) {
-            for (Object treeHolder : treeHolders) {
-                if (treeHolder instanceof PhasedUnit) {
-                    final PhasedUnit unit = (PhasedUnit) treeHolder;
-                    final String pkgName = unit.getPackage().getQualifiedNameString();
-                    unit.getCompilationUnit().visit(new SourceDeclarationVisitor(){
-                        @Override
-                        public void loadFromSource(Tree.Declaration decl) {
-                            if (decl.getIdentifier()!=null) {
-                                String fqn = getToplevelQualifiedName(pkgName, decl.getIdentifier().getText());
-                                if (! sourceDeclarations.containsKey(fqn)) {
-                                    sourceDeclarations.put(fqn, new SourceDeclarationHolder(unit, decl, isSourceToCompile));
-                                }
-                            }
-                        }
-                        @Override
-                        public void loadFromSource(ModuleDescriptor that) {
-                        }
-    
-                        @Override
-                        public void loadFromSource(PackageDescriptor that) {
-                        }
-                    });
-                }
-            }
-        }
-    }
-
-    public void addSourceArchivePhasedUnits(List<PhasedUnit> sourceArchivePhasedUnits) {
-        addSourcePhasedUnits(sourceArchivePhasedUnits, false);
-    }
-    
-    public void clearCachesOnPackage(String packageName) {
-        synchronized (getLock()) {
-            List<String> keysToRemove = new ArrayList<String>(classMirrorCache.size());
-            for (Entry<String, ClassMirror> element : classMirrorCache.entrySet()) {
-                if (element.getValue() == null) {
-                    String className = element.getKey();
-                    if (className != null) {
-                        String classPackageName =className.replaceAll("\\.[^\\.]+$", "");
-                        if (classPackageName.equals(packageName)) {
-                            keysToRemove.add(className);
-                        }
-                    }
-                }
-            }
-            for (String keyToRemove : keysToRemove) {
-                classMirrorCache.remove(keyToRemove);
-            }
-            Package pkg = findPackage(packageName);
-            loadedPackages.remove(cacheKeyByModule(pkg.getModule(), packageName));
-            mustResetLookupEnvironment = true;
-        }
-    }
-
-    public void clearClassMirrorCacheForClass(BaseIdeModule module, String classNameToRemove) {
-        synchronized (getLock()) {
-            classMirrorCache.remove(cacheKeyByModule(module, classNameToRemove));        
-            mustResetLookupEnvironment = true;
-        }
-    }
-
-    @Override
-    protected LazyValue makeToplevelAttribute(ClassMirror classMirror, boolean isNativeHeader) {
-        if (classMirror instanceof SourceClass) {
-            return (LazyValue) (((SourceClass) classMirror).getModelDeclaration());
-        }
-        return super.makeToplevelAttribute(classMirror, isNativeHeader);
-    }
-
-    @Override
-    protected LazyFunction makeToplevelMethod(ClassMirror classMirror, boolean isNativeHeader) {
-        if (classMirror instanceof SourceClass) {
-            return (LazyFunction) (((SourceClass) classMirror).getModelDeclaration());
-        }
-        return super.makeToplevelMethod(classMirror, isNativeHeader);
-    }
-
-    @Override
-    protected LazyClass makeLazyClass(ClassMirror classMirror, Class superClass,
-            MethodMirror constructor, boolean isNativeHeader) {
-        if (classMirror instanceof SourceClass) {
-            return (LazyClass) (((SourceClass) classMirror).getModelDeclaration());
-        }
-        return super.makeLazyClass(classMirror, superClass, constructor, isNativeHeader);
-    }
-
-    @Override
-    protected LazyInterface makeLazyInterface(ClassMirror classMirror, boolean isNativeHeader) {
-        if (classMirror instanceof SourceClass) {
-            return (LazyInterface) ((SourceClass) classMirror).getModelDeclaration();
-        }
-        return super.makeLazyInterface(classMirror, isNativeHeader);
-    }
-    
-    public TypeFactory getTypeFactory() {
-        return (TypeFactory) typeFactory;
-    }
-    
-    @Override
-    public Module findModuleForClassMirror(ClassMirror classMirror) {
-        String pkgName = getPackageNameForQualifiedClassName(classMirror);
-        return lookupModuleByPackageName(pkgName);
-    }
-    
-    public void loadJDKModules() {
-        super.loadJDKModules();
-    }
-
-    @Override
-    public LazyPackage findOrCreateModulelessPackage(String pkgName) {
-        synchronized(getLock()){
-            return (LazyPackage) findPackage(pkgName);
-        }
-    }
-
-    @Override
-    public boolean isModuleInClassPath(Module module) {
-        return modulesInClassPath.contains(module)
-                || ((module instanceof BaseIdeModule) && 
-                        ((BaseIdeModule) module).getIsProjectModule())
-                || ((module instanceof BaseIdeModule) && 
-                        ((BaseIdeModule) module).getOriginalModule() != null && 
-                                ((BaseIdeModule) module).getOriginalModule().getIsProjectModule()) ;
-    }
-    
-    @Override
-    protected boolean needsLocalDeclarations() {
-        return false;
-    }
-
-    public Object addJDKModuleToClassPath(Module module) {
-        modulesInClassPath.add(module);
-        return null;
-    }
-
-    @Override
-    protected boolean isAutoExportMavenDependencies() {
-        if (javaProject != null) {
-            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(javaProject.getProject());
-            if (ceylonProject != null) {
-                return ceylonProject.getConfiguration().getAutoExportMavenDependencies();
-            }
-        }
-        
-        return false;
-    }
-
-    @Override
-    protected boolean isFlatClasspath() {
-        if (javaProject != null) {
-            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(javaProject.getProject());
-            if (ceylonProject != null) {
-                return ceylonProject.getConfiguration().getFlatClasspath();
-            }
-        }
-        return false;
-    }
-
-    @Override
-    protected void makeInteropAnnotationConstructorInvocation(AnnotationProxyMethod arg0, AnnotationProxyClass arg1, List<Parameter> arg2) {
-        annotationLoader.makeInterorAnnotationConstructorInvocation(arg0, arg1, arg2);
-    }
-
-    @Override
-    protected ErrorReporter makeModelErrorReporter(Module arg0, String arg1) {
-        return new ModuleErrorAttacherRunnable(moduleSourceMapper, arg0, arg1);
-    }
-
-    public static class ModuleErrorAttacherRunnable extends UnknownType.ErrorReporter {
-
-        private Module module;
-        private ModuleSourceMapper moduleSourceMapper;
-
-        public ModuleErrorAttacherRunnable(ModuleSourceMapper moduleSourceMapper, Module module, String message) {
-            super(message);
-            this.moduleSourceMapper = moduleSourceMapper;
-            this.module = module;
-        }
-
-        @Override
-        public void reportError() {
-            moduleSourceMapper.attachErrorToOriginalModuleImport(module, getMessage());
-        }
-    }
-
-    @Override
-    protected void setAnnotationConstructor(LazyFunction arg0, MethodMirror arg1) {
-        annotationLoader.setAnnotationConstructor(arg0, arg1);
-    }
-
-    protected String getNative(ClassMirror classMirror) {
-        if (classMirror instanceof SourceClass) {
-            return getNative(((SourceClass)classMirror).getAstDeclaration());
-        }
-        
-        AnnotationMirror annotation = classMirror.getAnnotation("ceylon.language.NativeAnnotation$annotation$");
-        if (annotation == null) {
-            return null;
-        }
-        Object backend = annotation.getValue("backend");
-        if (backend == null) {
-            return "";
-        }
-        if (backend instanceof String) {
-            return (String) backend;
-        }
-        return null;
-    }
-    
-    protected String getNative(Tree.Declaration decl) {
-        for (Tree.Annotation annotation : decl.getAnnotationList().getAnnotations()) {
-            String text = annotation.getPrimary().getToken().getText();
-            if (text != null && text.equals("native")) {
-                String backend = "";
-                Tree.PositionalArgumentList pal = annotation.getPositionalArgumentList();
-                if (pal != null) {
-                    List<PositionalArgument> pas = pal.getPositionalArguments();
-                    if (pas != null && !pas.isEmpty()) {
-                        PositionalArgument backendArg = pas.get(0);
-                        String argText = backendArg.getEndToken().getText();
-                        if (argText.startsWith("\"")) {
-                            argText = argText.substring(1);
-                        }
-                        if (argText.endsWith("\"")) {
-                            argText = argText.substring(0, argText.length()-1);
-                        }
-                        backend = argText;
-                    }
-                }
-                return backend;
-            }
-        }
-        return null;
-    }
-    
+*/    
     @Override
     protected boolean isDeprecated(AnnotatedMirror classMirror){
         if (classMirror instanceof JDTClass) {
@@ -1873,5 +1382,4 @@ public class JDTModelLoader extends IdeModelLoader {
         }
         return super.isDeprecated(classMirror);
     }
-    
 }

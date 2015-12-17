@@ -48,6 +48,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
+import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.IJavaModelAware;
@@ -182,7 +183,7 @@ public class CeylonOpenAction extends OpenAction {
         }
     }
 
-    private Declaration toCeylonDeclaration(IMember member, CeylonBinaryUnit ceylonUnit, IdeModelLoader modelLoader) {
+    private Declaration toCeylonDeclaration(IMember member, CeylonBinaryUnit ceylonUnit, BaseIdeModelLoader modelLoader) {
         if (member instanceof IType) {
             return modelLoader.convertToDeclaration(ceylonUnit.getCeylonModule(), ((IType) member).getFullyQualifiedName(), DeclarationType.VALUE);
         }
