@@ -2,8 +2,8 @@
 by("David Festal")
 native("jvm")
 module com.redhat.ceylon.eclipse "1.2.1" {
+    shared import com.redhat.ceylon.model "1.2.1";
     shared import com.redhat.ceylon.typechecker "1.2.1";
-    shared import com.redhat.ceylon.common "1.2.1";
     shared import com.redhat.ceylon.compiler.java "1.2.1";
     shared import com.redhat.ceylon.compiler.js "1.2.1";
     shared import "com.redhat.ceylon.module-resolver" "1.2.1";
