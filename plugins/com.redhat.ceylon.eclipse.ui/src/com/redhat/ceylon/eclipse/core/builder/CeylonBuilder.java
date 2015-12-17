@@ -42,9 +42,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import javax.tools.DiagnosticListener;
-import javax.tools.FileObject;
-import javax.tools.JavaFileObject;
+import com.redhat.ceylon.javax.tools.DiagnosticListener;
+import com.redhat.ceylon.javax.tools.FileObject;
+import com.redhat.ceylon.javax.tools.JavaFileObject;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
@@ -198,15 +198,15 @@ import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.util.TaskEvent;
-import com.sun.source.util.TaskEvent.Kind;
-import com.sun.source.util.TaskListener;
-import com.sun.tools.javac.file.RegularFileObject;
-import com.sun.tools.javac.file.RelativePath.RelativeFile;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.redhat.ceylon.langtools.source.tree.CompilationUnitTree;
+import com.redhat.ceylon.langtools.source.util.TaskEvent;
+import com.redhat.ceylon.langtools.source.util.TaskEvent.Kind;
+import com.redhat.ceylon.langtools.source.util.TaskListener;
+import com.redhat.ceylon.langtools.tools.javac.file.RegularFileObject;
+import com.redhat.ceylon.langtools.tools.javac.file.RelativePath.RelativeFile;
+import com.redhat.ceylon.langtools.tools.javac.tree.JCTree;
+import com.redhat.ceylon.langtools.tools.javac.tree.JCTree.JCClassDecl;
+import com.redhat.ceylon.langtools.tools.javac.tree.JCTree.JCCompilationUnit;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -348,7 +348,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         final boolean explodeModules;
         private Map<RegularFileObject, Set<String>> inputFilesToGenerate = null;
         
-        private BuildFileManager(com.sun.tools.javac.util.Context context,
+        private BuildFileManager(com.redhat.ceylon.langtools.tools.javac.util.Context context,
                 boolean register, Charset charset, IProject project, Map<RegularFileObject, Set<String>> inputFilesToGenerate) {
             super(context, register, charset);
             this.project = project;
@@ -359,7 +359,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         public static RegularFileObject getSourceFile(FileObject fileObject) {
             JavaFileObject sourceJavaFileObject;
             if (fileObject instanceof JavaFileObject
-                    && ((JavaFileObject) fileObject).getKind() == javax.tools.JavaFileObject.Kind.SOURCE){
+                    && ((JavaFileObject) fileObject).getKind() == com.redhat.ceylon.javax.tools.JavaFileObject.Kind.SOURCE){
                 if (fileObject instanceof CeylonFileObject) {
                     sourceJavaFileObject = ((CeylonFileObject) fileObject).getFile();
                 } else {
@@ -2847,8 +2847,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
         CompileErrorReporter errorReporter = new CompileErrorReporter(project);
 
-        final com.sun.tools.javac.util.Context context = new com.sun.tools.javac.util.Context();
-        context.put(com.sun.tools.javac.util.Log.outKey, printWriter);
+        final com.redhat.ceylon.langtools.tools.javac.util.Context context = new com.redhat.ceylon.langtools.tools.javac.util.Context();
+        context.put(com.redhat.ceylon.langtools.tools.javac.util.Log.outKey, printWriter);
         context.put(DiagnosticListener.class, errorReporter);
         CeylonLog.preRegister(context);
         
@@ -2998,7 +2998,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     private void setupJDTModelLoader(final IProject project,
             final TypeChecker typeChecker,
-            final com.sun.tools.javac.util.Context context,
+            final com.redhat.ceylon.langtools.tools.javac.util.Context context,
             final Collection<PhasedUnit> unitsTypecheckedIncrementally) {
 
         final JDTModelLoader modelLoader = getModelLoader(typeChecker);
@@ -3012,7 +3012,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         context.put(ModelLoaderFactory.class, new ModelLoaderFactory() {
             @Override
             public AbstractModelLoader createModelLoader(
-                    com.sun.tools.javac.util.Context context) {
+                    com.redhat.ceylon.langtools.tools.javac.util.Context context) {
                 return modelLoader;
             }
         });

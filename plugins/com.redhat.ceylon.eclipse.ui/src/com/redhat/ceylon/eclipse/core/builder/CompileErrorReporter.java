@@ -9,9 +9,9 @@ import static org.eclipse.jdt.core.IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER;
 import java.util.List;
 import java.util.Locale;
 
-import javax.tools.Diagnostic;
-import javax.tools.DiagnosticListener;
-import javax.tools.JavaFileObject;
+import com.redhat.ceylon.javax.tools.Diagnostic;
+import com.redhat.ceylon.javax.tools.DiagnosticListener;
+import com.redhat.ceylon.javax.tools.JavaFileObject;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -51,8 +51,8 @@ final class CompileErrorReporter implements
                         || exitState.ceylonState.equals(CeylonState.SYS))) {
             diagnostic = new Diagnostic<JavaFileObject>() {
                 @Override
-                public javax.tools.Diagnostic.Kind getKind() {
-                    return javax.tools.Diagnostic.Kind.ERROR;
+                public com.redhat.ceylon.javax.tools.Diagnostic.Kind getKind() {
+                    return com.redhat.ceylon.javax.tools.Diagnostic.Kind.ERROR;
                 }
                 @Override
                 public JavaFileObject getSource() {

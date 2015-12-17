@@ -11,10 +11,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
 
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.NestingKind;
-import javax.tools.Diagnostic;
-import javax.tools.JavaFileObject;
+import com.redhat.ceylon.javax.lang.model.element.Modifier;
+import com.redhat.ceylon.javax.lang.model.element.NestingKind;
+import com.redhat.ceylon.javax.tools.Diagnostic;
+import com.redhat.ceylon.javax.tools.JavaFileObject;
 
 import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
@@ -118,7 +118,7 @@ public class CeylonCompilationError implements Diagnostic<JavaFileObject> {
     }
 
     @Override
-    public javax.tools.Diagnostic.Kind getKind() {
+    public com.redhat.ceylon.javax.tools.Diagnostic.Kind getKind() {
         return (err instanceof AnalysisError ||
                     err instanceof UnexpectedError) ? Diagnostic.Kind.ERROR : Diagnostic.Kind.WARNING;
     }

@@ -10,8 +10,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.tools.JavaFileManager;
-import javax.tools.JavaFileObject;
+import com.redhat.ceylon.javax.tools.JavaFileManager;
+import com.redhat.ceylon.javax.tools.JavaFileObject;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -43,22 +43,22 @@ import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
-import com.sun.tools.javac.file.JavacFileManager;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Names;
-import com.sun.tools.javac.util.Position;
-import com.sun.tools.javac.util.Position.LineMap;
+import com.redhat.ceylon.langtools.tools.javac.file.JavacFileManager;
+import com.redhat.ceylon.langtools.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.redhat.ceylon.langtools.tools.javac.util.Context;
+import com.redhat.ceylon.langtools.tools.javac.util.Names;
+import com.redhat.ceylon.langtools.tools.javac.util.Position;
+import com.redhat.ceylon.langtools.tools.javac.util.Position.LineMap;
 
 final class JdtCompilerDelegate implements CompilerDelegate {
     private final IProject project;
     private final TypeChecker typeChecker;
-    private final WeakReference<com.sun.tools.javac.util.Context> contextRef;
+    private final WeakReference<com.redhat.ceylon.langtools.tools.javac.util.Context> contextRef;
     private final Collection<PhasedUnit> unitsTypecheckedIncrementally;
 
     JdtCompilerDelegate(JDTModelLoader modelLoader,
             IProject project, TypeChecker typeChecker,
-            com.sun.tools.javac.util.Context context,
+            com.redhat.ceylon.langtools.tools.javac.util.Context context,
             Collection<PhasedUnit> unitsTypechecked) {
         this.project = project;
         this.typeChecker = typeChecker;
@@ -182,7 +182,7 @@ final class JdtCompilerDelegate implements CompilerDelegate {
     @Override
     public void loadStandardModules(AbstractModelLoader modelLoader) {}
     @Override
-    public void setupSourceFileObjects(com.sun.tools.javac.util.List<JCCompilationUnit> trees,
+    public void setupSourceFileObjects(com.redhat.ceylon.langtools.tools.javac.util.List<JCCompilationUnit> trees,
             AbstractModelLoader modelLoader) {
         final Context context = contextRef.get();
         if (context == null) return;

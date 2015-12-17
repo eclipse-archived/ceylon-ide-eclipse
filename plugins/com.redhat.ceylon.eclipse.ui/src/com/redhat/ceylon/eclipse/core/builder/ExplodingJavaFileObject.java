@@ -10,11 +10,11 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.URI;
 
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.NestingKind;
-import javax.tools.JavaFileObject;
+import com.redhat.ceylon.javax.lang.model.element.Modifier;
+import com.redhat.ceylon.javax.lang.model.element.NestingKind;
+import com.redhat.ceylon.javax.tools.JavaFileObject;
 
-import com.sun.tools.javac.file.RelativePath.RelativeFile;
+import com.redhat.ceylon.langtools.tools.javac.file.RelativePath.RelativeFile;
 
 final class ExplodingJavaFileObject implements
         JavaFileObject {
