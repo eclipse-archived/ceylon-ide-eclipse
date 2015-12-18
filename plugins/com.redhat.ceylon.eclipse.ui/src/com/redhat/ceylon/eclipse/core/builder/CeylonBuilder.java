@@ -3098,21 +3098,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return EnumSet.noneOf(Warning.class);
     }
 
-    public static String fileName(ClassMirror c) {
-        if (c instanceof JavacClass) {
-            return ((JavacClass) c).classSymbol.classfile.getName();
-        }
-        else if (c instanceof JDTClass) {
-            return ((JDTClass) c).getFileName();
-        }
-        else if (c instanceof SourceClass) {
-            return ((SourceClass) c).getModelDeclaration().getUnit().getFilename();
-        }
-        else {
-            return "another file";
-        }
-    }
-
     public static List<String> getUserRepositories(IProject project) throws CoreException {
         List<String> ceylonRepos = getCeylonRepositories(project);
         List<String> userRepos = new ArrayList<>(ceylonRepos);

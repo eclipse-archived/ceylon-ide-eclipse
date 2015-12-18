@@ -46,6 +46,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader.ActionOnClassBinding;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader.ActionOnResolvedType;
+import com.redhat.ceylon.ide.common.model.mirror.IdeClassMirror;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.loader.ModelResolutionException;
 import com.redhat.ceylon.model.loader.mirror.AnnotationMirror;
@@ -211,7 +212,7 @@ class UnknownClassMirror implements ClassMirror {
     
 }
 
-public class JDTClass implements ClassMirror, IBindingProvider {
+public class JDTClass implements IdeClassMirror, IBindingProvider {
     public static final ClassMirror UNKNOWN_CLASS = new UnknownClassMirror();
     
     Reference<ReferenceBinding> bindingRef;
@@ -503,7 +504,8 @@ public class JDTClass implements ClassMirror, IBindingProvider {
         return !isInnerClass() && isAnnotationPresent(com.redhat.ceylon.compiler.java.metadata.Method.class);
     }
 
-    public boolean isCeylon() {
+    @Override
+    public boolean getIsCeylon() {
         return isAnnotationPresent(com.redhat.ceylon.compiler.java.metadata.Ceylon.class);
     }
 
@@ -608,11 +610,13 @@ public class JDTClass implements ClassMirror, IBindingProvider {
         return (this.modifiers & ClassFileConstants.AccEnum) != 0;
     }
 
+    @Override
     public String getFileName() {
         return fileName;
     }
 
-    public boolean isBinary() {
+    @Override
+    public boolean getIsBinary() {
         return isBinary;
     }
 

@@ -20,28 +20,20 @@
 
 package com.redhat.ceylon.eclipse.core.model;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.WeakHashMap;
 
-import org.eclipse.core.internal.jobs.InternalJob;
 import org.eclipse.core.internal.utils.Cache;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
@@ -55,21 +47,11 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.core.compiler.CharOperation;
-import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.DefaultErrorHandlingPolicies;
-import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileReader;
-import org.eclipse.jdt.internal.compiler.env.AccessRestriction;
-import org.eclipse.jdt.internal.compiler.env.IBinaryAnnotation;
-import org.eclipse.jdt.internal.compiler.env.IBinaryMethod;
 import org.eclipse.jdt.internal.compiler.env.IBinaryType;
-import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.eclipse.jdt.internal.compiler.env.INameEnvironment;
-import org.eclipse.jdt.internal.compiler.env.ISourceType;
-import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
-import org.eclipse.jdt.internal.compiler.impl.ITypeRequestor;
-import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
@@ -78,30 +60,14 @@ import org.eclipse.jdt.internal.compiler.lookup.PackageBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ProblemReasons;
 import org.eclipse.jdt.internal.compiler.lookup.ProblemReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
-import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
-import org.eclipse.jdt.internal.compiler.parser.Parser;
-import org.eclipse.jdt.internal.compiler.parser.SourceTypeConverter;
-import org.eclipse.jdt.internal.compiler.problem.AbortCompilationUnit;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
 import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
-import org.eclipse.jdt.internal.core.BasicCompilationUnit;
-import org.eclipse.jdt.internal.core.BinaryType;
 import org.eclipse.jdt.internal.core.ClassFile;
-import org.eclipse.jdt.internal.core.JavaElement;
-import org.eclipse.jdt.internal.core.JavaElementRequestor;
-import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.internal.core.JavaProject;
-import org.eclipse.jdt.internal.core.NameLookup;
-import org.eclipse.jdt.internal.core.SearchableEnvironment;
-import org.eclipse.jdt.internal.core.SourceType;
-import org.eclipse.jdt.internal.core.SourceTypeElementInfo;
-import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
 
-import com.redhat.ceylon.common.JVMModuleUtil;
 import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.java.util.Util;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
@@ -111,25 +77,19 @@ import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.BaseIdeModuleManager;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.IdeModelLoader;
-import com.redhat.ceylon.ide.common.model.IdeModule;
 import com.redhat.ceylon.ide.common.model.IdeModuleManager;
 import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
-import com.redhat.ceylon.ide.common.model.mirror.SourceClass;
-import com.redhat.ceylon.ide.common.model.mirror.SourceDeclarationHolder;
 import com.redhat.ceylon.ide.common.util.toCeylonString_;
 import com.redhat.ceylon.model.cmr.ArtifactResult;
 import com.redhat.ceylon.model.loader.ModelResolutionException;
 import com.redhat.ceylon.model.loader.mirror.AnnotatedMirror;
 import com.redhat.ceylon.model.loader.mirror.ClassMirror;
 import com.redhat.ceylon.model.loader.mirror.MethodMirror;
-import com.redhat.ceylon.model.loader.model.LazyElement;
-import com.redhat.ceylon.model.loader.model.LazyModule;
 import com.redhat.ceylon.model.loader.model.LazyPackage;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Modules;
-import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
 /**
@@ -137,7 +97,7 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
  *
  * @author David Festal <david.festal@serli.com>
  */
-public class JDTModelLoader extends IdeModelLoader<IProject, IResource, IFolder, IFile> {
+public class JDTModelLoader extends IdeModelLoader<IProject, IResource, IFolder, IFile, ITypeRoot> {
 
     private IJavaProject javaProject;
     private CompilerOptions compilerOptions;
@@ -146,19 +106,7 @@ public class JDTModelLoader extends IdeModelLoader<IProject, IResource, IFolder,
     private LookupEnvironment lookupEnvironment;
     private MissingTypeBinding missingTypeBinding;
     private final Object lookupEnvironmentMutex = new Object();
-    
-    private static IJavaProject getJavaProject(BaseIdeModuleManager moduleManager) {
-        @SuppressWarnings("unchecked")
-        CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = 
-                (CeylonProject<IProject, IResource, IFolder, IFile>) moduleManager.getCeylonProject();
-        
-        if (ceylonProject != null) {
-            IProject project = ceylonProject.getIdeArtifact();
-            return JavaCore.create(project);
-        }
-        return null;
-    }
-    
+
     public JDTModelLoader(final IdeModuleManager<IProject, IResource, IFolder, IFile> moduleManager,
             IdeModuleSourceMapper<IProject, IResource, IFolder, IFile> moduleSourceMapper, 
             final Modules modules){
@@ -167,6 +115,7 @@ public class JDTModelLoader extends IdeModelLoader<IProject, IResource, IFolder,
                 TypeDescriptor.klass(IResource.class),
                 TypeDescriptor.klass(IFolder.class),
                 TypeDescriptor.klass(IFile.class),
+                TypeDescriptor.klass(ITypeRoot.class),
                 moduleManager, moduleSourceMapper, modules);
 
         javaProject = getJavaProject(moduleManager);
@@ -192,7 +141,7 @@ public class JDTModelLoader extends IdeModelLoader<IProject, IResource, IFolder,
             return;
         }
         try {
-            ModelLoaderTypeRequestor requestor = new ModelLoaderTypeRequestor();
+            ModelLoaderTypeRequestor requestor = new ModelLoaderTypeRequestor(compilerOptions);
             lookupEnvironment = new LookupEnvironment(requestor, compilerOptions, problemReporter, createSearchableEnvironment());
             requestor.initialize(lookupEnvironment);
             lookupEnvironment.mayTolerateMissingType = true;
@@ -209,7 +158,7 @@ public class JDTModelLoader extends IdeModelLoader<IProject, IResource, IFolder,
             return null;
         }
         try {
-            ModelLoaderTypeRequestor requestor = new ModelLoaderTypeRequestor();
+            ModelLoaderTypeRequestor requestor = new ModelLoaderTypeRequestor(compilerOptions);
             LookupEnvironment lookupEnvironmentForGeneratedCode = new LookupEnvironment(requestor, 
                     compilerOptions, 
                     problemReporter, 
@@ -222,6 +171,56 @@ public class JDTModelLoader extends IdeModelLoader<IProject, IResource, IFolder,
             e.printStackTrace();
         }
         return null;
+    }
+    
+    private INameEnvironment createSearchableEnvironment() throws JavaModelException {
+        return new ModelLoaderNameEnvironment(javaProject);
+    }
+    
+    private LookupEnvironment getLookupEnvironment() {
+        resetJavaModelSourceIfNecessary(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (lookupEnvironment) {
+                    createLookupEnvironment();
+                }
+            }
+        });
+        return lookupEnvironment;
+    }
+    
+    @Override
+    public boolean moduleContainsClass(BaseIdeModule ideModule, String packageName, String className) {
+        boolean moduleContainsJava = false;
+        for (IPackageFragmentRoot root : modelJ2C().getModulePackageFragmentRoots(ideModule)) {
+            try {
+                IPackageFragment pf = root.getPackageFragment(packageName);
+                if (pf.exists() && 
+                        javaProject.isOnClasspath(pf)) {
+                    if (((IPackageFragment)pf).containsJavaResources()) {
+                        moduleContainsJava = true;
+                        break;
+                    }
+                }
+            } catch (JavaModelException e) {
+                e.printStackTrace();
+                moduleContainsJava = true; // Just in case ...
+            }
+        }
+        if (moduleContainsJava) {
+            ModelLoaderNameEnvironment nameEnvironment = getNameEnvironment();
+            if (nameEnvironment.findTypeInNameLookup(className, packageName) != null ||
+                    nameEnvironment.findTypeInNameLookup(className + "_", packageName) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public MissingTypeBinding getMissingTypeBinding() {
+        synchronized (getLock()) {
+            return missingTypeBinding;
+        }
     }
     
     @Override
@@ -338,370 +337,185 @@ public class JDTModelLoader extends IdeModelLoader<IProject, IResource, IFolder,
         }
     }
     
-
-    public final class ModelLoaderTypeRequestor implements
-            ITypeRequestor {
-        private Parser basicParser;
-        private LookupEnvironment lookupEnvironment;
-
-        public void initialize(LookupEnvironment lookupEnvironment) {
-            this.lookupEnvironment = lookupEnvironment;
-        }
-        
-        @Override
-        public void accept(ISourceType[] sourceTypes, PackageBinding packageBinding,
-                AccessRestriction accessRestriction) {
-            // case of SearchableEnvironment of an IJavaProject is used
-            ISourceType sourceType = sourceTypes[0];
-            while (sourceType.getEnclosingType() != null)
-                sourceType = sourceType.getEnclosingType();
-            if (sourceType instanceof SourceTypeElementInfo) {
-                // get source
-                SourceTypeElementInfo elementInfo = (SourceTypeElementInfo) sourceType;
-                IType type = elementInfo.getHandle();
-                ICompilationUnit sourceUnit = (ICompilationUnit) type.getCompilationUnit();
-                accept(sourceUnit, accessRestriction);
-            } else {
-                CompilationResult result = new CompilationResult(sourceType.getFileName(), 1, 1, 0);
-                CompilationUnitDeclaration unit =
-                    SourceTypeConverter.buildCompilationUnit(
-                        sourceTypes,
-                        SourceTypeConverter.FIELD_AND_METHOD // need field and methods
-                        | SourceTypeConverter.MEMBER_TYPE, // need member types
-                        // no need for field initialization
-                        lookupEnvironment.problemReporter,
-                        result);
-                lookupEnvironment.buildTypeBindings(unit, accessRestriction);
-                lookupEnvironment.completeTypeBindings(unit, true);
-            }
-        }
-
-        @Override
-        public void accept(IBinaryType binaryType, PackageBinding packageBinding,
-                AccessRestriction accessRestriction) {
-            BinaryTypeBinding btb = lookupEnvironment.createBinaryTypeFrom(binaryType, packageBinding, accessRestriction);
-
-            if (btb.isNestedType() && !btb.isStatic()) {
-                for (MethodBinding method : btb.methods()) {
-                    if (method.isConstructor() && method.parameters.length > 0) {
-                        char[] signature = method.signature();
-                        for (IBinaryMethod methodInfo : binaryType.getMethods()) {
-                            if (methodInfo.isConstructor()) {
-                                char[] methodInfoSignature = methodInfo.getMethodDescriptor();
-                                if (new String(signature).equals(new String(methodInfoSignature))) {
-                                    IBinaryAnnotation[] binaryAnnotation = methodInfo.getParameterAnnotations(0);
-                                    if (binaryAnnotation == null) {
-                                        if (methodInfo.getAnnotatedParametersCount() == method.parameters.length + 1) {
-                                            AnnotationBinding[][] newParameterAnnotations = new AnnotationBinding[method.parameters.length][];
-                                            for (int i=0; i<method.parameters.length; i++) {
-                                                IBinaryAnnotation[] goodAnnotations = null;
-                                                try {
-                                                     goodAnnotations = methodInfo.getParameterAnnotations(i + 1);
-                                                }
-                                                catch(IndexOutOfBoundsException e) {
-                                                    break;
-                                                }
-                                                if (goodAnnotations != null) {
-                                                    AnnotationBinding[] parameterAnnotations = BinaryTypeBinding.createAnnotations(goodAnnotations, lookupEnvironment, new char[][][] {});
-                                                    newParameterAnnotations[i] = parameterAnnotations;
-                                                }
-                                            }
-                                            method.setParameterAnnotations(newParameterAnnotations);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        @Override
-        public void accept(ICompilationUnit sourceUnit,
-                AccessRestriction accessRestriction) {
-            // Switch the current policy and compilation result for this unit to the requested one.
-            CompilationResult unitResult = new CompilationResult(sourceUnit, 1, 1, compilerOptions.maxProblemsPerUnit);
-            try {
-                CompilationUnitDeclaration parsedUnit = basicParser().dietParse(sourceUnit, unitResult);
-                lookupEnvironment.buildTypeBindings(parsedUnit, accessRestriction);
-                lookupEnvironment.completeTypeBindings(parsedUnit, true);
-            } catch (AbortCompilationUnit e) {
-                // at this point, currentCompilationUnitResult may not be sourceUnit, but some other
-                // one requested further along to resolve sourceUnit.
-                if (unitResult.compilationUnit == sourceUnit) { // only report once
-                    //requestor.acceptResult(unitResult.tagAsAccepted());
-                } else {
-                    throw e; // want to abort enclosing request to compile
-                }
-            }
-            // Display unit error in debug mode
-            if (BasicSearchEngine.VERBOSE) {
-                if (unitResult.problemCount > 0) {
-                    System.out.println(unitResult);
-                }
-            }
-        }
-
-        private Parser basicParser() {
-            if (this.basicParser == null) {
-                ProblemReporter problemReporter =
-                    new ProblemReporter(
-                        DefaultErrorHandlingPolicies.proceedWithAllProblems(),
-                        compilerOptions,
-                        new DefaultProblemFactory());
-                this.basicParser = new Parser(problemReporter, false);
-                this.basicParser.reportOnlyOneSyntaxError = true;
-            }
-            return this.basicParser;
-        }
-    }
-
-    public static class ModelLoaderNameEnvironment extends SearchableEnvironment {
-        public ModelLoaderNameEnvironment(IJavaProject javaProject) throws JavaModelException {
-            super((JavaProject)javaProject, (WorkingCopyOwner) null);
-        }
-
-        public IJavaProject getJavaProject() {
-            return project;
-        }
-        
-        public IType findTypeInNameLookup(char[][] compoundTypeName) {
-            if (compoundTypeName == null) return null;
-
-            int length = compoundTypeName.length;
-            if (length <= 1) {
-                if (length == 0) return null;
-                return findTypeInNameLookup(new String(compoundTypeName[0]), IPackageFragment.DEFAULT_PACKAGE_NAME);
-            }
-
-            int lengthM1 = length - 1;
-            char[][] packageName = new char[lengthM1][];
-            System.arraycopy(compoundTypeName, 0, packageName, 0, lengthM1);
-
-            return findTypeInNameLookup(
-                new String(compoundTypeName[lengthM1]),
-                CharOperation.toString(packageName));
-        }
-        
-        private Method getProgressMonitorMethod = null;
-        private IProgressMonitor getProgressMonitor(Job job) {
-            if (job==null) {
-                return new NullProgressMonitor();
-            }
-            try {
-                if (getProgressMonitorMethod == null) {
-                    for (Method m : InternalJob.class.getDeclaredMethods()) {
-                        if ("getProgressMonitor".equals(m.getName())) {
-                            getProgressMonitorMethod = m;
-                            getProgressMonitorMethod.setAccessible(true);
-                            break;
-                        }
-                    }
-                }
-                
-                Object o = getProgressMonitorMethod.invoke(job);
-                if (o instanceof IProgressMonitor) {
-                    return (IProgressMonitor) o;
-                }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
+    @Override
+    public JDTClass buildClassMirrorInternal(String name) {
+        if (javaProject == null) {
             return null;
         }
-
         
-        
-        private boolean endsWith(char [] charArray, char[][] suffixes) {
-            int arrayLength = charArray.length;
-            for (char[] suffix : suffixes) {
-                int suffixLength = suffix.length;
-                if (arrayLength >= suffixLength) {
-                    if (CharOperation.fragmentEquals(suffix, charArray, arrayLength - suffixLength, false)) {
-                        return true;
+        try {
+            LookupEnvironment theLookupEnvironment = getLookupEnvironment();
+            ModelLoaderNameEnvironment nameEnvironment = (ModelLoaderNameEnvironment)theLookupEnvironment.nameEnvironment;
+            char[][] uncertainCompoundName = CharOperation.splitOn('.', name.toCharArray());
+            int numberOfParts = uncertainCompoundName.length;
+            char[][] compoundName = null;
+            IType type = null;
+            
+            if (numberOfParts > 0) {
+                boolean searchingInPreviousParts = false;
+                for (int packagePartsEndIndex=numberOfParts-1; 
+                        packagePartsEndIndex >= 0; 
+                        packagePartsEndIndex--) {
+                    char[][] triedPackageName = new char[packagePartsEndIndex][0];
+                    for (int j=0; j<packagePartsEndIndex; j++) {
+                        triedPackageName[j] = uncertainCompoundName[j];
                     }
+                    
+                    if (searchingInPreviousParts 
+                             && nameEnvironment.isPackage(triedPackageName, uncertainCompoundName[packagePartsEndIndex])) {
+                        // Don't search for an inner class whose top-level class has the same name as an existing package;
+                        break;
+                    }
+                    
+                    int triedClassNameSize = 0;
+                    for (int k=packagePartsEndIndex; k<numberOfParts; k++) {
+                        triedClassNameSize += uncertainCompoundName[k].length + 1;
+                    }
+                    triedClassNameSize --;
+                    
+                    char[] triedClassName = new char[triedClassNameSize];
+                    int currentDestinationIndex = 0;
+                    int currentPartIndex=packagePartsEndIndex;
+                    char[] currentPart = uncertainCompoundName[currentPartIndex];
+                    int currentPartLength = currentPart.length;
+                    System.arraycopy(currentPart, 0, triedClassName, currentDestinationIndex, currentPartLength);
+                    currentDestinationIndex += currentPartLength;
+                    for (currentPartIndex=packagePartsEndIndex+1; currentPartIndex<numberOfParts; currentPartIndex++) {
+                        triedClassName[currentDestinationIndex++] = '$';
+                        currentPart = uncertainCompoundName[currentPartIndex];
+                        currentPartLength = currentPart.length;
+                        System.arraycopy(currentPart, 0, triedClassName, currentDestinationIndex, currentPartLength);
+                        currentDestinationIndex += currentPartLength;
+                    }
+                    
+                    type = nameEnvironment.findTypeInNameLookup(CharOperation.charToString(triedClassName), 
+                            CharOperation.toString(triedPackageName));
+                    if (type != null) {
+                        compoundName = CharOperation.arrayConcat(triedPackageName, triedClassName);
+                        break;
+                    }
+                    searchingInPreviousParts = true;
                 }
             }
-            return false;
-        }
-        
-        public IType findTypeInNameLookup(String typeName, String packageName) {
-            JavaElementRequestor packageRequestor = new JavaElementRequestor();
-            nameLookup.seekPackageFragments(packageName, false, packageRequestor);
-            LinkedList<IPackageFragment> packagesToSearchIn = new LinkedList<>();
+
+            if (type == null) {
+                return null;
+            }
+
+            ClassFileReader[] classReaderHolder = new ClassFileReader[1];
+            ReferenceBinding binding = toBinding(type, theLookupEnvironment, compoundName, classReaderHolder);
+            if (binding != null) {
+                return new JDTClass(binding, type, classReaderHolder[0]);
+            }
             
-            for (IPackageFragment pf : packageRequestor.getPackageFragments()) {
-                IPackageFragmentRoot packageRoot = (IPackageFragmentRoot) pf.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+        } catch (JavaModelException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private ModelLoaderNameEnvironment getNameEnvironment() {
+        return (ModelLoaderNameEnvironment)getLookupEnvironment().nameEnvironment;
+    }
+    
+    @Override
+    public Object addModuleToClasspathInternal(ArtifactResult artifact) {
+        CeylonProjectModulesContainer container = CeylonClasspathUtil.getCeylonProjectModulesClasspathContainer(javaProject);
+
+        if (container != null) {
+            IPath modulePath = new Path(artifact.artifact().getPath());
+            IClasspathEntry newEntry = container.addNewClasspathEntryIfNecessary(modulePath);
+            if (newEntry!=null) {
                 try {
-                    if (packageRoot.getKind() == IPackageFragmentRoot.K_SOURCE) {
-                        packagesToSearchIn.addFirst(pf);
-                        continue;
-                    }
-                    if (isInCeylonClassesOutputFolder(packageRoot.getPath())) {
-                        continue;
-                    }
-                    packagesToSearchIn.addLast(pf);
+                    JavaCore.setClasspathContainer(container.getPath(), new IJavaProject[] { javaProject }, 
+                            new IClasspathContainer[] {new CeylonProjectModulesContainer(container)}, null);
                 } catch (JavaModelException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
+                refreshNameEnvironment();
             }
-            
-            for (IPackageFragment pf : packagesToSearchIn) {
-
-                // We use considerSecondTypes = false because we will do it explicitly afterwards, in order to use waitForIndexes=true
-                IType type = nameLookup.findType(typeName, pf, false, NameLookup.ACCEPT_ALL);
-                if (type != null) {
-                    return type;
-                }
-            }
-            
-            char[] typeNameCharArray = typeName.toCharArray();
-            if (CharOperation.equals(TypeConstants.PACKAGE_INFO_NAME, typeNameCharArray) ||
-                    CharOperation.equals(packageDescriptorName, typeNameCharArray) ||
-                    CharOperation.equals(moduleDescriptorName, typeNameCharArray) ||
-                    CharOperation.equals(oldPackageDescriptorName, typeNameCharArray) ||
-                    CharOperation.equals(oldModuleDescriptorName, typeNameCharArray) ||
-                    endsWith(typeNameCharArray, descriptorClassNames)) {
-                // Don't search for secondary types whose name ends with is a quoted of unquoted descriptors
-                // or ends with a quoted descriptor (in case it would be searching for an inner class)
-                return null;
-            }
-            
-            if (isSettingInterfaceCompanionClass() && typeName.endsWith("$impl")) {
-                // Don't search for Ceylon interface companion classes in Java Secondary types.
-                return null;
-            }
-            
-            Job currentJob = Job.getJobManager().currentJob();
-            IProgressMonitor currentMonitor = getProgressMonitor(currentJob);
-            for (IPackageFragment pf : packagesToSearchIn) {
-                IType type = findSecondaryType(typeName, packageName, pf,
-                        currentMonitor);
-                if (type != null) {
-                    return type;
-                }
-            }
-            return null;
         }
+        return null;
+    }
+    
+    @Override
+    protected boolean isOverridingMethod(MethodMirror methodSymbol) {
+        return ((JDTMethod)methodSymbol).isOverridingMethod();
+    }
 
-        // This is a Copy / Paste from :
-        // org.eclipse.jdt.internal.core.NameLookup.findSecondaryType(...), in order to be able to call it with waitForIndexes = true:
-        // type = nameLookup.findSecondaryType(pf.getElementName(), typeName, pf.getJavaProject(), true, null);
-        //
-        // However the copied method has been changed to adapt it to the model loader needs.
-        private IType findSecondaryType(String typeName, String packageName,
-                IPackageFragment pf, IProgressMonitor currentMonitor) {
-            JavaModelManager manager = JavaModelManager.getJavaModelManager();
-            try {
-                IJavaProject javaProject = pf.getJavaProject();
-                @SuppressWarnings("rawtypes")
-                Map secondaryTypePaths = manager.secondaryTypes(javaProject, true, currentMonitor);
-                if (secondaryTypePaths.size() > 0) {
-                    @SuppressWarnings("rawtypes")
-                    Map types = (Map) secondaryTypePaths.get(packageName==null?"":packageName); //$NON-NLS-1$
-                    if (types != null && types.size() > 0) {
-                        boolean startsWithDollar = false;
-                        if(typeName.startsWith("$")) {
-                            startsWithDollar = true;
-                            typeName = typeName.substring(1);
-                        }
-                        String[] parts = typeName.split("(\\.|\\$)");
-                        if (startsWithDollar) {
-                            parts[0] = "$" + parts[0];
-                        }
-                        int index = 0;
-                        String topLevelClassName = parts[index++];
-                        IType currentClass = (IType) types.get(topLevelClassName);
-                        IType result = currentClass;
-                        while (index < parts.length) {
-                            result = null;
-                            String nestedClassName = parts[index++];
-                            if (currentClass != null && currentClass.exists()) {
-                                currentClass = currentClass.getType(nestedClassName);
-                                result = currentClass;
-                            } else {
-                                break;
-                            }
-                        }
-                        return result;
-                    }
-                }
-            }
-            catch (JavaModelException jme) {
-                // give up
-            }
-            return null;
-        }
-        
-        @Override
-        protected NameEnvironmentAnswer find(String typeName, String packageName) {
-            if (packageName == null)
-                packageName = IPackageFragment.DEFAULT_PACKAGE_NAME;
-            if (this.owner != null) {
-                String source = this.owner.findSource(typeName, packageName);
-                if (source != null) {
-                    ICompilationUnit cu = new BasicCompilationUnit(source.toCharArray(), 
-                            CharOperation.splitOn('.', packageName.toCharArray()), 
-                            typeName + org.eclipse.jdt.internal.core.util.Util.defaultJavaExtension());
-                    return new NameEnvironmentAnswer(cu, null);
-                }
-            }
+    @Override
+    protected boolean isOverloadingMethod(MethodMirror methodSymbol) {
+        return ((JDTMethod)methodSymbol).isOverloadingMethod();
+    }
 
-            IType type = findTypeInNameLookup(typeName, packageName);
-            
+    @Override
+    public ITypeRoot getJavaClassRoot(ClassMirror classMirror) {
+        if (classMirror instanceof JDTClass) {
+            JDTClass jdtClass = (JDTClass) classMirror;
+            IType type = jdtClass.getType();
             if (type != null) {
-                // construct name env answer
-                if (type instanceof BinaryType) { // BinaryType
-                    try {
-                        return new NameEnvironmentAnswer((IBinaryType) ((BinaryType) type).getElementInfo(), null);
-                    } catch (JavaModelException npe) {
-                        // fall back to using owner
-                    }
-                } else { //SourceType
-                    try {
-                        // retrieve the requested type
-                        SourceTypeElementInfo sourceType = (SourceTypeElementInfo)((SourceType) type).getElementInfo();
-                        ISourceType topLevelType = sourceType;
-                        while (topLevelType.getEnclosingType() != null) {
-                            topLevelType = topLevelType.getEnclosingType();
-                        }
-                        // find all siblings (other types declared in same unit, since may be used for name resolution)
-                        IType[] types = sourceType.getHandle().getCompilationUnit().getTypes();
-                        ISourceType[] sourceTypes = new ISourceType[types.length];
-
-                        // in the resulting collection, ensure the requested type is the first one
-                        sourceTypes[0] = sourceType;
-                        int length = types.length;
-                        for (int i = 0, index = 1; i < length; i++) {
-                            ISourceType otherType =
-                                (ISourceType) ((JavaElement) types[i]).getElementInfo();
-                            if (!otherType.equals(topLevelType) && index < length) // check that the index is in bounds (see https://bugs.eclipse.org/bugs/show_bug.cgi?id=62861)
-                                sourceTypes[index++] = otherType;
-                        }
-                        return new NameEnvironmentAnswer(sourceTypes, null);
-                    } catch (JavaModelException jme) {
-                        if (jme.isDoesNotExist() && String.valueOf(TypeConstants.PACKAGE_INFO_NAME).equals(typeName)) {
-                            // in case of package-info.java the type doesn't exist in the model,
-                            // but the CU may still help in order to fetch package level annotations.
-                            return new NameEnvironmentAnswer((ICompilationUnit)type.getParent(), null);
-                        }
-                        // no usable answer
-                    }
-                }
+                return type.getTypeRoot();
             }
-            return null;
         }
+        return null;
+    }
+    
+    @Override
+    protected boolean isDeprecated(AnnotatedMirror classMirror){
+        if (classMirror instanceof JDTClass) {
+            return ((JDTClass)classMirror).isDeprecated();
+        }
+        if (classMirror instanceof JDTMethod) {
+            return ((JDTMethod)classMirror).isDeprecated();
+        }
+        return super.isDeprecated(classMirror);
+    }
+
+    @Override
+    public Unit newCrossProjectBinaryUnit(ITypeRoot typeRoot,
+            String relativePath, String fileName, String fullPath,
+            LazyPackage pkg) {
+        return modelJ2C().newCrossProjectBinaryUnit(typeRoot, relativePath, fileName, fullPath, pkg);
+    }
+
+    @Override
+    public Unit newJavaCompilationUnit(ITypeRoot typeRoot, String relativePath,
+            String fileName, String fullPath, LazyPackage pkg) {
+        return modelJ2C().newJavaCompilationUnit(typeRoot, relativePath, fileName, fullPath, pkg);
+    }
+
+    @Override
+    public Unit newCeylonBinaryUnit(ITypeRoot typeRoot, String relativePath,
+            String fileName, String fullPath, LazyPackage pkg) {
+        return modelJ2C().newCeylonBinaryUnit(typeRoot, relativePath, fileName, fullPath, pkg);
+    }
+
+    @Override
+    public Unit newJavaClassFile(ITypeRoot typeRoot, String relativePath,
+            String fileName, String fullPath, LazyPackage pkg) {
+        return modelJ2C().newJavaClassFile(typeRoot, relativePath, fileName, fullPath, pkg);
+    }
+
+    
+
+    
+    private static IJavaProject getJavaProject(BaseIdeModuleManager moduleManager) {
+        @SuppressWarnings("unchecked")
+        CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = 
+                (CeylonProject<IProject, IResource, IFolder, IFile>) moduleManager.getCeylonProject();
+        
+        if (ceylonProject != null) {
+            IProject project = ceylonProject.getIdeArtifact();
+            return JavaCore.create(project);
+        }
+        return null;
     }
     
     private static final ThreadLocal<Object> isSettingInterfaceCompanionClassTL = new ThreadLocal<>();
     private static final Object isSettingInterfaceCompanionClassObj = new Object();
     
-    private static boolean isSettingInterfaceCompanionClass() {
+    static boolean isSettingInterfaceCompanionClass() {
         return isSettingInterfaceCompanionClassTL.get() != null;
     }
     
@@ -710,103 +524,6 @@ public class JDTModelLoader extends IdeModelLoader<IProject, IResource, IFolder,
         isSettingInterfaceCompanionClassTL.set(isSettingInterfaceCompanionClassObj);
         super.setInterfaceCompanionClass(d, container, pkg);
         isSettingInterfaceCompanionClassTL.set(null);
-    }
-    
-    private INameEnvironment createSearchableEnvironment() throws JavaModelException {
-        return new ModelLoaderNameEnvironment(javaProject);
-    }
-    
-    private LookupEnvironment getLookupEnvironment() {
-        resetJavaModelSourceIfNecessary(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (lookupEnvironment) {
-                    createLookupEnvironment();
-                }
-            }
-        });
-        return lookupEnvironment;
-    }
-    
-    @Override
-    public boolean moduleContainsClass(BaseIdeModule ideModule, String packageName, String className) {
-        boolean moduleContainsJava = false;
-        for (IPackageFragmentRoot root : modelJ2C().getModulePackageFragmentRoots(ideModule)) {
-            try {
-                IPackageFragment pf = root.getPackageFragment(packageName);
-                if (pf.exists() && 
-                        javaProject.isOnClasspath(pf)) {
-                    if (((IPackageFragment)pf).containsJavaResources()) {
-                        moduleContainsJava = true;
-                        break;
-                    }
-                }
-            } catch (JavaModelException e) {
-                e.printStackTrace();
-                moduleContainsJava = true; // Just in case ...
-            }
-        }
-        if (moduleContainsJava) {
-            ModelLoaderNameEnvironment nameEnvironment = getNameEnvironment();
-            if (nameEnvironment.findTypeInNameLookup(className, packageName) != null ||
-                    nameEnvironment.findTypeInNameLookup(className + "_", packageName) != null) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public ClassMirror lookupNewClassMirror(Module module, String name) {
-        synchronized(getLock()){
-            String topLevelPartiallyQuotedName = getToplevelQualifiedName(name);
-            SourceDeclarationHolder foundSourceDeclaration = getSourceDeclarations().get(toCeylonString_.toCeylonString(topLevelPartiallyQuotedName));
-            if (foundSourceDeclaration != null
-                    && !forceLoadFromBinaries(
-                            foundSourceDeclaration.getAstDeclaration())) {
-                return new SourceClass(foundSourceDeclaration);
-            }
-            
-            ClassMirror classMirror = buildClassMirror(JVMModuleUtil.quoteJavaKeywords(name));
-            if (classMirror == null 
-                    && lastPartHasLowerInitial(name)
-                    && !name.endsWith("_")) {
-                // We have to try the unmunged name first, so that we find the symbol
-                // from the source in preference to the symbol from any 
-                // pre-existing .class file
-                classMirror = buildClassMirror(JVMModuleUtil.quoteJavaKeywords(name + "_"));
-            }
-            
-            if(classMirror == null) {
-                if (foundSourceDeclaration != null) {
-                    return new SourceClass(foundSourceDeclaration);
-                }
-
-                return null;
-            }
-            
-            Module classMirrorModule = findModuleForClassMirror(classMirror);
-            if(classMirrorModule == null){
-                logVerbose("Found a class mirror with no module");
-                return null;
-            }
-            // make sure it's imported
-            if(isImported(module, classMirrorModule)){
-                return classMirror;
-            }
-            logVerbose("Found a class mirror that is not imported: "+name);
-            return null;
-        }
-    }
-
-    public MissingTypeBinding getMissingTypeBinding() {
-        synchronized (getLock()) {
-            return missingTypeBinding;
-        }
-    }
-    
-    public static interface ActionOnResolvedType {
-        void doWithBinding(ReferenceBinding referenceBinding);
     }
     
     private static WeakHashMap<IProject, WeakReference<JDTModelLoader>> modelLoaders = new WeakHashMap<>();
@@ -873,6 +590,10 @@ public class JDTModelLoader extends IdeModelLoader<IProject, IResource, IFolder,
         return modelLoader;
     }
 
+    public static interface ActionOnResolvedType {
+        void doWithBinding(ReferenceBinding referenceBinding);
+    }
+    
     public static interface ActionOnMethodBinding {
         void doWithBinding(IType declaringClassModel, ReferenceBinding declaringClassBinding, MethodBinding methodBinding);
     }
@@ -1041,87 +762,11 @@ public class JDTModelLoader extends IdeModelLoader<IProject, IResource, IFolder,
     }
 
     private static final String OLD_PACKAGE_DESCRIPTOR_CLASS_NAME = Naming.PACKAGE_DESCRIPTOR_CLASS_NAME.substring(1);
-    private static final char[] packageDescriptorName = Naming.PACKAGE_DESCRIPTOR_CLASS_NAME.toCharArray();
-    private static final char[] moduleDescriptorName = Naming.MODULE_DESCRIPTOR_CLASS_NAME.toCharArray();
-    private static final char[] oldPackageDescriptorName = OLD_PACKAGE_DESCRIPTOR_CLASS_NAME.toCharArray();
-    private static final char[] oldModuleDescriptorName = Naming.OLD_MODULE_DESCRIPTOR_CLASS_NAME.toCharArray();
-    private static final char[][] descriptorClassNames = new char[][] { packageDescriptorName, moduleDescriptorName };
-
-    private JDTClass buildClassMirror(String name) {
-        if (javaProject == null) {
-            return null;
-        }
-        
-        try {
-            LookupEnvironment theLookupEnvironment = getLookupEnvironment();
-            ModelLoaderNameEnvironment nameEnvironment = (ModelLoaderNameEnvironment)theLookupEnvironment.nameEnvironment;
-            char[][] uncertainCompoundName = CharOperation.splitOn('.', name.toCharArray());
-            int numberOfParts = uncertainCompoundName.length;
-            char[][] compoundName = null;
-            IType type = null;
-            
-            if (numberOfParts > 0) {
-                boolean searchingInPreviousParts = false;
-                for (int packagePartsEndIndex=numberOfParts-1; 
-                        packagePartsEndIndex >= 0; 
-                        packagePartsEndIndex--) {
-                    char[][] triedPackageName = new char[packagePartsEndIndex][0];
-                    for (int j=0; j<packagePartsEndIndex; j++) {
-                        triedPackageName[j] = uncertainCompoundName[j];
-                    }
-                    
-                    if (searchingInPreviousParts 
-                             && nameEnvironment.isPackage(triedPackageName, uncertainCompoundName[packagePartsEndIndex])) {
-                        // Don't search for an inner class whose top-level class has the same name as an existing package;
-                        break;
-                    }
-                    
-                    int triedClassNameSize = 0;
-                    for (int k=packagePartsEndIndex; k<numberOfParts; k++) {
-                        triedClassNameSize += uncertainCompoundName[k].length + 1;
-                    }
-                    triedClassNameSize --;
-                    
-                    char[] triedClassName = new char[triedClassNameSize];
-                    int currentDestinationIndex = 0;
-                    int currentPartIndex=packagePartsEndIndex;
-                    char[] currentPart = uncertainCompoundName[currentPartIndex];
-                    int currentPartLength = currentPart.length;
-                    System.arraycopy(currentPart, 0, triedClassName, currentDestinationIndex, currentPartLength);
-                    currentDestinationIndex += currentPartLength;
-                    for (currentPartIndex=packagePartsEndIndex+1; currentPartIndex<numberOfParts; currentPartIndex++) {
-                        triedClassName[currentDestinationIndex++] = '$';
-                        currentPart = uncertainCompoundName[currentPartIndex];
-                        currentPartLength = currentPart.length;
-                        System.arraycopy(currentPart, 0, triedClassName, currentDestinationIndex, currentPartLength);
-                        currentDestinationIndex += currentPartLength;
-                    }
-                    
-                    type = nameEnvironment.findTypeInNameLookup(CharOperation.charToString(triedClassName), 
-                            CharOperation.toString(triedPackageName));
-                    if (type != null) {
-                        compoundName = CharOperation.arrayConcat(triedPackageName, triedClassName);
-                        break;
-                    }
-                    searchingInPreviousParts = true;
-                }
-            }
-
-            if (type == null) {
-                return null;
-            }
-
-            ClassFileReader[] classReaderHolder = new ClassFileReader[1];
-            ReferenceBinding binding = toBinding(type, theLookupEnvironment, compoundName, classReaderHolder);
-            if (binding != null) {
-                return new JDTClass(binding, type, classReaderHolder[0]);
-            }
-            
-        } catch (JavaModelException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+    static final char[] packageDescriptorName = Naming.PACKAGE_DESCRIPTOR_CLASS_NAME.toCharArray();
+    static final char[] moduleDescriptorName = Naming.MODULE_DESCRIPTOR_CLASS_NAME.toCharArray();
+    static final char[] oldPackageDescriptorName = OLD_PACKAGE_DESCRIPTOR_CLASS_NAME.toCharArray();
+    static final char[] oldModuleDescriptorName = Naming.OLD_MODULE_DESCRIPTOR_CLASS_NAME.toCharArray();
+    static final char[][] descriptorClassNames = new char[][] { packageDescriptorName, moduleDescriptorName };
 
     private static ReferenceBinding toBinding(IType type, LookupEnvironment theLookupEnvironment, char[][] compoundName) throws JavaModelException {
         return toBinding(type, theLookupEnvironment, compoundName, null);
@@ -1179,207 +824,5 @@ public class JDTModelLoader extends IdeModelLoader<IProject, IResource, IFolder,
             }
             return null;
         }
-    }
-
-    
-    private ModelLoaderNameEnvironment getNameEnvironment() {
-        return (ModelLoaderNameEnvironment)getLookupEnvironment().nameEnvironment;
-    }
-    
-    @Override
-    public void addModuleToClassPath(Module module, ArtifactResult artifact) {
-        if(artifact != null && module instanceof LazyModule)
-            ((LazyModule)module).loadPackageList(artifact);
-                    
-        if (module instanceof BaseIdeModule) {
-            BaseIdeModule jdtModule = (BaseIdeModule) module;
-            if (! jdtModule.equals(getLanguageModule()) && (jdtModule.getIsCeylonBinaryArchive() || jdtModule.getIsJavaBinaryArchive())) {
-                CeylonProjectModulesContainer container = CeylonClasspathUtil.getCeylonProjectModulesClasspathContainer(javaProject);
-
-                if (container != null) {
-                    IPath modulePath = new Path(artifact.artifact().getPath());
-                    IClasspathEntry newEntry = container.addNewClasspathEntryIfNecessary(modulePath);
-                    if (newEntry!=null) {
-                        try {
-                            JavaCore.setClasspathContainer(container.getPath(), new IJavaProject[] { javaProject }, 
-                                    new IClasspathContainer[] {new CeylonProjectModulesContainer(container)}, null);
-                        } catch (JavaModelException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                        refreshNameEnvironment();
-                    }
-                }
-            }
-        }
-        getModulesInClassPath().add(toCeylonString_.toCeylonString(module.getSignature()));
-    }
-    
-    @Override
-    protected boolean isOverridingMethod(MethodMirror methodSymbol) {
-        return ((JDTMethod)methodSymbol).isOverridingMethod();
-    }
-
-    @Override
-    protected boolean isOverloadingMethod(MethodMirror methodSymbol) {
-        return ((JDTMethod)methodSymbol).isOverloadingMethod();
-    }
-
-    @Override
-    protected Unit getCompiledUnit(LazyPackage pkg, ClassMirror classMirror) {
-        Unit unit = null;
-        if (classMirror != null && classMirror instanceof JDTClass) {
-            JDTClass jdtClass = (JDTClass) classMirror;
-            String unitName = jdtClass.getFileName();
-            
-            if (!jdtClass.isBinary()) {
-                // This search is for source Java classes since several classes might have the same file name 
-                //  and live inside the same Java source file => into the same Unit
-                for (Unit unitToTest : pkg.getUnits()) {
-                    if (unitToTest.getFilename().equals(unitName)) {
-                        return unitToTest;
-                    }
-                }
-            }
-    
-            unit = newCompiledUnit(pkg, jdtClass);
-        }
-        
-        if (unit == null) {
-            unit = unitsByPackage.get(pkg);
-            if(unit == null){
-                unit = newPackageTypeFactory( pkg);
-                unit.setPackage(pkg);
-                unitsByPackage.put(pkg, unit);
-            }
-        }
-        return unit;
-    }
-
-    public void setModuleAndPackageUnits() {
-        for (Module module : getModuleManager().getModules().getListOfModules()) {
-            if (module instanceof BaseIdeModule) {
-                BaseIdeModule jdtModule = (BaseIdeModule) module;
-                if (jdtModule.getIsCeylonBinaryArchive()) {
-                    for (Package p : jdtModule.getPackages()) {
-                        if (p.getUnit() == null) {
-                            ClassMirror packageClassMirror = lookupClassMirror(jdtModule, p.getQualifiedNameString() + "." + Naming.PACKAGE_DESCRIPTOR_CLASS_NAME);
-                            if (packageClassMirror ==  null) {
-                                packageClassMirror = lookupClassMirror(jdtModule, p.getQualifiedNameString() + "." + Naming.PACKAGE_DESCRIPTOR_CLASS_NAME.substring(1));
-                            }
-                            // some modules do not declare their main package, because they don't have any declaration to share
-                            // there, for example, so this can be null
-                            if(packageClassMirror != null)
-                                p.setUnit(newCompiledUnit((LazyPackage) p, packageClassMirror));
-                        }
-                        if (p.getNameAsString().equals(jdtModule.getNameAsString())) {
-                            if (jdtModule.getUnit() == null) {
-                                ClassMirror moduleClassMirror = lookupClassMirror(jdtModule, p.getQualifiedNameString() + "." + Naming.MODULE_DESCRIPTOR_CLASS_NAME);
-                                if (moduleClassMirror ==  null) {
-                                    moduleClassMirror = lookupClassMirror(jdtModule, p.getQualifiedNameString() + "." + Naming.OLD_MODULE_DESCRIPTOR_CLASS_NAME);
-                                }
-                                if (moduleClassMirror != null) {
-                                    jdtModule.setUnit(newCompiledUnit((LazyPackage) p, moduleClassMirror));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-    }
-    
-    private Unit newCompiledUnit(LazyPackage pkg, ClassMirror classMirror) {
-        Unit unit;
-        JDTClass jdtClass = (JDTClass) classMirror;
-        IType type = jdtClass.getType();
-        if (type == null) {
-            return null;
-        }
-        
-        ITypeRoot typeRoot = type.getTypeRoot();
-        StringBuilder sb = new StringBuilder();
-        List<String> parts = pkg.getName();
-        for (int i = 0; i < parts.size(); i++) {
-            String part = parts.get(i);
-            if (! part.isEmpty()) {
-                sb.append(Util.quoteIfJavaKeyword(part));
-                sb.append('/');
-            }
-        }
-        sb.append(jdtClass.getFileName());
-        String relativePath = sb.toString();
-        String fileName = jdtClass.getFileName();
-        String fullPath = jdtClass.getFullPath();
-        
-        if (!jdtClass.isBinary()) {
-            unit = modelJ2C().newJavaCompilationUnit(typeRoot, relativePath, fileName,
-                    fullPath, pkg);
-        }
-        else {
-            if (jdtClass.isCeylon()) {
-                if (pkg.getModule() instanceof IdeModule) {
-                    IdeModule<IProject, IResource, IFolder, IFile> module = (IdeModule<IProject, IResource, IFolder, IFile>) pkg.getModule();
-                    CeylonProject<IProject, IResource, IFolder, IFile> originalProject = module.getOriginalProject();
-                    if (originalProject != null) {
-                        unit = modelJ2C().newCrossProjectBinaryUnit(typeRoot, relativePath,
-                                fileName, fullPath, pkg);
-                    } else {
-                        unit = modelJ2C().newCeylonBinaryUnit(typeRoot, relativePath,
-                                fileName, fullPath, pkg);
-                    }
-                } else {
-                    unit = modelJ2C().newCeylonBinaryUnit(typeRoot, fileName, relativePath, fullPath, pkg);
-                }
-            }
-            else {
-                unit = modelJ2C().newJavaClassFile(typeRoot, relativePath, fileName,
-                        fullPath, pkg);
-            }
-        }
-
-        return unit;
-    }
-
-    @Override
-    protected void logError(String message) {
-        //System.err.println("ERROR: "+message);
-    }
-
-    @Override
-    protected void logWarning(String message) {
-        //System.err.println("WARNING: "+message);
-    }
-
-    @Override
-    protected void logVerbose(String message) {
-        //System.err.println("NOTE: "+message);
-    }
-
-/*    
-    public synchronized Set<String> getSourceDeclarations() {
-        Set<String> declarations  = new HashSet<String>();
-        declarations.addAll(sourceDeclarations.keySet());
-        return declarations;
-    }
-    
-    public synchronized SourceDeclarationHolder getSourceDeclaration(String declarationName) {
-        return sourceDeclarations.get(declarationName);
-    }
-
-    public static interface SourceFileObjectManager {
-        void setupSourceFileObjects(List<?> treeHolders);
-    }
-*/    
-    @Override
-    protected boolean isDeprecated(AnnotatedMirror classMirror){
-        if (classMirror instanceof JDTClass) {
-            return ((JDTClass)classMirror).isDeprecated();
-        }
-        if (classMirror instanceof JDTMethod) {
-            return ((JDTMethod)classMirror).isDeprecated();
-        }
-        return super.isDeprecated(classMirror);
     }
 }
