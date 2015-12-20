@@ -1363,10 +1363,12 @@ public class DocumentationHover extends SourceInfoHover {
             controller.getLastCompilationUnit().getUnit();
         
         Unit declarationUnit = dec.getUnit();
-        PhasedUnit declarationPhasedUnit = null;
         if (declarationUnit instanceof CeylonUnit) {
-        	declarationPhasedUnit = ((CeylonUnit)declarationUnit).getPhasedUnit();
-        	declarationPhasedUnit.analyseTypes();
+        	CeylonUnit cu = (CeylonUnit) declarationUnit;
+        	PhasedUnit declarationPhasedUnit = cu.getPhasedUnit();
+            if (declarationPhasedUnit!=null) {
+                declarationPhasedUnit.analyseTypes();
+            }
         }
         	
         StringBuilder buffer = new StringBuilder();
