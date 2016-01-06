@@ -1,36 +1,35 @@
-import com.redhat.ceylon.ide.common.vfs {
-    FolderVirtualFile,
-    ResourceVirtualFile,
-    FileVirtualFile,
-    BaseFolderVirtualFile
-}
-import org.eclipse.core.resources {
-    IResource, IFolder, IFile,
-    IProject
-}
-import ceylon.interop.java {
-    toStringArray
-}
-
-import java.util {
-    JList = List,
-    ArrayList
-}
-import java.lang {
-    RuntimeException
-}
-import java.io {
-    InputStream
-}
-import org.eclipse.core.runtime {
-    IPath,
-    CoreException
-}
 import com.redhat.ceylon.eclipse.core.model {
     ceylonModel
 }
 import com.redhat.ceylon.ide.common.model {
     CeylonProject
+}
+import com.redhat.ceylon.ide.common.vfs {
+    FolderVirtualFile,
+    ResourceVirtualFile,
+    FileVirtualFile
+}
+
+import java.io {
+    InputStream
+}
+import java.lang {
+    RuntimeException
+}
+import java.util {
+    JList=List,
+    ArrayList
+}
+
+import org.eclipse.core.resources {
+    IResource,
+    IFolder,
+    IFile,
+    IProject
+}
+import org.eclipse.core.runtime {
+    IPath,
+    CoreException
 }
 
 shared class IFolderVirtualFile
@@ -54,7 +53,7 @@ shared class IFolderVirtualFile
         try {
             for (childResource in nativeResource.members().iterable) {
                 assert (exists childResource);
-                children.add(ceylonModel.vfs.createVirtualResource(childResource));
+                children.add(ceylonModel.vfs.createVirtualResource(childResource, ceylonProject));
             }
         } catch (CoreException e) {
             e.printStackTrace();

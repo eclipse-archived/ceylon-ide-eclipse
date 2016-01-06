@@ -23,12 +23,12 @@ public class vfsJ2C implements VfsJ2C {
     
     @Override
     public ResourceVirtualFile<IProject, IResource, IFolder, IFile> createVirtualResource(IResource resource) {
-        return eclipseVFS().createVirtualResource(resource);
+        return eclipseVFS().createVirtualResource(resource, null);
     }
 
     @Override
     public FileVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFile(IFile file) {
-        return eclipseVFS().createVirtualFile(file);
+        return eclipseVFS().createVirtualFile(file, null);
     }
     
     @Override
@@ -38,7 +38,7 @@ public class vfsJ2C implements VfsJ2C {
     
     @Override
     public FolderVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFolder(IFolder folder) {
-        return eclipseVFS().createVirtualFolder(folder);
+        return eclipseVFS().createVirtualFolder(folder, null);
     }
     
     @Override
