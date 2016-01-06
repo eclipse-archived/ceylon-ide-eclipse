@@ -218,17 +218,19 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
         return null;
     }
 
-    private FileVirtualFile createSourceCodeVirtualFile(String contents, 
+    private FileVirtualFile<IProject,IResource,IFolder,IFile> createSourceCodeVirtualFile(String contents, 
             IPath path) {
         if (path == null) {
-            return new SourceCodeVirtualFile<IResource,IFolder,IFile>(
+            return new SourceCodeVirtualFile<IProject,IResource,IFolder,IFile>(
+                    TypeDescriptor.klass(IProject.class),
                     TypeDescriptor.klass(IResource.class),
                     TypeDescriptor.klass(IFolder.class),
                     TypeDescriptor.klass(IFile.class),
                     contents);
         } 
         else {
-            return new SourceCodeVirtualFile<IResource,IFolder,IFile>(
+            return new SourceCodeVirtualFile<IProject,IResource,IFolder,IFile>(
+                    TypeDescriptor.klass(IProject.class),
                     TypeDescriptor.klass(IResource.class),
                     TypeDescriptor.klass(IFolder.class),
                     TypeDescriptor.klass(IFile.class),
@@ -236,13 +238,14 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
         }
     }
 
-    private FolderVirtualFile<IResource,IFolder,IFile> inferSrcDir(IPath path) {
+    private FolderVirtualFile<IProject,IResource,IFolder,IFile> inferSrcDir(IPath path) {
         String pathString = path.toString();
         int lastBangIdx = pathString.lastIndexOf('!');
         if (lastBangIdx>0) {
             String srcArchivePath = 
                     pathString.substring(0, lastBangIdx);
-            return new DummyFolder<IResource,IFolder,IFile>(
+            return new DummyFolder<IProject,IResource,IFolder,IFile>(
+                    TypeDescriptor.klass(IProject.class),
                     TypeDescriptor.klass(IResource.class),
                     TypeDescriptor.klass(IFolder.class),
                     TypeDescriptor.klass(IFile.class),
@@ -269,7 +272,7 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
     }
 
     private EditedPhasedUnit<IProject,IResource,IFolder,IFile> newEditedPhasedUnit(
-            FileVirtualFile<IResource,IFolder,IFile> file, FolderVirtualFile<IResource,IFolder,IFile> srcDir, 
+            FileVirtualFile<IProject,IResource,IFolder,IFile> file, FolderVirtualFile<IProject,IResource,IFolder,IFile> srcDir, 
             Tree.CompilationUnit cu, Package pkg, 
             ModuleManager moduleManager, 
             ModuleSourceMapper moduleSourceMapper, 
@@ -292,9 +295,9 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
     }
 
     private PhasedUnit typecheck(IPath path, 
-            FileVirtualFile<IResource,IFolder,IFile> file,
+            FileVirtualFile<IProject,IResource,IFolder,IFile> file,
             Tree.CompilationUnit cu, 
-            FolderVirtualFile<IResource,IFolder,IFile> srcDir, 
+            FolderVirtualFile<IProject,IResource,IFolder,IFile> srcDir, 
             final boolean showWarnings, 
             final PhasedUnit builtPhasedUnit) {
         if (isExternalPath(path) && builtPhasedUnit!=null) {
@@ -314,7 +317,8 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
         PhasedUnit newPhasednit;
         Package pkg;
         if (srcDir==null) {
-            srcDir = new DummyFolder<IResource,IFolder,IFile>(
+            srcDir = new DummyFolder<IProject,IResource,IFolder,IFile>(
+                    TypeDescriptor.klass(IProject.class),
                     TypeDescriptor.klass(IResource.class),
                     TypeDescriptor.klass(IFolder.class),
                     TypeDescriptor.klass(IFile.class));
@@ -785,7 +789,7 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
           return null;
       }
 
-      FolderVirtualFile<IResource,IFolder,IFile> srcDir = null;
+      FolderVirtualFile<IProject,IResource,IFolder,IFile> srcDir = null;
       if (project!=null) {
           srcDir = getSourceFolder(project, resolvedPath);
       }
@@ -813,7 +817,7 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
 
       final IProject finalProject = project;
       final IPath finalPath = path;
-      final FolderVirtualFile<IResource,IFolder,IFile> finalSrcDir = srcDir;
+      final FolderVirtualFile<IProject,IResource,IFolder,IFile> finalSrcDir = srcDir;
       try {
           return CeylonBuilder.doWithSourceModel(
                   project,

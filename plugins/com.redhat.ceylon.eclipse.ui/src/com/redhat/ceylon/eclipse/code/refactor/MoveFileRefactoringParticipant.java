@@ -367,7 +367,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             PhasedUnit movedPhasedUnit, 
             Map<Declaration, String> imports) {
         try {
-            FileVirtualFile<IResource, IFolder, IFile> virtualFile = 
+            FileVirtualFile<IProject, IResource, IFolder, IFile> virtualFile = 
                     vfsJ2C().getIFileVirtualFile( movedPhasedUnit.getUnitFile());
             IFile file = virtualFile.getNativeResource();
             String path = file.getProjectRelativePath().toPortableString();
@@ -407,7 +407,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             Tree.CompilationUnit cu = 
                     phasedUnit.getCompilationUnit();
             if (!imports.isEmpty()) {
-                FileVirtualFile<IResource, IFolder, IFile> virtualFile = 
+                FileVirtualFile<IProject, IResource, IFolder, IFile> virtualFile = 
                         vfsJ2C().getIFileVirtualFile(phasedUnit.getUnitFile());
                 IFile file = virtualFile.getNativeResource();
                 String path = file.getProjectRelativePath().toPortableString();

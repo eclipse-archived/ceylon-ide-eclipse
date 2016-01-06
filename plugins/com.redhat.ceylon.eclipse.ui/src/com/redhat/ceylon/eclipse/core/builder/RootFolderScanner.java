@@ -35,7 +35,7 @@ final class RootFolderScanner implements IResourceVisitor {
     private final JDTModelLoader modelLoader;
     private final IdeModuleManager<IProject,IResource,IFolder,IFile> moduleManager;
     private final IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper;
-    private final FolderVirtualFile<IResource, IFolder, IFile> rootDir;
+    private final FolderVirtualFile<IProject, IResource, IFolder, IFile> rootDir;
     private final TypeChecker typeChecker;
     private final List<IFile> scannedFiles;
     private final PhasedUnits phasedUnits;
@@ -49,7 +49,7 @@ final class RootFolderScanner implements IResourceVisitor {
     RootFolderScanner(RootFolderType rootFolderType, Module defaultModule, JDTModelLoader modelLoader,
             IdeModuleManager<IProject,IResource,IFolder,IFile> moduleManager, 
             IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper, 
-            FolderVirtualFile<IResource, IFolder, IFile> rootDir, TypeChecker typeChecker,
+            FolderVirtualFile<IProject, IResource, IFolder, IFile> rootDir, TypeChecker typeChecker,
             List<IFile> scannedFiles, PhasedUnits phasedUnits, SubMonitor monitor) {
         this.rootFolderType = rootFolderType;
         this.isInResourceForlder = rootFolderType.equals(RootFolderType.RESOURCE);
@@ -127,7 +127,7 @@ final class RootFolderScanner implements IResourceVisitor {
                     
                     if (isSourceFile) {
                         if (CeylonBuilder.isCeylon(file)) {
-                            FileVirtualFile<IResource, IFolder, IFile> virtualFile = vfsJ2C().createVirtualFile(file);
+                            FileVirtualFile<IProject, IResource, IFolder, IFile> virtualFile = vfsJ2C().createVirtualFile(file);
                             try {
                                 PhasedUnit newPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, moduleSourceMapper,
                                         typeChecker, virtualFile, rootDir, pkg);

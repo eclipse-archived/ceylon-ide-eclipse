@@ -1712,8 +1712,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     static ProjectPhasedUnit<IProject, IResource, IFolder, IFile> parseFileToPhasedUnit(final ModuleManager moduleManager, final ModuleSourceMapper moduleSourceMapper,
             final TypeChecker typeChecker,
-            final FileVirtualFile<IResource, IFolder, IFile> file, 
-            final FolderVirtualFile<IResource, IFolder, IFile> srcDir,
+            final FileVirtualFile<IProject, IResource, IFolder, IFile> file, 
+            final FolderVirtualFile<IProject, IResource, IFolder, IFile> srcDir,
             final Package pkg) {
         return new CeylonSourceParser<ProjectPhasedUnit>() {
             
@@ -1839,7 +1839,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         continue;
                     }
                     
-                    FileVirtualFile<IResource, IFolder, IFile> file = vfsJ2C().createVirtualFile(fileToUpdate);
+                    FileVirtualFile<IProject, IResource, IFolder, IFile> file = vfsJ2C().createVirtualFile(fileToUpdate);
                     IFolder srcFolder = getRootFolder(fileToUpdate);
 
                     ProjectPhasedUnit alreadyBuiltPhasedUnit = (ProjectPhasedUnit) pus.getPhasedUnit(file);
@@ -1856,7 +1856,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     if (srcFolder == null || pkg == null) {
                         continue;
                     }
-                    FolderVirtualFile<IResource, IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(project, srcFolder.getProjectRelativePath());
+                    FolderVirtualFile<IProject, IResource, IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(project, srcFolder.getProjectRelativePath());
                     PhasedUnit newPhasedUnit = parseFileToPhasedUnit(moduleManager, moduleSourceMapper, typeChecker, file, srcDir, pkg);
                     phasedUnitsToUpdate.add(newPhasedUnit);
                 }
@@ -2451,7 +2451,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 throw new OperationCanceledException();
             }
 
-            final FolderVirtualFile<IResource,IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(srcFolder);
+            final FolderVirtualFile<IProject, IResource,IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(srcFolder);
             srcFolder.accept(new ModulesScanner(defaultModule, modelLoader, moduleManager, moduleSourceMapper,
                     srcDir, typeChecker, monitor));
         }
@@ -2462,7 +2462,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 throw new OperationCanceledException();
             }
 
-            final FolderVirtualFile<IResource,IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(sourceFolder);
+            final FolderVirtualFile<IProject, IResource,IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(sourceFolder);
             sourceFolder.accept(new RootFolderScanner(RootFolderType.SOURCE, defaultModule, modelLoader, moduleManager,
                     moduleSourceMapper,
                     srcDir, typeChecker, projectFiles,
@@ -2475,7 +2475,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 throw new OperationCanceledException();
             }
 
-            final FolderVirtualFile<IResource,IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(resourceFolder);
+            final FolderVirtualFile<IProject, IResource,IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(resourceFolder);
             resourceFolder.accept(new RootFolderScanner(RootFolderType.RESOURCE, defaultModule, modelLoader, moduleManager,
                     moduleSourceMapper,
                     srcDir, typeChecker, projectFiles,

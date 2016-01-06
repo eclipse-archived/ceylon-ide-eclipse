@@ -142,7 +142,7 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
 
                 if (!edits.isEmpty()) {
                     try {
-                        FileVirtualFile<IResource, IFolder, IFile> virtualFile = 
+                        FileVirtualFile<IProject, IResource, IFolder, IFile> virtualFile = 
                                 vfsJ2C().getIFileVirtualFile(phasedUnit.getUnitFile());
                         IFile file = virtualFile.getNativeResource();
                         String path = file.getProjectRelativePath().toPortableString();

@@ -37,7 +37,7 @@ final class ModulesScanner implements IResourceVisitor {
     private final JDTModelLoader modelLoader;
     private final IdeModuleManager<IProject, IResource, IFolder, IFile> moduleManager;
     private final IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper;
-    private final FolderVirtualFile<IResource, IFolder, IFile> srcDir;
+    private final FolderVirtualFile<IProject, IResource, IFolder, IFile> srcDir;
     private final TypeChecker typeChecker;
     private Module module;
     private SubMonitor monitor;
@@ -45,7 +45,7 @@ final class ModulesScanner implements IResourceVisitor {
     ModulesScanner(Module defaultModule, JDTModelLoader modelLoader,
             IdeModuleManager<IProject, IResource, IFolder, IFile> moduleManager, 
             IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper, 
-            FolderVirtualFile<IResource, IFolder, IFile> srcDir, 
+            FolderVirtualFile<IProject, IResource, IFolder, IFile> srcDir, 
             TypeChecker typeChecker, SubMonitor monitor) {
         this.defaultModule = defaultModule;
         this.modelLoader = modelLoader;
@@ -97,7 +97,7 @@ final class ModulesScanner implements IResourceVisitor {
                 pkg.setName(pkgName);
                 
                 IFile file = moduleFile;
-                final FileVirtualFile<IResource, IFolder, IFile> virtualFile = vfsJ2C().createVirtualFile(file);
+                final FileVirtualFile<IProject, IResource, IFolder, IFile> virtualFile = vfsJ2C().createVirtualFile(file);
                 try {
                     PhasedUnit tempPhasedUnit = null;
                     tempPhasedUnit = CeylonBuilder.parseFileToPhasedUnit(moduleManager, moduleSourceMapper, 

@@ -29,36 +29,28 @@ import org.eclipse.core.runtime {
 import com.redhat.ceylon.eclipse.core.model {
     ceylonModel
 }
-
-shared interface IResourceVirtualFile {
-    shared formal IProject project;
+import com.redhat.ceylon.ide.common.model {
+    CeylonProject
 }
 
 shared class IFolderVirtualFile
-        satisfies FolderVirtualFile<IResource, IFolder, IFile> & IResourceVirtualFile {
+        satisfies FolderVirtualFile<IProject, IResource, IFolder, IFile> {
     shared actual IFolder nativeResource;
-    shared actual IProject project;
-
+    shared actual CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject;
     shared new(IFolder nativeResource) {
         this.nativeResource = nativeResource;
-        project = nativeResource.project;
+        assert(exists existingCeylonProject = ceylonModel.getProject(nativeResource.project));
+        ceylonProject = existingCeylonProject;
     }
 
     shared new fromProject(IProject project, IPath projectRelativePath) {
-        this.project = project;
         this.nativeResource = project.getFolder(projectRelativePath);
+        assert(exists existingCeylonProject = ceylonModel.getProject(nativeResource.project));
+        ceylonProject = existingCeylonProject;
     }
 
-    shared actual IFolderVirtualFile? parent
-            => if (is IFolder folderParent = nativeResource.parent)
-                    then IFolderVirtualFile(folderParent)
-                    else null;
-    shared actual FileVirtualFile<IResource,IFolder,IFile>? findFile(String fileName)
-            => if (exists nativeFile = nativeResource.getFile(fileName))
-                    then IFileVirtualFile(nativeFile)
-                    else null;
-    shared actual JList<out ResourceVirtualFile<IResource, IFolder, IFile>> children {
-        value children = ArrayList<ResourceVirtualFile<IResource, IFolder, IFile>>();
+    shared actual JList<out ResourceVirtualFile<IProject,IResource, IFolder, IFile>> children {
+        value children = ArrayList<ResourceVirtualFile<IProject,IResource, IFolder, IFile>>();
         try {
             for (childResource in nativeResource.members().iterable) {
                 assert (exists childResource);
@@ -72,43 +64,32 @@ shared class IFolderVirtualFile
     shared actual String name => nativeResource.name;
     shared actual String path => nativeResource.projectRelativePath.string;
     shared actual Boolean equals(Object that)
-            => (super of FolderVirtualFile<IResource, IFolder, IFile>).equals(that);
+            => (super of FolderVirtualFile<IProject,IResource, IFolder, IFile>).equals(that);
     shared actual Integer hash
-            => (super of FolderVirtualFile<IResource, IFolder, IFile>).hash;
-
-    shared actual [String*] toPackageName(BaseFolderVirtualFile srcDir) {
-        assert(is IFolderVirtualFile srcDir);
-        return toStringArray(nativeResource.projectRelativePath
-            .makeRelativeTo(srcDir.nativeResource.projectRelativePath)
-                .segments()).coalesced.sequence();
-    }
-    shared actual Boolean \iexists() => nativeResource.accessible;
+            => (super of FolderVirtualFile<IProject,IResource, IFolder, IFile>).hash;
 }
 
 shared class IFileVirtualFile
-        satisfies FileVirtualFile<IResource, IFolder, IFile> & IResourceVirtualFile {
+        satisfies FileVirtualFile<IProject,IResource, IFolder, IFile> {
     shared actual IFile nativeResource;
-    shared actual IProject project;
+    shared actual CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject;
 
     shared new(IFile nativeResource) {
         this.nativeResource = nativeResource;
-        project = nativeResource.project;
+        assert(exists existingCeylonProject = ceylonModel.getProject(nativeResource.project));
+        ceylonProject = existingCeylonProject;
     }
 
     shared new fromProject(IProject project, IPath projectRelativePath) {
-        this.project = project;
         this.nativeResource = project.getFile(projectRelativePath);
+        assert(exists existingCeylonProject = ceylonModel.getProject(nativeResource.project));
+        ceylonProject = existingCeylonProject;
     }
 
-    shared actual IFolderVirtualFile? parent
-            => if (is IFolder folderParent = nativeResource.parent)
-    then IFolderVirtualFile(folderParent)
-    else null;
-
     shared actual Boolean equals(Object that)
-            => (super of FileVirtualFile<IResource, IFolder, IFile>).equals(that);
+            => (super of FileVirtualFile<IProject,IResource, IFolder, IFile>).equals(that);
     shared actual Integer hash
-            => (super of FileVirtualFile<IResource, IFolder, IFile>).hash;
+            => (super of FileVirtualFile<IProject,IResource, IFolder, IFile>).hash;
     shared actual InputStream inputStream {
         try {
             return nativeResource.getContents(true);
@@ -127,6 +108,5 @@ shared class IFileVirtualFile
         }
 
     }
-    shared actual Boolean \iexists() => nativeResource.accessible;
 }
 

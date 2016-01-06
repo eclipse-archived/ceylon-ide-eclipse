@@ -22,27 +22,27 @@ public class vfsJ2C implements VfsJ2C {
     }
     
     @Override
-    public ResourceVirtualFile<IResource, IFolder, IFile> createVirtualResource(IResource resource) {
+    public ResourceVirtualFile<IProject, IResource, IFolder, IFile> createVirtualResource(IResource resource) {
         return eclipseVFS().createVirtualResource(resource);
     }
 
     @Override
-    public FileVirtualFile<IResource, IFolder, IFile> createVirtualFile(IFile file) {
+    public FileVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFile(IFile file) {
         return eclipseVFS().createVirtualFile(file);
     }
     
     @Override
-    public FileVirtualFile<IResource, IFolder, IFile> createVirtualFile(IProject project, IPath path) {
+    public FileVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFile(IProject project, IPath path) {
         return eclipseVFS().createVirtualFileFromProject(project, utilJ2C().fromEclipsePath(path));
     }
     
     @Override
-    public FolderVirtualFile<IResource, IFolder, IFile> createVirtualFolder(IFolder folder) {
+    public FolderVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFolder(IFolder folder) {
         return eclipseVFS().createVirtualFolder(folder);
     }
     
     @Override
-    public FolderVirtualFile<IResource, IFolder, IFile> createVirtualFolder(IProject project, IPath path) {
+    public FolderVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFolder(IProject project, IPath path) {
         return eclipseVFS().createVirtualFolderFromProject(project, utilJ2C().fromEclipsePath(path));
     }
     
@@ -52,7 +52,7 @@ public class vfsJ2C implements VfsJ2C {
     }
 
     @Override
-    public FileVirtualFile<IResource, IFolder, IFile> getIFileVirtualFile(VirtualFile file) {
+    public FileVirtualFile<IProject, IResource, IFolder, IFile> getIFileVirtualFile(VirtualFile file) {
         return (IFileVirtualFile) file;
     }
 
@@ -62,7 +62,7 @@ public class vfsJ2C implements VfsJ2C {
     }
 
     @Override
-    public FolderVirtualFile<IResource, IFolder, IFile> getIFolderVirtualFile(VirtualFile file) {
+    public FolderVirtualFile<IProject, IResource, IFolder, IFile> getIFolderVirtualFile(VirtualFile file) {
         return (IFolderVirtualFile) file;
     }
 

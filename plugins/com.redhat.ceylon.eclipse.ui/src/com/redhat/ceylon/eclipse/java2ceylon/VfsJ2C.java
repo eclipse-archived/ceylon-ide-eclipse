@@ -16,28 +16,28 @@ public interface VfsJ2C {
 
     CeylonProjects<IProject, IResource, IFolder, IFile>.VirtualFileSystem eclipseVFS();
 
-    ResourceVirtualFile<IResource, IFolder, IFile> createVirtualResource(
+    ResourceVirtualFile<IProject, IResource, IFolder, IFile> createVirtualResource(
             IResource resource);
 
-    FileVirtualFile<IResource, IFolder, IFile> createVirtualFile(IFile file);
+    FileVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFile(IFile file);
 
-    FileVirtualFile<IResource, IFolder, IFile> createVirtualFile(
+    FileVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFile(
             IProject project, IPath path);
 
-    FolderVirtualFile<IResource, IFolder, IFile> createVirtualFolder(
+    FolderVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFolder(
             IFolder folder);
 
-    FolderVirtualFile<IResource, IFolder, IFile> createVirtualFolder(
+    FolderVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFolder(
             IProject project, IPath path);
 
     boolean instanceOfIFileVirtualFile(VirtualFile file);
 
-    FileVirtualFile<IResource, IFolder, IFile> getIFileVirtualFile(
+    FileVirtualFile<IProject, IResource, IFolder, IFile> getIFileVirtualFile(
             VirtualFile file);
 
     boolean instanceOfIFolderVirtualFile(VirtualFile file);
 
-    FolderVirtualFile<IResource, IFolder, IFile> getIFolderVirtualFile(
+    FolderVirtualFile<IProject, IResource, IFolder, IFile> getIFolderVirtualFile(
             VirtualFile file);
 
 }

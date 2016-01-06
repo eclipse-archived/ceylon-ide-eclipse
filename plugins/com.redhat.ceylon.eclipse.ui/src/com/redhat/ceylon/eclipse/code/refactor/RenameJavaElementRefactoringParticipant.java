@@ -172,7 +172,7 @@ public class RenameJavaElementRefactoringParticipant extends RenameParticipant {
                 });
                 if (!edits.isEmpty()) {
                     try {
-                        FileVirtualFile<IResource, IFolder, IFile> unitFile = 
+                        FileVirtualFile<IProject, IResource, IFolder, IFile> unitFile = 
                                 vfsJ2C().getIFileVirtualFile(phasedUnit.getUnitFile());
                         IFile file = unitFile.getNativeResource();
                         TextFileChange change = 
