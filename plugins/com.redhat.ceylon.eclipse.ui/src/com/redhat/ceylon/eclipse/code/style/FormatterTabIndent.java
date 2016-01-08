@@ -100,10 +100,6 @@ public class FormatterTabIndent extends FormatterTabPage {
                 FORMATTER_indent_Blank_Lines, FALSE_TRUE);
         createNumberPref(otherGroup, 3, "Indent before type info",
                 FORMATTER_indent_Before_Type_Info, 0, 32);
-        createComboPref(otherGroup, 3, "Indent after specifier expression start", 
-                FORMATTER_indent_After_Specifier_Expression_Start,
-                new String[] {"stack", "addindentbefore"}, // not camel case
-                new String[] {"Stack", "Add Indent Before"});
     }
 
     @Override

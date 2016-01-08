@@ -9,13 +9,11 @@ import ceylon.formatter.options.Spaces;
 import ceylon.formatter.options.SparseFormattingOptions;
 import ceylon.formatter.options.Tabs;
 import ceylon.formatter.options.VariableOptions;
-import ceylon.formatter.options.addIndentBefore_;
 import ceylon.formatter.options.all_;
 import ceylon.formatter.options.combinedOptions_;
 import ceylon.formatter.options.crlf_;
 import ceylon.formatter.options.lf_;
 import ceylon.formatter.options.os_;
-import ceylon.formatter.options.stack_;
 import ceylon.formatter.options.unlimited_;
 import ceylon.language.Range;
 import ceylon.language.Singleton;
@@ -53,12 +51,6 @@ public class FormatterPreferences {
             break;
         case FORMATTER_indent_Before_Type_Info:
             ret = options.getIndentBeforeTypeInfo().toString();
-            break;
-        case FORMATTER_indent_After_Specifier_Expression_Start:
-            String iases = options
-                    .getIndentationAfterSpecifierExpressionStart().getClass()
-                    .getSimpleName().toLowerCase();
-            ret = iases.substring(0, iases.length() - 1);
             break;
         case FORMATTER_space_BeforeMethodOrClassPositionalArgumentList:
             ret = booleanString(options
@@ -261,15 +253,6 @@ public class FormatterPreferences {
         case FORMATTER_indent_Before_Type_Info:
             options.setIndentBeforeTypeInfo(new ceylon.language.Integer(
                     new Long(value)));
-            break;
-        case FORMATTER_indent_After_Specifier_Expression_Start:
-            if ("stack".equals(value)) {
-                options.setIndentationAfterSpecifierExpressionStart(stack_
-                        .get_());
-            } else { // lower, not camel case
-                options.setIndentationAfterSpecifierExpressionStart(addIndentBefore_
-                        .get_());
-            }
             break;
         case FORMATTER_space_BeforeMethodOrClassPositionalArgumentList:
             options.setSpaceBeforeMethodOrClassPositionalArgumentList(ceylonBoolean(value));

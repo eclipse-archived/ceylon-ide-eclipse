@@ -11,7 +11,6 @@ public class CeylonFormatterConstants {
     public static final String FORMATTER_indentMode_Tabs_Size = "indentModeTabsSize";
     public static final String FORMATTER_indent_Blank_Lines = "indentBlankLines";
     public static final String FORMATTER_indent_Before_Type_Info = "indentBeforeTypeInfo";
-    public static final String FORMATTER_indent_After_Specifier_Expression_Start = "indentationAfterSpecifierExpressionStart";
 
     public static final String FORMATTER_space_BeforeMethodOrClassPositionalArgumentList = "spaceBeforeMethodOrClassPositionalArgumentList";
     public static final String FORMATTER_space_AroundSatisfiesOf = "spaceAroundSatisfiesOf";
