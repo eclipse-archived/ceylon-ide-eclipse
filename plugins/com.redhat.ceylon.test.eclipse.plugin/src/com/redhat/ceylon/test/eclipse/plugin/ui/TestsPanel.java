@@ -18,6 +18,7 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.debugLabe
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.expandAllLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.gotoLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.runLabel;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.runSelectionPostfix;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.scrollLockLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showFailuresOnlyLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.showNextFailureLabel;
@@ -33,7 +34,6 @@ import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getElaps
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getTestStateImage;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -154,7 +154,7 @@ public class TestsPanel extends Composite {
     }
 
     private void createViewer() {
-        viewer = new TreeViewer(this, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
+        viewer = new TreeViewer(this, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);
         viewer.setUseHashlookup(true);
         viewer.setContentProvider(new TestContentProvider());
         viewer.setLabelProvider(new TestLabelProvider());
@@ -162,7 +162,7 @@ public class TestsPanel extends Composite {
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                handleSelectionChange(getFirstSelectedElement());
+                handleSelectionChange();
             }
         });
         viewer.getTree().addSelectionListener(new SelectionAdapter() {
@@ -301,21 +301,26 @@ public class TestsPanel extends Composite {
         }
     }
 
-	private void handleSelectionChange(Object selectedItem) {
-		if (selectedItem == null) {
-			gotoAction.setEnabled(false);
-			runAction.setEnabled(false);
-			debugAction.setEnabled(false);
-		} else {
-			if (selectedItem instanceof TestElement) {
-				gotoAction.setEnabled(true);
-			} else {
-				gotoAction.setEnabled(false);
-			}
-			runAction.setEnabled(true);
-			debugAction.setEnabled(true);
-		}
-	}
+    private void handleSelectionChange() {
+        boolean runActionEnabled = false;
+        boolean debugActionEnabled = false;
+        boolean gotoActionEnabled = false;
+
+        if (viewer.getStructuredSelection().size() > 0) {
+            runActionEnabled = true;
+            debugActionEnabled = true;
+        }
+        if (viewer.getStructuredSelection().size() == 1) {
+            Object selectedItem = getFirstSelectedElement();
+            if (selectedItem instanceof TestElement) {
+                gotoActionEnabled = true;
+            }
+        }
+        
+        runAction.setEnabled(runActionEnabled);
+        debugAction.setEnabled(debugActionEnabled);
+        gotoAction.setEnabled(gotoActionEnabled);
+    }
 
     private void handleDoubleClick(Object selectedItem) {
         if (selectedItem instanceof TestElement && gotoAction.isEnabled()) {
@@ -361,14 +366,24 @@ public class TestsPanel extends Composite {
         }
     }
 
-    private void runSelectedElement(String launchMode) throws CoreException {
+    private void runSelectedElements(String launchMode) throws CoreException {
         IProject project = CeylonTestUtil.getProject(currentTestRun.getLaunch());
         if( project != null ) {
-            Object selectedElement = getFirstSelectedElement();
-            String qualifiedName = resolveQualifiedName(selectedElement);
-            String launchName = resolveLaunchName(qualifiedName, project);
+            List<String> qualifiedNames = new ArrayList<String>();
+            Object[] selectedElements = viewer.getStructuredSelection().toArray();
+            for(Object selectedElement : selectedElements) {
+                String qualifiedName = resolveQualifiedName(selectedElement);
+                qualifiedNames.add(qualifiedName);
+            }
+            
+            String launchName;
+            if( qualifiedNames.size() == 1 ) {
+                launchName = resolveLaunchName(qualifiedNames.get(0), project);
+            } else {
+                launchName = currentTestRun.getLaunch().getLaunchConfiguration().getName() + " " + runSelectionPostfix;
+            }
 
-            relaunch(currentTestRun.getLaunch(), launchName, launchMode, Collections.singletonList(qualifiedName));
+            relaunch(currentTestRun.getLaunch(), launchName, launchMode, qualifiedNames);
         }
     }
 
@@ -790,7 +805,7 @@ public class TestsPanel extends Composite {
 		@Override
 		public void run() {
 			try {
-				runSelectedElement(ILaunchManager.RUN_MODE);
+				runSelectedElements(ILaunchManager.RUN_MODE);
 			} catch (CoreException e) {
 				CeylonTestPlugin.logError("", e);
 			}
@@ -809,7 +824,7 @@ public class TestsPanel extends Composite {
 		@Override
 		public void run() {
 			try {
-				runSelectedElement(ILaunchManager.DEBUG_MODE);
+				runSelectedElements(ILaunchManager.DEBUG_MODE);
 			} catch (CoreException e) {
 				CeylonTestPlugin.logError("", e);
 			}

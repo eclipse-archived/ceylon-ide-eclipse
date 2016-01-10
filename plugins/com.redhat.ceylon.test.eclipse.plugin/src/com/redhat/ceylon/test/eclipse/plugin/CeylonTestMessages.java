@@ -61,6 +61,7 @@ public class CeylonTestMessages extends NLS {
     public static String gotoLabel;
     public static String runLabel;
     public static String debugLabel;
+    public static String runSelectionPostfix;
     
     public static String historyLabel;
     public static String historyDlgTitle;

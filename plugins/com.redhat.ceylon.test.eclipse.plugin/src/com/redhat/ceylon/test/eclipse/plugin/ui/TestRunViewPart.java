@@ -178,9 +178,12 @@ public class TestRunViewPart extends ViewPart {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 TestElement selectedTestElement = null;
-                Object selectedItem = ((IStructuredSelection) event.getSelection()).getFirstElement();
-                if (selectedItem instanceof TestElement) {
-                    selectedTestElement = (TestElement) selectedItem;
+                IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+                if (selection.size() == 1) {
+                    Object selectedItem = selection.getFirstElement();
+                    if (selectedItem instanceof TestElement) {
+                        selectedTestElement = (TestElement) selectedItem;
+                    }
                 }
                 stackTracePanel.setSelectedTestElement(selectedTestElement);
             }
@@ -472,7 +475,7 @@ public class TestRunViewPart extends ViewPart {
                 if (launch == null)
                     return;
 
-                String launchName = launch.getLaunchConfiguration().getName() + relaunchFailedNamePostfix;
+                String launchName = launch.getLaunchConfiguration().getName() + " " + relaunchFailedNamePostfix;
                 String launchMode = launch.getLaunchMode();
 
                 List<String> qualifiedNames = new ArrayList<String>();
