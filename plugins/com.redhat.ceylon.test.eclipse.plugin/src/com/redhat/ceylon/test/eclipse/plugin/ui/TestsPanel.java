@@ -9,14 +9,12 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.SHOW
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_ERROR;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_FAILED;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SKIPPED;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_RUNNING;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SKIPPED;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SUCCESS;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.collapseAllLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.debugLabel;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.errorCanNotFindSelectedTest;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.errorDialogTitle;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.expandAllLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.gotoLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.runLabel;
@@ -30,14 +28,12 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SCROLL
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_FAILURES_ONLY;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_ELAPSED_TIME;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_TESTS_IN_HIERARCHY;
-import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type.CLASS;
-import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type.CLASS_LOCAL;
-import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type.METHOD;
-import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type.METHOD_LOCAL;
+import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchShortcut.relaunch;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getElapsedTimeInSeconds;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getTestStateImage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -50,7 +46,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -79,9 +74,6 @@ import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
-import com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry;
-import com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type;
-import com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchShortcut;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
@@ -170,13 +162,13 @@ public class TestsPanel extends Composite {
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                handleSelectionChange(((IStructuredSelection) event.getSelection()).getFirstElement());
+                handleSelectionChange(getFirstSelectedElement());
             }
         });
         viewer.getTree().addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
-                handleDoubleClick(((IStructuredSelection) viewer.getSelection()).getFirstElement());
+                handleDoubleClick(getFirstSelectedElement());
             }
         });
     }
@@ -369,49 +361,52 @@ public class TestsPanel extends Composite {
         }
     }
 
-    private void runTest(String launchMode) throws CoreException {
-    	String launchName = null;
-    	List<CeylonTestLaunchConfigEntry> entries = new ArrayList<CeylonTestLaunchConfigEntry>();
-		
-    	IProject project = CeylonTestUtil.getProject(currentTestRun.getLaunch());
-    	if( project != null ) {
-		
-    		String qualifiedName = null;
-    		Object selectedElement = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-    		if (selectedElement instanceof TestElement) {
-    			qualifiedName = ((TestElement) selectedElement).getQualifiedName();
-    		} else {
-    			qualifiedName = (String) selectedElement;
-    		}
+    private void runSelectedElement(String launchMode) throws CoreException {
+        IProject project = CeylonTestUtil.getProject(currentTestRun.getLaunch());
+        if( project != null ) {
+            Object selectedElement = getFirstSelectedElement();
+            String qualifiedName = resolveQualifiedName(selectedElement);
+            String launchName = resolveLaunchName(qualifiedName, project);
 
-    		Object result = CeylonTestUtil.getPackageOrDeclaration(project, qualifiedName);
-    		if( result instanceof Package ) {
-    			Package pkg = (Package) result;
-    			launchName = pkg.getNameAsString();
-    			entries.add(CeylonTestLaunchConfigEntry.build(project, Type.PACKAGE, pkg.getNameAsString()));
-    		} else if (result instanceof Class) {
-    			Class clazz = (Class) result;
-    			launchName = clazz.getName();
-    			entries.add(CeylonTestLaunchConfigEntry.build(project, clazz.isShared() ? CLASS : CLASS_LOCAL, clazz.getQualifiedNameString()));
-    		}
-    		else if (result instanceof Function) {
-    		    Function method = (Function) result;
-    			launchName = (method.isMember() ? ((Declaration) method.getContainer()).getName() + "." : "") + method.getName();
-    			entries.add(CeylonTestLaunchConfigEntry.build(project, method.isShared() ? METHOD : METHOD_LOCAL, method.getQualifiedNameString()));
-    		}
-    		else if( result instanceof MethodWithContainer ) {
-    		    MethodWithContainer methodWithContainer = (MethodWithContainer) result;
-                launchName = methodWithContainer.getContainer().getName() + "." + methodWithContainer.getMethod().getName();
-                entries.add(CeylonTestLaunchConfigEntry.build(project, methodWithContainer.getMethod().isShared() ? METHOD : METHOD_LOCAL, methodWithContainer.getContainer().getQualifiedNameString() + "." + methodWithContainer.getMethod().getName()));
-    		}
-    	}
-		
-		if (entries.isEmpty()) {
-			MessageDialog.openInformation(getShell(), errorDialogTitle, errorCanNotFindSelectedTest);
-		} else {
-			CeylonTestLaunchShortcut.launch(launchName, entries, launchMode, currentTestRun.getLaunch().getLaunchConfiguration().getType().getIdentifier());
-		}		
-	}
+            relaunch(currentTestRun.getLaunch(), launchName, launchMode, Collections.singletonList(qualifiedName));
+        }
+    }
+
+    private Object getFirstSelectedElement() {
+        return ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+    }
+
+    private String resolveQualifiedName(Object selectedElement) {
+        String qualifiedName;
+        if (selectedElement instanceof TestElement) {
+            qualifiedName = ((TestElement) selectedElement).getQualifiedName();
+        } else {
+            qualifiedName = (String) selectedElement;
+        }
+        return qualifiedName;
+    }
+
+    private String resolveLaunchName(String qualifiedName, IProject project) {
+        String launchName;
+        Object result = CeylonTestUtil.getPackageOrDeclaration(project, qualifiedName);
+        if (result instanceof Package) {
+            Package pkg = (Package) result;
+            launchName = pkg.getNameAsString();
+        } else if (result instanceof Class) {
+            Class clazz = (Class) result;
+            launchName = clazz.getName();
+        } else if (result instanceof Function) {
+            Function method = (Function) result;
+            launchName = (method.isMember() ? ((Declaration) method.getContainer()).getName() + "." : "") + method.getName();
+        } else if (result instanceof MethodWithContainer) {
+            MethodWithContainer methodWithContainer = (MethodWithContainer) result;
+            launchName = methodWithContainer.getContainer().getName() + "." + methodWithContainer.getMethod().getName();
+        } else {
+            launchName = result.toString();
+        }
+        return launchName;
+    }
+    
 
 	public TreeViewer getViewer() {
         return viewer;
@@ -569,7 +564,7 @@ public class TestsPanel extends Composite {
                 if( currentTestRun == null ) {
                     return;
                 }
-                NextFailureVisitor nfv = new NextFailureVisitor(((IStructuredSelection) viewer.getSelection()).getFirstElement());
+                NextFailureVisitor nfv = new NextFailureVisitor(getFirstSelectedElement());
                 nfv.visitElements(currentTestRun.getRoot());
                 moveTo(nfv.next);
             }
@@ -593,7 +588,7 @@ public class TestsPanel extends Composite {
                 if( currentTestRun == null ) {
                     return;
                 }
-                PreviousFailureVisitor pfv = new PreviousFailureVisitor(((IStructuredSelection) viewer.getSelection()).getFirstElement());
+                PreviousFailureVisitor pfv = new PreviousFailureVisitor(getFirstSelectedElement());
                 pfv.visitElements(currentTestRun.getRoot());
                 moveTo(pfv.previous);
             }
@@ -761,7 +756,7 @@ public class TestsPanel extends Composite {
 
         @Override
         public void run() {
-            Object selectedElement = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+            Object selectedElement = getFirstSelectedElement();
             if (selectedElement instanceof TestElement) {
                 try {
                     TestElement testElement = (TestElement) selectedElement;
@@ -795,7 +790,7 @@ public class TestsPanel extends Composite {
 		@Override
 		public void run() {
 			try {
-				runTest(ILaunchManager.RUN_MODE);
+				runSelectedElement(ILaunchManager.RUN_MODE);
 			} catch (CoreException e) {
 				CeylonTestPlugin.logError("", e);
 			}
@@ -814,7 +809,7 @@ public class TestsPanel extends Composite {
 		@Override
 		public void run() {
 			try {
-				runTest(ILaunchManager.DEBUG_MODE);
+				runSelectedElement(ILaunchManager.DEBUG_MODE);
 			} catch (CoreException e) {
 				CeylonTestPlugin.logError("", e);
 			}

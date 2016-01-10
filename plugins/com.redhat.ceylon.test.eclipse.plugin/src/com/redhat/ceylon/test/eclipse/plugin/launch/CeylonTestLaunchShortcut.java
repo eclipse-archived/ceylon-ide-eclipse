@@ -1,5 +1,8 @@
 package com.redhat.ceylon.test.eclipse.plugin.launch;
 
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.errorCanNotFindSelectedTest;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.errorDialogTitle;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_ENTRIES_KEY;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
@@ -25,6 +28,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -63,6 +67,7 @@ import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigEntry.Type;
 import com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil;
 import com.redhat.ceylon.test.eclipse.plugin.util.MethodWithContainer;
 
@@ -109,6 +114,39 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         }
 
         launch(getLaunchName(names), entries, mode, configTypeId);
+    }
+    
+    public static void relaunch(ILaunch launch, String launchName, String launchMode, List<String> qualifiedNames) throws CoreException {
+        String configTypeId = launch.getLaunchConfiguration().getType().getIdentifier();
+        List<CeylonTestLaunchConfigEntry> entries = new ArrayList<CeylonTestLaunchConfigEntry>();
+        
+        IProject project = CeylonTestUtil.getProject(launch);
+        if( project != null ) {
+            for(String qualifiedName : qualifiedNames) {
+                Object result = CeylonTestUtil.getPackageOrDeclaration(project, qualifiedName);
+                if( result instanceof Package ) {
+                    Package pkg = (Package) result;
+                    entries.add(CeylonTestLaunchConfigEntry.build(project, Type.PACKAGE, pkg.getNameAsString()));
+                } else if (result instanceof Class) {
+                    Class clazz = (Class) result;
+                    entries.add(CeylonTestLaunchConfigEntry.build(project, clazz.isShared() ? CLASS : CLASS_LOCAL, clazz.getQualifiedNameString()));
+                }
+                else if (result instanceof Function) {
+                    Function method = (Function) result;
+                    entries.add(CeylonTestLaunchConfigEntry.build(project, method.isShared() ? METHOD : METHOD_LOCAL, method.getQualifiedNameString()));
+                }
+                else if( result instanceof MethodWithContainer ) {
+                    MethodWithContainer methodWithContainer = (MethodWithContainer) result;
+                    entries.add(CeylonTestLaunchConfigEntry.build(project, methodWithContainer.getMethod().isShared() ? METHOD : METHOD_LOCAL, methodWithContainer.getContainer().getQualifiedNameString() + "." + methodWithContainer.getMethod().getName()));
+                }
+            }
+        }
+        
+        if (entries.isEmpty()) {
+            MessageDialog.openInformation(getShell(), errorDialogTitle, errorCanNotFindSelectedTest);
+        } else {
+            CeylonTestLaunchShortcut.launch(launchName, entries, launchMode, configTypeId);
+        }       
     }
 
     public static void launch(String name, List<CeylonTestLaunchConfigEntry> entries, String mode, String configTypeId) {

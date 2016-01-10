@@ -2,10 +2,13 @@ package com.redhat.ceylon.test.eclipse.plugin.ui;
 
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.HISTORY;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.RELAUNCH;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.RELAUNCH_FAILED;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STOP;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyLabel;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.msg;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.relaunchLabel;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.relaunchFailedLabel;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.relaunchFailedNamePostfix;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestPlatformJs;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestPlatformJvm;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestRunFinished;
@@ -17,7 +20,9 @@ import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getActiv
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getDisplay;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getElapsedTimeInSeconds;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
+import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchShortcut.relaunch;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -77,6 +82,7 @@ public class TestRunViewPart extends ViewPart {
     private UpdateViewJob updateViewJob = new UpdateViewJob();
     private ShowHistoryAction showHistoryAction;
     private RelaunchAction relaunchAction;
+    private RelaunchFailedAction relaunchFailedAction;
     private StopAction stopAction;
     private boolean isDisposed;
     private boolean isVisible;
@@ -187,11 +193,13 @@ public class TestRunViewPart extends ViewPart {
 
     private void createToolBar() {
         relaunchAction = new RelaunchAction();
+        relaunchFailedAction = new RelaunchFailedAction();
         stopAction = new StopAction();
         showHistoryAction = new ShowHistoryAction();
 
         IToolBarManager toolBarManager = getViewSite().getActionBars().getToolBarManager();
         toolBarManager.add(relaunchAction);
+        toolBarManager.add(relaunchFailedAction);
         toolBarManager.add(stopAction);
         toolBarManager.add(showHistoryAction);
         toolBarManager.update(true);        
@@ -293,14 +301,17 @@ public class TestRunViewPart extends ViewPart {
 
     private void updateActionState() {
         boolean canRelaunch = false;
+        boolean canRelaunchFailed = false;
         boolean canStop = false;
 
         if (currentTestRun != null) {
             canRelaunch = !currentTestRun.isRunning();
+            canRelaunchFailed = !currentTestRun.isRunning() && currentTestRun.isFailureOrError();
             canStop = currentTestRun.isRunning();
         }
 
         relaunchAction.setEnabled(canRelaunch);
+        relaunchFailedAction.setEnabled(canRelaunchFailed);
         stopAction.setEnabled(canStop);
     }
 
@@ -439,6 +450,47 @@ public class TestRunViewPart extends ViewPart {
             DebugUITools.launch(launchConfiguration, launch.getLaunchMode());
         }
         
+    }
+    
+    private class RelaunchFailedAction extends Action {
+
+        public RelaunchFailedAction() {
+            super(relaunchFailedLabel);
+            setDescription(relaunchFailedLabel);
+            setToolTipText(relaunchFailedLabel);
+            setImageDescriptor(CeylonTestImageRegistry.getImageDescriptor(RELAUNCH_FAILED));
+            setEnabled(false);
+        }
+
+        @Override
+        public void run() {
+            synchronized (TestRun.acquireLock(currentTestRun)) {
+                if (currentTestRun == null)
+                    return;
+
+                ILaunch launch = currentTestRun.getLaunch();
+                if (launch == null)
+                    return;
+
+                String launchName = launch.getLaunchConfiguration().getName() + relaunchFailedNamePostfix;
+                String launchMode = launch.getLaunchMode();
+
+                List<String> qualifiedNames = new ArrayList<String>();
+                for (TestElement testElement : currentTestRun.getAtomicTests()) {
+                    if (testElement.getState().isFailureOrError()
+                            && !qualifiedNames.contains(testElement.getQualifiedName())) {
+                        qualifiedNames.add(testElement.getQualifiedName());
+                    }
+                }
+
+                try {
+                    relaunch(launch, launchName, launchMode, qualifiedNames);
+                } catch (CoreException e) {
+                    CeylonTestPlugin.logError("", e);
+                }
+            }
+        }
+
     }
 
     private class StopAction extends Action {

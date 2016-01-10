@@ -48,6 +48,7 @@ public class CeylonTestImageRegistry {
     public static final String STATE_REMOVED = "state_removed.gif";
     
     public static final String RELAUNCH = "relaunch.gif";
+    public static final String RELAUNCH_FAILED = "relaunch_failed.gif";
     public static final String STOP = "stop.gif";
     public static final String SCROLL_LOCK = "scroll_lock.gif";
     public static final String COLLAPSE_ALL = "collapse_all.gif";
@@ -103,6 +104,7 @@ public class CeylonTestImageRegistry {
         imageRegistry.put(STATE_REMOVED, image(STATE_REMOVED));
         
         imageRegistry.put(RELAUNCH, image(RELAUNCH));
+        imageRegistry.put(RELAUNCH_FAILED, image(RELAUNCH_FAILED));
         imageRegistry.put(STOP, image(STOP));
         imageRegistry.put(SCROLL_LOCK, image(SCROLL_LOCK));
         imageRegistry.put(COLLAPSE_ALL, image(COLLAPSE_ALL));
