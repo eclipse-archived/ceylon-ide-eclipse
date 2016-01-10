@@ -306,11 +306,12 @@ public class TestsPanel extends Composite {
         boolean debugActionEnabled = false;
         boolean gotoActionEnabled = false;
 
-        if (viewer.getStructuredSelection().size() > 0) {
+        IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+        if (selection.size() > 0) {
             runActionEnabled = true;
             debugActionEnabled = true;
         }
-        if (viewer.getStructuredSelection().size() == 1) {
+        if (selection.size() == 1) {
             Object selectedItem = getFirstSelectedElement();
             if (selectedItem instanceof TestElement) {
                 gotoActionEnabled = true;
@@ -370,7 +371,7 @@ public class TestsPanel extends Composite {
         IProject project = CeylonTestUtil.getProject(currentTestRun.getLaunch());
         if( project != null ) {
             List<String> qualifiedNames = new ArrayList<String>();
-            Object[] selectedElements = viewer.getStructuredSelection().toArray();
+            Object[] selectedElements = ((IStructuredSelection)viewer.getSelection()).toArray();
             for(Object selectedElement : selectedElements) {
                 String qualifiedName = resolveQualifiedName(selectedElement);
                 qualifiedNames.add(qualifiedName);
