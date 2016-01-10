@@ -52,6 +52,8 @@ public class CeylonTestMessages extends NLS {
     public static String showTestsInHierarchy;
     public static String showTestsElapsedTime;
     public static String relaunchLabel;
+    public static String relaunchFailedLabel;
+    public static String relaunchFailedNamePostfix;
     public static String stopLabel;
     public static String scrollLockLabel;
     public static String collapseAllLabel;
