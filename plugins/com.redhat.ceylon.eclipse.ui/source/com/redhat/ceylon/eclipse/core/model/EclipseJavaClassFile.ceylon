@@ -20,11 +20,11 @@ import org.eclipse.jdt.core {
 }
 shared class EclipseJavaClassFile(
     ITypeRoot typeRoot,
-    String filename,
-    String relativePath,
-    String fullPath,
+    String theFilename,
+    String theRelativePath,
+    String theFullPath,
     Package pkg)
-        extends JavaClassFile<IProject, IFolder, IFile, ITypeRoot, IJavaElement>(typeRoot, filename, relativePath, fullPath, pkg) 
+        extends JavaClassFile<IProject, IFolder, IFile, ITypeRoot, IJavaElement>(typeRoot, theFilename, theRelativePath, theFullPath, pkg) 
         satisfies EclipseJavaModelAware
         & EclipseJavaUnitUtils {
     shared actual variable SoftReference<EclipseJavaModelAware.ResolvedElements> resolvedElementsRef = 

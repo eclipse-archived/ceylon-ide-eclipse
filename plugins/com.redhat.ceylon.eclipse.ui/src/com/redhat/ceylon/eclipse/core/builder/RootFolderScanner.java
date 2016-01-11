@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
+import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.IdeModuleManager;
 import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
@@ -28,11 +29,10 @@ import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 
 final class RootFolderScanner implements IResourceVisitor {
     private final Module defaultModule;
-    private final JDTModelLoader modelLoader;
+    private final BaseIdeModelLoader modelLoader;
     private final IdeModuleManager<IProject,IResource,IFolder,IFile> moduleManager;
     private final IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper;
     private final FolderVirtualFile<IProject, IResource, IFolder, IFile> rootDir;
@@ -46,7 +46,7 @@ final class RootFolderScanner implements IResourceVisitor {
     private RootFolderType rootFolderType;
     
 
-    RootFolderScanner(RootFolderType rootFolderType, Module defaultModule, JDTModelLoader modelLoader,
+    RootFolderScanner(RootFolderType rootFolderType, Module defaultModule, BaseIdeModelLoader modelLoader,
             IdeModuleManager<IProject,IResource,IFolder,IFile> moduleManager, 
             IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper, 
             FolderVirtualFile<IProject, IResource, IFolder, IFile> rootDir, TypeChecker typeChecker,

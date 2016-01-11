@@ -8,9 +8,11 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
 
 import com.redhat.ceylon.compiler.typechecker.context.Context;
+import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
@@ -59,4 +61,5 @@ public interface ModelJ2C {
             ITypeRoot typeRoot, String relativePath, String fileName,
             String fullPath, LazyPackage pkg);
 
+    LookupEnvironmentUtilities.Provider getLookupEnvironmentProvider(IType type);
 }

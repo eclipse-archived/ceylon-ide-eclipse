@@ -43,16 +43,28 @@ import ceylon.collection {
     MutableList,
     ArrayList
 }
+import java.lang.ref {
+    WeakReference
+}
 
 shared class JDTModuleManager(Context context, CeylonProject<IProject,IResource,IFolder,IFile>? ceylonProject)
          extends IdeModuleManager<IProject,IResource,IFolder,IFile>(ceylonProject) {
 
+    shared IJavaProject? javaProject => 
+            if (exists nativeProject = ceylonProject?.ideArtifact) 
+            then JavaCore.create(nativeProject) 
+            else null;
+
     shared actual JDTModelLoader newModelLoader(BaseIdeModuleManager self, BaseIdeModuleSourceMapper sourceMapper, Modules modules) {
         assert (is JDTModuleSourceMapper sourceMapper);
         assert (is JDTModuleManager self);
-        return JDTModelLoader(self, sourceMapper, modules);
+        value modelLoader = JDTModelLoader(self, sourceMapper, modules);
+        if (exists nativeProject = ceylonProject?.ideArtifact) {
+            modelLoaders.put(nativeProject, WeakReference(modelLoader));
+        }
+        return modelLoader;
     }
-            
+    
     shared actual Boolean moduleFileInProject(String moduleName, BaseCeylonProject? ceylonProject) {
         if (!exists ceylonProject) {
             return false;

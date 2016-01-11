@@ -91,9 +91,9 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
+import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.CeylonUnit;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.Class;
@@ -267,7 +267,7 @@ public class DocumentationHover extends SourceInfoHover {
         String moduleVersion = location.substring(moduleVersionSeparator+1, secondColumnIndex);
         String remainingLocation = location.substring(secondColumnIndex+1);
 
-        JDTModelLoader modelLoader = 
+        BaseIdeModelLoader modelLoader = 
                 getModelLoader(typeChecker);
         Module module = 
                 modelLoader.getLoadedModule(moduleName, 

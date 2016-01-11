@@ -8,6 +8,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
 
 import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
@@ -93,4 +94,9 @@ public class modelJ2C implements ModelJ2C {
         return new EclipseJavaCompilationUnit(typeRoot, fileName, relativePath, fullPath, pkg);
     }
 
+    @Override
+    public LookupEnvironmentUtilities.Provider getLookupEnvironmentProvider(IType type) {
+        return typeModelLoader_.typeModelLoader(type);
+    }
+    
 }

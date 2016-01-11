@@ -17,11 +17,11 @@ import com.redhat.ceylon.model.typechecker.model {
 }
 shared class EclipseCeylonBinaryUnit(
     ITypeRoot typeRoot,
-    String filename,
-    String relativePath,
-    String fullPath,
+    String theFilename,
+    String theRelativePath,
+    String theFullPath,
     Package pkg)
-        extends CeylonBinaryUnit<IProject, ITypeRoot, IJavaElement>(typeRoot, filename, relativePath, fullPath, pkg) 
+        extends CeylonBinaryUnit<IProject, ITypeRoot, IJavaElement>(typeRoot, theFilename, theRelativePath, theFullPath, pkg) 
         satisfies EclipseJavaModelAware {
     shared actual variable SoftReference<EclipseJavaModelAware.ResolvedElements> resolvedElementsRef = SoftReference<EclipseJavaModelAware.ResolvedElements>(null);
 }

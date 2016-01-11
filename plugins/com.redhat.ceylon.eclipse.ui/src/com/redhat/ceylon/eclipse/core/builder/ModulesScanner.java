@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.IdeModuleManager;
 import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
@@ -29,12 +30,11 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 
 final class ModulesScanner implements IResourceVisitor {
     private final Module defaultModule;
-    private final JDTModelLoader modelLoader;
+    private final BaseIdeModelLoader modelLoader;
     private final IdeModuleManager<IProject, IResource, IFolder, IFile> moduleManager;
     private final IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper;
     private final FolderVirtualFile<IProject, IResource, IFolder, IFile> srcDir;
@@ -42,7 +42,7 @@ final class ModulesScanner implements IResourceVisitor {
     private Module module;
     private SubMonitor monitor;
 
-    ModulesScanner(Module defaultModule, JDTModelLoader modelLoader,
+    ModulesScanner(Module defaultModule, BaseIdeModelLoader modelLoader,
             IdeModuleManager<IProject, IResource, IFolder, IFile> moduleManager, 
             IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper, 
             FolderVirtualFile<IProject, IResource, IFolder, IFile> srcDir, 

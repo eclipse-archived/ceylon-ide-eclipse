@@ -43,7 +43,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 import org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.*;
 import com.redhat.ceylon.model.loader.mirror.ClassMirror;
 import com.redhat.ceylon.model.loader.mirror.TypeMirror;
 import com.redhat.ceylon.model.loader.mirror.TypeParameterMirror;
@@ -252,7 +252,7 @@ public class JDTType implements TypeMirror {
                 type instanceof SourceTypeBinding ||
                 type instanceof BinaryTypeBinding){
             ReferenceBinding refBinding = (ReferenceBinding) type;
-            declaredClass = new JDTClass(refBinding, JDTModelLoader.toType(refBinding));
+            declaredClass = new JDTClass(refBinding, toType(refBinding));
         }
 
         if(type instanceof TypeVariableBinding){

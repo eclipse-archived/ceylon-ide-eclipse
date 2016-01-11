@@ -64,9 +64,10 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader.ActionOnResolvedGeneratedType;
+import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.*;
+import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities;
 import com.redhat.ceylon.ide.common.util.escaping_;
+import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.CeylonUnit;
@@ -883,7 +884,7 @@ public class JavaSearch {
                     if (type.isLocal() ||type.isAnonymous() || false) {
                         final MethodBinding[] enclosingMethodBinding = 
                                 new MethodBinding[1];
-                        JDTModelLoader.doOnResolvedGeneratedType(type, 
+                        doOnResolvedGeneratedType(type, 
                                 new ActionOnResolvedGeneratedType() {
                             @Override
                             public void doWithBinding(
@@ -1201,7 +1202,7 @@ public class JavaSearch {
                     }
                 }
                 if (javaType != null) {
-                    JDTModelLoader modelLoader = 
+                    BaseIdeModelLoader modelLoader = 
                             CeylonBuilder.getProjectModelLoader(
                                     project);
                     if (modelLoader != null) {

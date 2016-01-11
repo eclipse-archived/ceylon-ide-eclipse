@@ -73,7 +73,8 @@ import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities;
+import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
 import com.redhat.ceylon.model.cmr.ArtifactResultType;
@@ -350,7 +351,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
         IJavaProject javaProject = getJavaProject();
         setClasspathContainer(path, new IJavaProject[] { javaProject },
                 new IClasspathContainer[] {new CeylonProjectModulesContainer(this)}, new SubProgressMonitor(monitor, 1));
-        JDTModelLoader modelLoader = CeylonBuilder.getProjectModelLoader(javaProject.getProject());
+        LookupEnvironmentUtilities.Provider modelLoader = (LookupEnvironmentUtilities.Provider) CeylonBuilder.getProjectModelLoader(javaProject.getProject());
         if (modelLoader != null) {
             modelLoader.refreshNameEnvironment();
         }

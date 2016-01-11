@@ -138,7 +138,7 @@ public class JDTModelLoaderTests extends ModelLoaderTests {
             }
         }
         
-        JDTModelLoader modelLoader = CeylonBuilder.getProjectModelLoader(projectReferences);
+        JDTModelLoader modelLoader = (JDTModelLoader) CeylonBuilder.getProjectModelLoader(projectReferences);
         
         for(Entry<String, Declaration> entry : decls.entrySet()){
             String quotedQualifiedName = entry.getKey().substring(1);

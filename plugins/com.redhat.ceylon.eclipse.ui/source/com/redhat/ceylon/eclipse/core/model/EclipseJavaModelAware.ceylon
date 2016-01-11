@@ -12,7 +12,7 @@ import com.redhat.ceylon.eclipse.core.model.mirror {
     JDTMethod
 }
 import com.redhat.ceylon.eclipse.util {
-    nullIfJavaModelException
+    withJavaModel
 }
 import com.redhat.ceylon.ide.common.model {
     IJavaModelAware
@@ -215,7 +215,7 @@ shared interface EclipseJavaModelAware
                 mirror = classMirror; 
             }
             if (declarationMatched(javaType, mirror, resolvedElements) exists) {
-                return nullIfJavaModelException {
+                return withJavaModel {
                     do() =>
                             javaType.fields.array
                             .coalesced

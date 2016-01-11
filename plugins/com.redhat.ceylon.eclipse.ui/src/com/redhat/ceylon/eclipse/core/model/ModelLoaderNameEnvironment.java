@@ -140,17 +140,17 @@ public class ModelLoaderNameEnvironment extends SearchableEnvironment {
         
         char[] typeNameCharArray = typeName.toCharArray();
         if (CharOperation.equals(TypeConstants.PACKAGE_INFO_NAME, typeNameCharArray) ||
-                CharOperation.equals(JDTModelLoader.packageDescriptorName, typeNameCharArray) ||
-                CharOperation.equals(JDTModelLoader.moduleDescriptorName, typeNameCharArray) ||
-                CharOperation.equals(JDTModelLoader.oldPackageDescriptorName, typeNameCharArray) ||
-                CharOperation.equals(JDTModelLoader.oldModuleDescriptorName, typeNameCharArray) ||
-                endsWith(typeNameCharArray, JDTModelLoader.descriptorClassNames)) {
+                CharOperation.equals(LookupEnvironmentUtilities.packageDescriptorName, typeNameCharArray) ||
+                CharOperation.equals(LookupEnvironmentUtilities.moduleDescriptorName, typeNameCharArray) ||
+                CharOperation.equals(LookupEnvironmentUtilities.oldPackageDescriptorName, typeNameCharArray) ||
+                CharOperation.equals(LookupEnvironmentUtilities.oldModuleDescriptorName, typeNameCharArray) ||
+                endsWith(typeNameCharArray, LookupEnvironmentUtilities.descriptorClassNames)) {
             // Don't search for secondary types whose name ends with is a quoted of unquoted descriptors
             // or ends with a quoted descriptor (in case it would be searching for an inner class)
             return null;
         }
         
-        if (JDTModelLoader.isSettingInterfaceCompanionClass() && typeName.endsWith("$impl")) {
+        if (LookupEnvironmentUtilities.isSettingInterfaceCompanionClass() && typeName.endsWith("$impl")) {
             // Don't search for Ceylon interface companion classes in Java Secondary types.
             return null;
         }

@@ -39,7 +39,7 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.ModelState;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
@@ -56,7 +56,7 @@ final class JdtCompilerDelegate implements CompilerDelegate {
     private final WeakReference<com.redhat.ceylon.langtools.tools.javac.util.Context> contextRef;
     private final Collection<PhasedUnit> unitsTypecheckedIncrementally;
 
-    JdtCompilerDelegate(JDTModelLoader modelLoader,
+    JdtCompilerDelegate(BaseIdeModelLoader modelLoader,
             IProject project, TypeChecker typeChecker,
             com.redhat.ceylon.langtools.tools.javac.util.Context context,
             Collection<PhasedUnit> unitsTypechecked) {

@@ -52,10 +52,10 @@ import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationListener;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationRunner;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationWaiter;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
 import com.redhat.ceylon.eclipse.util.JavaSearch.DefaultArgumentMethodSearch;
 import com.redhat.ceylon.ide.common.util.escaping_;
+import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
@@ -611,7 +611,7 @@ public class DebugUtils {
         
 
         IJavaProject javaProject = DebugUtils.getProject(jdiDeclaration);
-        JDTModelLoader modelLoader = CeylonBuilder.getProjectModelLoader(javaProject.getProject());
+        BaseIdeModelLoader modelLoader = CeylonBuilder.getProjectModelLoader(javaProject.getProject());
         String qualifiedName = nameFieldValue.getValueString();
         String[] qualifiedNameParts = qualifiedName.split("::");
         Declaration declaration = null;

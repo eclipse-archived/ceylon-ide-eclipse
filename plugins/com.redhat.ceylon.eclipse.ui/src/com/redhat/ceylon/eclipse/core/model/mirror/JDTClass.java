@@ -43,9 +43,9 @@ import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader.ActionOnClassBinding;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader.ActionOnResolvedType;
+import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.*;
+import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.ActionOnClassBinding;
+import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.ActionOnResolvedType;
 import com.redhat.ceylon.ide.common.model.mirror.IdeClassMirror;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.loader.ModelResolutionException;
@@ -399,8 +399,8 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
     }
     
     private void doWithBindings(final ActionOnClassBinding action) {
-        if (!JDTModelLoader.doWithReferenceBinding(type, bindingRef.get(), action)) {
-            JDTModelLoader.doWithResolvedType(type, new ActionOnResolvedType() {
+        if (!doWithReferenceBinding(type, bindingRef.get(), action)) {
+            doWithResolvedType(type, new ActionOnResolvedType() {
                 @Override
                 public void doWithBinding(ReferenceBinding classBinding) {
                     bindingRef = new WeakReference<ReferenceBinding>(classBinding);
@@ -586,7 +586,7 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
                     innerClasses = new ArrayList<ClassMirror>(memberTypeBindings.length);
                     for(ReferenceBinding memberTypeBinding : memberTypeBindings) {
                         ReferenceBinding classBinding = memberTypeBinding;
-                        IType classTypeModel = JDTModelLoader.toType(classBinding);
+                        IType classTypeModel = toType(classBinding);
                         innerClasses.add(new JDTClass(classBinding, classTypeModel));
                     }
                 }

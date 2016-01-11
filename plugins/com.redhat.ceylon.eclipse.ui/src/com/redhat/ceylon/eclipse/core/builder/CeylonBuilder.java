@@ -85,6 +85,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
@@ -155,13 +156,13 @@ import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
+import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.BaseIdeModuleManager;
 import com.redhat.ceylon.ide.common.model.BaseIdeModuleSourceMapper;
@@ -171,6 +172,7 @@ import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 import com.redhat.ceylon.ide.common.model.CeylonUnit;
 import com.redhat.ceylon.ide.common.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.IResourceAware;
+import com.redhat.ceylon.ide.common.model.IdeModelLoader;
 import com.redhat.ceylon.ide.common.model.IdeModuleManager;
 import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.model.JavaCompilationUnit;
@@ -607,13 +609,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return rootFolderType == RootFolderType.RESOURCE;
     }
 
-    public static JDTModelLoader getModelLoader(TypeChecker typeChecker) {
+    public static IdeModelLoader<IProject, IResource, IFolder, IFile, ITypeRoot, IType> getModelLoader(TypeChecker typeChecker) {
         BaseIdeModuleManager moduleManager = (BaseIdeModuleManager) 
                 typeChecker.getPhasedUnits().getModuleManager();
-        return (JDTModelLoader) moduleManager.getModelLoader();
+        return (IdeModelLoader<IProject, IResource, IFolder, IFile, ITypeRoot, IType>) moduleManager.getModelLoader();
     }
 
-    public static JDTModelLoader getProjectModelLoader(IProject project) {
+    public static IdeModelLoader<IProject, IResource, IFolder, IFile, ITypeRoot, IType> getProjectModelLoader(IProject project) {
         TypeChecker typeChecker = 
                 getProjectTypeChecker(project);
         if (typeChecker == null) {
@@ -623,7 +625,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static BaseIdeModuleManager getProjectModuleManager(IProject project) {
-        JDTModelLoader modelLoader = 
+        BaseIdeModelLoader modelLoader = 
                 getProjectModelLoader(project);
         if (modelLoader == null) {
             return null;
@@ -1752,7 +1754,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         final PhasedUnits pus = typeChecker.getPhasedUnits();
         final BaseIdeModuleManager moduleManager = (BaseIdeModuleManager) pus.getModuleManager(); 
         final BaseIdeModuleSourceMapper moduleSourceMapper = (BaseIdeModuleSourceMapper) pus.getModuleSourceMapper(); 
-        final JDTModelLoader modelLoader = getModelLoader(typeChecker);
+        final BaseIdeModelLoader modelLoader = getModelLoader(typeChecker);
 
         return doWithSourceModel(project, false, 20, new Callable<List<PhasedUnit>>() {
             @Override
@@ -1973,7 +1975,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         if (javaElement instanceof ICompilationUnit) {
             ICompilationUnit compilationUnit = (ICompilationUnit) javaElement;
             IJavaElement packageFragment = compilationUnit.getParent();
-            JDTModelLoader projectModelLoader = getProjectModelLoader(project);
+            BaseIdeModelLoader projectModelLoader = getProjectModelLoader(project);
             // TODO : Why not use the Model Loader cache to get the declaration 
             //      instead of iterating through all the packages ?
             if (projectModelLoader != null) {
@@ -2015,7 +2017,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             "Typechecking " + listOfUnits.size() + " source files of project " + 
                             project.getName(), dependencies.size()*5+listOfUnits.size()*6);
                     try {
-                        final JDTModelLoader loader = getModelLoader(typeChecker);
+                        final BaseIdeModelLoader loader = getModelLoader(typeChecker);
 
                         return doWithSourceModel(project, false, 20, new Callable<List<PhasedUnit>>() {
                             @Override
@@ -2178,7 +2180,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             moduleManager.setTypeChecker(typeChecker);
                             moduleSourceMapper.setTypeChecker(typeChecker);
                             Context context = typeChecker.getContext();
-                            JDTModelLoader modelLoader = (JDTModelLoader) moduleManager.getModelLoader();
+                            BaseIdeModelLoader modelLoader = moduleManager.getModelLoader();
                             Module defaultModule = context.getModules().getDefaultModule();
 
                             monitor.worked(1);
@@ -2428,7 +2430,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             final TypeChecker typeChecker, final PhasedUnits phasedUnits, 
             final IdeModuleManager<IProject,IResource,IFolder,IFile> moduleManager, 
             final IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper, 
-            final JDTModelLoader modelLoader, 
+            final BaseIdeModelLoader modelLoader, 
             final Module defaultModule, IProgressMonitor mon) throws CoreException {
         SubMonitor monitor = SubMonitor.convert(mon, 10000);
         final List<IFile> projectFiles = new ArrayList<IFile>();
@@ -3001,7 +3003,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             final com.redhat.ceylon.langtools.tools.javac.util.Context context,
             final Collection<PhasedUnit> unitsTypecheckedIncrementally) {
 
-        final JDTModelLoader modelLoader = getModelLoader(typeChecker);
+        final BaseIdeModelLoader modelLoader = getModelLoader(typeChecker);
         
         context.put(LanguageCompiler.ceylonContextKey, typeChecker.getContext());
         context.put(TypeFactory.class, modelLoader.getTypeFactory());
@@ -3897,7 +3899,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             IFolder rootFolder = getRootFolder(resource);
             if (rootFolder != null) {
                 IPath rootRelativePath = resource.getFullPath().makeRelativeTo(rootFolder.getFullPath());
-                JDTModelLoader modelLoader = getProjectModelLoader(resource.getProject());
+                BaseIdeModelLoader modelLoader = getProjectModelLoader(resource.getProject());
                 if (modelLoader != null) {
                     return modelLoader.findPackage(ModelUtil.formatPath(Arrays.asList(rootRelativePath.segments()), '.'));
                 }

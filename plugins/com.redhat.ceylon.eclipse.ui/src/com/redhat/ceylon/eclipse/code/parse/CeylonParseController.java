@@ -86,11 +86,11 @@ import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.eclipse.util.PathUtils;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
+import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.BaseIdeModuleManager;
 import com.redhat.ceylon.ide.common.model.BaseIdeModuleSourceMapper;
@@ -462,8 +462,7 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
                 (BaseIdeModuleSourceMapper) phasedUnits.getModuleSourceMapper();
         moduleSourceMapper.setTypeChecker(tc);
         Context context = tc.getContext();
-        JDTModelLoader modelLoader = 
-                (JDTModelLoader) moduleManager.getModelLoader();
+        BaseIdeModelLoader modelLoader = moduleManager.getModelLoader();
 
         phasedUnits.getModuleManager().prepareForTypeChecking();
         phasedUnits.visitModules();

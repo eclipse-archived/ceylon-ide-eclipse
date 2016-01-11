@@ -28,9 +28,9 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
+import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -636,7 +636,7 @@ public final class CeylonHierarchyContentProvider
             Set<Module> allModules = new HashSet<Module>();
             allModules.add(currentModule);
             for (TypeChecker typeChecker: getTypeCheckers()) {
-                JDTModelLoader modelLoader = 
+                BaseIdeModelLoader modelLoader = 
                         getModelLoader(typeChecker);
                 Module module = 
                         modelLoader.getLoadedModule(name, 

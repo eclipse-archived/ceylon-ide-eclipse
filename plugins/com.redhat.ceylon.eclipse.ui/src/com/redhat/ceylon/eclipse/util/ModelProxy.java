@@ -20,7 +20,7 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
 import com.redhat.ceylon.ide.common.model.IProjectAware;
@@ -202,7 +202,7 @@ public class ModelProxy {
             /*optional*/ IProject project) {
         if (project==null) {
             for (TypeChecker typeChecker: getTypeCheckers()) {
-                JDTModelLoader modelLoader = getModelLoader(typeChecker);
+                BaseIdeModelLoader modelLoader = getModelLoader(typeChecker);
                 Module module = modelLoader.getLoadedModule(moduleName, moduleVersion);
                 if (module!=null) {
                     return typeChecker;

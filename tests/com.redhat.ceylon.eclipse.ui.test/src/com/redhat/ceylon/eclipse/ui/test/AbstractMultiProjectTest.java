@@ -119,7 +119,7 @@ public abstract class AbstractMultiProjectTest {
                     mainProject.exists(new Path("modules/usedModule/1.0.0/usedModule-1.0.0.src")));
     
             typeChecker = CeylonBuilder.getProjectTypeChecker(mainProject);
-            modelLoader = CeylonBuilder.getProjectModelLoader(mainProject);
+            modelLoader = (JDTModelLoader) CeylonBuilder.getProjectModelLoader(mainProject);
         }
         catch(AssertionError e) {
             compilationError = e;

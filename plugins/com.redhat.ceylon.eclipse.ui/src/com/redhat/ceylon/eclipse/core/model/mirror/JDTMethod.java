@@ -46,8 +46,8 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 
 import com.redhat.ceylon.compiler.java.metadata.Name;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader.ActionOnMethodBinding;
+import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.*;
+import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.ActionOnMethodBinding;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.loader.ModelResolutionException;
 import com.redhat.ceylon.model.loader.mirror.AnnotationMirror;
@@ -289,8 +289,8 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
 
     private void doWithBindings(final ActionOnMethodBinding action) {
         final IType declaringClassModel = enclosingClass.getType();
-        if (!JDTModelLoader.doWithMethodBinding(declaringClassModel, bindingRef.get(), action)) {
-            JDTModelLoader.doWithResolvedType(declaringClassModel, new JDTModelLoader.ActionOnResolvedType() {
+        if (!doWithMethodBinding(declaringClassModel, bindingRef.get(), action)) {
+            doWithResolvedType(declaringClassModel, new ActionOnResolvedType() {
                 @Override
                 public void doWithBinding(ReferenceBinding declaringClass) {
                     MethodBinding method = null;
