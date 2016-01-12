@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="ceylon-ide-eclipse" default="help" basedir="." xmlns:mvn="antlib:org.apache.maven.artifact.ant">
+<project name="ceylon-ide-eclipse" default="help" basedir="." xmlns:mvn="antlib:org.apache.maven.artifact.ant" xmlns:if="ant:if">
 
     <tstamp>
         <format property="NOW" pattern="yyyyMMddHHmm" />
     </tstamp>
 
+    <property environment="env"/>
     <property file="build.properties"/>
     <property name="ceylon.executable" value="${dist.bin.dir}/ceylon"/>
 
@@ -12,6 +13,9 @@
     <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
         uri="antlib:org.apache.maven.artifact.ant"
         classpathref="maven-ant-tasks.classpath" />
+
+    <path id="xmltask.classpath" path="${basedir}/lib/xmltask-1.16.jar" />
+    <taskdef name="xmltask" classname="com.oopsconsultancy.xmltask.ant.XmlTask" classpathref="xmltask.classpath"/>
 
     <target name="help">
         <echo>Options for building the Ceylon IDE plugins:
@@ -21,11 +25,25 @@
 
     <property name="build-against" location="current-master"/>
 
+    <property name="m2-user-settings" value="${user.home}/.m2/settings.xml" />
+    <property name="m2-global-settings" value="${env.M2_HOME}/conf/settings.xml" />
+    <available file="${m2-user-settings}" property="m2-user-settings-exists"/>
+    <available file="${m2-global-settings}" property="m2-global-settings-exists"/>
+    <!-- since properties are read-only, the first assignment remains effective (if any) -->
+    <xmltask source="${m2-user-settings}" if:set="m2-user-settings-exists">
+        <copy path="/*[local-name()='settings']/*[local-name()='localRepository']/text()" property="localRepository"/>
+    </xmltask>
+    <xmltask source="${m2-global-settings}" if:set="m2-global-settings-exists">
+        <copy path="/*[local-name()='settings']/*[local-name()='localRepository']/text()" property="localRepository"/>
+    </xmltask>
+    <echo if:set="localRepository">Using localRepository ${localRepository}</echo>
+
     <target name="build"
             description="Builds the IDE plugin">
         <echo>${ceylon.executable}</echo>
         <echo>${ceylon.ant.lib}</echo>
         <mvn:mvn pom="${basedir}/pom.xml" mavenVersion="3.2.2" fork="true" dir="${basedir}" failonerror="true">
+            <localRepository path="${localRepository}" if:set="localRepository" />
             <arg value="clean" />
             <arg value="install" />
             <arg value="-DskipTests" />
@@ -38,6 +56,7 @@
     <target name="clean"
             description="Cleans the build environment">
         <!--mvn:mvn pom="${basedir}/pom.xml" mavenVersion="3.2.2" fork="true" dir="${basedir}" failonerror="true">
+            <localRepository path="${localRepository}" if:set="localRepository" />
             <arg value="clean" />
         </mvn:mvn-->
     </target>
