@@ -65,6 +65,8 @@ shared object ceylonModel extends CeylonProjects<IProject,IResource,IFolder,IFil
                 .makeRelativeTo(sourceDir.projectRelativePath)
                     .segments()).coalesced.sequence();
         
+        shared actual String getShortName(IResource resource) => 
+                resource.name;
     }
     
     shared actual VirtualFileSystem vfs {

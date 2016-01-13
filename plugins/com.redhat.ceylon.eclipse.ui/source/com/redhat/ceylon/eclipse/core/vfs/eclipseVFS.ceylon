@@ -1,5 +1,6 @@
 import com.redhat.ceylon.eclipse.core.model {
-    ceylonModel
+    ceylonModel,
+    nativeFolderProperties
 }
 import com.redhat.ceylon.ide.common.model {
     CeylonProject
@@ -9,7 +10,10 @@ import com.redhat.ceylon.ide.common.vfs {
     ResourceVirtualFile,
     FileVirtualFile
 }
-
+import com.redhat.ceylon.ide.common.util {
+    unsafeCast,
+    equalsWithNulls
+}
 import java.io {
     InputStream
 }
@@ -20,7 +24,6 @@ import java.util {
     JList=List,
     ArrayList
 }
-
 import org.eclipse.core.resources {
     IResource,
     IFolder,
@@ -30,6 +33,12 @@ import org.eclipse.core.resources {
 import org.eclipse.core.runtime {
     IPath,
     CoreException
+}
+import com.redhat.ceylon.model.typechecker.model {
+    Package
+}
+import java.lang.ref {
+    WeakReference
 }
 
 shared class IFolderVirtualFile
@@ -66,6 +75,24 @@ shared class IFolderVirtualFile
             => (super of FolderVirtualFile<IProject,IResource, IFolder, IFile>).equals(that);
     shared actual Integer hash
             => (super of FolderVirtualFile<IProject,IResource, IFolder, IFile>).hash;
+
+    shared actual Boolean isSource => 
+            let (root = rootFolder) 
+            if (exists root)
+            then
+                if (root == this)
+                then unsafeCast<Boolean>(nativeResource.getSessionProperty(nativeFolderProperties.rootIsSource))
+                else root.isSource
+            else false;
+    
+    shared actual FolderVirtualFile<IProject,IResource,IFolder,IFile>? rootFolder =>
+            unsafeCast<WeakReference<FolderVirtualFile<IProject,IResource,IFolder,IFile>>?>(
+                nativeResource.getSessionProperty(nativeFolderProperties.root))?.get();
+    
+    shared actual Package? ceylonPackage  =>
+            unsafeCast<WeakReference<Package>?>(
+                nativeResource.getSessionProperty(
+                    nativeFolderProperties.packageModel))?.get();
 }
 
 shared class IFileVirtualFile

@@ -40,9 +40,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -77,6 +79,7 @@ import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities;
 import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.model.cmr.ArtifactResultType;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -284,7 +287,9 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
     public boolean resolveClasspath(IProgressMonitor monitor, boolean reparse)  {
         IJavaProject javaProject = getJavaProject();
         IProject project = javaProject.getProject();
-
+        
+        CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
+        
         try {
 
             TypeChecker typeChecker = null;
@@ -310,7 +315,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
                 JavaCore.setClasspathContainer(getPath(), 
                         new IJavaProject[]{javaProject}, 
                         new IClasspathContainer[]{ new CeylonProjectModulesContainer(javaProject, getPath(), resetEntries, attributes)} , monitor);
-                typeChecker = parseCeylonModel(project, monitor);
+                typeChecker = parseCeylonModel(ceylonProject, monitor);
             }
             
             IFolder explodedModulesFolder = getCeylonClassesOutputFolder(project);

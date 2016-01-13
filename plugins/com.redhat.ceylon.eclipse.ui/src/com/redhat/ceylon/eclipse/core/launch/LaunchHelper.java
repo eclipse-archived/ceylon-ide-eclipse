@@ -43,6 +43,7 @@ import org.eclipse.jface.window.Window;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -92,11 +93,12 @@ public class LaunchHelper {
                 new LinkedList<IFile>();
         for (IFile file : files) {
             IProject project = file.getProject();
+            CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
             TypeChecker typeChecker = 
                     getProjectTypeChecker(project);
             if (typeChecker != null) {
                 FileVirtualFile<IProject, IResource, IFolder, IFile> virtualFile = 
-                        vfsJ2C().createVirtualFile(file);
+                        vfsJ2C().createVirtualFile(file, ceylonProject);
                 PhasedUnit phasedUnit = 
                         typeChecker.getPhasedUnits()
                             .getPhasedUnit(virtualFile);

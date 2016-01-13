@@ -11,6 +11,7 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
 
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
@@ -62,4 +63,8 @@ public interface ModelJ2C {
             String fullPath, LazyPackage pkg);
 
     LookupEnvironmentUtilities.Provider getLookupEnvironmentProvider(IType type);
+
+    void setTypeCheckerOnCeylonProject(
+            CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject,
+            TypeChecker typechecker);
 }

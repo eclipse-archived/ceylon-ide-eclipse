@@ -256,8 +256,7 @@ shared class JDTModelLoader
     
     shared actual class PackageLoader(BaseIdeModule theIdeModule) extends super.PackageLoader(theIdeModule) {
         
-        assert(exists javaProject = javaProjectInfos?.javaProject);
-        
+        value javaProject = javaProjectInfos?.javaProject;
         value jdtModule => unsafeCast<JDTModule>(ideModule);
         
         {IPackageFragment*} getPackageFragments(String quotedPackageName) =>
@@ -266,7 +265,7 @@ shared class JDTModelLoader
                     .filter((root) => 
                                 every {
                                     root.\iexists(),
-                                    javaProject.isOnClasspath(root),
+                                    unsafeCast<IJavaProject>(javaProject).isOnClasspath(root),
                                     withJavaModel { 
                                         do() => 
                                                 let(entry = root.rawClasspathEntry)
@@ -324,7 +323,7 @@ shared class JDTModelLoader
                                                  };
                                     } else {}
                                 };
-                        }.filter((type) => (type of IJavaElement).\iexists());
+                        };
         
         shared actual Boolean shouldBeOmitted(IType type) =>
             //  skip all classes whose flat name has a '$' after the first character
@@ -412,12 +411,11 @@ shared class JDTModelLoader
 
             variable ObjectArray<CharArray>? compoundName = null;
             variable IType? type = null;
-            
             if (numberOfParts > 0) {
                 variable value searchingInPreviousParts = false;
                 for (packagePartsEndIndex in numberOfParts-1..0) {
                     value triedPackageName = ObjectArray<CharArray>(packagePartsEndIndex, CharArray(0));
-                    for (j in 0..packagePartsEndIndex-1) {
+                    for (j in 0:packagePartsEndIndex) {
                         triedPackageName.set(j, uncertainCompoundName.get(j));
                     }
                     
@@ -426,9 +424,8 @@ shared class JDTModelLoader
                         // Don't search for an inner class whose top-level class has the same name as an existing package;
                         break;
                     }
-                    
                     variable value triedClassNameSize = 0;
-                    for (k in packagePartsEndIndex..numberOfParts-1) {
+                    for (k in packagePartsEndIndex:numberOfParts-packagePartsEndIndex) {
                         triedClassNameSize += uncertainCompoundName.get(k).size + 1;
                     }
                     triedClassNameSize --;
@@ -439,15 +436,13 @@ shared class JDTModelLoader
                     variable value currentPartLength = currentPart.size;
                     System.arraycopy(currentPart, 0, triedClassName, currentDestinationIndex, currentPartLength);
                     currentDestinationIndex += currentPartLength;
-                    if (packagePartsEndIndex < numberOfParts - 1) {
-                        for (currentPartIndex in packagePartsEndIndex+1..numberOfParts-1) {
-                            triedClassName.set(currentDestinationIndex, '$');
-                            currentDestinationIndex++;
-                            currentPart = uncertainCompoundName.get(currentPartIndex);
-                            currentPartLength = currentPart.size;
-                            System.arraycopy(currentPart, 0, triedClassName, currentDestinationIndex, currentPartLength);
-                            currentDestinationIndex += currentPartLength;
-                        }
+                    for (currentPartIndex in packagePartsEndIndex+1:numberOfParts-packagePartsEndIndex-1) {
+                        triedClassName.set(currentDestinationIndex, '$');
+                        currentDestinationIndex++;
+                        currentPart = uncertainCompoundName.get(currentPartIndex);
+                        currentPartLength = currentPart.size;
+                        System.arraycopy(currentPart, 0, triedClassName, currentDestinationIndex, currentPartLength);
+                        currentDestinationIndex += currentPartLength;
                     }
                     
                     type = nameEnvironment.findTypeInNameLookup(
@@ -501,12 +496,13 @@ shared class JDTModelLoader
     
     shared actual Boolean moduleContainsClass(BaseIdeModule ideModule, String packageName, String className) {
         value jdtModule = unsafeCast<JDTModule>(ideModule);
-        assert(exists javaProject = javaProjectInfos?.javaProject);
+        value javaProject = javaProjectInfos?.javaProject;
         variable Boolean moduleContainsJava = false;
         for (root in jdtModule.packageFragmentRoots) {
             try {
                 value pf = root.getPackageFragment(packageName); // TODO : shouldn't we quote the package name ??
-                if (pf.\iexists() && 
+                if (pf.\iexists(), 
+                    exists javaProject,
                     javaProject.isOnClasspath(pf)) {
                     if (pf.containsJavaResources()) {
                         moduleContainsJava = true;
@@ -543,10 +539,15 @@ shared class JDTModelLoader
             EclipseJavaCompilationUnit(typeRoot, fileName, relativePath, fullPath, pkg);
     
     shared actual String typeName(IType type) => type.elementName;
+
+    shared actual Boolean typeExists(IType type) =>
+            withJavaModel(() => (type of IJavaElement).\iexists()) else false;
     
     shared actual void setInterfaceCompanionClass(Declaration d, ClassOrInterface container, LazyPackage pkg) {
         LookupEnvironmentUtilities.isSettingInterfaceCompanionClassTL.set(LookupEnvironmentUtilities.isSettingInterfaceCompanionClassObj);
         super.setInterfaceCompanionClass(d, container, pkg);
         LookupEnvironmentUtilities.isSettingInterfaceCompanionClassTL.set(null);
     }
+    
+    logVerbose(String message) => noop();
 }

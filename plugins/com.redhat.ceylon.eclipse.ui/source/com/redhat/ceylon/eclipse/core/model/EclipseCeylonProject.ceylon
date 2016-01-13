@@ -15,13 +15,13 @@ import com.redhat.ceylon.eclipse.core.builder {
     CeylonBuilder
 }
 import com.redhat.ceylon.eclipse.ui {
-    CeylonEncodingSynchronizer
+    CeylonEncodingSynchronizer,
+    CeylonPlugin
 }
 import com.redhat.ceylon.ide.common.model {
     CeylonProject,
     ModuleDependencies,
     CeylonProjectConfig,
-    ModelAliases,
     CeylonProjects
 }
 
@@ -29,6 +29,9 @@ import java.io {
     File
 }
 
+import java.lang.ref {
+    WeakReference
+}
 import org.eclipse.core.resources {
     IProject,
     IResource,
@@ -40,7 +43,8 @@ import org.eclipse.core.runtime {
     NullProgressMonitor,
     CoreException,
     IProgressMonitor,
-    Path
+    Path,
+    QualifiedName
 }
 import org.eclipse.jdt.core {
     JavaCore
@@ -51,9 +55,23 @@ import org.eclipse.jface.dialogs {
 import org.eclipse.swt.widgets {
     Display
 }
+import com.redhat.ceylon.ide.common.vfs {
+    FolderVirtualFile
+}
+import com.redhat.ceylon.model.typechecker.model {
+    Package
+}
+
+shared object nativeFolderProperties {
+    shared QualifiedName packageModel = QualifiedName(CeylonPlugin.\iPLUGIN_ID, "nativeFolder_packageModel");
+    shared QualifiedName root = QualifiedName(CeylonPlugin.\iPLUGIN_ID, "nativeFolder_root");
+    shared QualifiedName rootIsSource = QualifiedName(CeylonPlugin.\iPLUGIN_ID, "nativeFolder_rootIsSource");
+}
 
 shared class EclipseCeylonProject(ideArtifact) 
         extends CeylonProject<IProject, IResource, IFolder, IFile>() {
+    shared actual variable TypeChecker? typechecker = null;
+
     shared actual IProject ideArtifact;
 
     shared actual String name => ideArtifact.name;
@@ -211,5 +229,18 @@ shared class EclipseCeylonProject(ideArtifact)
     
     shared actual ModuleDependencies moduleDependencies => CeylonBuilder.getModuleDependenciesForProject(ideArtifact);
     
-    shared actual TypeChecker? typechecker => CeylonBuilder.getProjectTypeChecker(ideArtifact);
+    shared actual void setPackageForNativeFolder(IFolder folder, WeakReference<Package> p) {
+        folder.setSessionProperty(nativeFolderProperties.packageModel, p);
+        folder.setSessionProperty(CeylonBuilder.\iRESOURCE_PROPERTY_PACKAGE_MODEL, p);
+    }
+    
+    shared actual void setRootForNativeFolder(IFolder folder, WeakReference<FolderVirtualFile<IProject,IResource,IFolder,IFile>> root) {
+        folder.setSessionProperty(nativeFolderProperties.root, root);
+        folder.setSessionProperty(CeylonBuilder.\iRESOURCE_PROPERTY_ROOT_FOLDER, root.get()?.nativeResource);
+    }
+    
+    shared actual void setRootIsForSource(IFolder rootFolder, Boolean isSource) { 
+        rootFolder.setSessionProperty(nativeFolderProperties.root, isSource);
+        rootFolder.setSessionProperty(CeylonBuilder.\iRESOURCE_PROPERTY_ROOT_FOLDER_TYPE, if (isSource) then CeylonBuilder.RootFolderType.\iSOURCE else CeylonBuilder.RootFolderType.\iRESOURCE);
+    }
  }

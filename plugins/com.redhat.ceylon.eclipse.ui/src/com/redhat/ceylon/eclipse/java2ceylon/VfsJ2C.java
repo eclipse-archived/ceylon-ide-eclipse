@@ -7,6 +7,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjects;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
@@ -17,15 +18,15 @@ public interface VfsJ2C {
     CeylonProjects<IProject, IResource, IFolder, IFile>.VirtualFileSystem eclipseVFS();
 
     ResourceVirtualFile<IProject, IResource, IFolder, IFile> createVirtualResource(
-            IResource resource);
+            IResource resource, CeylonProject<IProject, IResource, IFolder, IFile> project);
 
-    FileVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFile(IFile file);
+    FileVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFile(IFile file, CeylonProject<IProject, IResource, IFolder, IFile> project);
 
     FileVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFile(
             IProject project, IPath path);
 
     FolderVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFolder(
-            IFolder folder);
+            IFolder folder, CeylonProject<IProject, IResource, IFolder, IFile> project);
 
     FolderVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFolder(
             IProject project, IPath path);

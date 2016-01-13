@@ -12,6 +12,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
 
 import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
+import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.eclipse.java2ceylon.ModelJ2C;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
@@ -99,4 +100,8 @@ public class modelJ2C implements ModelJ2C {
         return typeModelLoader_.typeModelLoader(type);
     }
     
+    @Override
+    public void setTypeCheckerOnCeylonProject(CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject, TypeChecker typechecker) {
+        ((EclipseCeylonProject) ceylonProject).setTypechecker(typechecker);
+    }
 }

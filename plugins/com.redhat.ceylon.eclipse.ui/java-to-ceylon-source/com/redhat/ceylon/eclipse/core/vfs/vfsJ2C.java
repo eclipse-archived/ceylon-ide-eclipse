@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.IPath;
 
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.eclipse.java2ceylon.VfsJ2C;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjects;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
@@ -22,13 +23,12 @@ public class vfsJ2C implements VfsJ2C {
     }
     
     @Override
-    public ResourceVirtualFile<IProject, IResource, IFolder, IFile> createVirtualResource(IResource resource) {
-        // TODO ceylonProject should not be null 
-        return eclipseVFS().createVirtualResource(resource, null);
+    public ResourceVirtualFile<IProject, IResource, IFolder, IFile> createVirtualResource(IResource resource, CeylonProject<IProject, IResource, IFolder, IFile> project) {
+        return eclipseVFS().createVirtualResource(resource, project);
     }
 
     @Override
-    public FileVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFile(IFile file) {
+    public FileVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFile(IFile file, CeylonProject<IProject, IResource, IFolder, IFile> project) {
         // TODO ceylonProject should not be null 
         return eclipseVFS().createVirtualFile(file, null);
     }
@@ -39,9 +39,8 @@ public class vfsJ2C implements VfsJ2C {
     }
     
     @Override
-    public FolderVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFolder(IFolder folder) {
-        // TODO ceylonProject should not be null 
-        return eclipseVFS().createVirtualFolder(folder, null);
+    public FolderVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFolder(IFolder folder, CeylonProject<IProject, IResource, IFolder, IFile> project) {
+        return eclipseVFS().createVirtualFolder(folder, project);
     }
     
     @Override

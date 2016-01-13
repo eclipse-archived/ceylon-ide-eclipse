@@ -1,5 +1,6 @@
 package com.redhat.ceylon.test.eclipse.plugin.launch;
 
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.errorCanNotFindSelectedTest;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.errorDialogTitle;
@@ -25,7 +26,9 @@ import java.util.List;
 import java.util.Objects;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
@@ -59,6 +62,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
@@ -236,7 +240,9 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
         String fileName = file.getName().substring(0, file.getName().length() - file.getFileExtension().length() - 1);
         names.add(fileName);
 
-        PhasedUnit phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(vfsJ2C().createVirtualFile(file));
+        CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
+
+        PhasedUnit phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(vfsJ2C().createVirtualFile(file, ceylonProject));
         if (phasedUnit != null) {
             List<Declaration> declarations = phasedUnit.getDeclarations();
             for (Declaration d : declarations) {
