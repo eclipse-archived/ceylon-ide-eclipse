@@ -1,6 +1,5 @@
 package com.redhat.ceylon.test.eclipse.plugin.launch;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.errorCanNotFindSelectedTest;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.errorDialogTitle;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_ENTRIES_KEY;

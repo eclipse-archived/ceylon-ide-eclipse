@@ -171,7 +171,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     
     public JDTModelLoader(final JDTModuleManager moduleManager, JDTModuleSourceMapper moduleSourceMapper, final Modules modules){
         this.moduleSourceMapper = moduleSourceMapper;
-        this.moduleManager = moduleManager;
+        initModuleManager(moduleManager);
         moduleManager.setModelLoader(this);
         this.modules = modules;
         javaProject = moduleManager.getJavaProject();
@@ -193,7 +193,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     public JDTModuleManager getModuleManager() {
-        return (JDTModuleManager) moduleManager;
+        return (JDTModuleManager) super.getModuleManager();
     }
     
     private void internalCreate() {
@@ -1393,7 +1393,7 @@ public class JDTModelLoader extends AbstractModelLoader {
     }
 
     public void setModuleAndPackageUnits() {
-        for (Module module : moduleManager.getModules().getListOfModules()) {
+        for (Module module : getModuleManager().getModules().getListOfModules()) {
             if (module instanceof JDTModule) {
                 JDTModule jdtModule = (JDTModule) module;
                 if (jdtModule.isCeylonBinaryArchive()) {
