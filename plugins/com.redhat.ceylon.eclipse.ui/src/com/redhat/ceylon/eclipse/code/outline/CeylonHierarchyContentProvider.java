@@ -11,6 +11,8 @@ import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getSignature;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +31,7 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
+import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 import com.redhat.ceylon.model.cmr.JDKUtils;
@@ -609,7 +612,7 @@ public final class CeylonHierarchyContentProvider
                 Module module) {
             if (!filters.isFiltered(module)) {
                 for (Package pack: 
-                        module.getAllReachablePackages()) {
+                        module.getPackages()) {
                     if (!filters.isFiltered(pack)) {
                         String packageModuleName = 
                                 pack.getModule()
@@ -631,21 +634,20 @@ public final class CeylonHierarchyContentProvider
             Unit unit = declaration.getUnit();
             Module currentModule = 
                     unit.getPackage().getModule();
-            String name = currentModule.getNameAsString();
-            String version = currentModule.getVersion();
             Set<Module> allModules = new HashSet<Module>();
-            allModules.add(currentModule);
-            for (TypeChecker typeChecker: getTypeCheckers()) {
-                JDTModelLoader modelLoader = 
-                        getModelLoader(typeChecker);
-                Module module = 
-                        modelLoader.getLoadedModule(name, 
-                                version);
-                if (module!=null) { //TODO: check this with David ... could we use JDTModule.getReferencingModules()?
-                    ModuleSourceMapper moduleSourceMapper = 
-                            typeChecker.getPhasedUnits()
-                                .getModuleSourceMapper();
-                    allModules.addAll(moduleSourceMapper.getCompiledModules());
+            if (currentModule instanceof JDTModule) {
+                JDTModule jdtCurrentModule = (JDTModule) currentModule;
+                List<JDTModule> moduleInAllProjects = new ArrayList<JDTModule>(); 
+                moduleInAllProjects.add(jdtCurrentModule);
+                moduleInAllProjects.addAll(jdtCurrentModule.getModuleInReferencingProjects());
+                for (JDTModule jdtModule : moduleInAllProjects) {
+                    allModules.add(jdtModule);
+                    for (Module relatedModule : jdtModule.getReferencingModules()) {
+                        allModules.add(relatedModule);
+                    }
+                    for (Module relatedModule : jdtModule.getTransitiveDependencies()) {
+                        allModules.add(relatedModule);
+                    }
                 }
             }
             return allModules;
