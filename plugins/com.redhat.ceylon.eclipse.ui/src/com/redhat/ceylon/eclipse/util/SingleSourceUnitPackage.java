@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.model.typechecker.model.Annotation;
+import com.redhat.ceylon.model.typechecker.model.Cancellable;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Import;
@@ -120,8 +121,8 @@ public class SingleSourceUnitPackage extends com.redhat.ceylon.model.typechecker
 
     @Override
     public Map<String, DeclarationWithProximity> getMatchingDeclarations(
-            Unit unit, String startingWith, int proximity) {
-        return super.getMatchingDeclarations(unit, startingWith, proximity);
+            Unit unit, String startingWith, int proximity, Cancellable cancellable) {
+        return super.getMatchingDeclarations(unit, startingWith, proximity, cancellable);
     }
 
     @Override

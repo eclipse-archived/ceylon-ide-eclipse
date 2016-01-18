@@ -77,6 +77,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
+import com.redhat.ceylon.model.typechecker.model.Cancellable;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -1189,7 +1190,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         Unit unit = getUnit();
         Class ed = unit.getExceptionDeclaration();
         for (DeclarationWithProximity dwp:
-                getSortedProposedValues(scope, unit)) {
+                getSortedProposedValues(scope, unit, null)) {
             Declaration dec = dwp.getDeclaration();
             if (dec instanceof TypeDeclaration && 
                     !dwp.isUnimported()) {

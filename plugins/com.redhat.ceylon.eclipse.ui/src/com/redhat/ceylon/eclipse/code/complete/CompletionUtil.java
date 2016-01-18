@@ -24,6 +24,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Cancellable;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -189,7 +190,7 @@ public class CompletionUtil {
     getSortedProposedValues(Scope scope, Unit unit, 
             final String exactName) {
         Map<String, DeclarationWithProximity> map = 
-                scope.getMatchingDeclarations(unit, "", 0);
+                scope.getMatchingDeclarations(unit, "", 0, null);
         if (exactName!=null) {
             for (DeclarationWithProximity dwp: 
                 new ArrayList<DeclarationWithProximity>

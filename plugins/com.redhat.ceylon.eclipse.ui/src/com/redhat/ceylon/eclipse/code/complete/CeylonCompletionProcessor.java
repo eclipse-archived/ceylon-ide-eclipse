@@ -147,6 +147,7 @@ import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 import com.redhat.ceylon.eclipse.util.Types;
 import com.redhat.ceylon.ide.common.completion.FindScopeVisitor;
 import com.redhat.ceylon.ide.common.completion.IdeCompletionManager;
+import com.redhat.ceylon.model.typechecker.model.Cancellable;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
@@ -482,8 +483,13 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             CeylonParseController controller,
             int offset, ITextViewer viewer, 
             boolean secondLevel, boolean returnedParamInfo, 
-            IProgressMonitor monitor) {
-        
+            final IProgressMonitor monitor) {
+        Cancellable cancellable = new Cancellable() {
+            @Override
+            public boolean isCancelled() {
+                return monitor.isCanceled();
+            }
+        };
         if (controller==null || viewer==null) {
             return null;
         }
@@ -621,10 +627,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             //finally, construct and sort proposals
             Map<String, DeclarationWithProximity> proposals = 
                     DUMMY_INSTANCE.getProposals(node, scope, prefix, 
-                            isMemberOp, typecheckedRootNode);
+                            isMemberOp, typecheckedRootNode, cancellable);
             Map<String, DeclarationWithProximity> functionProposals =
                     DUMMY_INSTANCE.getFunctionProposals(node, scope, prefix, 
-                            isMemberOp);
+                            isMemberOp, cancellable);
             filterProposals(proposals);
             filterProposals(functionProposals);
             Set<DeclarationWithProximity> sortedProposals = 
@@ -1672,8 +1678,9 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     
     public static Map<String, DeclarationWithProximity> 
     getProposals(Node node, Scope scope, 
-            Tree.CompilationUnit rootNode) {
-       return DUMMY_INSTANCE.getProposals(node, scope, "", false, rootNode); 
+            Tree.CompilationUnit rootNode,
+            Cancellable cancellable) {
+       return DUMMY_INSTANCE.getProposals(node, scope, "", false, rootNode, cancellable); 
     }
     
     static List<IContextInformation> computeParameterContextInformation(

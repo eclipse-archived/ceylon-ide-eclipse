@@ -111,7 +111,7 @@ class ChangeReferenceProposal extends CorrectionProposal {
                     !brokenName.isEmpty()) {
                 Scope scope = node.getScope();
                 Collection<DeclarationWithProximity> dwps = 
-                        getProposals(node, scope, rootNode)
+                        getProposals(node, scope, rootNode, null)
                             .values();
                 for (DeclarationWithProximity dwp: dwps) {
                     processProposal(rootNode, problem, 
