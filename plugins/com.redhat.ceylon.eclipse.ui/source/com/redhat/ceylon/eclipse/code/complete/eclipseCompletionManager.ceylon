@@ -381,7 +381,8 @@ shared class EclipseCompletionManager(CeylonEditor editor)
             
             value line = CompletionUtil.getLine(offset, viewer);
             return getContentProposals(pu.compilationUnit, controller, offset, line,
-                secondLevel, EclipseProgressMonitor(monitor), returnedParamInfo);
+                secondLevel, EclipseProgressMonitor(monitor), returnedParamInfo,
+                EclipseProgressMonitor(monitor));
         }
         else {
             return [];

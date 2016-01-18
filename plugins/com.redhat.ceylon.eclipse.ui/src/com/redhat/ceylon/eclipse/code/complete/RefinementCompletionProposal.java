@@ -420,7 +420,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         //declarations
         TypeDeclaration td = type.getDeclaration();
         for (DeclarationWithProximity dwp: 
-                getSortedProposedValues(scope, unit)) {
+                getSortedProposedValues(scope, unit, null)) {
             if (dwp.isUnimported()) {
                 //don't propose unimported stuff b/c adding
                 //imports drops us out of linked mode and

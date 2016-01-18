@@ -9,4 +9,5 @@ shared class EclipseProgressMonitor(IProgressMonitor eclipseMonitor)
 
     shared actual void worked(Integer amount) => wrapped.worked(amount);
     shared actual void subTask(String? desc) => wrapped.subTask(desc);
+    shared actual Boolean cancelled => wrapped.canceled;
 }

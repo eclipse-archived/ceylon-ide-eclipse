@@ -23,6 +23,6 @@ public class completionJ2C implements CompletionJ2C {
      */
     @Override
     public Map<String,DeclarationWithProximity> getProposals(Node node, Scope scope, Tree.CompilationUnit rootNode) {
-        return dummyInstance_.get_().getProposals(node, scope, "", false, rootNode);
+        return dummyInstance_.get_().getProposals(node, scope, "", false, rootNode, null);
     }
 }

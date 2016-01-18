@@ -150,6 +150,7 @@ import com.redhat.ceylon.eclipse.util.Types;
 import com.redhat.ceylon.ide.common.completion.FindScopeVisitor;
 import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
 import com.redhat.ceylon.ide.common.util.escaping_;
+import com.redhat.ceylon.model.typechecker.model.Cancellable;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
@@ -320,8 +321,13 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             CeylonParseController controller,
             int offset, ITextViewer viewer, 
             boolean secondLevel, boolean returnedParamInfo, 
-            IProgressMonitor monitor) {
-        
+            final IProgressMonitor monitor) {
+        Cancellable cancellable = new Cancellable() {
+            @Override
+            public boolean isCancelled() {
+                return monitor.isCanceled();
+            }
+        };
         if (controller==null || viewer==null) {
             return null;
         }
@@ -460,10 +466,10 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             //finally, construct and sort proposals
             Map<String, DeclarationWithProximity> proposals =
                     getProposals(node, scope, prefix,
-                            isMemberOp, typecheckedRootNode);
+                            isMemberOp, typecheckedRootNode, cancellable);
             Map<String, DeclarationWithProximity> functionProposals =
-                    getFunctionProposals(node, scope, prefix,
-                            isMemberOp);
+                    getFunctionProposals(node, scope, prefix, 
+                            isMemberOp, cancellable);
             filterProposals(proposals);
             filterProposals(functionProposals);
             Set<DeclarationWithProximity> sortedProposals = 
@@ -1526,13 +1532,13 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     
     public static Map<String, DeclarationWithProximity> 
     getProposals(Node node, Scope scope, 
-            Tree.CompilationUnit rootNode) {
-       return getProposals(node, scope, "", false, rootNode);
+            Tree.CompilationUnit rootNode, Cancellable cancellable) {
+       return getProposals(node, scope, "", false, rootNode, cancellable);
     }
 
     private static Map<String, DeclarationWithProximity>
     getFunctionProposals(Node node, Scope scope,
-            String prefix, boolean memberOp) {
+            String prefix, boolean memberOp, Cancellable cancellable) {
         Unit unit = node.getUnit();
         if (node instanceof Tree.QualifiedMemberOrTypeExpression) {
             Tree.QualifiedMemberOrTypeExpression qmte =
@@ -1543,7 +1549,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
                     !isTypeUnknown(type)) {
                 return collectUnaryFunctions(type,
                         scope.getMatchingDeclarations(
-                                unit, prefix, 0));
+                                unit, prefix, 0, cancellable));
             }
         }
         else if (memberOp && node instanceof Tree.Term) {
@@ -1555,7 +1561,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             if (type!=null) {
                 return collectUnaryFunctions(type,
                         scope.getMatchingDeclarations(
-                                unit, prefix, 0));
+                                unit, prefix, 0, cancellable));
             }
             else {
                 return emptyMap();
@@ -1604,7 +1610,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
 
     private static Map<String, DeclarationWithProximity>
     getProposals(Node node, Scope scope, String prefix,
-            boolean memberOp, Tree.CompilationUnit rootNode) {
+            boolean memberOp, Tree.CompilationUnit rootNode, Cancellable cancellable) {
         Unit unit = node.getUnit();
         if (node instanceof Tree.MemberLiteral) {
             Tree.MemberLiteral ml = (Tree.MemberLiteral) node;
@@ -1712,7 +1718,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             }
             else if (scope!=null) {
                 return scope.getMatchingDeclarations(
-                        unit, prefix, 0);
+                        unit, prefix, 0, cancellable);
             }
             else {
                 return emptyMap();
@@ -1748,20 +1754,20 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             }
             else {
                 return scope.getMatchingDeclarations(
-                        unit, prefix, 0);
+                        unit, prefix, 0, cancellable);
             }
         }
         else {
             if (scope instanceof ImportList) {
                 ImportList IL = (ImportList) scope;
                 return IL.getMatchingDeclarations(
-                        unit, prefix, 0);
+                        unit, prefix, 0, cancellable);
             }
             else {
                 return scope==null ? //a null scope occurs when we have not finished parsing the file
-                        getUnparsedProposals(rootNode, prefix) :
+                        getUnparsedProposals(rootNode, prefix, cancellable) :
                         scope.getMatchingDeclarations(
-                                unit, prefix, 0);
+                                unit, prefix, 0, cancellable);
             }
         }
     }
@@ -1789,7 +1795,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
     }
 
     private static Map<String, DeclarationWithProximity>
-    getUnparsedProposals(Node node, String prefix) {
+    getUnparsedProposals(Node node, String prefix, Cancellable cancellable) {
         if (node == null) {
             return newEmptyProposals();
         }
@@ -1802,7 +1808,7 @@ public class CeylonCompletionProcessor implements IContentAssistProcessor {
             return newEmptyProposals();
         }
         return pkg.getModule()
-                .getAvailableDeclarations(prefix, 0);
+                .getAvailableDeclarations(prefix, 0, cancellable);
     }
 
     private static TreeMap<String, DeclarationWithProximity>

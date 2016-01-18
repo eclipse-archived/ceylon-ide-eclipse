@@ -1207,7 +1207,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         Unit unit = getUnit();
         Class ed = unit.getExceptionDeclaration();
         for (DeclarationWithProximity dwp:
-                getSortedProposedValues(scope, unit)) {
+                getSortedProposedValues(scope, unit, null)) {
             Declaration dec = dwp.getDeclaration();
             if (dec instanceof TypeDeclaration &&
                     !dwp.isUnimported()) {

@@ -596,7 +596,7 @@ class ParametersCompletionProposal extends CompletionProposal {
         }
         Unit unit = getUnit();
         List<DeclarationWithProximity> proposals = 
-                getSortedProposedValues(scope, unit);
+                getSortedProposedValues(scope, unit, null);
         for (DeclarationWithProximity dwp: proposals) {
             if (dwp.getProximity()<=1) {
                 addValueArgumentProposal(loc, props, index, 

@@ -189,7 +189,7 @@ public class CompletionUtil {
     getSortedProposedValues(Scope scope, Unit unit, 
             final String exactName) {
         Map<String, DeclarationWithProximity> map = 
-                scope.getMatchingDeclarations(unit, "", 0);
+                scope.getMatchingDeclarations(unit, "", 0, null);
         if (exactName!=null) {
             for (DeclarationWithProximity dwp: 
                 new ArrayList<DeclarationWithProximity>

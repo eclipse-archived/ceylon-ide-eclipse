@@ -1106,6 +1106,13 @@
 //        return Collections.emptyList();
 //    }
 //
+//    public Iterable<Module> getTransitiveDependencies() {
+//        if (getProjectModuleDependencies() != null) {
+//            return getProjectModuleDependencies().getTransitiveDependencies(this); 
+//        }
+//            return Collections.emptyList();
+//    }
+//
 //    public boolean resolutionFailed() {
 //        return resolutionException != null;
 //    }
