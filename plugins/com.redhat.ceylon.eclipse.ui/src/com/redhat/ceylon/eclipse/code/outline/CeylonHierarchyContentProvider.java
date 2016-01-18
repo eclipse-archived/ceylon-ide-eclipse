@@ -3,14 +3,13 @@ package com.redhat.ceylon.eclipse.code.outline;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_HIERARCHY_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.HIERARCHY_FILTERS;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
 import static com.redhat.ceylon.eclipse.util.ModelProxy.getDeclarationInUnit;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getInterveningRefinements;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getSignature;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,13 +23,14 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
+import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
-import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
+import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.util.toJavaIterable_;
+import com.redhat.ceylon.ide.common.util.toJavaList_;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -609,7 +609,7 @@ public final class CeylonHierarchyContentProvider
                 Module module) {
             if (!filters.isFiltered(module)) {
                 for (Package pack: 
-                        module.getAllReachablePackages()) {
+                        module.getPackages()) {
                     if (!filters.isFiltered(pack)) {
                         String packageModuleName = 
                                 pack.getModule()
@@ -631,21 +631,21 @@ public final class CeylonHierarchyContentProvider
             Unit unit = declaration.getUnit();
             Module currentModule = 
                     unit.getPackage().getModule();
-            String name = currentModule.getNameAsString();
-            String version = currentModule.getVersion();
             Set<Module> allModules = new HashSet<Module>();
-            allModules.add(currentModule);
-            for (TypeChecker typeChecker: getTypeCheckers()) {
-                BaseIdeModelLoader modelLoader = 
-                        getModelLoader(typeChecker);
-                Module module = 
-                        modelLoader.getLoadedModule(name, 
-                                version);
-                if (module!=null) { //TODO: check this with David ... could we use JDTModule.getReferencingModules()?
-                    ModuleSourceMapper moduleSourceMapper = 
-                            typeChecker.getPhasedUnits()
-                                .getModuleSourceMapper();
-                    allModules.addAll(moduleSourceMapper.getCompiledModules());
+            if (currentModule instanceof BaseIdeModule) {
+                BaseIdeModule jdtCurrentModule = (BaseIdeModule) currentModule;
+                List<BaseIdeModule> moduleInAllProjects = new ArrayList<BaseIdeModule>();
+                TypeDescriptor BaseIdeModuleTD = TypeDescriptor.klass(BaseIdeModule.class);
+                moduleInAllProjects.add(jdtCurrentModule);
+                moduleInAllProjects.addAll(toJavaList_.toJavaList(BaseIdeModuleTD, jdtCurrentModule.getModuleInReferencingProjects()));
+                for (BaseIdeModule ideModule : moduleInAllProjects) {
+                    allModules.add(ideModule);
+                    for (Module relatedModule : toJavaIterable_.toJavaIterable(BaseIdeModuleTD, ideModule.getReferencingModules())) {
+                        allModules.add(relatedModule);
+                    }
+                    for (Module relatedModule : toJavaIterable_.toJavaIterable(BaseIdeModuleTD, ideModule.getTransitiveDependencies())) {
+                        allModules.add(relatedModule);
+                    }
                 }
             }
             return allModules;
