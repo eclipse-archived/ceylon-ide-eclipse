@@ -42,6 +42,7 @@ import org.eclipse.swt.graphics.Point;
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
+import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -407,7 +408,10 @@ public class PackageCompletions {
                 query.setMemberName(fullPrefix);
                 query.setMemberSearchPackageOnly(true);
                 query.setMemberSearchExact(false);
-                query.setBinaryMajor(JVM_BINARY_MAJOR_VERSION);
+                query.setJvmBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+                query.setJvmBinaryMinor(Versions.JVM_BINARY_MINOR_VERSION);
+                query.setJsBinaryMajor(Versions.JS_BINARY_MAJOR_VERSION);
+                query.setJsBinaryMinor(Versions.JS_BINARY_MINOR_VERSION);
                 ModuleSearchResult msr = 
                         controller.getTypeChecker()
                             .getContext()

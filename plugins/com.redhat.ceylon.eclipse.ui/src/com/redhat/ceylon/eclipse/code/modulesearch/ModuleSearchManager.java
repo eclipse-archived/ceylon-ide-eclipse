@@ -78,7 +78,10 @@ public class ModuleSearchManager {
     
     private ModuleQuery newModuleQuery(String search, IProject project) {
         ModuleQuery query = getModuleQuery(search, project);
-        query.setBinaryMajor(JVM_BINARY_MAJOR_VERSION);
+        query.setJvmBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+        query.setJvmBinaryMinor(Versions.JVM_BINARY_MINOR_VERSION);
+        query.setJsBinaryMajor(Versions.JS_BINARY_MAJOR_VERSION);
+        query.setJsBinaryMinor(Versions.JS_BINARY_MINOR_VERSION);
         query.setCount(20l);
         return query;
     }
@@ -95,7 +98,10 @@ public class ModuleSearchManager {
             @Override
             protected void onRun() {
                 ModuleVersionQuery query = getModuleVersionQuery(moduleName, moduleVersion, project);
-                query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+                query.setJvmBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+                query.setJvmBinaryMinor(Versions.JVM_BINARY_MINOR_VERSION);
+                query.setJsBinaryMajor(Versions.JS_BINARY_MAJOR_VERSION);
+                query.setJsBinaryMinor(Versions.JS_BINARY_MINOR_VERSION);
                 ModuleVersionResult result = repositoryManager.completeVersions(query);
                 if (result != null) {
                     ModuleVersionDetails detail = result.getVersions().get(moduleVersion);

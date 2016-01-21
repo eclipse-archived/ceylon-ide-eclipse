@@ -93,7 +93,10 @@ public class ExportJarWizard extends Wizard implements IExportWizard {
                         @Override
                         public ModuleSearchResult getModules(String prefix) {
                             ModuleQuery query = new ModuleQuery(prefix, ModuleQuery.Type.JVM);
-                            query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+                            query.setJvmBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+                            query.setJvmBinaryMinor(Versions.JVM_BINARY_MINOR_VERSION);
+                            query.setJsBinaryMajor(Versions.JS_BINARY_MAJOR_VERSION);
+                            query.setJsBinaryMinor(Versions.JS_BINARY_MINOR_VERSION);
                             return repoManager().logger(new EclipseLogger()).isJDKIncluded(true)
                                     .buildManager().completeModules(query);
                         }
