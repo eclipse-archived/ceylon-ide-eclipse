@@ -34,6 +34,7 @@ import org.eclipse.swt.graphics.Point;
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
+import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -300,7 +301,10 @@ public class ModuleCompletions {
                 monitor.subTask("querying module repositories...");
                 ModuleQuery query = 
                         getModuleQuery(pfp, mod, project);
-                query.setBinaryMajor(JVM_BINARY_MAJOR_VERSION);
+                query.setJvmBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+                query.setJvmBinaryMinor(Versions.JVM_BINARY_MINOR_VERSION);
+                query.setJsBinaryMajor(Versions.JS_BINARY_MAJOR_VERSION);
+                query.setJsBinaryMinor(Versions.JS_BINARY_MINOR_VERSION);
                 final ModuleSearchResult results = 
                         typeChecker.getContext()
                                 .getRepositoryManager()

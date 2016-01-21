@@ -86,7 +86,10 @@ public class ModuleQueries {
                 throws InvocationTargetException, InterruptedException {
             monitor.beginTask("Querying module repositories...", IProgressMonitor.UNKNOWN);
             ModuleQuery query = getModuleQuery(prefix, module, project);
-            query.setBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+            query.setJvmBinaryMajor(Versions.JVM_BINARY_MAJOR_VERSION);
+            query.setJvmBinaryMinor(Versions.JVM_BINARY_MINOR_VERSION);
+            query.setJsBinaryMajor(Versions.JS_BINARY_MAJOR_VERSION);
+            query.setJsBinaryMinor(Versions.JS_BINARY_MINOR_VERSION);
             result = typeChecker.getContext().getRepositoryManager().completeModules(query);
             monitor.done();
         }
