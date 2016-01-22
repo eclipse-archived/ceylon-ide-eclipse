@@ -67,7 +67,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
+import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
@@ -365,6 +367,52 @@ public class TestsPanel extends Composite {
                 Navigation.gotoDeclaration(((MethodWithContainer) result).getMethod());
             }
         }
+    }
+    
+    private boolean gotoFailureOrigin(TestElement testElement) throws CoreException {
+        IProject prj = CeylonTestUtil.getProject(currentTestRun.getLaunch());
+        Object pkgOrDec = CeylonTestUtil.getPackageOrDeclaration(prj, testElement.getQualifiedName());
+        if( !(pkgOrDec instanceof Declaration) ) {
+            return false;
+        }
+        Declaration dec = (Declaration) pkgOrDec;
+        Node decNode = Nodes.getReferencedNode(dec);
+        if( dec.getUnit() == null || decNode == null || decNode.getToken() == null || decNode.getEndToken() == null ) {
+            return false;
+        }
+
+        String testFileName = dec.getUnit().getFilename();
+        int testStartLine = decNode.getToken().getLine();
+        int testEndLine = decNode.getEndToken().getLine();
+
+        List<String> lines = StackTracePanel.parseStackTraceLine(testElement.getException());
+        for (String line : lines) {
+            int indexOpeningBracket = line.indexOf('(');
+            int indexClosingBracket = line.indexOf(')');
+            int indexLineSeparator = line.indexOf(':', indexOpeningBracket);
+
+            if( indexOpeningBracket == -1 || indexClosingBracket == -1 || indexLineSeparator == -1 ) {
+                continue;
+            }
+
+            String fileName = line.substring(indexOpeningBracket+1, indexLineSeparator);
+            String lineNumberText = line.substring(indexLineSeparator+1, indexClosingBracket);
+            int lineNumber;
+            try {
+                lineNumber = Integer.parseInt(lineNumberText);
+            } catch(NumberFormatException nfe) {
+                lineNumber = -1;
+            }
+
+            if( fileName.equals(testFileName) ) {
+                if( lineNumber >= testStartLine && lineNumber <= testEndLine ) {
+                    StackTracePanel.gotoStackTraceLine(line);
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private void runSelectedElements(String launchMode) throws CoreException {
@@ -772,24 +820,20 @@ public class TestsPanel extends Composite {
 
         @Override
         public void run() {
-            Object selectedElement = getFirstSelectedElement();
-            if (selectedElement instanceof TestElement) {
-                try {
+            try {
+                Object selectedElement = getFirstSelectedElement();
+                if (selectedElement instanceof TestElement) {
                     TestElement testElement = (TestElement) selectedElement;
                     if (testElement.getState().canShowStackTrace() && testElement.getException() != null) {
-                        List<String> lines = StackTracePanel.parseStackTraceLine(testElement.getException());
-                        for (String line : lines) {
-                            String trimmedLine = line.trim();
-                            if( trimmedLine.startsWith("at "+testElement.getPackageName()) ) {
-                                StackTracePanel.gotoStackTraceLine(line);
-                                return;
-                            }
+                        boolean result = gotoFailureOrigin(testElement);
+                        if (result) {
+                            return;
                         }
                     }
                     gotoTest(testElement);
-                } catch (CoreException e) {
-                    CeylonTestPlugin.logError("", e);
                 }
+            } catch (CoreException e) {
+                CeylonTestPlugin.logError("", e);
             }
         }
 
