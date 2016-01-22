@@ -94,7 +94,10 @@ import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
 import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
+import com.redhat.ceylon.ide.common.util.findAnnotationModel_;
 import com.redhat.ceylon.model.cmr.JDKUtils;
+import com.redhat.ceylon.model.typechecker.model.Annotated;
+import com.redhat.ceylon.model.typechecker.model.Annotation;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
@@ -121,7 +124,6 @@ import com.redhat.ceylon.model.typechecker.model.TypedReference;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
 import com.redhat.ceylon.model.typechecker.util.TypePrinter;
-
 
 public class DocumentationHover extends SourceInfoHover {
     
@@ -1259,7 +1261,7 @@ public class DocumentationHover extends SourceInfoHover {
                             mod.getPackage(mod.getNameAsString());
                     Tree.AnnotationList annotationList = 
                             refnode.getAnnotationList();
-                    appendDocAnnotationContent(annotationList, 
+                    appendDocAnnotationContent(mod, annotationList, 
                             buffer, linkScope);
                     appendThrowAnnotationContent(annotationList, 
                             buffer, linkScope);
@@ -1288,7 +1290,7 @@ public class DocumentationHover extends SourceInfoHover {
                 if (refnode!=null) {
                     Tree.AnnotationList annotationList = 
                             refnode.getAnnotationList();
-                    appendDocAnnotationContent(annotationList, 
+                    appendDocAnnotationContent(pack, annotationList, 
                             buffer, pack);
                     appendThrowAnnotationContent(annotationList, 
                             buffer, pack);
@@ -1538,7 +1540,7 @@ public class DocumentationHover extends SourceInfoHover {
                 if (decNode!=null) {
                     Tree.AnnotationList annotationList = 
                             decNode.getAnnotationList();
-                    appendDocAnnotationContent(annotationList, 
+                    appendDocAnnotationContent(rd, annotationList, 
                             buffer, resolveScope(rd));
                 }
             }
@@ -1648,7 +1650,7 @@ public class DocumentationHover extends SourceInfoHover {
                             if (refNode!=null) {
                                 Tree.AnnotationList annotationList = 
                                         refNode.getAnnotationList();
-                                appendDocAnnotationContent(annotationList, 
+                                appendDocAnnotationContent(model, annotationList, 
                                         param, resolveScope(dec));
                             }
 //                            param.append("</span>");
@@ -1787,24 +1789,27 @@ public class DocumentationHover extends SourceInfoHover {
                     (Tree.SpecifierStatement) rn;
             rn = getReferencedNode(ss.getRefined());
         }
-        if (rn instanceof Tree.Declaration) {
-            Tree.Declaration refnode = 
-                    (Tree.Declaration) rn;
-            Tree.AnnotationList annotationList = 
-                    refnode.getAnnotationList();
+        if (dec.getUnit() instanceof CeylonUnit) {
+            Tree.AnnotationList annotationList = null;
+            if (rn instanceof Tree.Declaration) {
+                Tree.Declaration refnode = 
+                        (Tree.Declaration) rn;
+                annotationList = 
+                        refnode.getAnnotationList();
+            }
             Scope scope = resolveScope(dec);
             appendDeprecatedAnnotationContent(annotationList, 
                     buffer, scope);
             int len = buffer.length();
-            appendDocAnnotationContent(annotationList, 
+            appendDocAnnotationContent(dec, annotationList, 
                     buffer, scope);
             hasDoc = buffer.length()!=len;
             appendThrowAnnotationContent(annotationList, 
                     buffer, scope);
             appendSeeAnnotationContent(annotationList, 
                     buffer);
-        }
-        else {
+            
+        } else {
             appendJavadoc(dec, buffer, monitor);
         }
         return hasDoc;
@@ -2201,7 +2206,7 @@ public class DocumentationHover extends SourceInfoHover {
         }
     }
 
-    private static void appendDocAnnotationContent(
+    private static void appendDocAnnotationContent(Annotated dec,
             Tree.AnnotationList annotationList,
             StringBuilder documentation, Scope linkScope) {
         if (annotationList!=null) {
@@ -2251,6 +2256,16 @@ public class DocumentationHover extends SourceInfoHover {
                     }
                 }
             }
+        } else if (dec != null){
+            Annotation annotation = findAnnotationModel_.findAnnotationModel(dec, "doc");
+            if (annotation != null) {
+                List<String> args = annotation.getPositionalArguments();
+                if (args != null && !args.isEmpty()) {
+                    documentation.append(markdown(args.get(0), 
+                            linkScope, ((Referenceable)dec).getUnit()));
+                }
+            }
+            
         }
     }
     
