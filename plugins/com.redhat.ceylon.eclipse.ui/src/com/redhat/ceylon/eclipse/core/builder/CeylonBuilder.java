@@ -178,6 +178,7 @@ import com.redhat.ceylon.ide.common.model.parsing.RootFolderScanner;
 import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.util.CarUtils;
+import com.redhat.ceylon.ide.common.util.toCeylonString_;
 import com.redhat.ceylon.ide.common.util.toJavaIterable_;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
@@ -3992,7 +3993,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             for (IProject p : getProjects()) {
                 BaseIdeModuleManager moduleManager = getProjectModuleManager(p);
                 if (moduleManager != null) {
-                    BaseIdeModule archiveModule = moduleManager.getArchiveModuleFromSourcePath(virtualPath);
+                    BaseIdeModule archiveModule = moduleManager.getArchiveModuleFromSourcePath(toCeylonString_.toCeylonString(virtualPath));
                     if (archiveModule != null) {
                         ExternalPhasedUnit pu = archiveModule.getPhasedUnit(virtualFile);
                         if (pu != null) {
