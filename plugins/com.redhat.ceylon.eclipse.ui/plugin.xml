@@ -311,12 +311,16 @@
             markerSeverity="0"
             name="com.redhat.ceylon.eclipse.ui.todo"/>
       <type
+            markerSeverity="0"
             name="com.redhat.ceylon.eclipse.ui.declarationAnnotation"/>
       <type
+            markerSeverity="0"
             name="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"/>
       <type
+            markerSeverity="0"
             name="com.redhat.ceylon.eclipse.ui.assignmentAnnotation"/>
-      <type 
+      <type
+            markerSeverity="0"
             name="com.redhat.ceylon.eclipse.ui.refinement"/>
    </extension>
    
