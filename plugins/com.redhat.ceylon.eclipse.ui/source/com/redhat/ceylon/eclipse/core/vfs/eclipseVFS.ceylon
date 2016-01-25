@@ -3,27 +3,35 @@ import com.redhat.ceylon.eclipse.core.model {
     nativeFolderProperties
 }
 import com.redhat.ceylon.ide.common.model {
-    CeylonProject
+    CeylonProject,
+    CeylonProjects
+}
+import com.redhat.ceylon.ide.common.util {
+    unsafeCast
 }
 import com.redhat.ceylon.ide.common.vfs {
     FolderVirtualFile,
     ResourceVirtualFile,
     FileVirtualFile
 }
-import com.redhat.ceylon.ide.common.util {
-    unsafeCast,
-    equalsWithNulls
+import com.redhat.ceylon.model.typechecker.model {
+    Package
 }
+
 import java.io {
     InputStream
 }
 import java.lang {
     RuntimeException
 }
+import java.lang.ref {
+    WeakReference
+}
 import java.util {
     JList=List,
     ArrayList
 }
+
 import org.eclipse.core.resources {
     IResource,
     IFolder,
@@ -34,27 +42,22 @@ import org.eclipse.core.runtime {
     IPath,
     CoreException
 }
-import com.redhat.ceylon.model.typechecker.model {
-    Package
-}
-import java.lang.ref {
-    WeakReference
-}
 
 shared class IFolderVirtualFile
         satisfies FolderVirtualFile<IProject, IResource, IFolder, IFile> {
     shared actual IFolder nativeResource;
-    shared actual CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject;
+    shared actual IProject nativeProject;
+    shared actual CeylonProject<IProject, IResource, IFolder, IFile>? ceylonProject;
     shared new(IFolder nativeResource) {
         this.nativeResource = nativeResource;
-        assert(exists existingCeylonProject = ceylonModel.getProject(nativeResource.project));
-        ceylonProject = existingCeylonProject;
+        nativeProject = nativeResource.project;
+        ceylonProject = ceylonModel.getProject(nativeResource.project);
     }
 
     shared new fromProject(IProject project, IPath projectRelativePath) {
-        this.nativeResource = project.getFolder(projectRelativePath);
-        assert(exists existingCeylonProject = ceylonModel.getProject(nativeResource.project));
-        ceylonProject = existingCeylonProject;
+        nativeResource = project.getFolder(projectRelativePath);
+        nativeProject = project;
+        ceylonProject = ceylonModel.getProject(nativeResource.project);
     }
 
     shared actual JList<out ResourceVirtualFile<IProject,IResource, IFolder, IFile>> children {
@@ -62,7 +65,7 @@ shared class IFolderVirtualFile
         try {
             for (childResource in nativeResource.members().iterable) {
                 assert (exists childResource);
-                children.add(ceylonModel.vfs.createVirtualResource(childResource, ceylonProject));
+                children.add(ceylonModel.vfs.createVirtualResource(childResource, nativeProject));
             }
         } catch (CoreException e) {
             e.printStackTrace();
@@ -93,23 +96,26 @@ shared class IFolderVirtualFile
             unsafeCast<WeakReference<Package>?>(
                 nativeResource.getSessionProperty(
                     nativeFolderProperties.packageModel))?.get();
+    
+    shared actual CeylonProjects<IProject,IResource,IFolder,IFile>.VirtualFileSystem vfs => ceylonModel.vfs;
 }
 
 shared class IFileVirtualFile
         satisfies FileVirtualFile<IProject,IResource, IFolder, IFile> {
     shared actual IFile nativeResource;
-    shared actual CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject;
+    shared actual IProject nativeProject;
+    shared actual CeylonProject<IProject, IResource, IFolder, IFile>? ceylonProject;
 
     shared new(IFile nativeResource) {
         this.nativeResource = nativeResource;
-        assert(exists existingCeylonProject = ceylonModel.getProject(nativeResource.project));
-        ceylonProject = existingCeylonProject;
+        nativeProject = nativeResource.project;
+        ceylonProject = ceylonModel.getProject(nativeProject);
     }
 
     shared new fromProject(IProject project, IPath projectRelativePath) {
-        this.nativeResource = project.getFile(projectRelativePath);
-        assert(exists existingCeylonProject = ceylonModel.getProject(nativeResource.project));
-        ceylonProject = existingCeylonProject;
+        nativeResource = project.getFile(projectRelativePath);
+        nativeProject = project;
+        ceylonProject = ceylonModel.getProject(nativeProject);
     }
 
     shared actual Boolean equals(Object that)
@@ -134,5 +140,7 @@ shared class IFileVirtualFile
         }
 
     }
+    
+    shared actual CeylonProjects<IProject,IResource,IFolder,IFile>.VirtualFileSystem vfs => ceylonModel.vfs;
 }
 

@@ -135,7 +135,6 @@ import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
-import com.redhat.ceylon.compiler.typechecker.exceptions.LanguageModuleNotFoundException;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
@@ -311,6 +310,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 return action.call();
             }
             ReadWriteLock projectLock = getProjectSourceModelLock(project);
+            if (projectLock == null) {
+                return action.call();
+            }
             Lock sourceModelLock = 
                     readonly ? 
                         projectLock.readLock() : 
@@ -1342,7 +1344,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         for (IFile fileToRemove: filesToRemove) {
             if(isCeylon(fileToRemove)) {
                 // Remove the ceylon phasedUnit (which will also remove the unit from the package)
-                PhasedUnit phasedUnitToDelete = phasedUnits.getPhasedUnit(vfsJ2C().createVirtualResource(fileToRemove, project));
+                PhasedUnit phasedUnitToDelete = phasedUnits.getPhasedUnit(vfsJ2C().createVirtualResource(fileToRemove, project.getIdeArtifact()));
                 if (phasedUnitToDelete != null) {
                     assert(phasedUnitToDelete instanceof ProjectPhasedUnit);
                     ((ProjectPhasedUnit) phasedUnitToDelete).remove();
@@ -1696,7 +1698,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         
         if (isCeylon(srcFile)) {
             PhasedUnit phasedUnit = currentFileTypeChecker.getPhasedUnits()
-                    .getPhasedUnit(vfsJ2C().createVirtualResource(srcFile, currentFileCeylonProject));
+                    .getPhasedUnit(vfsJ2C().createVirtualResource(srcFile, currentFileCeylonProject.getIdeArtifact()));
             if (phasedUnit != null && phasedUnit.getUnit() != null) {
                 return phasedUnit.getUnit().getDependentsOf();
             }
@@ -1823,7 +1825,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         continue;
                     }
                     
-                    FileVirtualFile<IProject, IResource, IFolder, IFile> file = vfsJ2C().createVirtualFile(fileToUpdate, ceylonProject);
+                    FileVirtualFile<IProject, IResource, IFolder, IFile> file = vfsJ2C().createVirtualFile(fileToUpdate, ceylonProject.getIdeArtifact());
                     IFolder srcFolder = getRootFolder(fileToUpdate);
 
                     ProjectPhasedUnit alreadyBuiltPhasedUnit = (ProjectPhasedUnit) pus.getPhasedUnit(file);
@@ -2445,7 +2447,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 throw new OperationCanceledException();
             }
 
-            final FolderVirtualFile<IProject, IResource,IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(srcFolder, project);
+            final FolderVirtualFile<IProject, IResource,IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(srcFolder, project.getIdeArtifact());
             
             final ModulesScanner<IProject, IResource, IFolder, IFile> modulesScanner = new ModulesScanner<IProject, IResource, IFolder, IFile>(
                     TypeDescriptor.klass(IProject.class),
@@ -2469,7 +2471,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 throw new OperationCanceledException();
             }
 
-            final FolderVirtualFile<IProject, IResource,IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(sourceFolder, project);
+            final FolderVirtualFile<IProject, IResource,IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(sourceFolder, project.getIdeArtifact());
             final RootFolderScanner<IProject, IResource, IFolder, IFile> sourcesScanner = new RootFolderScanner<IProject, IResource, IFolder, IFile>(
                     TypeDescriptor.klass(IProject.class),
                     TypeDescriptor.klass(IResource.class),
@@ -2492,7 +2494,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 throw new OperationCanceledException();
             }
 
-            final FolderVirtualFile<IProject, IResource,IFolder, IFile> rscDir = vfsJ2C().createVirtualFolder(resourceFolder, project);
+            final FolderVirtualFile<IProject, IResource,IFolder, IFile> rscDir = vfsJ2C().createVirtualFolder(resourceFolder, project.getIdeArtifact());
             final RootFolderScanner<IProject, IResource, IFolder, IFile> resourcesScanner = new RootFolderScanner<IProject, IResource, IFolder, IFile>(
                     TypeDescriptor.klass(IProject.class),
                     TypeDescriptor.klass(IResource.class),

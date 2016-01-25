@@ -98,7 +98,7 @@ public class LaunchHelper {
                     getProjectTypeChecker(project);
             if (typeChecker != null) {
                 FileVirtualFile<IProject, IResource, IFolder, IFile> virtualFile = 
-                        vfsJ2C().createVirtualFile(file, ceylonProject);
+                        vfsJ2C().createVirtualFile(file, ceylonProject.getIdeArtifact());
                 PhasedUnit phasedUnit = 
                         typeChecker.getPhasedUnits()
                             .getPhasedUnit(virtualFile);

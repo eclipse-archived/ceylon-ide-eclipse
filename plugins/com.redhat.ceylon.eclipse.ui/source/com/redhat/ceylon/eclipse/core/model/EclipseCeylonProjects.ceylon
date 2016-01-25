@@ -32,14 +32,14 @@ shared object ceylonModel extends CeylonProjects<IProject,IResource,IFolder,IFil
     shared actual class VirtualFileSystem() 
             extends super.VirtualFileSystem() {
         shared actual FileVirtualFile<IProject,IResource,IFolder,IFile>
-        createVirtualFile(IFile file, CeylonProject<IProject,IResource,IFolder,IFile> unused)
+        createVirtualFile(IFile file, IProject unused)
                 => IFileVirtualFile(file);
         
         shared actual FileVirtualFile<IProject,IResource,IFolder,IFile> createVirtualFileFromProject(IProject project, Path path) =>
                 IFileVirtualFile.fromProject(project, toEclipsePath(path));
         
         shared actual FolderVirtualFile<IProject,IResource,IFolder,IFile>
-        createVirtualFolder(IFolder folder, CeylonProject<IProject,IResource,IFolder,IFile> unused)
+        createVirtualFolder(IFolder folder, IProject unused)
                 => IFolderVirtualFile(folder);
         
         shared actual FolderVirtualFile<IProject,IResource,IFolder,IFile> createVirtualFolderFromProject(IProject project, Path path) =>

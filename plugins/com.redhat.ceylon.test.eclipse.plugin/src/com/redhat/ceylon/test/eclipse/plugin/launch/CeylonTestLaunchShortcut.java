@@ -242,7 +242,7 @@ public class CeylonTestLaunchShortcut implements ILaunchShortcut {
 
         CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
 
-        PhasedUnit phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(vfsJ2C().createVirtualFile(file, ceylonProject));
+        PhasedUnit phasedUnit = typeChecker.getPhasedUnits().getPhasedUnit(vfsJ2C().createVirtualFile(file, ceylonProject.getIdeArtifact()));
         if (phasedUnit != null) {
             List<Declaration> declarations = phasedUnit.getDeclarations();
             for (Declaration d : declarations) {

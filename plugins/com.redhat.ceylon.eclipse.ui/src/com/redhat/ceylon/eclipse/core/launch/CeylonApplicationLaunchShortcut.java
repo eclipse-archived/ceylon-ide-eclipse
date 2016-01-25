@@ -170,7 +170,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
             TypeChecker typeChecker = CeylonBuilder.getProjectTypeChecker(project);
             if (typeChecker != null) {
                 PhasedUnit phasedUnit = typeChecker.getPhasedUnits()
-                        .getPhasedUnit(vfsJ2C().createVirtualFile(file, ceylonProject));
+                        .getPhasedUnit(vfsJ2C().createVirtualFile(file, ceylonProject.getIdeArtifact()));
                 if (phasedUnit!=null) {
                     List<Declaration> declarations = phasedUnit.getDeclarations();
                     for (Declaration d : declarations) {

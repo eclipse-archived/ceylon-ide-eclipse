@@ -1,20 +1,20 @@
 package com.redhat.ceylon.eclipse.core.vfs;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
 
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.eclipse.java2ceylon.VfsJ2C;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjects;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
-import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
+import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
 
 public class vfsJ2C implements VfsJ2C {
     @Override
@@ -23,12 +23,12 @@ public class vfsJ2C implements VfsJ2C {
     }
     
     @Override
-    public ResourceVirtualFile<IProject, IResource, IFolder, IFile> createVirtualResource(IResource resource, CeylonProject<IProject, IResource, IFolder, IFile> project) {
+    public ResourceVirtualFile<IProject, IResource, IFolder, IFile> createVirtualResource(IResource resource, IProject project) {
         return eclipseVFS().createVirtualResource(resource, project);
     }
 
     @Override
-    public FileVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFile(IFile file, CeylonProject<IProject, IResource, IFolder, IFile> project) {
+    public FileVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFile(IFile file, IProject project) {
         // TODO ceylonProject should not be null 
         return eclipseVFS().createVirtualFile(file, null);
     }
@@ -39,7 +39,7 @@ public class vfsJ2C implements VfsJ2C {
     }
     
     @Override
-    public FolderVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFolder(IFolder folder, CeylonProject<IProject, IResource, IFolder, IFile> project) {
+    public FolderVirtualFile<IProject, IResource, IFolder, IFile> createVirtualFolder(IFolder folder, IProject project) {
         return eclipseVFS().createVirtualFolder(folder, project);
     }
     
