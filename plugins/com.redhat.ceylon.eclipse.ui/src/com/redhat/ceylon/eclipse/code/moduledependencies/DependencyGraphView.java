@@ -142,6 +142,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
     private IResourceChangeListener updateProjectComboListener;
     
     private GraphViewer viewer;
+    private boolean showLanguageModuleVersions = false;
     private Combo projectCombo;
     private Combo viewCombo;
     private Image overridesImage = null;
@@ -308,21 +309,20 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
                 else {
                     node.setForegroundColor(node.getDisplay()
                             .getSystemColor(SWT.COLOR_BLACK));
+                    String label = "";
                     if (!module.isAvailable()) {
                         node.setBackgroundColor(node.getDisplay()
                                 .getSystemColor(SWT.COLOR_GRAY));
                         node.setHighlightColor(node.getDisplay()
                                 .getSystemColor(SWT.COLOR_DARK_GRAY));
-                        node.setTooltip(new Label(
-                                "Unresolved module\n(not visible from any project module)"));
+                        label = "Unresolved module\n(not visible from any project module)";
                     }
                     else if (module.isJava()) {
                         node.setBackgroundColor(node.getDisplay()
                                 .getSystemColor(SWT.COLOR_CYAN));
                         node.setHighlightColor(node.getDisplay()
                                 .getSystemColor(SWT.COLOR_DARK_CYAN));
-                        node.setTooltip(new Label(
-                                "Java archive module"));
+                        label = "Java archive module";
                     }
                     else if (module instanceof JDTModule) {
                         JDTModule jdtModule = (JDTModule) module;
@@ -331,18 +331,25 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
                                     .getSystemColor(SWT.COLOR_GREEN));
                             node.setHighlightColor(node.getDisplay()
                                     .getSystemColor(SWT.COLOR_DARK_GREEN));
-                            node.setTooltip(new Label(
-                                    "Ceylon archive module"));
+                            label = "Ceylon archive module";
                         }
                         else if (jdtModule.isProjectModule()) {
                             node.setBackgroundColor(node.getDisplay()
                                     .getSystemColor(SWT.COLOR_YELLOW));
                             node.setHighlightColor(node.getDisplay()
                                     .getSystemColor(SWT.COLOR_DARK_YELLOW));
-                            node.setTooltip(new Label(
-                                    "Project source module"));
+                            label = "Project source module";
                         }
                     }
+                    if (showLanguageModuleVersions) {
+                        for (ModuleImport mi : module.getImports()) {
+                            if (mi.getModule() != null 
+                                    && mi.getModule().getNameAsString().equals(Module.LANGUAGE_MODULE_NAME)) {
+                                label += "(imports language module, version " + mi.getModule().getVersion() + ")";
+                            }
+                        }
+                    }
+                    node.setTooltip(new Label(label));
                 }
             }
         }
@@ -564,6 +571,22 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
             @Override
             public void run() {
                 viewer.resetFilters();
+                viewer.refresh();
+                viewer.applyLayout();
+            }
+        });
+        partMenu.add(new Action("Show language module imports") {
+            @Override
+            public void run() {
+                showLanguageModuleVersions = true;
+                viewer.refresh();
+                viewer.applyLayout();
+            }
+        });
+        partMenu.add(new Action("Hide language module imports") {
+            @Override
+            public void run() {
+                showLanguageModuleVersions = false;
                 viewer.refresh();
                 viewer.applyLayout();
             }
