@@ -108,6 +108,7 @@ import com.redhat.ceylon.cmr.impl.ShaSigner;
 import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.common.Constants;
+import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.common.config.CeylonConfig;
 import com.redhat.ceylon.common.config.DefaultToolOptions;
 import com.redhat.ceylon.common.log.Logger;
@@ -2393,6 +2394,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder(
                 modelJ2C().ceylonModel().getVfs())
             .verbose(false)
+            .distVersion(modelJ2C().ceylonModel().getProject(
+                    javaProject.getProject()).getConfiguration()
+                    .getCeylonConfig().getOption(DefaultToolOptions.COMPILER_TARGET, null))
             .moduleManagerFactory(new ModuleManagerFactory(){
                 @Override
                 public ModuleManager createModuleManager(Context context) {
@@ -2648,6 +2652,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             options.add(ceylonConfig.getOption(DefaultToolOptions.COMPILER_RESOURCE_ROOT));
         }
 
+        if (ceylonConfig.isOptionDefined(DefaultToolOptions.COMPILER_TARGET)) {
+            options.add("-ceylon-target");
+            options.add(ceylonConfig.getOption(DefaultToolOptions.COMPILER_TARGET));
+        }
+        
         List<File> forJavaBackend = new ArrayList<File>();
         List<File> forJavascriptBackend = new ArrayList<File>();
         List<File> javaResources = new ArrayList<File>();

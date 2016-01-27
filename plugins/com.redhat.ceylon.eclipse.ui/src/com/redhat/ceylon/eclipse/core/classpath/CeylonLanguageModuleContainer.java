@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.core.classpath;
 
 
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.ceylonSourceArchiveToJavaSourceArchive;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.jdt.core.JavaCore.newLibraryEntry;
 
@@ -23,7 +24,6 @@ import org.eclipse.jdt.core.JavaModelException;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 
 /** 
@@ -56,8 +56,11 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
         repoManager = CeylonBuilder.getProjectRepositoryManager(fProject.getProject());
         if (repoManager != null) {
             String moduleName = "ceylon.language";
-            String moduleVersion = TypeChecker.LANGUAGE_MODULE_VERSION;
-            IPath ceylonLanguageBinaries = new Path(repoManager.getArtifact(new ArtifactContext(moduleName, moduleVersion, ArtifactContext.CAR)).getAbsolutePath());
+            String moduleVersion = modelJ2C().ceylonModel().getProject(
+                    fProject.getProject()).getConfiguration().getCompilerTarget();
+            final ArtifactContext artifactContext = new ArtifactContext(moduleName, moduleVersion, ArtifactContext.CAR);
+            artifactContext.setNoDistOverrides(true);
+            IPath ceylonLanguageBinaries = new Path(repoManager.getArtifact(artifactContext).getAbsolutePath());
             File ceylonLanguageJavaSources = ceylonSourceArchiveToJavaSourceArchive(
                     moduleName,
                     moduleVersion,
@@ -140,7 +143,8 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
     }
 
     public String getRuntimeVersion() {
-        return TypeChecker.LANGUAGE_MODULE_VERSION;
+        return modelJ2C().ceylonModel().getProject(
+                fProject.getProject()).getConfiguration().getCompilerTarget();
     }
     
     /**
