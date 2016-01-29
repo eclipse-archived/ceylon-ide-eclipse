@@ -137,7 +137,7 @@ class EclipseDocGenerator(CeylonEditor? editor)
     }
     
     shared actual void addIconAndText(StringBuilder builder, Icons|Referenceable icon, String text) {
-        JStringBuilder b = JStringBuilder();
+        value b = JStringBuilder();
         
         if (is Referenceable icon) {
             value img = if (is Declaration|Package|Module icon)
@@ -148,6 +148,7 @@ class EclipseDocGenerator(CeylonEditor? editor)
             HTML.addImageAndLabel(b, icon, img, 16, 16, text, 20, top);
         } else {
             value i = switch(icon)
+            case (Icons.imports) HTML.fileUrl("imp_obj.png").toExternalForm()
             case (Icons.annotations) HTML.fileUrl("annotation_obj.gif").toExternalForm()
             case (Icons.returns) HTML.fileUrl("stepreturn_co.png").toExternalForm()
             case (Icons.units) HTML.fileUrl("unit.gif").toExternalForm()
