@@ -90,6 +90,7 @@ import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.PackageFragment;
+import org.eclipse.jdt.internal.core.PackageFragmentRoot;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -3997,16 +3998,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }    
 
     public static Package getPackage(IPackageFragment packageFragment) {
-        PackageFragment pkg = (PackageFragment) packageFragment;
         try {
-            IFolder srcPkgFolder = (IFolder) pkg.getCorrespondingResource();
+            IFolder srcPkgFolder = (IFolder) packageFragment.getCorrespondingResource();
             if (srcPkgFolder != null) {
                 return getPackage(srcPkgFolder);
             }
         } catch (JavaModelException e) {
         }
 
-        IPackageFragmentRoot root = pkg.getPackageFragmentRoot();
+        IPackageFragmentRoot root = (IPackageFragmentRoot) packageFragment.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
         Modules projectModules = getProjectModules(packageFragment.getJavaProject().getProject());
         if (projectModules == null) {
             return null;
