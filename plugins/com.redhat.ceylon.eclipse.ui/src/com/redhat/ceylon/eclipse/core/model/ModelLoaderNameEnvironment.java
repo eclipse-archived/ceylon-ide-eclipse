@@ -35,6 +35,8 @@ import org.eclipse.jdt.internal.core.SearchableEnvironment;
 import org.eclipse.jdt.internal.core.SourceType;
 import org.eclipse.jdt.internal.core.SourceTypeElementInfo;
 
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+
 public class ModelLoaderNameEnvironment extends SearchableEnvironment {
     public ModelLoaderNameEnvironment(IJavaProject javaProject) throws JavaModelException {
         super((JavaProject)javaProject, (WorkingCopyOwner) null);
@@ -115,6 +117,11 @@ public class ModelLoaderNameEnvironment extends SearchableEnvironment {
         for (IPackageFragment pf : packageRequestor.getPackageFragments()) {
             IPackageFragmentRoot packageRoot = (IPackageFragmentRoot) pf.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
             try {
+                IJavaProject packageProject = packageRoot.getJavaProject();
+                if (packageProject != null 
+                        && !CeylonNature.isEnabled(packageProject.getProject())) {
+                    continue;
+                }
                 if (packageRoot.getKind() == IPackageFragmentRoot.K_SOURCE) {
                     packagesToSearchIn.addFirst(pf);
                     continue;
