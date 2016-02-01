@@ -147,12 +147,9 @@ public class JavaQueryParticipant
                     (IPackageFragment) 
                         element.getAncestor(PACKAGE_FRAGMENT);
             
-            IFolder folder = 
-                    (IFolder) 
-                        packageFragment.getResource();
             Package pack = 
-                    folder==null ? null : 
-                        getPackage(folder);
+                    packageFragment==null ? null : 
+                        getPackage(packageFragment);
             Declaration declaration;
             if (pack==null) {
                 //this is the case for Ceylon decs, since 
