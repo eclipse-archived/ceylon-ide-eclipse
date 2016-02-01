@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.findToplevelStatement;
 import static com.redhat.ceylon.eclipse.util.Nodes.text;
 
@@ -352,7 +352,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
     private void createNewClassDeclaration(final TextChange tfc,
             Tree.CompilationUnit root) {
         if (declaration.getUnit().equals(root.getUnit())) {
-            String delim = indents().getDefaultLineDelimiter(document);
+            String delim = utilJ2C().indents().getDefaultLineDelimiter(document);
             //TODO: for unshared declarations, we don't 
             //      need to make it toplevel, I guess
             int loc = findToplevelStatement(rootNode, node).getStartIndex();

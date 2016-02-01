@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.editor;
 
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 
@@ -215,7 +214,7 @@ public class PasteAsCeylonHandler extends AbstractHandler {
                 loop: for (int i=0; i<chars.length; i++) {
                     switch (chars[i]) {
                     case '\t':
-                        indentation += indents().getIndentSpaces();
+                        indentation += utilJ2C().indents().getIndentSpaces();
                         break;
                     case ' ':
                         indentation += 1;
@@ -224,7 +223,7 @@ public class PasteAsCeylonHandler extends AbstractHandler {
                         break loop;
                     }
                 }
-                indentation /= indents().getIndentSpaces();
+                indentation /= utilJ2C().indents().getIndentSpaces();
             } catch (BadLocationException e) {
                 indentation = 0;
             }

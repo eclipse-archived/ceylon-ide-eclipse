@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.imports;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.importsJ2C;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,7 +73,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 if (il==null || il.getImports().isEmpty()) {
                     start=0;
                     length=0;
-                    extra=indents().getDefaultLineDelimiter(doc);
+                    extra=utilJ2C().indents().getDefaultLineDelimiter(doc);
                 }
                 else {
                     start = il.getStartIndex();
@@ -165,7 +165,7 @@ public class CleanImportsHandler extends AbstractHandler {
         
         StringBuilder builder = new StringBuilder();
         String lastToplevel=null;
-        String delim = indents().getDefaultLineDelimiter(doc);
+        String delim = utilJ2C().indents().getDefaultLineDelimiter(doc);
         for (Map.Entry<String, List<Tree.Import>> pack: 
                 packages.entrySet()) {
             String packageName = pack.getKey();
@@ -230,7 +230,7 @@ public class CleanImportsHandler extends AbstractHandler {
                 currentPackage.substring(0, index);
         if (lastToplevel!=null && 
                 !topLevel.equals(lastToplevel)) {
-            builder.append(indents().getDefaultLineDelimiter(doc));
+            builder.append(utilJ2C().indents().getDefaultLineDelimiter(doc));
         }
         return topLevel;
     }
@@ -242,8 +242,8 @@ public class CleanImportsHandler extends AbstractHandler {
             List<Declaration> proposed, 
             boolean hasWildcard, StringBuilder builder, 
             IDocument doc) {
-        String indent = indents().getDefaultIndent();
-        String delim = indents().getDefaultLineDelimiter(doc);
+        String indent = utilJ2C().indents().getDefaultIndent();
+        String delim = utilJ2C().indents().getDefaultLineDelimiter(doc);
         for (Tree.ImportMemberOrType i: elements) {
             Declaration d = i.getDeclarationModel();
             if (d!=null && isErrorFree(i)) {
@@ -288,8 +288,8 @@ public class CleanImportsHandler extends AbstractHandler {
             Tree.ImportMemberOrType imt,
             List<Declaration> unused, StringBuilder builder, 
             IDocument doc) {
-        String indent = indents().getDefaultIndent();
-        String delim = indents().getDefaultLineDelimiter(doc);
+        String indent = utilJ2C().indents().getDefaultIndent();
+        String delim = utilJ2C().indents().getDefaultLineDelimiter(doc);
         if (imt.getImportMemberOrTypeList()!=null) {
             builder.append(" {");
             boolean found=false;

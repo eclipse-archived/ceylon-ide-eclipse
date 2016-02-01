@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 
 import java.util.Collection;
 import java.util.List;
@@ -56,8 +56,8 @@ class JoinIfStatementsProposal {
                                         icl.getStartIndex()-ocl.getEndIndex()+2,
                                         ", "));
                                 decrementIndent(doc, inner, icl, change,
-                                        indents().getIndent(inner, doc),
-                                        indents().getIndent(outer, doc));
+                                        utilJ2C().indents().getIndent(inner, doc),
+                                        utilJ2C().indents().getIndent(outer, doc));
                                 change.addEdit(new DeleteEdit(inner.getEndIndex(),
                                         outer.getEndIndex()-inner.getEndIndex()));
                                 proposals.add(new CorrectionProposal(
@@ -92,8 +92,8 @@ class JoinIfStatementsProposal {
                             int to = inner.getStartIndex();
                             change.addEdit(new DeleteEdit(from, to-from));
                             decrementIndent(doc, inner, icl, change,
-                                    indents().getIndent(inner, doc),
-                                    indents().getIndent(outer, doc));
+                                    utilJ2C().indents().getIndent(inner, doc),
+                                    utilJ2C().indents().getIndent(outer, doc));
                             change.addEdit(new DeleteEdit(inner.getEndIndex(),
                                     outer.getEndIndex()-inner.getEndIndex()));
                             proposals.add(new CorrectionProposal(
@@ -109,7 +109,7 @@ class JoinIfStatementsProposal {
     private static void decrementIndent(IDocument doc, Tree.IfStatement is,
             Tree.ConditionList cl, TextChange change, String indent,
             String outerIndent) {
-        String defaultIndent = indents().getDefaultIndent();
+        String defaultIndent = utilJ2C().indents().getDefaultIndent();
         try {
             for (int line = doc.getLineOfOffset(cl.getStopIndex())+1;
                     line < doc.getLineOfOffset(is.getStopIndex()); 

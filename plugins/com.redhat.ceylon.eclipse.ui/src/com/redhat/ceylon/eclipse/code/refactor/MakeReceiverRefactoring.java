@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
 import static com.redhat.ceylon.eclipse.util.Nodes.text;
 
@@ -138,17 +138,17 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
 
         private void insert(Tree.Body body, Tree.Declaration that) {
             String delim = 
-                    indents().getDefaultLineDelimiter(document);
+                    utilJ2C().indents().getDefaultLineDelimiter(document);
             String originalIndent =
-                    delim+indents().getIndent(fun, document);
+                    delim+utilJ2C().indents().getIndent(fun, document);
             String text;
             List<Tree.Statement> sts = body.getStatements();
             int loc;
             if (sts.isEmpty()) {
                 String outerIndent =
-                        delim + indents().getIndent(that, doc);
+                        delim + utilJ2C().indents().getIndent(that, doc);
                 String newIndent =
-                        outerIndent + indents().getDefaultIndent();
+                        outerIndent + utilJ2C().indents().getDefaultIndent();
                 String def =
                         getDefinition()
                             .replaceAll(originalIndent,
@@ -159,7 +159,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
             else {
                 Tree.Statement st = sts.get(sts.size()-1);
                 String newIndent =
-                        delim + indents().getIndent(st, doc);
+                        delim + utilJ2C().indents().getIndent(st, doc);
                 String def =
                         getDefinition()
                             .replaceAll(originalIndent,
@@ -277,8 +277,8 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                                     tfc.addEdit(new InsertEdit(
                                             p.getStartIndex(),
                                             text(arg, localTokens) +
-                                            indents().getDefaultLineDelimiter(doc) +
-                                            indents().getIndent(that, doc) +
+                                            utilJ2C().indents().getDefaultLineDelimiter(doc) +
+                                            utilJ2C().indents().getIndent(that, doc) +
                                             name + "."));
                                 }
                                 int start, stop;

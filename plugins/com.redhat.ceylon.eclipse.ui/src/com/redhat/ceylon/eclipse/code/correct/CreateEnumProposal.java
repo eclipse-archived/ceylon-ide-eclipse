@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.INTERFACE;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 
 import java.util.Collection;
@@ -108,14 +108,14 @@ class CreateEnumProposal extends CorrectionProposal {
                     new TextFileChange("Create Enumerated",
                             file);
             IDocument doc = getDocument(change);
-            String indent = indents().getIndent(statement, doc);
+            String indent = utilJ2C().indents().getIndent(statement, doc);
             String s =
                     indent + def +
-                    indents().getDefaultLineDelimiter(doc);
+                    utilJ2C().indents().getDefaultLineDelimiter(doc);
             int offset = statement.getEndIndex()+1;
             if (offset>doc.getLength()) {
                 offset = doc.getLength();
-                s = indents().getDefaultLineDelimiter(doc) + s;
+                s = utilJ2C().indents().getDefaultLineDelimiter(doc) + s;
             }
             change.setEdit(new InsertEdit(offset, s));
             proposals.add(new CreateEnumProposal(def,

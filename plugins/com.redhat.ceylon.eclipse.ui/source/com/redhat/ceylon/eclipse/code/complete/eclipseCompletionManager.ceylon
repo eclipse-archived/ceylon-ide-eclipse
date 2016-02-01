@@ -37,7 +37,7 @@ import com.redhat.ceylon.eclipse.ui {
 }
 import com.redhat.ceylon.eclipse.util {
     EclipseProgressMonitor,
-    EclipseIndents=Indents
+    eclipseIndents
 }
 import com.redhat.ceylon.ide.common.completion {
     IdeCompletionManager,
@@ -174,7 +174,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     
     shared actual String errorMessage => "No completions available";
     
-    shared actual Indents<IDocument> indents => EclipseIndents.indents();
+    shared actual Indents<IDocument> indents => eclipseIndents;
         
     shared actual ICompletionProposal newParametersCompletionProposal(Integer offset,
         String prefix, String desc, String text, JList<Type> argTypes, Node node, Unit unit) 

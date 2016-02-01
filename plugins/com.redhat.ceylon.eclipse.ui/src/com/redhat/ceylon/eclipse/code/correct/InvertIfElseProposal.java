@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 
 import java.util.Collection;
 import java.util.List;
@@ -128,10 +129,10 @@ class InvertIfElseProposal extends CorrectionProposal {
                 test = "!" + term;
             }
         }
-        String elseIndent = indents().getIndent(elseBlock, doc);
-        String thenIndent = indents().getIndent(ifBlock, doc);
+        String elseIndent = utilJ2C().indents().getIndent(elseBlock, doc);
+        String thenIndent = utilJ2C().indents().getIndent(ifBlock, doc);
 //        String indent = getDefaultIndent();
-        String delim = indents().getDefaultLineDelimiter(doc);
+        String delim = utilJ2C().indents().getDefaultLineDelimiter(doc);
 
         String elseStr = getTerm(doc, elseBlock);
 //        elseStr = addEnclosingBraces(elseStr, 
@@ -251,9 +252,9 @@ class InvertIfElseProposal extends CorrectionProposal {
                     test = "!" + term;
                 }
             }
-            String baseIndent = indents().getIndent(ifStmt, doc);
-            String indent = indents().getDefaultIndent();
-            String delim = indents().getDefaultLineDelimiter(doc);
+            String baseIndent = utilJ2C().indents().getIndent(ifStmt, doc);
+            String indent = utilJ2C().indents().getDefaultIndent();
+            String delim = utilJ2C().indents().getDefaultLineDelimiter(doc);
 
             String elseStr = getTerm(doc, elseBlock);
             elseStr = 

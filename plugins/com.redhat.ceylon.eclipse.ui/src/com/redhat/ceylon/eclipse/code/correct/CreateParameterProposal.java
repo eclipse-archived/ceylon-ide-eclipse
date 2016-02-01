@@ -5,7 +5,7 @@ import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.defaultValue
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getClassOrInterfaceBody;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 
 import java.util.Collection;
@@ -110,16 +110,16 @@ class CreateParameterProposal extends InitializerProposal {
         int offset2;
         List<Tree.Statement> statements = body.getStatements();
         if (statements.isEmpty()) {
-            indentAfter = indents().getDefaultLineDelimiter(doc) +
-                    indents().getIndent(decNode, doc);
-            indent = indentAfter + indents().getDefaultIndent();
+            indentAfter = utilJ2C().indents().getDefaultLineDelimiter(doc) +
+                    utilJ2C().indents().getIndent(decNode, doc);
+            indent = indentAfter + utilJ2C().indents().getDefaultIndent();
             offset2 = body.getStartIndex()+1;
         }
         else {
             Tree.Statement statement = 
                     statements.get(statements.size()-1);
-            indent = indents().getDefaultLineDelimiter(doc) +
-                    indents().getIndent(statement, doc);
+            indent = utilJ2C().indents().getDefaultLineDelimiter(doc) +
+                    utilJ2C().indents().getIndent(statement, doc);
             offset2 = statement.getEndIndex();
             indentAfter = "";
         }

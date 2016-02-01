@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.imports;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
 import static java.lang.Character.isWhitespace;
 import static java.util.Collections.singletonMap;
@@ -100,7 +100,7 @@ public class ModuleImportUtil {
                 getDescriptorPhasedUnit(project, target);
         gotoLocation(unit.getUnit(),
                 offset + moduleName.length() + 
-                        indents().getDefaultIndent().length() + 10,
+                        utilJ2C().indents().getDefaultIndent().length() + 10,
                 moduleVersion.length());
     }
     
@@ -241,7 +241,7 @@ public class ModuleImportUtil {
                     .get(iml.getImportModules().size() - 1)
                     .getEndIndex();
         }
-        String newline = indents().getDefaultLineDelimiter(doc);
+        String newline = utilJ2C().indents().getDefaultLineDelimiter(doc);
         StringBuilder importModule = new StringBuilder();
         appendImportStatement(importModule, false, backend,
                 moduleName, moduleVersion, newline);
@@ -258,7 +258,7 @@ public class ModuleImportUtil {
             String moduleName, String moduleVersion,
             String newline) {
         importModule.append(newline)
-            .append(indents().getDefaultIndent());
+            .append(utilJ2C().indents().getDefaultIndent());
         if (shared) {
             importModule.append("shared ");
         }

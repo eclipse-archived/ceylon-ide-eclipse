@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.findReferencedNode;
 
 import java.util.Collection;
@@ -43,9 +43,9 @@ public class ConvertToDefaultConstructorProposal {
                                 "Convert to Class with Default Constructor", 
                                 file);
                 change.setEdit(new MultiTextEdit());
-                String indent = indents().getIndent(statement, doc);
-                String delim = indents().getDefaultLineDelimiter(doc);
-                String defIndent = indents().getDefaultIndent();
+                String indent = utilJ2C().indents().getIndent(statement, doc);
+                String delim = utilJ2C().indents().getDefaultLineDelimiter(doc);
+                String defIndent = utilJ2C().indents().getDefaultIndent();
                 int insertLoc = cd.getClassBody().getStartIndex()+1;
                 StringBuilder declarations = new StringBuilder();
                 StringBuilder assignments = new StringBuilder();

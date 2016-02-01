@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 
 import java.util.Collection;
 import java.util.List;
@@ -46,8 +46,8 @@ public class ChangeToIfProposal {
                 TextFileChange change = 
                         new TextFileChange("Change Assert To If", file);
                 change.setEdit(new MultiTextEdit());
-                String newline = indents().getDefaultLineDelimiter(doc);
-                String indent = indents().getIndent(last, doc);
+                String newline = utilJ2C().indents().getDefaultLineDelimiter(doc);
+                String indent = utilJ2C().indents().getIndent(last, doc);
                 int begin = statement.getStartIndex();
                 int end = conditionList.getStartIndex();
                 change.addEdit(new ReplaceEdit(begin, end-begin, "if "));
@@ -56,14 +56,14 @@ public class ChangeToIfProposal {
                 //TODO: this is wrong, need to look for lines, not statements!
                 for (int i=statements.indexOf(statement)+1; i<statements.size(); i++) {
                     change.addEdit(new InsertEdit(statements.get(i).getStartIndex(), 
-                            indents().getDefaultIndent()));
+                            utilJ2C().indents().getDefaultIndent()));
                 }
                 if (!isLast) {
                     change.addEdit(new InsertEdit(last.getEndIndex(), 
                             newline + indent + "}"));
                 }
                 String elseBlock = newline + indent +
-                        "else {" + newline + indent + indents().getDefaultIndent() + 
+                        "else {" + newline + indent + utilJ2C().indents().getDefaultIndent() + 
                         "assert (false);" + newline + indent + "}" ;
                 change.addEdit(new InsertEdit(last.getEndIndex(), elseBlock));
                 proposals.add(new CorrectionProposal("Change 'assert' to 'if'", change, 

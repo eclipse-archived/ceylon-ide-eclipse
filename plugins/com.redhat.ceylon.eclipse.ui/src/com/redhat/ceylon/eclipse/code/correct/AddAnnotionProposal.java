@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.appendNative;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.Types.getRefinedDeclaration;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static java.util.Arrays.asList;
@@ -306,13 +306,13 @@ public class AddAnnotionProposal extends CorrectionProposal {
                             getAnnotationIdentifier(prevAnnotation))) {
                 newAnnotationOffset = prevAnnotation.getEndIndex();
                 newAnnotationText.append(System.lineSeparator());
-                newAnnotationText.append(indents().getIndent(node, doc));
+                newAnnotationText.append(utilJ2C().indents().getIndent(node, doc));
                 newAnnotationText.append(newAnnotation);
             } else {
                 newAnnotationOffset = nextNodeStartIndex;
                 newAnnotationText.append(newAnnotation);
                 newAnnotationText.append(System.lineSeparator());
-                newAnnotationText.append(indents().getIndent(node, doc));
+                newAnnotationText.append(utilJ2C().indents().getIndent(node, doc));
             }
         } else {
             newAnnotationOffset = nextNodeStartIndex;

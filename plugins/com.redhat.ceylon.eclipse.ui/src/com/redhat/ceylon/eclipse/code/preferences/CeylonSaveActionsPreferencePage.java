@@ -5,7 +5,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.NORMALIZE_NL;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.NORMALIZE_WS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.STRIP_TRAILING_WS;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS;
 
 import org.eclipse.jface.layout.GridDataFactory;
@@ -86,12 +86,12 @@ public class CeylonSaveActionsPreferencePage
                 "Convert tabs to spaces (if insert spaces for tabs enabled)",
                 parent);
         normalizeWs.load();
-        normalizeWs.setEnabled(indents().getIndentWithSpaces(), parent);
+        normalizeWs.setEnabled(utilJ2C().indents().getIndentWithSpaces(), parent);
         listener=new IPropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
                 if (event.getProperty().equals(EDITOR_SPACES_FOR_TABS)) {
-                    normalizeWs.setEnabled(indents().getIndentWithSpaces(), parent);
+                    normalizeWs.setEnabled(utilJ2C().indents().getIndentWithSpaces(), parent);
                 }
             }
         };

@@ -8,7 +8,7 @@ import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorImports;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorProjectImportsAndDocLinks;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -168,7 +168,7 @@ public class MoveToNewUnitRefactoring extends Refactoring {
         String targetPackageName = targetPackage.getElementName();
         int start = node.getStartIndex();
         int length = node.getDistance();
-        String delim = indents().getDefaultLineDelimiter(document);
+        String delim = utilJ2C().indents().getDefaultLineDelimiter(document);
 
         CompositeChange change = 
                 new CompositeChange("Move to New Source File");

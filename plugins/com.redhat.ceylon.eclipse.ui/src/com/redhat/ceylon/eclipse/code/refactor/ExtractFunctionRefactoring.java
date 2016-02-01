@@ -4,7 +4,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COM
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.text;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.addToUnion;
 import static java.util.Collections.singletonList;
@@ -612,9 +612,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         }
         
         String indent = 
-                indents().getDefaultLineDelimiter(doc) + 
-                indents().getIndent(decNode, doc);
-        String extraIndent = indent + indents().getDefaultIndent();
+                utilJ2C().indents().getDefaultLineDelimiter(doc) + 
+                utilJ2C().indents().getIndent(decNode, doc);
+        String extraIndent = indent + utilJ2C().indents().getDefaultIndent();
 
         StringBuilder typeParams = new StringBuilder();
         StringBuilder constraints = new StringBuilder();
@@ -631,7 +631,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                 typeParams.append(t.getName());
                 if (!t.getSatisfiedTypes().isEmpty()) {
                     constraints.append(extraIndent)
-                            .append(indents().getDefaultIndent()) 
+                            .append(utilJ2C().indents().getDefaultIndent()) 
                             .append("given ")
                             .append(t.getName())
                             .append(" satisfies ");
@@ -817,10 +817,10 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         }
         
         String indent = 
-                indents().getDefaultLineDelimiter(doc) + 
-                indents().getIndent(decNode, doc);
+                utilJ2C().indents().getDefaultLineDelimiter(doc) + 
+                utilJ2C().indents().getIndent(decNode, doc);
         String extraIndent = 
-                indent + indents().getDefaultIndent();
+                indent + utilJ2C().indents().getDefaultIndent();
 
         String typeParams = "";
         String constraints = "";
@@ -831,7 +831,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                         t.getSatisfiedTypes();
                 if (!sts.isEmpty()) {
                     constraints += extraIndent + 
-                            indents().getDefaultIndent() + 
+                            utilJ2C().indents().getDefaultIndent() + 
                             "given " + 
                             t.getName() + 
                             " satisfies ";

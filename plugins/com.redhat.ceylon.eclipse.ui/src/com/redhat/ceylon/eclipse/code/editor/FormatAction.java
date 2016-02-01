@@ -31,7 +31,6 @@ import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 import com.redhat.ceylon.eclipse.code.style.CeylonStyle;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.Indents;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.eclipse.util.StringBuilderWriter;
 import com.redhat.ceylon.ide.common.refactoring.DefaultRegion;
@@ -212,11 +211,11 @@ final class FormatAction extends Action {
                         throw new IllegalStateException("No one should need this");
                     }
                 };
-                final int indentLevel = (int) (Indents.indents()
+                final int indentLevel = (int) (utilJ2C().indents()
                         .getIndent(unit.node, document)
                         .replace("\t", wsOptions.getIndentMode().indent(1))
                         .length()
-                        / Indents.indents().getIndentSpaces());
+                        / utilJ2C().indents().getIndentSpaces());
                 if (unit != formattingUnits.get(0)) {
                     // add indentation
                     builder.append(wsOptions.getIndentMode().indent(indentLevel));

@@ -30,7 +30,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_FORMAL_REFINEM
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getContainingClassOrInterface;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 
@@ -136,8 +136,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 getRefinementDescriptionFor(dec, pr, unit), 
                 getRefinementTextFor(dec, pr, unit,
                         isInterface, ci,
-                        indents().getDefaultLineDelimiter(doc)
-                            + indents().getIndent(node, doc),
+                        utilJ2C().indents().getDefaultLineDelimiter(doc)
+                            + utilJ2C().indents().getIndent(node, doc),
                         true, preamble), 
                 cpc, dec, scope, false, true));
     }
@@ -176,8 +176,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                     dec.getReference(), //TODO: this needs to do type arg substitution
                     getInlineFunctionDescriptionFor(p, null, unit),
                     getInlineFunctionTextFor(p, null, unit,
-                            indents().getDefaultLineDelimiter(doc) +
-                            indents().getIndent(node, doc)),
+                            utilJ2C().indents().getDefaultLineDelimiter(doc) +
+                            utilJ2C().indents().getIndent(node, doc)),
                     cpc, dec, scope, false, false));
         }
     }

@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.collectUninitializedMembers;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 
 import java.util.Collection;
@@ -49,12 +49,12 @@ public class AddConstructorProposal extends CorrectionProposal {
                 List<TypedDeclaration> uninitialized = 
                         collectUninitializedMembers(body);
                 Tree.Statement les = findLastExecutable(body);
-                String defaultIndent = indents().getDefaultIndent();
-                String delim = indents().getDefaultLineDelimiter(doc);
+                String defaultIndent = utilJ2C().indents().getDefaultIndent();
+                String delim = utilJ2C().indents().getDefaultLineDelimiter(doc);
                 String indent;
                 indent = les==null ? 
-                        indents().getIndent(cd, doc) + defaultIndent :
-                            indents().getIndent(les, doc);
+                        utilJ2C().indents().getIndent(cd, doc) + defaultIndent :
+                            utilJ2C().indents().getIndent(les, doc);
                 Unit unit = node.getUnit();
                 StringBuilder params = new StringBuilder();
                 StringBuilder initializers = new StringBuilder();
@@ -94,7 +94,7 @@ public class AddConstructorProposal extends CorrectionProposal {
                 if (les==null) {
                     start = body.getStartIndex()+1;
                     if (body.getEndIndex()-1==start) {
-                        text += delim + indents().getIndent(cd, doc);
+                        text += delim + utilJ2C().indents().getIndent(cd, doc);
                     }
                 }
                 else {

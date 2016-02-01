@@ -6,7 +6,7 @@ import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionPropos
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_ATTRIBUTE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.LOCAL_CLASS;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.intersectionType;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
@@ -140,7 +140,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
                 typeParamDef.setLength(typeParamDef.length() - 1);
                 typeParamDef.append(">");
             }
-            String defIndent = indents().getDefaultIndent();
+            String defIndent = utilJ2C().indents().getDefaultIndent();
             String supertype = isVoid ? null : 
                 supertypeDeclaration(returnType);
             def.append("class ")
@@ -163,7 +163,7 @@ class ObjectClassDefinitionGenerator extends DefinitionGenerator {
             def.append(indent).append("}");            
         }
         else if (isObjectGenerator()) {
-            String defIndent = indents().getDefaultIndent();
+            String defIndent = utilJ2C().indents().getDefaultIndent();
             String supertype = isVoid ? null : 
                 supertypeDeclaration(returnType);
             def.append("object ").append(brokenName);

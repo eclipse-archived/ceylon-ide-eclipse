@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 
 import java.util.Collection;
 import java.util.List;
@@ -52,9 +52,9 @@ class SplitIfStatementProposal {
                                 indent = "";
                             }
                             else {
-                                ws = indents().getDefaultLineDelimiter(doc) + 
-                                        indents().getIndent(is, doc);
-                                indent = indents().getDefaultIndent();
+                                ws = utilJ2C().indents().getDefaultLineDelimiter(doc) + 
+                                        utilJ2C().indents().getIndent(is, doc);
+                                indent = utilJ2C().indents().getDefaultIndent();
                             }
                             int start = c1.getEndIndex();
                             int stop = c2.getStartIndex();
@@ -91,9 +91,9 @@ class SplitIfStatementProposal {
                                             file);
                             change.setEdit(new MultiTextEdit());
                             String ws = 
-                                    indents().getDefaultLineDelimiter(doc) + 
-                                    indents().getIndent(is, doc);
-                            String indent = indents().getDefaultIndent();
+                                    utilJ2C().indents().getDefaultLineDelimiter(doc) + 
+                                    utilJ2C().indents().getIndent(is, doc);
+                            String indent = utilJ2C().indents().getDefaultIndent();
                             int start = block.getStartIndex();
                             change.addEdit(new InsertEdit(start,  
                                     "{" + ws + indent));

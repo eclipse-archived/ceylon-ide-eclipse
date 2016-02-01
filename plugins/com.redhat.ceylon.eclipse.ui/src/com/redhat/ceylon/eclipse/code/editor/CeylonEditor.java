@@ -32,7 +32,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.SUB_WORD_NAVIGATION;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static java.util.ResourceBundle.getBundle;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
@@ -1941,10 +1941,10 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
             text = TRAILING_WS.matcher(text).replaceAll("");
         }
         if (normalizeWs) {
-            text = text.replace("\t", indents().getDefaultIndent());
+            text = text.replace("\t", utilJ2C().indents().getDefaultIndent());
         }
         if (normalizeNl) {
-            String delim = indents().getDefaultLineDelimiter(doc);
+            String delim = utilJ2C().indents().getDefaultLineDelimiter(doc);
             for (String s: doc.getLegalLineDelimiters()) {
                 text = text.replace(s, delim);
             }

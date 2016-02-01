@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.createEditorChange;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getImportText;
 import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getImports;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.text;
 
 import java.util.ArrayList;
@@ -263,7 +263,7 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     }
 
     private void addImports(StringBuilder content) {
-        String delim = indents().getDefaultLineDelimiter(document);
+        String delim = utilJ2C().indents().getDefaultLineDelimiter(document);
         String importText = 
                 getImportText(extractedImportsPackages, 
                         extractedImports, delim);
@@ -329,8 +329,8 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     }
 
     private void addInterfaceBody(StringBuilder content) {
-        String delim = indents().getDefaultLineDelimiter(document);
-        String indent = indents().getDefaultIndent();
+        String delim = utilJ2C().indents().getDefaultLineDelimiter(document);
+        String indent = utilJ2C().indents().getDefaultIndent();
 
         content.append(" {");
         content.append(delim);

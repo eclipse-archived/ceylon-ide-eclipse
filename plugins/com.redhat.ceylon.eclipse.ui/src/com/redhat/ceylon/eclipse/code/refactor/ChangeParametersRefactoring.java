@@ -1,12 +1,12 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
 import static com.redhat.ceylon.eclipse.util.Nodes.getDefaultArgSpecifier;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.text;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -622,10 +622,10 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                             if (doc.getLineOfOffset(stopOffset) > 
                                 doc.getLineOfOffset(startOffset)) {
                                 argString = 
-                                        indents().getDefaultIndent() + 
+                                        utilJ2C().indents().getDefaultIndent() + 
                                         argString + ';' +
-                                        indents().getDefaultLineDelimiter(doc) + 
-                                        indents().getIndent(nal, doc);
+                                        utilJ2C().indents().getDefaultLineDelimiter(doc) + 
+                                        utilJ2C().indents().getIndent(nal, doc);
                             }
                             else if (startOffset==stopOffset-1) {
                                 argString = ' ' + argString + ';' + ' ';

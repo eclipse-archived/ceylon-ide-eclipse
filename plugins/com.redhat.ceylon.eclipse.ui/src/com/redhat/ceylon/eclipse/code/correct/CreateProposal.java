@@ -6,7 +6,7 @@ import static com.redhat.ceylon.eclipse.code.correct.CreateInNewUnitProposal.add
 import static com.redhat.ceylon.eclipse.code.correct.CreateParameterProposal.addCreateParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.eclipse.util.Nodes.findToplevelStatement;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
@@ -83,10 +83,10 @@ class CreateProposal extends InitializerProposal {
         int offset;
         List<Tree.Statement> statements =
                 body.getStatements();
-        String delim = indents().getDefaultLineDelimiter(doc);
+        String delim = utilJ2C().indents().getDefaultLineDelimiter(doc);
         if (statements.isEmpty()) {
-            String bodyIndent = indents().getIndent(decNode, doc);
-            indent = bodyIndent + indents().getDefaultIndent();
+            String bodyIndent = utilJ2C().indents().getIndent(decNode, doc);
+            indent = bodyIndent + utilJ2C().indents().getDefaultIndent();
             indentBefore = delim + indent;
             try {
                 boolean singleLineBody = 
@@ -118,14 +118,14 @@ class CreateProposal extends InitializerProposal {
                         st = s;
                     }
                 }
-                indent = indents().getIndent(st, doc);
+                indent = utilJ2C().indents().getIndent(st, doc);
                 indentBefore = "";
                 indentAfter = delim + indent;
                 offset = st.getStartIndex();
             }
             else {
                 st = statements.get(statements.size()-1);
-                indent = indents().getIndent(st, doc);
+                indent = utilJ2C().indents().getIndent(st, doc);
                 indentBefore = delim + indent;
                 indentAfter = "";
                 offset = st.getEndIndex();
@@ -182,9 +182,9 @@ class CreateProposal extends InitializerProposal {
                         file);
         change.setEdit(new MultiTextEdit());
         IDocument doc = getDocument(change);
-        String indent = indents().getIndent(statement, doc);
+        String indent = utilJ2C().indents().getIndent(statement, doc);
         int offset = statement.getStartIndex();
-        String delim = indents().getDefaultLineDelimiter(doc);
+        String delim = utilJ2C().indents().getDefaultLineDelimiter(doc);
         Tree.CompilationUnit rootNode =
                 unit.getCompilationUnit();
         int il =

@@ -85,7 +85,6 @@ Export-Package: com.redhat.ceylon.eclipse.code.complete;x-friends:="com.redhat.c
  com.redhat.ceylon.eclipse.core.launch;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
  com.redhat.ceylon.eclipse.core.model;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
  com.redhat.ceylon.eclipse.core.model.mirror;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
- com.redhat.ceylon.eclipse.core.typechecker;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
  com.redhat.ceylon.eclipse.core.vfs;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",
  com.redhat.ceylon.eclipse.java2ceylon,
  com.redhat.ceylon.eclipse.ui;x-friends:="com.redhat.ceylon.eclipse.ui.test,com.redhat.ceylon.test.eclipse.plugin",

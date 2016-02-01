@@ -6,7 +6,7 @@ import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionPropos
 import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.Arrays;
@@ -164,10 +164,10 @@ class RefineEqualsHashProposal
                 body.getStatements();
         String indent;
 //        String bodyIndent = getIndent(body, document);
-        String bodyIndent = indents().getIndent(node, document);
-        String delim = indents().getDefaultLineDelimiter(document);
+        String bodyIndent = utilJ2C().indents().getIndent(node, document);
+        String delim = utilJ2C().indents().getDefaultLineDelimiter(document);
         if (statements.isEmpty()) {
-            indent = delim + bodyIndent + indents().getDefaultIndent();
+            indent = delim + bodyIndent + utilJ2C().indents().getDefaultIndent();
             if (offset<0) {
                 offset = body.getStartIndex()+1;
             }
@@ -175,7 +175,7 @@ class RefineEqualsHashProposal
         else {
             Tree.Statement statement = 
                     statements.get(statements.size()-1);
-            indent = delim + indents().getIndent(statement, document);
+            indent = delim + utilJ2C().indents().getIndent(statement, document);
             if (offset<0) {
                 offset = statement.getEndIndex();
             }

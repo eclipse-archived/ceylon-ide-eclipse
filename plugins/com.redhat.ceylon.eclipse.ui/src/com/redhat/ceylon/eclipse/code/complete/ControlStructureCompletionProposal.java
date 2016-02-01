@@ -3,8 +3,7 @@ package com.redhat.ceylon.eclipse.code.complete;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextFor;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
-
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -167,7 +166,7 @@ class ControlStructureCompletionProposal extends CompletionProposal {
                         type.getCaseTypes()!=null && 
                         !v.isVariable()) {
                     StringBuilder body = new StringBuilder();
-                    String indent = indents().getIndent(node, doc);
+                    String indent = utilJ2C().indents().getIndent(node, doc);
                     Unit unit = node.getUnit();
                     for (Type pt: type.getCaseTypes()) {
                         body.append(indent).append("case (");
@@ -184,14 +183,14 @@ class ControlStructureCompletionProposal extends CompletionProposal {
                                 .append(pt.asSourceCodeString(unit));
                         }
                         body.append(") {}")
-                            .append(indents().getDefaultLineDelimiter(doc));
+                            .append(utilJ2C().indents().getDefaultLineDelimiter(doc));
                     }
                     body.append(indent);
                     Unit u = cpc.getLastCompilationUnit().getUnit();
                     result.add(new ControlStructureCompletionProposal(offset, prefix, 
                             "switch (" + getDescriptionFor(d, u) + ")", 
                             "switch (" + getTextFor(d, u) + ")" + 
-                                    indents().getDefaultLineDelimiter(doc) + body, 
+                                    utilJ2C().indents().getDefaultLineDelimiter(doc) + body, 
                             d, cpc));
                 }
             }

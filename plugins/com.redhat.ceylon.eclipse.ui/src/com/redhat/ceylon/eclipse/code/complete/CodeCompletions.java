@@ -11,7 +11,7 @@ import static com.redhat.ceylon.eclipse.util.Highlights.MEMBER_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.styleIdentifier;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.EXTENDS;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
@@ -1192,10 +1192,10 @@ public class CodeCompletions {
     private static void appendHashImpl(Unit unit, String indent, 
             StringBuilder result, ClassOrInterface ci) {
         result.append(" {")
-            .append(indent).append(indents().getDefaultIndent())
+            .append(indent).append(utilJ2C().indents().getDefaultIndent())
             .append("variable value hash = 1;")
-            .append(indent).append(indents().getDefaultIndent());
-        String ind = indent + indents().getDefaultIndent();
+            .append(indent).append(utilJ2C().indents().getDefaultIndent());
+        String ind = indent + utilJ2C().indents().getDefaultIndent();
         appendMembersToHash(unit, ind, result, ci);
         result.append("return hash;")
             .append(indent)
@@ -1206,19 +1206,19 @@ public class CodeCompletions {
             StringBuilder result, ClassOrInterface ci, List<Parameter> ps) {
         Parameter p = ps.get(0);
         result.append(" {")
-            .append(indent).append(indents().getDefaultIndent())
+            .append(indent).append(utilJ2C().indents().getDefaultIndent())
             .append("if (is ").append(ci.getName()).append(" ").append(p.getName()).append(") {")
-            .append(indent).append(indents().getDefaultIndent()).append(indents().getDefaultIndent())
+            .append(indent).append(utilJ2C().indents().getDefaultIndent()).append(utilJ2C().indents().getDefaultIndent())
             .append("return ");
-        String ind = indent+indents().getDefaultIndent()+indents().getDefaultIndent()+indents().getDefaultIndent();
+        String ind = indent+utilJ2C().indents().getDefaultIndent()+utilJ2C().indents().getDefaultIndent()+utilJ2C().indents().getDefaultIndent();
         appendMembersToEquals(unit, ind, result, ci, p);
-        result.append(indent).append(indents().getDefaultIndent())
+        result.append(indent).append(utilJ2C().indents().getDefaultIndent())
             .append("}")
-            .append(indent).append(indents().getDefaultIndent())
+            .append(indent).append(utilJ2C().indents().getDefaultIndent())
             .append("else {")
-            .append(indent).append(indents().getDefaultIndent()).append(indents().getDefaultIndent())
+            .append(indent).append(utilJ2C().indents().getDefaultIndent()).append(utilJ2C().indents().getDefaultIndent())
             .append("return false;")
-            .append(indent).append(indents().getDefaultIndent())
+            .append(indent).append(utilJ2C().indents().getDefaultIndent())
             .append("}")
             .append(indent)
             .append("}");
@@ -1284,7 +1284,7 @@ public class CodeCompletions {
     }
 
     private static String extraIndent(String indent, boolean containsNewline) {
-        return containsNewline ? indent + indents().getDefaultIndent() : indent;
+        return containsNewline ? indent + utilJ2C().indents().getDefaultIndent() : indent;
     }
     
     public static void appendParametersDescription(Declaration d, StringBuilder result, 

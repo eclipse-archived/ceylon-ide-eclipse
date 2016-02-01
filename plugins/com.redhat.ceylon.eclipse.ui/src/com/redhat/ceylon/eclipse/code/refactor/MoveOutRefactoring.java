@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
 import static com.redhat.ceylon.eclipse.util.Nodes.text;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStatus;
@@ -279,9 +279,9 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     }
 
     private void move(Tree.TypeDeclaration owner, TextChange tfc) {
-        String indent = indents().getIndent(owner, document);
-        String originalIndent = indents().getIndent(declaration, document);
-        String delim = indents().getDefaultLineDelimiter(document);
+        String indent = utilJ2C().indents().getIndent(owner, document);
+        String originalIndent = utilJ2C().indents().getIndent(declaration, document);
+        String delim = utilJ2C().indents().getDefaultLineDelimiter(document);
         String text = renderText(owner, indent, originalIndent, delim);
         tfc.addEdit(new InsertEdit(owner.getEndIndex(), 
                 delim+indent+delim+indent+text));
@@ -513,9 +513,9 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             private String namedArgIndent(
                     Tree.NamedArgumentList nal,
                     IDocument doc) {
-                return indents().getDefaultLineDelimiter(doc) +
-                        indents().getIndent(nal, doc) +
-                        indents().getDefaultIndent();
+                return utilJ2C().indents().getDefaultLineDelimiter(doc) +
+                        utilJ2C().indents().getIndent(nal, doc) +
+                        utilJ2C().indents().getDefaultIndent();
             }
             
         }.visit(cu);
@@ -546,8 +546,8 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     private void appendClause(String indent, String delim,
             StringBuilder sb, Node clause) {
         sb.append(delim).append(indent)
-            .append(indents().getDefaultIndent())
-            .append(indents().getDefaultIndent())
+            .append(utilJ2C().indents().getDefaultIndent())
+            .append(utilJ2C().indents().getDefaultIndent())
             .append(text(clause, tokens));
     }
 

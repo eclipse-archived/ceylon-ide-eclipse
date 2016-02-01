@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
 
 import java.util.Collection;
@@ -92,8 +92,8 @@ class SplitDeclarationProposal extends CorrectionProposal {
                 new TextFileChange("Split Declaration", 
                         file);
         change.setEdit(new MultiTextEdit());
-        String delim = indents().getDefaultLineDelimiter(doc);
-        String indent = indents().getIndent(decNode, doc);
+        String delim = utilJ2C().indents().getDefaultLineDelimiter(doc);
+        String indent = utilJ2C().indents().getIndent(decNode, doc);
         if (dec.isParameter()) {
             //TODO: does not handle default args correctly 
             //      for callable parameters
@@ -167,7 +167,7 @@ class SplitDeclarationProposal extends CorrectionProposal {
                 }
             }
             String text = 
-                    delim + indent + indents().getDefaultIndent() + 
+                    delim + indent + utilJ2C().indents().getDefaultIndent() + 
                     annotations + typeString + " " + 
                     dec.getName() + 
                     paramsString + ";";
@@ -277,8 +277,8 @@ class SplitDeclarationProposal extends CorrectionProposal {
             try {
                 text = "value " +
                         doc.get(vstart, vlen) + 
-                        ";" + indents().getDefaultLineDelimiter(doc) + 
-                        indents().getIndent(statement, doc);
+                        ";" + utilJ2C().indents().getDefaultLineDelimiter(doc) + 
+                        utilJ2C().indents().getIndent(statement, doc);
             }
             catch (BadLocationException e) {
                 e.printStackTrace();

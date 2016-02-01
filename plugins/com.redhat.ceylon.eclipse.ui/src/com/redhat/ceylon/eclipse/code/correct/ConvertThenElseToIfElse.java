@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 
 import java.util.Collection;
 
@@ -142,13 +142,13 @@ class ConvertThenElseToIfElse extends CorrectionProposal {
                 return;
             }
 
-            String baseIndent = indents().getIndent(statement, doc);
-            String indent = indents().getDefaultIndent();
+            String baseIndent = utilJ2C().indents().getIndent(statement, doc);
+            String indent = utilJ2C().indents().getDefaultIndent();
             
             test = removeEnclosingParentesis(test);
             
             StringBuilder replace = new StringBuilder();
-            String delim = indents().getDefaultLineDelimiter(doc);
+            String delim = utilJ2C().indents().getDefaultLineDelimiter(doc);
             if (declaration != null) {
                 replace.append(declaration)
                         .append(delim)

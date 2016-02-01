@@ -24,7 +24,7 @@ import com.redhat.ceylon.common.config.CeylonConfig;
 import com.redhat.ceylon.common.config.ConfigWriter;
 import com.redhat.ceylon.eclipse.code.style.FormatterProfileManager.Profile;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import static com.redhat.ceylon.eclipse.util.Indents.indents;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 
 import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.*;
 
@@ -100,9 +100,9 @@ public class CeylonStyle {
             lb = os_.get_();
         }
         VariableOptions ret = new VariableOptions(new SparseFormattingOptions());
-        ret.setIndentMode(indents().getIndentWithSpaces() ?
-                new Spaces(indents().getIndentSpaces()) :
-                new Tabs(indents().getIndentSpaces()));
+        ret.setIndentMode(utilJ2C().indents().getIndentWithSpaces() ?
+                new Spaces(utilJ2C().indents().getIndentSpaces()) :
+                new Tabs(utilJ2C().indents().getIndentSpaces()));
         ret.setLineBreak(lb);
         return ret;
     }
