@@ -113,6 +113,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
@@ -603,6 +604,12 @@ public class JDTModelLoader extends AbstractModelLoader {
             for (IPackageFragment pf : packageRequestor.getPackageFragments()) {
                 IPackageFragmentRoot packageRoot = (IPackageFragmentRoot) pf.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
                 try {
+                    IJavaProject packageProject = packageRoot.getJavaProject();
+                    if (packageProject != null 
+                            && !CeylonNature.isEnabled(packageProject.getProject())) {
+                        continue;
+                    }
+                    
                     if (packageRoot.getKind() == IPackageFragmentRoot.K_SOURCE) {
                         packagesToSearchIn.addFirst(pf);
                         continue;
