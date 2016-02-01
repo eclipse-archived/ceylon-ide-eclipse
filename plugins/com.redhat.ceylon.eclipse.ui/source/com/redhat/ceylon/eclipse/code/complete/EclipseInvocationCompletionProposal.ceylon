@@ -1,7 +1,3 @@
-import ceylon.interop.java {
-    CeylonIterable
-}
-
 import com.redhat.ceylon.eclipse.code.complete {
     EInvocationCompletionProposal=InvocationCompletionProposal
 }
@@ -118,7 +114,7 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
             return true;
         }
         
-        for (al in CeylonIterable(dec.aliases)) {
+        for (al in dec.aliases) {
             if (ModelUtil.isNameMatching(currentPrefix, al.string)) {
                 return true;
             }

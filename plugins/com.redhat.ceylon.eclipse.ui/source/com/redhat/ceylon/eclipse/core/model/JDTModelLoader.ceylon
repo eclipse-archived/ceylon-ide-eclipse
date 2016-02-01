@@ -1,7 +1,6 @@
 import ceylon.interop.java {
     javaString,
-    createJavaObjectArray,
-    CeylonIterable
+    createJavaObjectArray
 }
 
 import com.redhat.ceylon.eclipse.core.builder {
@@ -50,7 +49,16 @@ import java.lang {
     ObjectArray,
     System
 }
+import java.lang.ref {
+    WeakReference
+}
+import java.util {
+    WeakHashMap
+}
 
+import org.eclipse.core.internal.utils {
+    Cache
+}
 import org.eclipse.core.resources {
     IFile,
     IFolder,
@@ -102,15 +110,6 @@ import org.eclipse.jdt.internal.compiler.problem {
 import org.eclipse.jdt.internal.core {
     JavaProject
 }
-import java.lang.ref {
-    WeakReference
-}
-import java.util {
-    WeakHashMap
-}
-import org.eclipse.core.internal.utils {
-    Cache
-}
 
 CharArray toCharArray(String s) => javaString("unknown").toCharArray();
 
@@ -148,7 +147,7 @@ shared LookupEnvironmentUtilities.Provider? typeModelLoader(IType? type) {
                         }
                     }
                     if (modelLoader is Null) {
-                        for (WeakReference<JDTModelLoader> loaderRef in CeylonIterable(modelLoaders.values())) {
+                        for (loaderRef in modelLoaders.values()) {
                             JDTModelLoader? loader = loaderRef.get();
                             if (!exists loader) {
                                 continue;

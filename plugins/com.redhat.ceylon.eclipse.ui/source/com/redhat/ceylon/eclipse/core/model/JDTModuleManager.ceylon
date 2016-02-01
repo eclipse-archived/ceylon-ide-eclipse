@@ -1,5 +1,6 @@
-import ceylon.interop.java {
-    CeylonIterable
+import ceylon.collection {
+    MutableList,
+    ArrayList
 }
 
 import com.redhat.ceylon.compiler.typechecker.context {
@@ -23,6 +24,10 @@ import com.redhat.ceylon.model.typechecker.model {
     Modules
 }
 
+import java.lang.ref {
+    WeakReference
+}
+
 import org.eclipse.core.resources {
     IProject,
     IResource,
@@ -38,13 +43,6 @@ import org.eclipse.jdt.core {
 }
 import org.eclipse.jdt.internal.core {
     JarPackageFragmentRoot
-}
-import ceylon.collection {
-    MutableList,
-    ArrayList
-}
-import java.lang.ref {
-    WeakReference
 }
 
 shared class JDTModuleManager(Context context, CeylonProject<IProject,IResource,IFolder,IFile>? ceylonProject)
@@ -109,7 +107,7 @@ shared class JDTModuleManager(Context context, CeylonProject<IProject,IResource,
                         if (root.\iexists(), 
                             javaProject.isOnClasspath(root)) {
                             if (JDKUtils.isJDKModule(moduleName)) {
-                                for (pkg in CeylonIterable(JDKUtils.getJDKPackagesByModule(moduleName))) {
+                                for (pkg in JDKUtils.getJDKPackagesByModule(moduleName)) {
                                     if (root.getPackageFragment(pkg.string).\iexists()) {
                                         roots.add(root);
                                         break;
@@ -117,7 +115,7 @@ shared class JDTModuleManager(Context context, CeylonProject<IProject,IResource,
                                 }
                             }
                             else if (JDKUtils.isOracleJDKModule(moduleName)) {
-                                for (pkg in CeylonIterable(JDKUtils.getOracleJDKPackagesByModule(moduleName))) {
+                                for (pkg in JDKUtils.getOracleJDKPackagesByModule(moduleName)) {
                                     if (root.getPackageFragment(pkg.string).\iexists()) {
                                         roots.add(root);
                                         break;
