@@ -3,12 +3,13 @@ package com.redhat.ceylon.eclipse.ui.test.headless;
 import static org.junit.Assert.assertEquals;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 
-import java.util.HashSet;
+import ceylon.collection.HashSet;
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
 import org.junit.Test;
 
+import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
@@ -18,7 +19,7 @@ public class ImportProposalTests {
     @Test
     public void testDelimiter1() {
     	ImportMemberOrTypeList imtl = prepareImportMemberOrTypeList();
-		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>();
+		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>(TypeDescriptor.klass(Declaration.class));
 		
 		String result = importProposals().formatImportMembers("\n", "  ", ignoredDeclarations, imtl);
 		assertEquals(result, "{\n  Bar,\n  Foo\n}");
@@ -28,7 +29,7 @@ public class ImportProposalTests {
     @Test
     public void testDelimiter2() {
     	ImportMemberOrTypeList imtl = prepareImportMemberOrTypeList();
-		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>();
+		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>(TypeDescriptor.klass(Declaration.class));
 		
 		String result = importProposals().formatImportMembers("\r\n", "  ", ignoredDeclarations, imtl);
 		assertEquals(result, "{\r\n  Bar,\r\n  Foo\r\n}");
@@ -37,7 +38,7 @@ public class ImportProposalTests {
     @Test
     public void testDelimiter3() {
     	ImportMemberOrTypeList imtl = prepareImportMemberOrTypeList();
-		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>();
+		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>(TypeDescriptor.klass(Declaration.class));
 		
 		String result = importProposals().formatImportMembers("|||", "  ", ignoredDeclarations, imtl);
 		assertEquals(result, "{|||  Bar,|||  Foo|||}");
@@ -46,7 +47,7 @@ public class ImportProposalTests {
     @Test
     public void testSingleImport1() {
     	ImportMemberOrTypeList imtl = prepareSingleImportMemberOrTypeList();
-		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>();
+		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>(TypeDescriptor.klass(Declaration.class));
 		
 		String result = importProposals().formatImportMembers("\r\n", "  ", ignoredDeclarations, imtl);
 		assertEquals(result, "{\r\n  Bar\r\n}");
@@ -55,7 +56,7 @@ public class ImportProposalTests {
     @Test
     public void testSingleImport2() {
     	ImportMemberOrTypeList imtl = prepareSingleImportMemberOrTypeList();
-		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>();
+		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>(TypeDescriptor.klass(Declaration.class));
 		
 		String result = importProposals().formatImportMembers("\n", "  ", ignoredDeclarations, imtl);
 		assertEquals(result, "{\n  Bar\n}");
@@ -65,7 +66,7 @@ public class ImportProposalTests {
     @Test
     public void testSingleImport3() {
     	ImportMemberOrTypeList imtl = prepareSingleImportMemberOrTypeList();
-		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>();
+		HashSet<Declaration> ignoredDeclarations = new HashSet<Declaration>(TypeDescriptor.klass(Declaration.class));
 		
 		String result = importProposals().formatImportMembers("|||", "  ", ignoredDeclarations, imtl);
 		assertEquals(result, "{|||  Bar|||}");
