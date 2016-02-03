@@ -108,6 +108,7 @@ import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 import com.redhat.ceylon.model.typechecker.model.NothingType;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
@@ -265,8 +266,14 @@ public class DocumentationHover extends SourceInfoHover {
         int moduleVersionSeparator = location.indexOf('/', firstColumnIndex);
         String moduleName = location.substring(firstColumnIndex+1, moduleVersionSeparator);
         int secondColumnIndex = location.indexOf(':', moduleVersionSeparator);
-        String moduleVersion = location.substring(moduleVersionSeparator+1, secondColumnIndex);
-        String remainingLocation = location.substring(secondColumnIndex+1);
+        String moduleVersion = null;
+        String remainingLocation = "";
+        if (secondColumnIndex > moduleVersionSeparator+1) {
+            moduleVersion =  location.substring(moduleVersionSeparator+1, secondColumnIndex);
+            remainingLocation = location.substring(secondColumnIndex+1);
+        } else {
+            moduleVersion =  location.substring(moduleVersionSeparator+1);
+        }
 
         JDTModelLoader modelLoader = 
                 getModelLoader(typeChecker);
@@ -1180,6 +1187,35 @@ public class DocumentationHover extends SourceInfoHover {
         return "module " + name + " \"" + version + "\"";
     }
 
+    private static void addModuleDependencies(CeylonParseController controller, Module mod, StringBuilder builder) {
+        for (ModuleImport imp : mod.getImports()) {
+            addImportDescription(controller, imp, builder);
+        }
+    }
+    
+
+    private static void addImportDescription(CeylonParseController controller,
+            ModuleImport imp, StringBuilder builder) {
+        Module mod = imp.getModule();
+        if (!mod.getNameAsString().isEmpty() && ! "default".equals(mod.getNameAsString())) {
+            //value label = "<span>Depends on&nbsp;``color(buf.string, Colors.annotations)````color("import", Colors.keywords)`` ``buildLink(mod, mod.nameAsString)``"
+            String coloredVersion = new StringBuilder().append("<span style='color:")
+                .append(toHex(getCurrentThemeColor(ANNOTATION_STRINGS)))
+                .append("'>").append("\"" + mod.getVersion() + "\"")
+                .append("</span>").toString();
+                    
+            String label = "<span>" + (imp.isExport() ? "Exports" : "Imports") + "&nbsp;" + link(mod)
+                    + "&nbsp;<tt>" + coloredVersion + "</tt>.</span>";
+            
+            HTML.addImageAndLabel(builder, null, 
+                    HTML.fileUrl("imp_obj.png")
+                        .toExternalForm(), 
+                    16, 16, 
+                    label, 
+                    20, 2);            
+        }
+    }
+
     public static String getDocumentationFor(
             CeylonParseController controller, Module mod) {
         StringBuilder buffer = new StringBuilder();
@@ -1187,6 +1223,7 @@ public class DocumentationHover extends SourceInfoHover {
         addMainModuleDescription(mod, buffer);
         addAdditionalModuleInfo(buffer, mod);
         addModuleDocumentation(controller, mod, buffer);
+        addModuleDependencies(controller, mod, buffer);
         addModuleMembers(buffer, mod);
         insertPageProlog(buffer, 0, HTML.getStyleSheet());
         addPageEpilog(buffer);
