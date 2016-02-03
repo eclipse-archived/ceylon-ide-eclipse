@@ -24,14 +24,20 @@ import com.redhat.ceylon.ide.common.model {
     CeylonProjectConfig,
     CeylonProjects
 }
+import com.redhat.ceylon.ide.common.vfs {
+    FolderVirtualFile
+}
+import com.redhat.ceylon.model.typechecker.model {
+    Package
+}
 
 import java.io {
     File
 }
-
 import java.lang.ref {
     WeakReference
 }
+
 import org.eclipse.core.resources {
     IProject,
     IResource,
@@ -54,12 +60,6 @@ import org.eclipse.jface.dialogs {
 }
 import org.eclipse.swt.widgets {
     Display
-}
-import com.redhat.ceylon.ide.common.vfs {
-    FolderVirtualFile
-}
-import com.redhat.ceylon.model.typechecker.model {
-    Package
 }
 
 shared object nativeFolderProperties {
@@ -243,4 +243,13 @@ shared class EclipseCeylonProject(ideArtifact)
         rootFolder.setSessionProperty(nativeFolderProperties.root, isSource);
         rootFolder.setSessionProperty(CeylonBuilder.\iRESOURCE_PROPERTY_ROOT_FOLDER_TYPE, if (isSource) then CeylonBuilder.RootFolderType.\iSOURCE else CeylonBuilder.RootFolderType.\iRESOURCE);
     }
+
+    shared actual void createOverridesProblemMarker(Exception theOverridesException, File absoluteFile, Integer overridesLine, Integer overridesColumn) =>
+            CeylonBuilder.createOverridesProblemMarker(ideArtifact, theOverridesException, absoluteFile, overridesLine, overridesColumn);
+    
+    shared actual void removeOverridesProblemMarker() =>
+            CeylonBuilder.removeOverridesProblemMarker(ideArtifact);
+    
+    shared actual String systemRepository => 
+            CeylonBuilder.getInterpolatedCeylonSystemRepo(ideArtifact);
  }

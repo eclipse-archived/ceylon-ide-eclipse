@@ -1,11 +1,14 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.model.cmr.Repository;
 
@@ -24,9 +27,12 @@ public class RepositoryNode {
     }
     
     public Repository getRepository() {
-        for (Repository r : CeylonBuilder.getProjectRepositoryManager(project).getRepositories()) {
-            if (displayString.equals(r.getDisplayString())) {
-                return r;
+        BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
+        if (ceylonProject != null) {
+            for (Repository r : ceylonProject.getRepositoryManager().getRepositories()) {
+                if (displayString.equals(r.getDisplayString())) {
+                    return r;
+                }
             }
         }
         return null;

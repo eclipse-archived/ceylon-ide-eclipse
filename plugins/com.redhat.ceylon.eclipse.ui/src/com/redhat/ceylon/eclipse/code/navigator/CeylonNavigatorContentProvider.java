@@ -54,6 +54,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 
 public class CeylonNavigatorContentProvider implements
@@ -202,26 +203,30 @@ public class CeylonNavigatorContentProvider implements
     }
 
     private synchronized Map<String, RepositoryNode> getProjectRepositoryNodes(IProject project) {
-        RepositoryManager repoManager = CeylonBuilder.getProjectRepositoryManager(project);
         Map<String, RepositoryNode> repositories = new LinkedHashMap<>();
-        for (String displayString : repoManager.getRepositoriesDisplayString()) {
-            repositories.put(displayString, new RepositoryNode(project, displayString));
-        }
-        RepositoryNode unknownRepositoryNode = new RepositoryNode(project, NodeUtils.UNKNOWN_REPOSITORY);
-        repositories.put(NodeUtils.UNKNOWN_REPOSITORY, unknownRepositoryNode);
-        
-        for (BaseIdeModule externalModule : CeylonBuilder.getProjectExternalModules(project)) {
-            if (! externalModule.isAvailable()) {
-                continue;
+
+        BaseCeylonProject baseCeylonProject = modelJ2C().ceylonModel().getProject(project);
+        if (baseCeylonProject != null) {
+            RepositoryManager repoManager = baseCeylonProject.getRepositoryManager();
+            for (String displayString : repoManager.getRepositoriesDisplayString()) {
+                repositories.put(displayString, new RepositoryNode(project, displayString));
             }
-            String repoDisplayString = externalModule.getRepositoryDisplayString();
-            if (externalModule.getIsJDKModule()) {
-                repositories.get(JDKRepository.JDK_REPOSITORY_DISPLAY_STRING).addModule(externalModule);
-            }
-            else if (repositories.containsKey(repoDisplayString)) {
-                repositories.get(repoDisplayString).addModule(externalModule);
-            } else {
-                unknownRepositoryNode.addModule(externalModule);
+            RepositoryNode unknownRepositoryNode = new RepositoryNode(project, NodeUtils.UNKNOWN_REPOSITORY);
+            repositories.put(NodeUtils.UNKNOWN_REPOSITORY, unknownRepositoryNode);
+            
+            for (BaseIdeModule externalModule : CeylonBuilder.getProjectExternalModules(project)) {
+                if (! externalModule.isAvailable()) {
+                    continue;
+                }
+                String repoDisplayString = externalModule.getRepositoryDisplayString();
+                if (externalModule.getIsJDKModule()) {
+                    repositories.get(JDKRepository.JDK_REPOSITORY_DISPLAY_STRING).addModule(externalModule);
+                }
+                else if (repositories.containsKey(repoDisplayString)) {
+                    repositories.get(repoDisplayString).addModule(externalModule);
+                } else {
+                    unknownRepositoryNode.addModule(externalModule);
+                }
             }
         }
         return repositories;

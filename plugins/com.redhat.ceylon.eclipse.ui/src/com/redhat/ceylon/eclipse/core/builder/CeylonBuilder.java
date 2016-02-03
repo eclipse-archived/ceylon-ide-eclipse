@@ -485,10 +485,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     private final static Map<IProject, TypeChecker> typeCheckers = new HashMap<IProject, TypeChecker>();
     private final static Map<IProject, List<IFile>> projectFiles = new HashMap<IProject, List<IFile>>();
     private static Set<IProject> containersInitialized = new HashSet<IProject>();
-    private final static Map<IProject, RepositoryManager> projectRepositoryManagers = new HashMap<IProject, RepositoryManager>();
     private final static Map<IProject, ModuleDependencies> projectModuleDependencies = new HashMap<IProject, ModuleDependencies>();
     private final static Set<ICeylonModelListener> modelListeners = new LinkedHashSet<ICeylonModelListener>();
-    private final static Map<IProject, ReadWriteLock> projectSourceModelLocks = new HashMap<IProject, ReadWriteLock>();
 
     public static void addModelListener(ICeylonModelListener listener) {
         modelListeners.add(listener);
@@ -2141,9 +2139,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
                             modelStates.put(project, ModelState.Parsing);
                             typeCheckers.remove(project);
-                            synchronized (projectRepositoryManagers) {
-                                projectRepositoryManagers.remove(project);
-                            }
+                            ceylonProject.resetRepositoryManager();
                             projectFiles.remove(project);
                             if (projectModuleDependencies.containsKey(project)) {
                                 projectModuleDependencies.get(project).reset();
@@ -2156,7 +2152,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             }
                             
                             final IJavaProject javaProject = JavaCore.create(project);
-                            TypeChecker typeChecker = buildTypeChecker(project, javaProject);
+                            TypeChecker typeChecker = buildTypeChecker(ceylonProject);
                             modelJ2C().setTypeCheckerOnCeylonProject(ceylonProject, typeChecker);
                             PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
 
@@ -2339,7 +2335,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                                 }
                                             }
                                             if (! importedModuleImports.isEmpty()) {
-                                                File artifact = getProjectRepositoryManager(project).getArtifact(
+                                                File artifact = ceylonProject.getRepositoryManager().getArtifact(
                                                         new ArtifactContext(
                                                                 jdtModule.getNameAsString(), 
                                                                 jdtModule.getVersion(), 
@@ -2389,15 +2385,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    private static TypeChecker buildTypeChecker(final IProject project,
-            final IJavaProject javaProject) {
+    private static TypeChecker buildTypeChecker(final CeylonProject<IProject, IResource, IFolder, IFile> project) {
         TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder(
                 modelJ2C().ceylonModel().getVfs())
             .verbose(false)
             .moduleManagerFactory(new ModuleManagerFactory(){
                 @Override
                 public ModuleManager createModuleManager(Context context) {
-                    return modelJ2C().newModuleManager(context, modelJ2C().ceylonModel().getProject(project));
+                    return modelJ2C().newModuleManager(context, project);
                 }
 
                 @Override
@@ -2406,7 +2401,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 }
             });
         
-        RepositoryManager repositoryManager = getProjectRepositoryManager(project);
+        RepositoryManager repositoryManager = project.getRepositoryManager();
         
         typeCheckerBuilder.setRepositoryManager(repositoryManager);
         TypeChecker typeChecker = typeCheckerBuilder.getTypeChecker();
@@ -3470,22 +3465,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return modules;
     }
 
-    public static RepositoryManager getProjectRepositoryManager(IProject project) {
-        synchronized (projectRepositoryManagers) {
-            RepositoryManager repoManager = projectRepositoryManagers.get(project);
-            if (repoManager == null) {
-                try {
-                    repoManager = createProjectRepositoryManager(project);
-                    projectRepositoryManagers.put(project, repoManager);
-                } catch(CoreException e) {
-                    e.printStackTrace();
-                }
-            }
-            return repoManager;
-        }
-    }
-
-    private static void removeOverridesProblemMarker(final IProject project) {
+    public static void removeOverridesProblemMarker(final IProject project) {
         Job job = new Job("Remove Overrides problem marker") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
@@ -3539,7 +3519,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return null;
     }
     
-    private static void createOverridesProblemMarker(final IProject project,
+    public static void createOverridesProblemMarker(final IProject project,
             final Exception e, final File overridesFile, final int line, final int column) {
         Job job = new Job("Create Overrides problem marker") {
             @Override
@@ -3694,11 +3674,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         typeCheckers.remove(project);
         projectFiles.remove(project);
         modelStates.remove(project);
-        projectSourceModelLocks.remove(project);
         containersInitialized.remove(project);
-        synchronized (projectRepositoryManagers) {
-            projectRepositoryManagers.remove(project);
-        }
         JavaProjectStateMirror.cleanup(project);
         projectModuleDependencies.remove(project);
     }

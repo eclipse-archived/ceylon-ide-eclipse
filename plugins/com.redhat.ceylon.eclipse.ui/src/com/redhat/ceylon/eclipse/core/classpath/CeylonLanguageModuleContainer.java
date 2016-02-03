@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.core.classpath;
 
 
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.ceylonSourceArchiveToJavaSourceArchive;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.jdt.core.JavaCore.newLibraryEntry;
 
@@ -25,6 +26,7 @@ import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 
 /** 
  * Ceylon Language Module Classpath Container - resolves a classpath container id to the ceylon.language binary archive
@@ -52,8 +54,8 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
     public CeylonLanguageModuleContainer(IProject project) {
         fPath = new Path(CeylonLanguageModuleContainer.CONTAINER_ID + "/default");
         fProject = JavaCore.create(project);
-        RepositoryManager repoManager;
-        repoManager = CeylonBuilder.getProjectRepositoryManager(fProject.getProject());
+        BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
+        RepositoryManager repoManager = ceylonProject != null ? ceylonProject.getRepositoryManager() : null;
         if (repoManager != null) {
             String moduleName = "ceylon.language";
             String moduleVersion = TypeChecker.LANGUAGE_MODULE_VERSION;

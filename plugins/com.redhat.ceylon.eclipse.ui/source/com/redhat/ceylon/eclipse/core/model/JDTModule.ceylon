@@ -95,10 +95,7 @@ shared class JDTModule(
                             try {
                                 jarToSearch = returnCarFile();
                                 if (! jarToSearch exists) {
-                                    RepositoryManager? repoMgr = CeylonBuilder.getProjectRepositoryManager(ceylonProject.ideArtifact);
-                                    if (exists repoMgr) {
-                                        jarToSearch = CeylonProjectModulesContainer.getModuleArtifact(repoMgr, this);
-                                    }
+                                    jarToSearch = CeylonProjectModulesContainer.getModuleArtifact(ceylonProject.repositoryManager, this);
                                 }
                                 if (exists foundJar = jarToSearch) {
                                     IPackageFragmentRoot root = javaProject.getPackageFragmentRoot(foundJar.string);
