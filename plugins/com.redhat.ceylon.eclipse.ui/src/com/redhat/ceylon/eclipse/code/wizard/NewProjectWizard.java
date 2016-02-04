@@ -1,9 +1,11 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSuppressedWarnings;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_PROJECT;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static com.redhat.ceylon.ide.common.util.toCeylonBoolean_.toCeylonBoolean;
+import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
 
@@ -11,7 +13,10 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.EnumSet;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
@@ -170,6 +175,10 @@ public class NewProjectWizard extends NewElementWizard
                 projectConfig.setOutputRepo(
                         block.getOutputRepo());
                 block.applyToConfiguration(projectConfig);
+                projectConfig.setProjectOverrides(toCeylonString(block.getOverrides()));
+                projectConfig.setProjectFlatClasspath(toCeylonBoolean(block.getFlatClasspath()));
+                projectConfig.setProjectAutoExportMavenDependencies(
+                        toCeylonBoolean(block.getAutoExportMavenDependencies()));
             }
             
             projectConfig.save();
