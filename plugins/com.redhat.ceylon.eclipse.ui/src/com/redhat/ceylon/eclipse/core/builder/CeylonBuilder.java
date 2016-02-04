@@ -1576,63 +1576,65 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         for (final IResourceDelta projectDelta: projectDeltas) {
             if (projectDelta != null) {
                 final IProject project = (IProject) projectDelta.getResource();
-                for (IResourceDelta projectAffectedChild: projectDelta.getAffectedChildren()) {
-                    if (! (projectAffectedChild.getResource() instanceof IFolder)) {
-                        continue;
-                    }
-                    final IFolder rootFolder = (IFolder) projectAffectedChild.getResource();
-
-                    RootFolderType rootFolderType = getRootFolderType(rootFolder);
-                    final boolean inSourceDirectory = rootFolderType == RootFolderType.SOURCE;
-                    final boolean inResourceDirectory = rootFolderType == RootFolderType.RESOURCE;
-                    
-                    if (inResourceDirectory || inSourceDirectory) {
-                        // a real Ceylon source or resource folder so scan for changes
-                        projectAffectedChild.accept(new IResourceDeltaVisitor() {
-                            public boolean visit(IResourceDelta delta) throws CoreException {
-                                IResource resource = delta.getResource();
-                                if (resource instanceof IFile) {
-                                    IFile file= (IFile) resource;
-                                    if (inResourceDirectory || (isCompilable(file) && inSourceDirectory) ) {
-                                        changedSources.add(file);
-                                        if (projectDelta == currentDelta) {
-                                            if (delta.getKind() == IResourceDelta.REMOVED) {
-                                                filesToRemove.add(file);
-                                                currentProjectSources.remove(file);
-                                            }
-                                            if (delta.getKind() == IResourceDelta.ADDED) {
-                                                IFile addedFile = (IFile) resource;
-                                                int index = currentProjectSources.indexOf(addedFile);
-                                                if ((index >= 0)) {
-                                                    currentProjectSources.remove(index);
+                List<IFolder> allRootFolders = new ArrayList<>();
+                allRootFolders.addAll(getSourceFolders(project));
+                allRootFolders.addAll(getResourceFolders(project));
+                for (final IFolder rootFolder : allRootFolders) {
+                    IResourceDelta affectedRoot = projectDelta.findMember(rootFolder.getProjectRelativePath());
+                    if (affectedRoot != null) {
+                        RootFolderType rootFolderType = getRootFolderType(rootFolder);
+                        final boolean inSourceDirectory = rootFolderType == RootFolderType.SOURCE;
+                        final boolean inResourceDirectory = rootFolderType == RootFolderType.RESOURCE;
+                        
+                        if (inResourceDirectory || inSourceDirectory) {
+                            // a real Ceylon source or resource folder so scan for changes
+                            affectedRoot.accept(new IResourceDeltaVisitor() {
+                                public boolean visit(IResourceDelta delta) throws CoreException {
+                                    IResource resource = delta.getResource();
+                                    if (resource instanceof IFile) {
+                                        IFile file= (IFile) resource;
+                                        if (inResourceDirectory || (isCompilable(file) && inSourceDirectory) ) {
+                                            changedSources.add(file);
+                                            if (projectDelta == currentDelta) {
+                                                if (delta.getKind() == IResourceDelta.REMOVED) {
+                                                    filesToRemove.add(file);
+                                                    currentProjectSources.remove(file);
                                                 }
-                                                currentProjectSources.add(addedFile);
+                                                if (delta.getKind() == IResourceDelta.ADDED) {
+                                                    IFile addedFile = (IFile) resource;
+                                                    int index = currentProjectSources.indexOf(addedFile);
+                                                    if ((index >= 0)) {
+                                                        currentProjectSources.remove(index);
+                                                    }
+                                                    currentProjectSources.add(addedFile);
+                                                }
                                             }
                                         }
+                                        return false;
                                     }
-                                    return false;
-                                }
-                                if (resource instanceof IFolder) {
-                                    IFolder folder= (IFolder) resource;
-                                    if (projectDelta == currentDelta) {
-                                        if (folder.exists() && delta.getKind() != IResourceDelta.REMOVED) {
-                                            if (getPackage(folder) == null || getRootFolder(folder) == null) {
-                                                IContainer parent = folder.getParent();
-                                                if (parent instanceof IFolder) {
-                                                    Package parentPkg = getPackage((IFolder)parent);
-                                                    if (parentPkg != null) {
-                                                        Package pkg = getProjectModelLoader(project).findOrCreatePackage(parentPkg.getModule(), parentPkg.getNameAsString() + "." + folder.getName());
-                                                        resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_PACKAGE_MODEL, new WeakReference<Package>(pkg));
-                                                        resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_ROOT_FOLDER, rootFolder);
+                                    if (resource instanceof IFolder) {
+                                        IFolder folder= (IFolder) resource;
+                                        if (projectDelta == currentDelta) {
+                                            if (folder.exists() && delta.getKind() != IResourceDelta.REMOVED) {
+                                                if (getPackage(folder) == null || getRootFolder(folder) == null) {
+                                                    IContainer parent = folder.getParent();
+                                                    if (parent instanceof IFolder) {
+                                                        Package parentPkg = getPackage((IFolder)parent);
+                                                        if (parentPkg != null) {
+                                                            Package pkg = getProjectModelLoader(project).findOrCreatePackage(parentPkg.getModule(), parentPkg.getNameAsString() + "." + folder.getName());
+                                                            resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_PACKAGE_MODEL, new WeakReference<Package>(pkg));
+                                                            resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_ROOT_FOLDER, rootFolder);
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
                                     }
+                                    return true;
                                 }
-                                return true;
-                            }
-                        });
+                            });
+                        }
+                        
                     }
                 }
             }
