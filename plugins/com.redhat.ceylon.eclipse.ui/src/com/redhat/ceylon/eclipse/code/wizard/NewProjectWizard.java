@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_PROJECT;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static com.redhat.ceylon.ide.common.util.toCeylonBoolean_.toCeylonBoolean;
+import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
 
@@ -169,6 +170,10 @@ public class NewProjectWizard extends NewElementWizard
                 projectConfig.setOutputRepo(
                         block.getOutputRepo());
                 block.applyToConfiguration(projectConfig);
+                projectConfig.setProjectOverrides(toCeylonString(block.getOverrides()));
+                projectConfig.setProjectFlatClasspath(toCeylonBoolean(block.getFlatClasspath()));
+                projectConfig.setProjectAutoExportMavenDependencies(
+                        toCeylonBoolean(block.getAutoExportMavenDependencies()));
             }
             
             projectConfig.save();
