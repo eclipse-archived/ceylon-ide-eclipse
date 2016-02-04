@@ -3784,7 +3784,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static IFolder getRootFolder(IFolder folder) {
-        if (folder.isLinked(IResource.CHECK_ANCESTORS)) {
+        if (folder.isLinked(IResource.CHECK_ANCESTORS) 
+                && ExternalSourceArchiveManager.isInSourceArchive(folder)) {
             return null;
         }
         if (! folder.exists()) {
