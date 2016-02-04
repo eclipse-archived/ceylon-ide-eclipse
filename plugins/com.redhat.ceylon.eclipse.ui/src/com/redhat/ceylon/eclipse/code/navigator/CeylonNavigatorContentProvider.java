@@ -47,6 +47,8 @@ import org.eclipse.ui.progress.UIJob;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.impl.JDKRepository;
 import com.redhat.ceylon.cmr.impl.NodeUtils;
+import com.redhat.ceylon.common.config.Repositories;
+import com.redhat.ceylon.model.cmr.Repository;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -213,6 +215,10 @@ public class CeylonNavigatorContentProvider implements
             }
             RepositoryNode unknownRepositoryNode = new RepositoryNode(project, NodeUtils.UNKNOWN_REPOSITORY);
             repositories.put(NodeUtils.UNKNOWN_REPOSITORY, unknownRepositoryNode);
+            String cacheRepositoryPath = baseCeylonProject
+                    .getConfiguration().getRepositories()
+                    .getCacheRepoDir().getAbsolutePath();
+            RepositoryNode cacheRepositoryNode = repositories.get(cacheRepositoryPath);
             
             for (BaseIdeModule externalModule : CeylonBuilder.getProjectExternalModules(project)) {
                 if (! externalModule.isAvailable()) {
@@ -225,7 +231,14 @@ public class CeylonNavigatorContentProvider implements
                 else if (repositories.containsKey(repoDisplayString)) {
                     repositories.get(repoDisplayString).addModule(externalModule);
                 } else {
-                    unknownRepositoryNode.addModule(externalModule);
+                    if (cacheRepositoryNode != null &&
+                            externalModule.getArtifact() != null &&
+                            externalModule.getArtifact().getAbsolutePath()
+                            .contains(cacheRepositoryPath)) {
+                        cacheRepositoryNode.addModule(externalModule);
+                    } else {
+                        unknownRepositoryNode.addModule(externalModule);
+                    }
                 }
             }
         }
