@@ -315,7 +315,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
                                 .getSystemColor(SWT.COLOR_GRAY));
                         node.setHighlightColor(node.getDisplay()
                                 .getSystemColor(SWT.COLOR_DARK_GRAY));
-                        label = "Unresolved module\n(not visible from any project module)";
+                        label = "Unresolved module (not visible from any project module)";
                     }
                     else if (module.isJava()) {
                         node.setBackgroundColor(node.getDisplay()
@@ -345,7 +345,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
                         for (ModuleImport mi : module.getImports()) {
                             if (mi.getModule() != null 
                                     && mi.getModule().getNameAsString().equals(Module.LANGUAGE_MODULE_NAME)) {
-                                label += "(imports language module, version " + mi.getModule().getVersion() + ")";
+                                label += "\n  - imports language module, version " + mi.getModule().getVersion();
                             }
                         }
                     }
