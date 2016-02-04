@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
+import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -45,14 +47,15 @@ import org.eclipse.ui.progress.UIJob;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.impl.JDKRepository;
 import com.redhat.ceylon.cmr.impl.NodeUtils;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
 import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Package;
 
 public class CeylonNavigatorContentProvider implements
         IPipelinedTreeContentProvider2, ICeylonModelListener {
@@ -207,6 +210,15 @@ public class CeylonNavigatorContentProvider implements
         }
         RepositoryNode unknownRepositoryNode = new RepositoryNode(project, NodeUtils.UNKNOWN_REPOSITORY);
         repositories.put(NodeUtils.UNKNOWN_REPOSITORY, unknownRepositoryNode);
+        CeylonProject<IProject> ceylonProject = ceylonModel().getProject(project);
+        RepositoryNode cacheRepositoryNode = null;
+        String cacheRepositoryPath = "unknownPath";
+        if (ceylonProject != null) {
+            cacheRepositoryPath = ceylonProject
+                    .getConfiguration().getRepositories()
+                    .getCacheRepoDir().getAbsolutePath();
+            cacheRepositoryNode = repositories.get(cacheRepositoryPath);
+        }
         
         for (JDTModule externalModule : CeylonBuilder.getProjectExternalModules(project)) {
             if (! externalModule.isAvailable()) {
@@ -219,9 +231,17 @@ public class CeylonNavigatorContentProvider implements
             else if (repositories.containsKey(repoDisplayString)) {
                 repositories.get(repoDisplayString).addModule(externalModule);
             } else {
-                unknownRepositoryNode.addModule(externalModule);
+                if (cacheRepositoryNode != null &&
+                        externalModule.getArtifact() != null &&
+                        externalModule.getArtifact().getAbsolutePath()
+                        .contains(cacheRepositoryPath)) {
+                    cacheRepositoryNode.addModule(externalModule);
+                } else {
+                    unknownRepositoryNode.addModule(externalModule);
+                }
             }
         }
+        
         return repositories;
     }
 
