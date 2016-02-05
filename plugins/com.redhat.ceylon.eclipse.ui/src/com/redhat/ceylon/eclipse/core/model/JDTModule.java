@@ -42,8 +42,6 @@ import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import net.lingala.zip4j.exception.ZipException;
-
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.resources.IProject;
@@ -66,8 +64,7 @@ import org.eclipse.jdt.internal.core.PackageFragment;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.common.Backend;
-import com.redhat.ceylon.common.Backends;
+import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnitMap;
 import com.redhat.ceylon.compiler.typechecker.io.ClosableVirtualFile;
@@ -80,7 +77,6 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.core.model.JDTModuleSourceMapper.ExternalModulePhasedUnits;
-import com.redhat.ceylon.ide.common.model.ModuleDependencies.TraversalAction;
 import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
@@ -89,6 +85,7 @@ import com.redhat.ceylon.eclipse.util.CarUtils;
 import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies;
+import com.redhat.ceylon.ide.common.model.ModuleDependencies.TraversalAction;
 import com.redhat.ceylon.model.cmr.ArtifactResult;
 import com.redhat.ceylon.model.cmr.ArtifactResultType;
 import com.redhat.ceylon.model.cmr.ImportType;
@@ -99,13 +96,15 @@ import com.redhat.ceylon.model.cmr.RepositoryException;
 import com.redhat.ceylon.model.cmr.VisibilityType;
 import com.redhat.ceylon.model.loader.model.LazyModule;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.ModelUtil;
+
+import net.lingala.zip4j.exception.ZipException;
 
 public class JDTModule extends LazyModule {
     private JDTModuleManager moduleManager;
@@ -275,6 +274,9 @@ public class JDTModule extends LazyModule {
     synchronized void setArtifact(ArtifactResult artifactResult) {
         artifact = artifactResult.artifact();
         repositoryDisplayString = artifactResult.repositoryDisplayString();
+        if (Constants.REPO_URL_CEYLON.replace("https", "http").equals(repositoryDisplayString)) {
+            repositoryDisplayString = Constants.REPO_URL_CEYLON;
+        }
 
         if (artifact.getName().endsWith(ArtifactContext.SRC)) {
             moduleType = ModuleType.CEYLON_SOURCE_ARCHIVE;
