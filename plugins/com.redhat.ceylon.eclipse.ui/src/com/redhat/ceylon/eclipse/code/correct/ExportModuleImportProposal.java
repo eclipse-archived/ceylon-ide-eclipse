@@ -3,8 +3,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
-
 
 import java.util.Collection;
 import java.util.List;
@@ -27,28 +25,21 @@ import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
-public class ExportModuleImportProposal implements ICompletionProposal, 
+abstract class ExportModuleImportProposal implements ICompletionProposal, 
         ICompletionProposalExtension6 {
     
-    private final IProject project;
-    private final Unit unit; 
-    private final String name;
-    private String version;
+    private String desc;
     
-    ExportModuleImportProposal(IProject project, Unit unit, 
-            String name, String version) {
-        this.project = project;
-        this.unit = unit;
-        this.name = name;
-        this.version = version;
+    ExportModuleImportProposal(String desc) {
+        this.desc = desc;
     }
     
-    @Override
-    public void apply(IDocument document) {
-        importsJ2C().importUtil().exportModuleImports(project, 
-                unit.getPackage().getModule(), 
-                name);
-    }
+//    @Override
+//    public void apply(IDocument document) {
+//        importsJ2C().importUtil().exportModuleImports(project, 
+//                unit.getPackage().getModule(), 
+//                name);
+//    }
 
     @Override
     public Point getSelection(IDocument document) {
@@ -62,7 +53,7 @@ public class ExportModuleImportProposal implements ICompletionProposal,
 
     @Override
     public String getDisplayString() {
-        return "Export 'import " + name + " \"" + version + "\"' to clients of module";
+        return desc;
     }
 
     @Override
@@ -80,6 +71,7 @@ public class ExportModuleImportProposal implements ICompletionProposal,
         return Highlights.styleProposal(getDisplayString(), true);
     }
 
+    @Deprecated
     static void addExportModuleImportProposalForSupertypes(Collection<ICompletionProposal> proposals, 
             IProject project, Node node, Tree.CompilationUnit rootNode) {
         Unit unit = node.getUnit();
@@ -129,6 +121,7 @@ public class ExportModuleImportProposal implements ICompletionProposal,
         }
     }
     
+    @Deprecated
     static void addExportModuleImportProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Node node) {
         if (node instanceof Tree.SimpleType) {
@@ -137,6 +130,7 @@ public class ExportModuleImportProposal implements ICompletionProposal,
         }
     }
 
+    @Deprecated
     private static void addExportModuleImportProposal(Collection<ICompletionProposal> proposals, 
             IProject project, Unit unit, Declaration dec) {
         Module decModule = dec.getUnit().getPackage().getModule();
@@ -147,8 +141,8 @@ public class ExportModuleImportProposal implements ICompletionProposal,
                 }
             }
         }
-        proposals.add(new ExportModuleImportProposal(project, unit, 
-                decModule.getNameAsString(), decModule.getVersion()));
+//        proposals.add(new ExportModuleImportProposal(project, unit, 
+//                decModule.getNameAsString(), decModule.getVersion()));
     }
 
 }

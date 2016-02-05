@@ -7,12 +7,21 @@ import com.redhat.ceylon.compiler.typechecker.tree {
 import com.redhat.ceylon.eclipse.code.correct {
     EclipseDocumentChanges
 }
+import com.redhat.ceylon.eclipse.code.editor {
+    Navigation
+}
 import com.redhat.ceylon.eclipse.util {
     eclipseIndents,
     EditorUtil
 }
 import com.redhat.ceylon.ide.common.imports {
     AbstractModuleImportUtil
+}
+import com.redhat.ceylon.ide.common.model {
+    ProjectSourceFile
+}
+import com.redhat.ceylon.ide.common.typechecker {
+    ProjectPhasedUnit
 }
 import com.redhat.ceylon.ide.common.util {
     Indents
@@ -37,17 +46,6 @@ import org.eclipse.ltk.core.refactoring {
 import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
-}
-import com.redhat.ceylon.eclipse.code.editor {
-    Navigation
-}
-import com.redhat.ceylon.ide.common.typechecker {
-    TypecheckerAliases,
-    ProjectPhasedUnit
-}
-import com.redhat.ceylon.ide.common.model {
-    ModelAliases,
-    ProjectSourceFile
 }
 
 shared object eclipseModuleImportUtils

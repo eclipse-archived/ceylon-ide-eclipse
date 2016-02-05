@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeDefaultDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeFormalDecProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeNativeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeSharedDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddConstructorProposal.addConstructorProposal;
@@ -56,8 +55,6 @@ import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.addCreatePro
 import static com.redhat.ceylon.eclipse.code.correct.CreateTypeParameterProposal.addCreateTypeParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.DestructureProposal.addDestructureProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExpandTypeProposal.addExpandTypeProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ExportModuleImportProposal.addExportModuleImportProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ExportModuleImportProposal.addExportModuleImportProposalForSupertypes;
 import static com.redhat.ceylon.eclipse.code.correct.FillInArgumentNameProposal.addFillInArgumentNameProposal;
 import static com.redhat.ceylon.eclipse.code.correct.FixAliasProposal.addFixAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.FixMultilineStringIndentationProposal.addFixMultilineStringIndentation;

@@ -38,8 +38,10 @@ object eclipseExportModuleImportQuickFix
             => eclipseModuleImportUtils;
     
     shared actual void newExportModuleImportProposal(EclipseQuickFixData data, Unit u, String desc, String name, String version) {
-        data.proposals.add(ExportModuleImportProposal(data.project, u, name, version));
+        data.proposals.add(object extends ExportModuleImportProposal(desc) {
+            shared actual void apply(IDocument doc) {
+                applyChanges(data.project, u, name);
+            }
+        });
     }
-    
-
 }
