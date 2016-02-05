@@ -16,7 +16,8 @@ import com.redhat.ceylon.ide.common.correct {
     DeclareLocalQuickFix,
     CreateEnumQuickFix,
     RefineFormalMembersQuickFix,
-    SpecifyTypeQuickFix
+    SpecifyTypeQuickFix,
+    ExportModuleImportQuickFix
 }
 
 import java.util {
@@ -101,6 +102,8 @@ object eclipseQuickFixManager
         CreateTypeParameterProposal.addCreateTypeParameterProposal(
             data.proposals, data.project, data.rootNode, bt, brokenName);
     }
-     
+    
+    shared actual ExportModuleImportQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> exportModuleImportQuickFix
+            => eclipseExportModuleImportQuickFix;
     
 }

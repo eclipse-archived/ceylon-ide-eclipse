@@ -686,15 +686,15 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //        case 711:
 //            addMakeSharedProposal(proposals, project, node);
 //            break;
-        case 712:
-            addExportModuleImportProposal(proposals, project, node);
-            break;
+//        case 712:
+//            addExportModuleImportProposal(proposals, project, node);
+//            break;
 //        case 713:
 //            addMakeSharedProposalForSupertypes(proposals, project, node);
 //            break;
-        case 714:
-            addExportModuleImportProposalForSupertypes(proposals, project, node, rootNode);
-            break;
+//        case 714:
+//            addExportModuleImportProposalForSupertypes(proposals, project, node, rootNode);
+//            break;
 //        case 800:
 //        case 804:
 //            addMakeVariableProposal(proposals, project, node);
