@@ -864,9 +864,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         case 13000:
         	changeToFunction(file, rootNode, node, proposals);
         	break;
-        case 20000:
-            addMakeNativeProposal(proposals, project, node, rootNode, file);
-            break;
+//        case 20000:
+//            addMakeNativeProposal(proposals, project, node, rootNode, file);
+//            break;
         }
     }
 
