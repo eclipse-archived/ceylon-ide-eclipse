@@ -17,7 +17,8 @@ import com.redhat.ceylon.ide.common.correct {
     CreateEnumQuickFix,
     RefineFormalMembersQuickFix,
     SpecifyTypeQuickFix,
-    ExportModuleImportQuickFix
+    ExportModuleImportQuickFix,
+    AddPunctuationQuickFix
 }
 
 import java.util {
@@ -105,5 +106,9 @@ object eclipseQuickFixManager
     
     shared actual ExportModuleImportQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> exportModuleImportQuickFix
             => eclipseExportModuleImportQuickFix;
+    
+    shared actual AddPunctuationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> addPunctuationQuickFix
+            => eclipseAddPunctuationQuickFix;
+    
     
 }

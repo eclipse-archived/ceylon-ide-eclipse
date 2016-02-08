@@ -9,8 +9,6 @@ import static com.redhat.ceylon.eclipse.code.correct.AddInitializerProposal.addI
 import static com.redhat.ceylon.eclipse.code.correct.AddModuleImportProposal.addModuleImportProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddParameterListProposal.addParameterListProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddParameterProposal.addParameterProposals;
-import static com.redhat.ceylon.eclipse.code.correct.AddPunctuationProposal.addEmptyParameterListProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddPunctuationProposal.addImportWildcardProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddSatisfiesProposal.addSatisfiesProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddSpreadToVariadicParameterProposal.addSpreadToSequenceParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddThrowsAnnotationProposal.addThrowsAnnotationProposal;
@@ -85,10 +83,11 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.MODULE_DEPEND
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.MarkerCreator.ERROR_CODE_KEY;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.correctJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.findArgument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
@@ -98,8 +97,6 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findOperator;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
-
 
 /*******************************************************************************
  * Copyright (c) 2000, 2010 IBM Corporation and others.
@@ -717,14 +714,14 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //            break;
         case 1000:
         case 1001:
-            addEmptyParameterListProposal(file, proposals, node);
+//            addEmptyParameterListProposal(file, proposals, node);
             addParameterListProposal(file, proposals, node, rootNode, false);
             addConstructorProposal(file, proposals, node, rootNode);
             addChangeDeclarationProposal(problem, file, proposals, node);
             break;
-        case 1020:
-            addImportWildcardProposal(file, proposals, node);
-            break;
+//        case 1020:
+//            addImportWildcardProposal(file, proposals, node);
+//            break;
         case 1050:
             addFixAliasProposal(proposals, file, problem);
             break;

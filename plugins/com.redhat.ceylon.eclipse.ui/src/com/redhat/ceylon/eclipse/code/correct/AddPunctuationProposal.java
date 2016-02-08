@@ -16,6 +16,7 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
+@Deprecated
 class AddPunctuationProposal extends CorrectionProposal {
     
     AddPunctuationProposal(int offset, int len, String desc, 
