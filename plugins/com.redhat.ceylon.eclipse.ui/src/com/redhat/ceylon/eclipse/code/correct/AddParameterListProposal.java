@@ -11,6 +11,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 
@@ -22,11 +23,12 @@ import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 
 class AddParameterListProposal extends CorrectionProposal {
     
-    AddParameterListProposal(Declaration dec, int offset, 
-            String desc, TextFileChange change) {
+    AddParameterListProposal(int offset, 
+            String desc, TextChange change) {
         super(desc, change, new Region(offset, 0));
     }
 
+    @Deprecated
     static void addParameterListProposal(IFile file,
             Collection<ICompletionProposal> proposals, 
             Node node, Tree.CompilationUnit rootNode,
@@ -55,7 +57,7 @@ class AddParameterListProposal extends CorrectionProposal {
                             new TextFileChange("Add Parameter List", file);
                     int offset = n.getEndIndex();
                     change.setEdit(new InsertEdit(offset, params.toString()));
-                    proposals.add(new AddParameterListProposal(dec, offset+1, 
+                    proposals.add(new AddParameterListProposal(offset+1, 
                             "Add initializer parameters '" + params + 
                                     "' to " + getDescription(dec), 
                             change));

@@ -715,7 +715,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         case 1000:
         case 1001:
 //            addEmptyParameterListProposal(file, proposals, node);
-            addParameterListProposal(file, proposals, node, rootNode, false);
+//            addParameterListProposal(file, proposals, node, rootNode, false);
             addConstructorProposal(file, proposals, node, rootNode);
             addChangeDeclarationProposal(problem, file, proposals, node);
             break;
@@ -752,7 +752,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         	//addMakeFormalDecProposal(proposals, project, node);
         	addParameterProposals(proposals, file, rootNode, node);
         	addInitializerProposals(proposals, file, rootNode, node);
-            addParameterListProposal(file, proposals, node, rootNode, false);
+//            addParameterListProposal(file, proposals, node, rootNode, false);
         	addConstructorProposal(file, proposals, node, rootNode);
         	break;
 //        case 1610:
