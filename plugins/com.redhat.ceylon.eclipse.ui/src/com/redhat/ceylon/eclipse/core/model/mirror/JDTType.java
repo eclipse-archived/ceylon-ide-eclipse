@@ -28,6 +28,7 @@ import java.util.List;
 import javax.lang.model.type.TypeKind;
 
 import org.eclipse.jdt.internal.compiler.ast.Wildcard;
+import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding;
@@ -210,7 +211,16 @@ public class JDTType implements TypeMirror {
         }
 
         if(type.enclosingType() instanceof ParameterizedTypeBinding){
-            qualifyingType = toTypeMirror(type.enclosingType(), type, this, originatingTypes);
+            boolean isStatic = false;
+            if (type instanceof ReferenceBinding) {
+                ReferenceBinding referenceBinding = (ReferenceBinding) type;
+                if ((referenceBinding.modifiers & ClassFileConstants.AccStatic) != 0) {
+                    isStatic = true;
+                }
+            }
+            if (!isStatic) {
+                qualifyingType = toTypeMirror(type.enclosingType(), type, this, originatingTypes);
+            }
         }
         
         if (type instanceof ArrayBinding) {
