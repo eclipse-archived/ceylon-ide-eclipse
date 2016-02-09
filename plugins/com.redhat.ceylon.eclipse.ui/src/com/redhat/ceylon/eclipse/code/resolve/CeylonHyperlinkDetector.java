@@ -21,6 +21,7 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.model.CeylonBinaryUnit;
 import com.redhat.ceylon.eclipse.core.model.ExternalSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
+import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
@@ -185,7 +186,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
         if (containerToSearchHeaderIn != null) {
             Declaration headerDeclaration = 
                     getNativeHeader(containerToSearchHeaderIn, 
-                            dec.getName());
+                            dec.getName(), dec instanceof ClassOrInterface);
             if (headerDeclaration == null 
                     || ! headerDeclaration.isNative()) return null;
             if (backends.header()) {

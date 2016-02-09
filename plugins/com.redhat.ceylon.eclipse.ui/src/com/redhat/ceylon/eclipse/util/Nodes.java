@@ -288,7 +288,7 @@ public class Nodes {
                         if (decl.isNative() 
                                 && unit != null 
                                 && ! unit.getFilename().toLowerCase().endsWith(".ceylon")) {
-                            Declaration headerDeclaration = ModelUtil.getNativeHeader(decl.getContainer(), decl.getName());
+                            Declaration headerDeclaration = ModelUtil.getNativeHeader(decl);
                             if (headerDeclaration != null) {
                                 List<Declaration> overloads = headerDeclaration.getOverloads();
                                 if (overloads != null) {

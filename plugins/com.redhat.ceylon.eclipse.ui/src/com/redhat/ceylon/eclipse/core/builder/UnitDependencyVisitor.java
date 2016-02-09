@@ -249,7 +249,7 @@ public class UnitDependencyVisitor extends Visitor {
     public void visit(Tree.Declaration that) {
         Declaration decl = that.getDeclarationModel();
         if (decl.isNative()) {
-            Declaration headerDeclaration = ModelUtil.getNativeHeader(decl.getContainer(), decl.getName());
+            Declaration headerDeclaration = ModelUtil.getNativeHeader(decl);
             if (headerDeclaration != null) {
                 List<Declaration> declarationsDependingOn = new ArrayList<>();
                 if (headerDeclaration != decl) {

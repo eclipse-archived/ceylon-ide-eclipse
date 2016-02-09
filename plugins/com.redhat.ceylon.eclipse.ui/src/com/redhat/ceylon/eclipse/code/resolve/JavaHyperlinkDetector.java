@@ -21,6 +21,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 
+import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
@@ -125,7 +126,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                                     if (projectSourceFile != null) {
 
                                         Declaration modelDeclaration = null;
-                                        Declaration modelHeaderDeclaration = ModelUtil.getNativeHeader(projectSourceFile.getPackage(), dec.getName());
+                                        Declaration modelHeaderDeclaration = ModelUtil.getNativeHeader(projectSourceFile.getPackage(), dec.getName(), dec instanceof ClassOrInterface);
                                         if (modelHeaderDeclaration != null) {
                                             List<Declaration> overloads = modelHeaderDeclaration.getOverloads();
                                             if (overloads != null) {
