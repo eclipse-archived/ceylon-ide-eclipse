@@ -17,6 +17,7 @@ import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
+@Deprecated
 class AddInitializerProposal extends InitializerProposal {
     
 	AddInitializerProposal(String desc, TypedDeclaration dec, int offset, int length,
