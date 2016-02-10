@@ -19,7 +19,8 @@ import com.redhat.ceylon.ide.common.correct {
     SpecifyTypeQuickFix,
     ExportModuleImportQuickFix,
     AddPunctuationQuickFix,
-    AddParameterListQuickFix
+    AddParameterListQuickFix,
+    AddParameterQuickFix
 }
 
 import java.util {
@@ -63,7 +64,6 @@ class EclipseQuickFixData(ProblemLocation location,
 
 object eclipseQuickFixManager
         extends IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,IFile,ICompletionProposal,EclipseQuickFixData,LinkedModeModel>() {
-
 
     shared actual AddAnnotationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> addAnnotations
             => eclipseAnnotationsQuickFix;
@@ -114,4 +114,6 @@ object eclipseQuickFixManager
     shared actual AddParameterListQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> addParameterListQuickFix
             => eclipseAddParameterListQuickFix;
     
+    shared actual AddParameterQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> addParameterQuickFix
+            => eclipseAddParameterQuickFix;
 }

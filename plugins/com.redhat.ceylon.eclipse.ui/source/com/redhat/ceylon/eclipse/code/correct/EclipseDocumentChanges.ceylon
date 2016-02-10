@@ -50,4 +50,7 @@ shared interface EclipseDocumentChanges
     
     shared actual Boolean hasChildren(TextChange change)
             => change.edit.hasChildren();
+    
+    shared actual String getDocContent(IDocument doc, Integer start, Integer length) 
+            => doc.get(start, length);
 }

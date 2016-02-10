@@ -30,9 +30,10 @@ import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Type;
 
+@Deprecated
 class AddParameterProposal extends InitializerProposal {
     
-	private AddParameterProposal(String desc,
+	AddParameterProposal(String desc,
 	        Declaration d, Declaration dec,
 	        Type type, int offset, int len,
 	        TextChange change,
@@ -42,6 +43,7 @@ class AddParameterProposal extends InitializerProposal {
                 ADD_CORR, exitPos);
     }
 	
+    @Deprecated
     private static void addParameterProposal(
             Tree.CompilationUnit rootNode,
             Collection<ICompletionProposal> proposals,
@@ -197,6 +199,7 @@ class AddParameterProposal extends InitializerProposal {
         }
     }
 
+    @Deprecated
 	static void addParameterProposals(
 	        Collection<ICompletionProposal> proposals,
 			IFile file, Tree.CompilationUnit cu, Node node) {

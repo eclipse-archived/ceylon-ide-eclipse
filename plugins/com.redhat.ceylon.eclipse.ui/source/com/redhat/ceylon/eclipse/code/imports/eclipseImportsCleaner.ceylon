@@ -42,9 +42,6 @@ object eclipseImportsCleaner
         satisfies AbstractImportsCleaner<IDocument, InsertEdit, TextEdit, TextChange>
                 & EclipseDocumentChanges {
     
-    shared actual String getDocContent(IDocument doc, Integer start, Integer length)
-            => doc.get(start, length);
-    
     shared actual Indents<IDocument> indents
             => eclipseIndents;
     

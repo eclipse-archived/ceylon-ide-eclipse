@@ -63,7 +63,7 @@ import com.redhat.ceylon.model.typechecker.model.Value;
 
 class InitializerProposal extends CorrectionProposal {
     
-    private final class NestedCompletionProposal 
+    final class NestedCompletionProposal 
             implements ICompletionProposal, 
                        ICompletionProposalExtension2,
                        ICompletionProposalExtension6 {
@@ -75,7 +75,7 @@ class InitializerProposal extends CorrectionProposal {
         private final Declaration dec;
         private final int offset;
 
-        private NestedCompletionProposal(Declaration dec, int offset) {
+        NestedCompletionProposal(Declaration dec, int offset) {
             this.offset = offset;
             this.dec = dec;
         }
@@ -181,7 +181,7 @@ class InitializerProposal extends CorrectionProposal {
         
     }
 
-    private final class NestedLiteralCompletionProposal 
+    final class NestedLiteralCompletionProposal 
             implements ICompletionProposal, 
                        ICompletionProposalExtension2,
                        ICompletionProposalExtension6 {
@@ -189,7 +189,7 @@ class InitializerProposal extends CorrectionProposal {
         private final String value;
         private final int offset;
         
-        private NestedLiteralCompletionProposal(String value, int offset) {
+        NestedLiteralCompletionProposal(String value, int offset) {
             this.offset = offset;
             this.value = value;
         }
