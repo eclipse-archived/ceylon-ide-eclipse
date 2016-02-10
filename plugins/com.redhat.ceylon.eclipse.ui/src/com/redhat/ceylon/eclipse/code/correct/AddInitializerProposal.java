@@ -19,14 +19,15 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
 class AddInitializerProposal extends InitializerProposal {
     
-	private AddInitializerProposal(TypedDeclaration dec, int offset, int length,
+	AddInitializerProposal(String desc, TypedDeclaration dec, int offset, int length,
 	        TextChange change) {
-        super("Add initializer to '" + dec.getName() + "'", 
+        super(desc, 
         		change, dec, dec.getType(), 
         		new Region(offset, length),
         		MINOR_CHANGE, -1);
     }
     
+	@Deprecated
     private static void addInitializerProposal(Tree.CompilationUnit cu,
             Collection<ICompletionProposal> proposals, IFile file,
             Tree.TypedDeclaration decNode, Tree.SpecifierOrInitializerExpression sie) {
@@ -48,12 +49,13 @@ class AddInitializerProposal extends InitializerProposal {
             }
             
             change.setEdit(new InsertEdit(offset, def));
-            proposals.add(new AddInitializerProposal(dec, 
+            proposals.add(new AddInitializerProposal("", dec, 
                     selectionOffset, defaultValue.length(), 
                     change));
         }
     }
 
+   @Deprecated
 	static void addInitializerProposals(Collection<ICompletionProposal> proposals,
 			IFile file, Tree.CompilationUnit cu, Node node) {
 		if (node instanceof Tree.AttributeDeclaration) {
