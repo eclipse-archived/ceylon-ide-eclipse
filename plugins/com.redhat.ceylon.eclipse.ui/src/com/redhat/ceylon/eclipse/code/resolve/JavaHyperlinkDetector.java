@@ -126,7 +126,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                                     if (projectSourceFile != null) {
 
                                         Declaration modelDeclaration = null;
-                                        Declaration modelHeaderDeclaration = ModelUtil.getNativeHeader(projectSourceFile.getPackage(), dec.getName(), dec instanceof ClassOrInterface);
+                                        Declaration modelHeaderDeclaration = ModelUtil.getNativeHeader(projectSourceFile.getPackage(), dec.getName());
                                         if (modelHeaderDeclaration != null) {
                                             List<Declaration> overloads = modelHeaderDeclaration.getOverloads();
                                             if (overloads != null) {
