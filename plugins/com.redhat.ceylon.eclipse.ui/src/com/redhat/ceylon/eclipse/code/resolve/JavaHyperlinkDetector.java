@@ -36,6 +36,7 @@ import com.redhat.ceylon.ide.common.model.EditedSourceFile;
 import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
 import com.redhat.ceylon.ide.common.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
+import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
@@ -132,7 +133,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                                     if (projectSourceFile != null) {
 
                                         Declaration modelDeclaration = null;
-                                        Declaration modelHeaderDeclaration = ModelUtil.getNativeHeader(projectSourceFile.getPackage(), dec.getName());
+                                        Declaration modelHeaderDeclaration = ModelUtil.getNativeHeader(projectSourceFile.getPackage(), dec.getName(), dec instanceof ClassOrInterface);
                                         if (modelHeaderDeclaration != null) {
                                             List<Declaration> overloads = modelHeaderDeclaration.getOverloads();
                                             if (overloads != null) {

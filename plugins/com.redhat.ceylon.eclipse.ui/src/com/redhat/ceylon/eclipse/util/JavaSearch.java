@@ -1067,9 +1067,7 @@ public class JavaSearch {
         if (javaSourceTypeDeclaration != null && 
                 javaSourceTypeDeclaration.isNative()) {
             Declaration headerDeclaration = 
-                    ModelUtil.getNativeHeader(
-                            javaSourceTypeDeclaration.getContainer(), 
-                            javaSourceTypeDeclaration.getName());
+                    ModelUtil.getNativeHeader(javaSourceTypeDeclaration);
             if (headerDeclaration != null) {
                 if (elementEqualsDeclaration(
                         declarationElement, 
