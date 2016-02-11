@@ -52,6 +52,7 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
      * 
      */
     public CeylonLanguageModuleContainer(IProject project) {
+        modelJ2C().ceylonModel().addProject(project);
         fPath = new Path(CeylonLanguageModuleContainer.CONTAINER_ID + "/default");
         fProject = JavaCore.create(project);
         BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
