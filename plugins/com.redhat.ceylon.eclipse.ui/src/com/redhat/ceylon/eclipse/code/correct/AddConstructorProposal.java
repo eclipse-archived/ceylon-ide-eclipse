@@ -32,6 +32,7 @@ public class AddConstructorProposal extends CorrectionProposal {
         super(name, change, selection);
     }
 
+    @Deprecated
     public static void addConstructorProposal(IFile file,
             Collection<ICompletionProposal> proposals, Node node,
             Tree.CompilationUnit rootNode) {
@@ -114,6 +115,7 @@ public class AddConstructorProposal extends CorrectionProposal {
         }
     }
 
+    @Deprecated
     private static Tree.Statement findLastExecutable(Tree.ClassBody body) {
         Tree.Statement les = null;
         if (body!=null) {
@@ -129,6 +131,7 @@ public class AddConstructorProposal extends CorrectionProposal {
         return les;
     }
 
+    @Deprecated
     private static boolean isExecutableStatement(Tree.Statement s) {
         Unit unit = s.getUnit();
         if (s instanceof Tree.SpecifierStatement) {

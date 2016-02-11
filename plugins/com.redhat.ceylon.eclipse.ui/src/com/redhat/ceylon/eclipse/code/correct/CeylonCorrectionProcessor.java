@@ -4,10 +4,7 @@ import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMake
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeFormalDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeSharedDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableDecProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddConstructorProposal.addConstructorProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddInitializerProposal.addInitializerProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddModuleImportProposal.addModuleImportProposals;
-import static com.redhat.ceylon.eclipse.code.correct.AddParameterListProposal.addParameterListProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddParameterProposal.addParameterProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddSatisfiesProposal.addSatisfiesProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddSpreadToVariadicParameterProposal.addSpreadToSequenceParameterProposal;
@@ -716,7 +713,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         case 1001:
 //            addEmptyParameterListProposal(file, proposals, node);
 //            addParameterListProposal(file, proposals, node, rootNode, false);
-            addConstructorProposal(file, proposals, node, rootNode);
+//            addConstructorProposal(file, proposals, node, rootNode);
             addChangeDeclarationProposal(problem, file, proposals, node);
             break;
 //        case 1020:
@@ -748,13 +745,13 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //        case 1401:
 //            addMakeFormalDecProposal(proposals, project, node);
 //            break;
-        case 1450:
+//        case 1450:
 //        	addMakeFormalDecProposal(proposals, project, node);
 //        	addParameterProposals(proposals, file, rootNode, node);
 //        	addInitializerProposals(proposals, file, rootNode, node);
 //          addParameterListProposal(file, proposals, node, rootNode, false);
-        	addConstructorProposal(file, proposals, node, rootNode);
-        	break;
+//        	addConstructorProposal(file, proposals, node, rootNode);
+//        	break;
 //        case 1610:
 //            addRemoveAnnotationDecProposal(proposals, "shared", project, node);
 //            addRemoveAnnotationDecProposal(proposals, "abstract", project, node);

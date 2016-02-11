@@ -21,7 +21,8 @@ import com.redhat.ceylon.ide.common.correct {
     AddPunctuationQuickFix,
     AddParameterListQuickFix,
     AddParameterQuickFix,
-    AddInitializerQuickFix
+    AddInitializerQuickFix,
+    AddConstructorQuickFix
 }
 
 import java.util {
@@ -121,4 +122,6 @@ object eclipseQuickFixManager
     shared actual AddInitializerQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> addInitializerQuickFix
             => eclipseAddInitializerQuickFix;
     
+    shared actual AddConstructorQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> addConstructorQuickFix 
+            => eclipseAddConstructorQuickFix;
 }

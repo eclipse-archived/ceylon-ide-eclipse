@@ -2,48 +2,48 @@
 import com.redhat.ceylon.compiler.typechecker.tree {
     Node
 }
-import com.redhat.ceylon.model.typechecker.model {
-    Declaration
-}
-import com.redhat.ceylon.ide.common.completion {
-    ControlStructureProposal
+import com.redhat.ceylon.eclipse.code.correct {
+    EclipseDocumentChanges,
+    eclipseImportProposals
 }
 import com.redhat.ceylon.eclipse.code.parse {
     CeylonParseController
 }
+import com.redhat.ceylon.eclipse.ui {
+    CeylonResources
+}
+import com.redhat.ceylon.ide.common.completion {
+    ControlStructureProposal
+}
+import com.redhat.ceylon.ide.common.correct {
+    ImportProposals
+}
+import com.redhat.ceylon.model.typechecker.model {
+    Declaration
+}
+
 import org.eclipse.core.resources {
-    IProject,
     IFile
-}
-import org.eclipse.jface.text.contentassist {
-    ICompletionProposal
-}
-import org.eclipse.ltk.core.refactoring {
-    TextChange
 }
 import org.eclipse.jface.text {
     IDocument
 }
-import org.eclipse.text.edits {
-    InsertEdit,
-    TextEdit
+import org.eclipse.jface.text.contentassist {
+    ICompletionProposal
+}
+import org.eclipse.jface.text.link {
+    LinkedModeModel
+}
+import org.eclipse.ltk.core.refactoring {
+    TextChange
 }
 import org.eclipse.swt.graphics {
     Point,
     Image
 }
-import com.redhat.ceylon.eclipse.code.correct {
-    EclipseDocumentChanges,
-    eclipseImportProposals
-}
-import org.eclipse.jface.text.link {
-    LinkedModeModel
-}
-import com.redhat.ceylon.ide.common.correct {
-    ImportProposals
-}
-import com.redhat.ceylon.eclipse.ui {
-    CeylonResources
+import org.eclipse.text.edits {
+    InsertEdit,
+    TextEdit
 }
 
 class EclipseControlStructureProposal(Integer offset, String prefix, String desc,
