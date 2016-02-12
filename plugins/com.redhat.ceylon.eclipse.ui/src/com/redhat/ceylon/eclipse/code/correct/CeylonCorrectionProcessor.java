@@ -70,7 +70,6 @@ import static com.redhat.ceylon.eclipse.code.correct.RenameDescriptorProposal.ad
 import static com.redhat.ceylon.eclipse.code.correct.RenameVersionProposal.addRenameVersionProposals;
 import static com.redhat.ceylon.eclipse.code.correct.ShadowReferenceProposal.addShadowReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ShadowReferenceProposal.addShadowSwitchReferenceProposal;
-import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.addSpecifyTypeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.addTypingProposals;
 import static com.redhat.ceylon.eclipse.code.correct.SplitDeclarationProposal.addSplitDeclarationProposals;
 import static com.redhat.ceylon.eclipse.code.correct.SplitIfStatementProposal.addSplitIfStatementProposal;
@@ -630,9 +629,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //                addChangeArgumentReferenceProposals(rootNode, node, problem, proposals, file);
 //            }
 //            break;
-        case 200:
-            addSpecifyTypeProposal(rootNode, node, proposals, null);
-            break;
+//        case 200:
+//            addSpecifyTypeProposal(rootNode, node, proposals, null);
+//            break;
 //        case 300:
 //            addRefineFormalMembersProposal(proposals, node, rootNode, false);
 //            addMakeAbstractDecProposal(proposals, project, node);

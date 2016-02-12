@@ -39,6 +39,7 @@ import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
 
+@Deprecated
 public class SpecifyTypeProposal implements ICompletionProposal,
         ICompletionProposalExtension6 {
 
