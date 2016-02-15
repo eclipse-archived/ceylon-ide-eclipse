@@ -3,12 +3,12 @@ import ceylon.interop.java {
     createJavaObjectArray
 }
 
-import com.redhat.ceylon.eclipse.core.builder {
-    CeylonBuilder
-}
 import com.redhat.ceylon.eclipse.core.classpath {
     CeylonClasspathUtil,
     CeylonProjectModulesContainer
+}
+import com.redhat.ceylon.eclipse.core.model {
+    isCeylonSourceEntry
 }
 import com.redhat.ceylon.eclipse.core.model.mirror {
     JDTClass,
@@ -275,7 +275,7 @@ shared class JDTModelLoader
                                                     entry.entryKind == IClasspathEntry.\iCPE_CONTAINER,
                                                     entry.entryKind == IClasspathEntry.\iCPE_VARIABLE,
                                                     entry.contentKind != IPackageFragmentRoot.\iK_SOURCE,
-                                                    CeylonBuilder.isCeylonSourceEntry(entry)
+                                                    isCeylonSourceEntry(entry)
                                                 };
                                         void onException(JavaModelException e) {
                                             if (! e.doesNotExist) {

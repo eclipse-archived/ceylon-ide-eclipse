@@ -18,6 +18,9 @@ import com.redhat.ceylon.eclipse.ui {
     CeylonEncodingSynchronizer,
     CeylonPlugin
 }
+import com.redhat.ceylon.eclipse.util {
+    withJavaModel
+}
 import com.redhat.ceylon.ide.common.model {
     CeylonProject,
     ModuleDependencies,
@@ -43,17 +46,20 @@ import org.eclipse.core.resources {
     IResource,
     IFolder,
     IContainer,
-    IFile
+    IFile,
+    IResourceVisitor
 }
 import org.eclipse.core.runtime {
     NullProgressMonitor,
     CoreException,
     IProgressMonitor,
     Path,
-    QualifiedName
+    QualifiedName,
+    IPath
 }
 import org.eclipse.jdt.core {
-    JavaCore
+    JavaCore,
+    IClasspathEntry
 }
 import org.eclipse.jface.dialogs {
     MessageDialog
@@ -61,6 +67,12 @@ import org.eclipse.jface.dialogs {
 import org.eclipse.swt.widgets {
     Display
 }
+
+Boolean isCeylonSourceEntry(IClasspathEntry entry) => 
+        every {
+    entry.entryKind == IClasspathEntry.\iCPE_SOURCE,
+    entry.exclusionPatterns.iterable.coalesced.filter((path) => path.string.endsWith(".ceylon")).empty
+};
 
 shared object nativeFolderProperties {
     shared QualifiedName packageModel = QualifiedName(CeylonPlugin.\iPLUGIN_ID, "nativeFolder_packageModel");
@@ -188,18 +200,76 @@ shared class EclipseCeylonProject(ideArtifact)
         return every {
             sameFolders {
                 configFolders = config.projectSourceDirectories;
-                eclipseFolders = CeylonIterable(CeylonBuilder.getSourceFolders(ideArtifact));
+                eclipseFolders = sourceNativeFolders;
                 defaultEclipsePath = Constants.\iDEFAULT_SOURCE_DIR;
             },
             sameFolders {
                 configFolders = config.projectResourceDirectories;
-                eclipseFolders = CeylonIterable(CeylonBuilder.getResourceFolders(ideArtifact));
+                eclipseFolders = resourceNativeFolders;
                 defaultEclipsePath = Constants.\iDEFAULT_RESOURCE_DIR;
             }
         };
     }
     
     shared actual CeylonProjects<IProject,IResource,IFolder,IFile> model => ceylonModel;
+    
+    shared actual {IFolder*} sourceNativeFolders =>
+            let(javaProject = JavaCore.create(ideArtifact))
+            if (! javaProject.\iexists())
+            then {}
+            else (withJavaModel {
+                do() =>
+                    javaProject.rawClasspath.iterable.coalesced.filter((entry) => isCeylonSourceEntry(entry)).map((entry) => ideArtifact.findMember(entry.path.makeRelativeTo(ideArtifact.fullPath)))
+                    .narrow<IFolder>()
+                    .filter((resource) => resource.\iexists());
+            } else {});
+
+    shared actual {IFolder*} resourceNativeFolders =>
+        if (! ideArtifact.\iexists())
+        then {}
+        else configuration.resourceDirectories
+                .map((resourceInConfig) {
+                        value path = Path.fromOSString(resourceInConfig);
+                        if (! path.absolute) {
+                            return ideArtifact.getFolder(path);
+                        } else {
+                            object result {
+                                shared variable IFolder? resourceFolder = null;
+                            }
+                            try {
+                                ideArtifact.accept(object satisfies IResourceVisitor {
+                                    shared actual Boolean visit(IResource resource) {
+                                        if (is IProject resource) {
+                                            return true;
+                                        }
+                                        if (is IFolder resource) {
+                                            if (! resource.linked) {
+                                                return false;
+                                            }
+                                            IPath? resourceLocation=resource.location;
+                                            if (! exists resourceLocation) {
+                                                return false;
+                                            }
+                                            if (! resourceLocation.isPrefixOf(path)) {
+                                                return false;
+                                            }
+                                            if (resourceLocation == path) {
+                                                result.resourceFolder = resource;
+                                                return false;
+                                            }
+                                            return true;
+                                        }
+                                        return false;
+                                    }
+                                });
+                            }
+                            catch (CoreException e) {
+                                e.printStackTrace();
+                            }
+                            return result.resourceFolder;
+                        }
+                }).coalesced.filter((resourceFolder) => resourceFolder.\iexists());
+
     
     shared actual Boolean nativeProjectIsAccessible => ideArtifact.accessible;
 

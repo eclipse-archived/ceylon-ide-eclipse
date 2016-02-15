@@ -178,6 +178,7 @@ import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.util.CarUtils;
 import com.redhat.ceylon.ide.common.util.toCeylonString_;
 import com.redhat.ceylon.ide.common.util.toJavaIterable_;
+import com.redhat.ceylon.ide.common.util.toJavaList_;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
 import com.redhat.ceylon.javax.tools.DiagnosticListener;
@@ -3679,107 +3680,124 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         projectModuleDependencies.remove(project);
     }
     
-    public static List<IFolder> getSourceFolders(IProject project) {
-        //TODO: is the call to JavaCore.create() very expensive??
-        List<IPath> folderPaths = getSourceFolders(JavaCore.create(project));
-        List<IFolder> sourceFolders = new ArrayList<>(folderPaths.size());
-        for (IPath path : folderPaths) {
-            IResource r = project.findMember(path.makeRelativeTo(project.getFullPath()));
-            if (r instanceof IFolder) {
-                sourceFolders.add((IFolder) r);
-            }
-        }
-        return sourceFolders;
-    }
+  public static List<IFolder> getSourceFolders(IProject project) {
+      CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
+      if (ceylonProject != null) {
+          return toJavaList_.toJavaList(TypeDescriptor.klass(IFolder.class), ceylonProject.getSourceNativeFolders());
+      }
+      return Collections.emptyList();
+  }
 
-    /**
-     * Read the IJavaProject classpath configuration and populate the ISourceProject's
-     * build path accordingly.
-     */
-    public static List<IPath> getSourceFolders(IJavaProject javaProject) {
-        if (javaProject.exists()) {
-            try {
-                List<IPath> projectSourceFolders = new ArrayList<IPath>();
-                for (IClasspathEntry entry: javaProject.getRawClasspath()) {
-                    IPath path = entry.getPath();
-                    if (isCeylonSourceEntry(entry)) {
-                        projectSourceFolders.add(path);
-                    }
-                }
-                return projectSourceFolders;
-            } 
-            catch (JavaModelException e) {
-                e.printStackTrace();
-            }
-        }
-        return Collections.emptyList();
-    }
+  public static List<IFolder> getResourceFolders(IProject project) {
+      CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
+      if (ceylonProject != null) {
+          return toJavaList_.toJavaList(TypeDescriptor.klass(IFolder.class), ceylonProject.getResourceNativeFolders());
+      }
+      return Collections.emptyList();
+  }
 
-    public static List<IFolder> getResourceFolders(IProject project) {
-        LinkedList<IFolder> resourceFolers = new LinkedList<>();
-        if (project.exists()) {
-            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject  = modelJ2C().ceylonModel().getProject(project);
-            if (ceylonProject != null) {
-                for (String resourceInConfig : toJavaStringList(ceylonProject.getConfiguration().getResourceDirectories())) {
-                    class FolderHolder {
-                        IFolder resourceFolder;
-                    }
-                    final FolderHolder folderHolder = new FolderHolder();;
-                    final IPath path = Path.fromOSString(resourceInConfig);
-                    if (! path.isAbsolute()) {
-                        folderHolder.resourceFolder = project.getFolder(path);
-                    } else {
-                        try {   
-                            project.accept(new IResourceVisitor() {
-                                @Override
-                                public boolean visit(IResource resource) 
-                                        throws CoreException {
-                                    if (resource instanceof IFolder &&
-                                            resource.isLinked() && 
-                                            resource.getLocation() != null &&
-                                            resource.getLocation().equals(path)) {
-                                        folderHolder.resourceFolder = (IFolder) resource;
-                                        return false;
-                                    }
-                                    return resource instanceof IFolder || 
-                                            resource instanceof IProject;
-                                }
-                            });
-                        }
-                        catch (CoreException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (folderHolder.resourceFolder != null && 
-                            folderHolder.resourceFolder.exists()) {
-                        resourceFolers.add(folderHolder.resourceFolder);
-                    }
-                }
-            }
-        }
-        return resourceFolers;
-    }
 
-    public static List<IFolder> getRootFolders(IProject project) {
-        LinkedList<IFolder> rootFolders = new LinkedList<>();
-        rootFolders.addAll(getSourceFolders(project));
-        rootFolders.addAll(getResourceFolders(project));
-        return rootFolders;
-    }
-
-    public static boolean isCeylonSourceEntry(IClasspathEntry entry) {
-        if (entry.getEntryKind()!=IClasspathEntry.CPE_SOURCE) {
-            return false;
-        }
-        
-        for (IPath exclusionPattern : entry.getExclusionPatterns()) {
-            if (exclusionPattern.toString().endsWith(".ceylon")) {
-                return false;
-            }
-        }
-
-        return true;
-    }
+//    public static List<IFolder> getSourceFolders(IProject project) {
+//        //TODO: is the call to JavaCore.create() very expensive??
+//        List<IPath> folderPaths = getSourceFolders(JavaCore.create(project));
+//        List<IFolder> sourceFolders = new ArrayList<>(folderPaths.size());
+//        for (IPath path : folderPaths) {
+//            IResource r = project.findMember(path.makeRelativeTo(project.getFullPath()));
+//            if (r instanceof IFolder) {
+//                sourceFolders.add((IFolder) r);
+//            }
+//        }
+//        return sourceFolders;
+//    }
+//
+//    /**
+//     * Read the IJavaProject classpath configuration and populate the ISourceProject's
+//     * build path accordingly.
+//     */
+//    public static List<IPath> getSourceFolders(IJavaProject javaProject) {
+//        if (javaProject.exists()) {
+//            try {
+//                List<IPath> projectSourceFolders = new ArrayList<IPath>();
+//                for (IClasspathEntry entry: javaProject.getRawClasspath()) {
+//                    IPath path = entry.getPath();
+//                    if (isCeylonSourceEntry(entry)) {
+//                        projectSourceFolders.add(path);
+//                    }
+//                }
+//                return projectSourceFolders;
+//            } 
+//            catch (JavaModelException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        return Collections.emptyList();
+//    }
+//
+//    public static List<IFolder> getResourceFolders(IProject project) {
+//        LinkedList<IFolder> resourceFolers = new LinkedList<>();
+//        if (project.exists()) {
+//            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject  = modelJ2C().ceylonModel().getProject(project);
+//            if (ceylonProject != null) {
+//                for (String resourceInConfig : toJavaStringList(ceylonProject.getConfiguration().getResourceDirectories())) {
+//                    class FolderHolder {
+//                        IFolder resourceFolder;
+//                    }
+//                    final FolderHolder folderHolder = new FolderHolder();;
+//                    final IPath path = Path.fromOSString(resourceInConfig);
+//                    if (! path.isAbsolute()) {
+//                        folderHolder.resourceFolder = project.getFolder(path);
+//                    } else {
+//                        try {   
+//                            project.accept(new IResourceVisitor() {
+//                                @Override
+//                                public boolean visit(IResource resource) 
+//                                        throws CoreException {
+//                                    if (resource instanceof IFolder &&
+//                                            resource.isLinked() && 
+//                                            resource.getLocation() != null &&
+//                                            resource.getLocation().equals(path)) {
+//                                        folderHolder.resourceFolder = (IFolder) resource;
+//                                        return false;
+//                                    }
+//                                    return resource instanceof IFolder || 
+//                                            resource instanceof IProject;
+//                                }
+//                            });
+//                        }
+//                        catch (CoreException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                    if (folderHolder.resourceFolder != null && 
+//                            folderHolder.resourceFolder.exists()) {
+//                        resourceFolers.add(folderHolder.resourceFolder);
+//                    }
+//                }
+//            }
+//        }
+//        return resourceFolers;
+//    }
+//
+//    public static List<IFolder> getRootFolders(IProject project) {
+//        LinkedList<IFolder> rootFolders = new LinkedList<>();
+//        rootFolders.addAll(getSourceFolders(project));
+//        rootFolders.addAll(getResourceFolders(project));
+//        return rootFolders;
+//    }
+//
+//    public static boolean isCeylonSourceEntry(IClasspathEntry entry) {
+//        if (entry.getEntryKind()!=IClasspathEntry.CPE_SOURCE) {
+//            return false;
+//        }
+//        
+//        for (IPath exclusionPattern : entry.getExclusionPatterns()) {
+//            if (exclusionPattern.toString().endsWith(".ceylon")) {
+//                return false;
+//            }
+//        }
+//
+//        return true;
+//    }
 
     public static IFolder getRootFolder(IFolder folder) {
         if (folder.isLinked(IResource.CHECK_ANCESTORS) 
