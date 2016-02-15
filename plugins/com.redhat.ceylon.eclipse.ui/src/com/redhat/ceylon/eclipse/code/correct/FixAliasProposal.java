@@ -10,6 +10,7 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
+@Deprecated
 class FixAliasProposal extends CorrectionProposal {
     
     FixAliasProposal(int offset, TextChange change) {

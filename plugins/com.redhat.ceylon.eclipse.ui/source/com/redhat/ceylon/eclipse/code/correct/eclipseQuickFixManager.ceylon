@@ -23,7 +23,8 @@ import com.redhat.ceylon.ide.common.correct {
     AddParameterQuickFix,
     AddInitializerQuickFix,
     AddConstructorQuickFix,
-    ChangeDeclarationQuickFix
+    ChangeDeclarationQuickFix,
+    FixAliasQuickFix
 }
 
 import java.util {
@@ -128,4 +129,8 @@ object eclipseQuickFixManager
     
     shared actual ChangeDeclarationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> changeDeclarationQuickFix
             => eclipseChangeDeclarationQuickFix;
+    
+    shared actual FixAliasQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> fixAliasQuickFix 
+            => eclipseFixAliasQuickFix;
+    
 }

@@ -50,7 +50,6 @@ import static com.redhat.ceylon.eclipse.code.correct.CreateTypeParameterProposal
 import static com.redhat.ceylon.eclipse.code.correct.DestructureProposal.addDestructureProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExpandTypeProposal.addExpandTypeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.FillInArgumentNameProposal.addFillInArgumentNameProposal;
-import static com.redhat.ceylon.eclipse.code.correct.FixAliasProposal.addFixAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.FixMultilineStringIndentationProposal.addFixMultilineStringIndentation;
 import static com.redhat.ceylon.eclipse.code.correct.InvertIfElseProposal.addInvertIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.JoinDeclarationProposal.addJoinDeclarationProposal;
@@ -717,9 +716,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //        case 1020:
 //            addImportWildcardProposal(file, proposals, node);
 //            break;
-        case 1050:
-            addFixAliasProposal(proposals, file, problem);
-            break;
+//        case 1050:
+//            addFixAliasProposal(proposals, file, problem);
+//            break;
 //        case 1200:
 //        case 1201:
 //            addRemoveAnnotationDecProposal(proposals, "shared", project, node);
