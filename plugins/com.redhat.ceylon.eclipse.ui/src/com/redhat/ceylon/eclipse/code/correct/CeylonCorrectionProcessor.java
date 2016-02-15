@@ -21,7 +21,6 @@ import static com.redhat.ceylon.eclipse.code.correct.AssignToIfIsProposal.addAss
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfNonemptyProposal.addAssignToIfNonemptyProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAssignToLocalProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToTryProposal.addAssignToTryProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ChangeDeclarationProposal.addChangeDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeInitialCaseOfIdentifierInDeclaration.addChangeIdentifierCaseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningParametersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningTypeProposal;
@@ -708,13 +707,13 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //            addRemoveAnnotationDecProposal(proposals, "formal", project, node);
 //            //TODO: replace body with ;
 //            break;
-        case 1000:
-        case 1001:
+//        case 1000:
+//        case 1001:
 //            addEmptyParameterListProposal(file, proposals, node);
 //            addParameterListProposal(file, proposals, node, rootNode, false);
 //            addConstructorProposal(file, proposals, node, rootNode);
-            addChangeDeclarationProposal(problem, file, proposals, node);
-            break;
+//            addChangeDeclarationProposal(problem, file, proposals, node);
+//            break;
 //        case 1020:
 //            addImportWildcardProposal(file, proposals, node);
 //            break;

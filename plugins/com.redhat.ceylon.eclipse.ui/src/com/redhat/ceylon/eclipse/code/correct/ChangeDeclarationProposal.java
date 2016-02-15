@@ -12,6 +12,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
+@Deprecated
 class ChangeDeclarationProposal extends CorrectionProposal {
     
     ChangeDeclarationProposal(String kw, int offset, 
