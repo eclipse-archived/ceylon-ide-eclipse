@@ -1,13 +1,15 @@
 import com.redhat.ceylon.eclipse.core.model {
     ceylonModel,
-    nativeFolderProperties
+    nativeFolderProperties,
+    JDTModelLoader
 }
 import com.redhat.ceylon.ide.common.model {
     CeylonProject,
     CeylonProjects
 }
 import com.redhat.ceylon.ide.common.util {
-    unsafeCast
+    unsafeCast,
+    Status
 }
 import com.redhat.ceylon.ide.common.vfs {
     FolderVirtualFile,
@@ -41,6 +43,18 @@ import org.eclipse.core.resources {
 import org.eclipse.core.runtime {
     IPath,
     CoreException
+}
+import com.redhat.ceylon.eclipse.core.external {
+    ExternalSourceArchiveManager
+}
+import com.redhat.ceylon.eclipse.util {
+    eclipsePlatformUtils
+}
+import com.redhat.ceylon.eclipse.core.builder {
+    CeylonBuilder
+}
+import ceylon.interop.java {
+    CeylonIterable
 }
 
 shared class IFolderVirtualFile
@@ -88,14 +102,48 @@ shared class IFolderVirtualFile
                 else root.isSource
             else false;
     
-    shared actual FolderVirtualFile<IProject,IResource,IFolder,IFile>? rootFolder =>
-            unsafeCast<WeakReference<FolderVirtualFile<IProject,IResource,IFolder,IFile>>?>(
+    shared actual FolderVirtualFile<IProject,IResource,IFolder,IFile>? rootFolder {
+        value folder = nativeResource;
+        if (folder.isLinked(IResource.\iCHECK_ANCESTORS) 
+            && ExternalSourceArchiveManager.isInSourceArchive(folder)) {
+            return null;
+        }
+        if (! folder.\iexists()) {
+            value searchedFullPath = folder.fullPath;
+            return ceylonProject?.rootFolders?.find((rootFolder) => folder.fullPath.isPrefixOf(searchedFullPath));
+        }
+        
+        try {
+            return unsafeCast<WeakReference<FolderVirtualFile<IProject,IResource,IFolder,IFile>>?>(
                 nativeResource.getSessionProperty(nativeFolderProperties.root))?.get();
+        } catch (CoreException e) {
+            eclipsePlatformUtils.log(Status._WARNING, "Unexpected exception", e);
+        }
+        return null;
+    }
     
-    shared actual Package? ceylonPackage  =>
-            unsafeCast<WeakReference<Package>?>(
+    shared actual Package? ceylonPackage { 
+        if (nativeResource.isLinked(IResource.\iCHECK_ANCESTORS) 
+            && ExternalSourceArchiveManager.isInSourceArchive(nativeResource)) {
+            return null;
+        }
+        if (! nativeResource.\iexists()) {
+            if (exists theRootFolder = rootFolder) {
+                IPath rootRelativePath = nativeResource.fullPath.makeRelativeTo(theRootFolder.nativeResource.fullPath);
+                return CeylonBuilder.getProjectModelLoader(nativeResource.project)
+                        ?.findPackage(".".join(rootRelativePath.segments().array.coalesced));
+            }
+            return null;
+        }
+        try {
+            return unsafeCast<WeakReference<Package>?>(
                 nativeResource.getSessionProperty(
                     nativeFolderProperties.packageModel))?.get();
+        } catch (CoreException e) {
+            eclipsePlatformUtils.log(Status._WARNING, "Unexpected exception", e);
+        }
+        return null;
+    }
     
     shared actual CeylonProjects<IProject,IResource,IFolder,IFile>.VirtualFileSystem vfs => ceylonModel.vfs;
 }
