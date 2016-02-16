@@ -39,9 +39,12 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.ModelState;
+import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
+import com.redhat.ceylon.ide.common.model.ProjectState;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.langtools.tools.javac.file.JavacFileManager;
 import com.redhat.ceylon.langtools.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -51,16 +54,16 @@ import com.redhat.ceylon.langtools.tools.javac.util.Position;
 import com.redhat.ceylon.langtools.tools.javac.util.Position.LineMap;
 
 final class JdtCompilerDelegate implements CompilerDelegate {
-    private final IProject project;
+    private final CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject;
     private final TypeChecker typeChecker;
     private final WeakReference<com.redhat.ceylon.langtools.tools.javac.util.Context> contextRef;
     private final Collection<PhasedUnit> unitsTypecheckedIncrementally;
 
     JdtCompilerDelegate(BaseIdeModelLoader modelLoader,
-            IProject project, TypeChecker typeChecker,
+            CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject, TypeChecker typeChecker,
             com.redhat.ceylon.langtools.tools.javac.util.Context context,
             Collection<PhasedUnit> unitsTypechecked) {
-        this.project = project;
+        this.ceylonProject = ceylonProject;
         this.typeChecker = typeChecker;
         contextRef = new WeakReference<Context>(context);
         this.unitsTypecheckedIncrementally = unitsTypechecked;
@@ -83,8 +86,8 @@ final class JdtCompilerDelegate implements CompilerDelegate {
         Context context = contextRef.get();
         assert(context != null);
         Collection<PhasedUnit> needingAdditionalCompilerPhases = Collections.emptyList();
-        if (CeylonBuilder.getModelState(project).ordinal() < ModelState.Compiled.ordinal()) {
-            needingAdditionalCompilerPhases = CeylonBuilder.getUnits(project);
+        if (! ceylonProject.getCompiled()) {
+            needingAdditionalCompilerPhases = CeylonBuilder.getUnits(ceylonProject.getIdeArtifact());
         } else if (! unitsTypecheckedIncrementally.isEmpty()) {
             needingAdditionalCompilerPhases = unitsTypecheckedIncrementally;
         }
@@ -120,7 +123,7 @@ final class JdtCompilerDelegate implements CompilerDelegate {
                     }
                 }
             }
-            CeylonBuilder.modelStates.put(project, ModelState.Compiled);
+            ceylonProject.setState(ProjectState.getProjectState$compiled());
         }
     }
     

@@ -10,6 +10,8 @@ import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.ide.common.util.toJavaIterable_.toJavaIterable;
+import static com.redhat.ceylon.ide.common.util.toJavaList_.toJavaList;
 import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static com.redhat.ceylon.model.typechecker.model.Module.LANGUAGE_MODULE_NAME;
@@ -158,6 +160,7 @@ import com.redhat.ceylon.ide.common.model.BaseIdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
+import com.redhat.ceylon.ide.common.model.CeylonProjects;
 import com.redhat.ceylon.ide.common.model.CeylonUnit;
 import com.redhat.ceylon.ide.common.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.IResourceAware;
@@ -481,7 +484,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     };
     
     final static Map<IProject, ModelState> modelStates = new HashMap<IProject, ModelState>();
-    private final static Map<IProject, TypeChecker> typeCheckers = new HashMap<IProject, TypeChecker>();
     private final static Map<IProject, List<IFile>> projectFiles = new HashMap<IProject, List<IFile>>();
     private static Set<IProject> containersInitialized = new HashSet<IProject>();
     private final static Map<IProject, ModuleDependencies> projectModuleDependencies = new HashMap<IProject, ModuleDependencies>();
@@ -498,67 +500,60 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     public static final String CEYLON_CONSOLE= "Ceylon Build";
     //private long startTime;
 
-    public static ModelState getModelState(IProject project) {
-        ModelState modelState = modelStates.get(project);
-        if (modelState == null) {
-            return ModelState.Missing;
-        }
-        return modelState;
-    }
-    
+//    public static ModelState getModelState(IProject project) {
+//        ModelState modelState = modelStates.get(project);
+//        if (modelState == null) {
+//            return ModelState.Missing;
+//        }
+//        return modelState;
+//    }
+//    
     public static boolean isModelTypeChecked(IProject project) {
-        ModelState modelState = getModelState(project);
-        return modelState.ordinal() >= ModelState.TypeChecked.ordinal();
+        BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
+        if (ceylonProject != null) {
+            return ceylonProject.getTypechecked();
+        }
+        return false;
     }
     
     public static boolean isModelParsed(IProject project) {
-        ModelState modelState = getModelState(project);
-        return modelState.ordinal() >= ModelState.Parsed.ordinal();
+        BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
+        if (ceylonProject != null) {
+            return ceylonProject.getParsed();
+        }
+        return false;
     }
 
+    
     public static List<PhasedUnit> getUnits(IProject project) {
-        if (! isModelParsed(project)) {
-            return Collections.emptyList();
+        BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
+        if (ceylonProject != null) {
+            return toJavaList(TypeDescriptor.klass(PhasedUnit.class), ceylonProject.getParsedUnits());
         }
-        List<PhasedUnit> result = new ArrayList<PhasedUnit>();
-        TypeChecker tc = typeCheckers.get(project);
-        if (tc!=null) {
-            for (PhasedUnit pu: tc.getPhasedUnits().getPhasedUnits()) {
-                result.add(pu);
-            }
-        }
-        return result;
+        return Collections.emptyList();
     }
 
     public static List<PhasedUnit> getUnits() {
-        List<PhasedUnit> result = new ArrayList<PhasedUnit>();
-        for (IProject project : typeCheckers.keySet()) {
-            if (isModelParsed(project)) {
-                TypeChecker tc = typeCheckers.get(project);
-                for (PhasedUnit pu: tc.getPhasedUnits().getPhasedUnits()) {
-                    result.add(pu);
-                }
-            }
-        }
-        return result;
+        return toJavaList(TypeDescriptor.klass(PhasedUnit.class), 
+                modelJ2C().ceylonModel().getParsedUnits());
     }
-
-    public static List<PhasedUnit> getUnits(String[] projects) {
-        List<PhasedUnit> result = new ArrayList<PhasedUnit>();
-        if (projects!=null) {
-            for (Map.Entry<IProject, TypeChecker> me: typeCheckers.entrySet()) {
-                for (String pname: projects) {
-                    if (me.getKey().getName().equals(pname)) {
-                        IProject project = me.getKey();
-                        if (isModelParsed(project)) {
-                            result.addAll(me.getValue().getPhasedUnits().getPhasedUnits());
-                        }
-                    }
-                }
-            }
-        }
-        return result;
-    }
+    
+//    public static List<PhasedUnit> getUnits(String[] projects) {
+//        List<PhasedUnit> result = new ArrayList<PhasedUnit>();
+//        if (projects!=null) {
+//            for (Map.Entry<IProject, TypeChecker> me: typeCheckers.entrySet()) {
+//                for (String pname: projects) {
+//                    if (me.getKey().getName().equals(pname)) {
+//                        IProject project = me.getKey();
+//                        if (isModelParsed(project)) {
+//                            result.addAll(me.getValue().getPhasedUnits().getPhasedUnits());
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return result;
+//    }
     
     public String getBuilderID() {
         return BUILDER_ID;
@@ -975,7 +970,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             else
             {
                 buildHook.doIncrementalBuild();
-                typeChecker = typeCheckers.get(project);
+                typeChecker = ceylonProject.getTypechecker();
                 PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
 
                 
@@ -1041,7 +1036,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     
                 monitor.subTask("Cleaning removed files for project " + project.getName());
                 cleanRemovedFilesFromCeylonModel(filesToRemove, phasedUnits, ceylonProject);
-                cleanRemovedFilesFromOutputs(filesToRemove, project);
+                cleanRemovedFilesFromOutputs(filesToRemove, ceylonProject);
                 monitor.worked(1);
                 
                 if (monitor.isCanceled()) {
@@ -1111,7 +1106,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             
             final Collection<IFile> filesToProcess = filesForBinaryGeneration;
             final Collection<PhasedUnit> unitsTypecheckedIncrementally = mustDoFullBuild.value ? Collections.<PhasedUnit>emptyList() : builtPhasedUnits;
-            cleanChangedFilesFromExplodedDirectory(filesToProcess, project);
+            cleanChangedFilesFromExplodedDirectory(filesToProcess, ceylonProject);
             doWithCeylonModelCaching(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws CoreException {
@@ -1734,7 +1729,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 "Typechecking " + sourceToCompile.size() + " source files in project " + 
                 project.getName(), sourceToCompile.size()*6); 
 
-        final TypeChecker typeChecker = typeCheckers.get(project);
+        final TypeChecker typeChecker = ceylonProject.getTypechecker();
         final PhasedUnits pus = typeChecker.getPhasedUnits();
         final BaseIdeModuleManager moduleManager = (BaseIdeModuleManager) pus.getModuleManager(); 
         final BaseIdeModuleSourceMapper moduleSourceMapper = (BaseIdeModuleSourceMapper) pus.getModuleSourceMapper(); 
@@ -2139,7 +2134,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                     "Setting up typechecker for project " + project.getName(), 113);
 
                             modelStates.put(project, ModelState.Parsing);
-                            typeCheckers.remove(project);
+                            modelJ2C().setTypeCheckerOnCeylonProject(ceylonProject, null);
                             ceylonProject.resetRepositoryManager();
                             projectFiles.remove(project);
                             if (projectModuleDependencies.containsKey(project)) {
@@ -2359,7 +2354,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
                             monitor.worked(1);
 
-                            typeCheckers.put(project, typeChecker);
                             projectFiles.put(project, scannedFiles);
                             modelStates.put(project, ModelState.Parsed);
 
@@ -2894,7 +2888,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 fileManager.getJavaFileObjectsFromFiles(allFiles);
         
         if (reuseEclipseModelInCompilation(project)) {
-            setupJDTModelLoader(project, typeChecker, context, unitsTypecheckedIncrementally);
+            setupJDTModelLoader(ceylonProject, typeChecker, context, unitsTypecheckedIncrementally);
         }
         
         CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
@@ -3026,17 +3020,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         options.add(classpath);
     }
 
-    private void setupJDTModelLoader(final IProject project,
+    private void setupJDTModelLoader(
+            final CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject,
             final TypeChecker typeChecker,
             final com.redhat.ceylon.langtools.tools.javac.util.Context context,
             final Collection<PhasedUnit> unitsTypecheckedIncrementally) {
 
+        
         final BaseIdeModelLoader modelLoader = getModelLoader(typeChecker);
         
         context.put(LanguageCompiler.ceylonContextKey, typeChecker.getContext());
         context.put(TypeFactory.class, modelLoader.getTypeFactory());
         context.put(LanguageCompiler.compilerDelegateKey, 
-                new JdtCompilerDelegate(modelLoader, project, typeChecker, context, unitsTypecheckedIncrementally));
+                new JdtCompilerDelegate(modelLoader, ceylonProject, typeChecker, context, unitsTypecheckedIncrementally));
         
         context.put(TypeFactory.class, modelLoader.getTypeFactory());
         context.put(ModelLoaderFactory.class, new ModelLoaderFactory() {
@@ -3403,7 +3399,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 }
 
     public static TypeChecker getProjectTypeChecker(IProject project) {
-        return typeCheckers.get(project);
+        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
+        if (ceylonProject != null) {
+            return ceylonProject.getTypechecker();
+        }
+        return null;
     }
 
     public static PhasedUnits getProjectPhasedUnits(IProject project) {
@@ -3663,18 +3663,28 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return repositoryManager;
     }
     
+    public static Collection<CeylonProject<IProject, IResource, IFolder, IFile>> getCeylonProjects() {
+        return toJavaList(TypeDescriptor.klass(IProject.class), modelJ2C().ceylonModel().getCeylonProjects());
+    }
+
     public static Collection<IProject> getProjects() {
-        return typeCheckers.keySet();
+        return toJavaList(TypeDescriptor.klass(IProject.class), modelJ2C().ceylonModel().getNativeProjects());
     }
 
     public static Collection<TypeChecker> getTypeCheckers() {
-        return typeCheckers.values();
+        Collection<CeylonProject<IProject, IResource, IFolder, IFile>> ceylonProjects = getCeylonProjects();
+        ArrayList<TypeChecker> typeCheckers = new ArrayList<>(ceylonProjects.size());
+        for (CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject : ceylonProjects) {
+            TypeChecker tc = ceylonProject.getTypechecker();
+            if (tc != null) {
+                typeCheckers.add(tc);
+            }
+        }
+        return typeCheckers;
     }
     
     public static void removeProject(IProject project) {
-        typeCheckers.remove(project);
         projectFiles.remove(project);
-        modelStates.remove(project);
         containersInitialized.remove(project);
         JavaProjectStateMirror.cleanup(project);
         projectModuleDependencies.remove(project);
@@ -4148,11 +4158,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }    
 
     private void cleanRemovedFilesFromOutputs(Collection<IFile> filesToRemove, 
-            IProject project) {
+            CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject) {
         if (filesToRemove.size() == 0) {
             return;
         }
         
+        IProject project = ceylonProject.getIdeArtifact();
         Set<File> moduleJars = new HashSet<File>();
         
         for (IFile file : filesToRemove) {
@@ -4166,7 +4177,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 return;
             }
             Module module = pkg.getModule();
-            TypeChecker typeChecker = typeCheckers.get(project);
+            TypeChecker typeChecker = ceylonProject.getTypechecker();
             if (typeChecker == null) {
                 return;
             }
@@ -4275,10 +4286,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     private void cleanChangedFilesFromExplodedDirectory(Collection<IFile> changedFiles, 
-            IProject project) {
+            CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject) {
         if (changedFiles.size() == 0) {
             return;
         }
+        
+        IProject project = ceylonProject.getIdeArtifact();
         
         if (! isExplodeModulesEnabled(project)) {
             return;
@@ -4300,7 +4313,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 return;
             }
             Module module = pkg.getModule();
-            TypeChecker typeChecker = typeCheckers.get(project);
+            TypeChecker typeChecker = ceylonProject.getTypechecker();
             if (typeChecker == null) {
                 return;
             }
