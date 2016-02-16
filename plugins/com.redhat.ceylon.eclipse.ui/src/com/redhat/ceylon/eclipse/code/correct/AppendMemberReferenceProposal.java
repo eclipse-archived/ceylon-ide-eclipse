@@ -42,6 +42,7 @@ class AppendMemberReferenceProposal extends CorrectionProposal  {
                 MINOR_CHANGE);
     }
     
+    @Deprecated
     private static void addAppendMemberReferenceProposal(
             Node node,
             Collection<ICompletionProposal> proposals, 
@@ -58,6 +59,7 @@ class AppendMemberReferenceProposal extends CorrectionProposal  {
                 node, dec.getName(), type.asString(), change));
     }
     
+    @Deprecated
     static void addAppendMemberReferenceProposals(
             Tree.CompilationUnit rootNode, 
             Node node, ProblemLocation problem, 

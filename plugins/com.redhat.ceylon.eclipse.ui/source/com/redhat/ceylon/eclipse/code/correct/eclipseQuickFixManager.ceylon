@@ -69,6 +69,7 @@ object eclipseQuickFixManager
     addConstructorQuickFix => eclipseAddConstructorQuickFix;
     changeDeclarationQuickFix => eclipseChangeDeclarationQuickFix;
     fixAliasQuickFix => eclipseFixAliasQuickFix;
+    appendMemberReferenceQuickFix => eclipseAppendMemberReferenceQuickFix;
     
     shared actual void addImportProposals(Collection<ICompletionProposal> proposals, EclipseQuickFixData data) {
         data.proposals.addAll(proposals);
