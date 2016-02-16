@@ -28,6 +28,7 @@ import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
+@Deprecated
 class AppendMemberReferenceProposal extends CorrectionProposal  {
     
     private static final List<Type> NO_TYPES = 
