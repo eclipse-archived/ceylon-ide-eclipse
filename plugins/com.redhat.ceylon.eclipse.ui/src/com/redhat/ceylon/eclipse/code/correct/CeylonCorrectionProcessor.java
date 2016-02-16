@@ -24,8 +24,6 @@ import static com.redhat.ceylon.eclipse.code.correct.ChangeInitialCaseOfIdentifi
 import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningParametersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningTypeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeToIfProposal.addChangeToIfProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ChangeTypeProposal.addChangeTypeArgProposals;
-import static com.redhat.ceylon.eclipse.code.correct.ChangeTypeProposal.addChangeTypeProposals;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertFunctionToGetterProposal.addConvertFunctionToGetterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertGetterToFunctionProposal.addConvertGetterToFunctionProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertIfElseToThenElse.addConvertToThenElseProposal;
@@ -778,11 +776,11 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //            break;
         case 2100:
 //            addAppendMemberReferenceProposals(rootNode, node, problem, proposals, file);
-            addChangeTypeProposals(rootNode, node, problem, proposals, project);
+//            addChangeTypeProposals(rootNode, node, problem, proposals, project);
             addSatisfiesProposals(rootNode, node, proposals, project);
             break;
         case 2102:
-            addChangeTypeArgProposals(rootNode, node, problem, proposals, project);
+//            addChangeTypeArgProposals(rootNode, node, problem, proposals, project);
             addSatisfiesProposals(rootNode, node, proposals, project);
             break;
         case 2101:

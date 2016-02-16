@@ -18,6 +18,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -46,6 +47,13 @@ class ChangeTypeProposal extends CorrectionProposal {
 
     private Unit unit;
 
+    ChangeTypeProposal(String desc, Region region, Unit unit,
+            TextChange change) {
+        super(desc, change, region);
+        this.unit = unit;
+    }
+
+    @Deprecated
     ChangeTypeProposal(ProblemLocation problem,
             String name, String type, 
             int offset, int len, Unit unit,
@@ -91,6 +99,7 @@ class ChangeTypeProposal extends CorrectionProposal {
         return null;
     }
 
+    @Deprecated
     private static void addChangeTypeProposal(Node node,
             ProblemLocation problem, 
             Collection<ICompletionProposal> proposals,
@@ -150,6 +159,7 @@ class ChangeTypeProposal extends CorrectionProposal {
                 unit, change));
     }
     
+    @Deprecated
     static void addChangeTypeArgProposals(
             Tree.CompilationUnit rootNode, Node node, 
             ProblemLocation problem,
@@ -220,6 +230,7 @@ class ChangeTypeProposal extends CorrectionProposal {
         }
     }
     
+    @Deprecated
     static void addChangeTypeProposals(
             Tree.CompilationUnit rootNode, Node node,
             ProblemLocation problem, 
@@ -277,6 +288,7 @@ class ChangeTypeProposal extends CorrectionProposal {
         }
     }
     
+    @Deprecated
     private static void addChangeTypeProposals(
             Collection<ICompletionProposal> proposals,
             ProblemLocation problem, IProject project, 
