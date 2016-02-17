@@ -36,13 +36,17 @@ import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
 }
+import com.redhat.ceylon.ide.common.model {
+    BaseCeylonProject
+}
 
 class EclipseQuickFixData(ProblemLocation location,
     shared actual Tree.CompilationUnit rootNode,
     shared actual Node node,
     shared actual IProject project,
     shared Collection<ICompletionProposal> proposals,
-    shared CeylonEditor editor)
+    shared CeylonEditor editor,
+    shared actual BaseCeylonProject ceylonProject)
         satisfies QuickFixData<IProject> {
     
     shared actual Integer errorCode => location.problemId;
@@ -77,6 +81,7 @@ object eclipseQuickFixManager
     shadowReferenceQuickFix => eclipseShadowReferenceQuickFix;
     changeInitialCaseQuickFix => eclipseChangeInitialCaseQuickFix;
     fixMultilineStringIndentationQuickFix => eclipseFixMultilineStringIndentationQuickFix;
+    addModuleImportQuickFix => eclipseAddModuleImportQuickFix;
     
     shared actual void addImportProposals(Collection<ICompletionProposal> proposals, EclipseQuickFixData data) {
         data.proposals.addAll(proposals);

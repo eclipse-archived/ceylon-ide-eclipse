@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMake
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeFormalDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeSharedDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableDecProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddModuleImportProposal.addModuleImportProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddParameterProposal.addParameterProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddThrowsAnnotationProposal.addThrowsAnnotationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssertExistsDeclarationProposal.addAssertExistsDeclarationProposals;
@@ -811,9 +810,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //        case 6000:
 //            addFixMultilineStringIndentation(proposals, file, rootNode, node);
 //            break;
-        case 7000:
-            addModuleImportProposals(proposals, project, tc, node);
-            break;
+//        case 7000:
+//            addModuleImportProposals(proposals, project, tc, node);
+//            break;
         case 8000:
             addRenameDescriptorProposal(rootNode, context, problem, proposals, file);
             if (context.getSourceViewer()!=null) {
