@@ -5,6 +5,7 @@ import java.util.Collection;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 
@@ -18,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 
 public class AddSpreadToVariadicParameterProposal extends CorrectionProposal {
     
+    @Deprecated
     public static void addSpreadToSequenceParameterProposal(CompilationUnit cu, 
             Node node, Collection<ICompletionProposal> proposals, IFile file) {
         if( !(node instanceof Tree.Term) ) {
@@ -52,13 +54,20 @@ public class AddSpreadToVariadicParameterProposal extends CorrectionProposal {
 
     private final TypedDeclaration parameter;
     
+    @Deprecated
     private AddSpreadToVariadicParameterProposal(TypedDeclaration parameter, 
             int offset, TextFileChange change) {
         super("Spread iterable argument of variadic parameter", change,
                 new Region(offset, 0));
         this.parameter = parameter;
     }
-    
+
+    AddSpreadToVariadicParameterProposal(TypedDeclaration parameter, 
+            String desc, int offset, TextChange change) {
+        super(desc, change, new Region(offset, 0));
+        this.parameter = parameter;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof AddSpreadToVariadicParameterProposal) {
