@@ -60,6 +60,7 @@ import com.redhat.ceylon.model.typechecker.model.Value;
  */
 public class AddSatisfiesProposal extends CorrectionProposal {
 
+    @Deprecated
     public static void addSatisfiesProposals(
             Tree.CompilationUnit rootNode, Node node, 
             Collection<ICompletionProposal> proposals, 
@@ -120,6 +121,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         }
     }
 
+    @Deprecated
     private static void createProposals(
             Collection<ICompletionProposal> proposals, 
             TypeDeclaration typeDec, boolean isTypeParam, 
@@ -213,6 +215,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         }
     }
 
+    @Deprecated
     private static void addConstraintSatisfiesProposals(
             TypeDeclaration typeParam, 
             String missingSatisfiedType, IFile file, 
@@ -265,6 +268,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         }
     }
     
+    @Deprecated
     private static void addSatisfiesProposals(
             TypeDeclaration typeParam, 
             String missingSatisfiedType, IFile file, 
@@ -308,6 +312,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         }
     }
 
+    @Deprecated
     private static Node determineNode(Node node) {
         if (node instanceof Tree.SpecifierExpression) {
             Tree.SpecifierExpression specifierExpression = 
@@ -322,6 +327,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         return node;
     }
 
+    @Deprecated
     private static TypeDeclaration determineTypeDeclaration(Node node) {
         TypeDeclaration typeDec = null;
         if (node instanceof Tree.ClassOrInterface || 
@@ -357,6 +363,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         return typeDec;
     }
 
+    @Deprecated
     private static Node determineContainer(
             Tree.CompilationUnit rootNode, 
             final TypeDeclaration typeDec) {
@@ -383,6 +390,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         return null;
     }
 
+    @Deprecated
     private static List<Type> determineMissingSatisfiedTypes(
             Tree.CompilationUnit rootNode, Node node, 
             TypeDeclaration typeDec) {
@@ -462,6 +470,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
         return missingSatisfiedTypes;
     }
 
+    @Deprecated
     private static List<TypeParameter> determineSatisfiedTypesTypeParams(
             Tree.CompilationUnit rootNode, final Node typeParamNode, 
             final TypeDeclaration typeDec) {
@@ -546,7 +555,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
     private final TypeDeclaration typeParam;
     private final String missingSatisfiedTypeText;
 
-    private AddSatisfiesProposal(TypeDeclaration typeParam, 
+    AddSatisfiesProposal(TypeDeclaration typeParam, 
             String description, 
             String missingSatisfiedTypeText, 
             Change change, Region selection) {

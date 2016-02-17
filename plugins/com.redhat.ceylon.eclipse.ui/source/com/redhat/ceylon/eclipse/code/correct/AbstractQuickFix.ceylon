@@ -57,7 +57,8 @@ import org.eclipse.text.edits {
     TextEdit
 }
 import com.redhat.ceylon.ide.common.model {
-    ModifiableSourceFile
+    ModifiableSourceFile,
+    IResourceAware
 }
 
 interface EclipseAbstractQuickFix
@@ -91,6 +92,13 @@ interface EclipseAbstractQuickFix
     shared actual PhasedUnit? getPhasedUnit(Unit? u, EclipseQuickFixData data) {
         if (is ModifiableSourceFile<IProject, IResource, IFolder, IFile> u) {
             return u.phasedUnit;
+        }
+        return null;
+    }
+    
+    shared actual IFile? getFile<NativeFile>(IResourceAware<out Anything,out Anything,NativeFile> pu, EclipseQuickFixData data) {
+        if (is IFile res = pu.resourceFile) {
+            return res;
         }
         return null;
     }
