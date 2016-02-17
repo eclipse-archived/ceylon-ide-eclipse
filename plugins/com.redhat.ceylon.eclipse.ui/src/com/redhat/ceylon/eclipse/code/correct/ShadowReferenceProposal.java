@@ -18,8 +18,8 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
-import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.ide.common.util.FindReferencesVisitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
@@ -63,7 +63,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
                         FindReferencesVisitor frv =
                                 new FindReferencesVisitor(d);
                         frv.visit(ss.getSwitchCaseList());
-                        for (Node n: frv.getNodes()) {
+                        for (Node n: frv.getNodeSet()) {
                             Node identifyingNode =
                                     getIdentifyingNode(n);
                             Integer start =
@@ -104,7 +104,7 @@ class ShadowReferenceProposal extends CorrectionProposal {
             FindReferencesVisitor frv = 
             		new FindReferencesVisitor(dec);
             frv.visit(statement);
-            for (Node n: frv.getNodes()) {
+            for (Node n: frv.getNodeSet()) {
                 Node identifyingNode = getIdentifyingNode(n);
                 Integer start =
                         identifyingNode.getStartIndex();

@@ -60,8 +60,6 @@ import static com.redhat.ceylon.eclipse.code.correct.RemoveAliasProposal.addRemo
 import static com.redhat.ceylon.eclipse.code.correct.RenameAliasProposal.addRenameAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameDescriptorProposal.addRenameDescriptorProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameVersionProposal.addRenameVersionProposals;
-import static com.redhat.ceylon.eclipse.code.correct.ShadowReferenceProposal.addShadowReferenceProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ShadowReferenceProposal.addShadowSwitchReferenceProposal;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.addTypingProposals;
 import static com.redhat.ceylon.eclipse.code.correct.SplitDeclarationProposal.addSplitDeclarationProposals;
 import static com.redhat.ceylon.eclipse.code.correct.SplitIfStatementProposal.addSplitIfStatementProposal;
@@ -801,13 +799,13 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addAssignToAssertIsProposal(currentEditor, rootNode, proposals, node, start);
             addPrintProposal(rootNode, proposals, node, start);
             break;
-        case 3100:
-            addShadowReferenceProposal(file, node, rootNode, proposals);
-            break;
-        case 3101:
-        case 3102:
-            addShadowSwitchReferenceProposal(file, node, rootNode, proposals);
-            break;
+//        case 3100:
+//            addShadowReferenceProposal(file, node, rootNode, proposals);
+//            break;
+//        case 3101:
+//        case 3102:
+//            addShadowSwitchReferenceProposal(file, node, rootNode, proposals);
+//            break;
         case 5001:
         case 5002:
             addChangeIdentifierCaseProposal(node, proposals, file);

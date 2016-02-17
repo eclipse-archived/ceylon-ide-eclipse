@@ -23,6 +23,10 @@ import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
+@Deprecated
+/**
+ * @deprecated see com.redhat.ceylon.ide.common.util.FindReferencesVisitor
+ */
 public class FindReferencesVisitor extends Visitor {
     
     private Referenceable declaration;
