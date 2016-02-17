@@ -18,7 +18,6 @@ import static com.redhat.ceylon.eclipse.code.correct.AssignToIfIsProposal.addAss
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfNonemptyProposal.addAssignToIfNonemptyProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAssignToLocalProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToTryProposal.addAssignToTryProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ChangeInitialCaseOfIdentifierInDeclaration.addChangeIdentifierCaseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningParametersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningTypeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeToIfProposal.addChangeToIfProposal;
@@ -806,10 +805,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //        case 3102:
 //            addShadowSwitchReferenceProposal(file, node, rootNode, proposals);
 //            break;
-        case 5001:
-        case 5002:
-            addChangeIdentifierCaseProposal(node, proposals, file);
-            break;
+//        case 5001:
+//        case 5002:
+//            addChangeIdentifierCaseProposal(node, proposals, file);
+//            break;
         case 6000:
             addFixMultilineStringIndentation(proposals, file, rootNode, node);
             break;
