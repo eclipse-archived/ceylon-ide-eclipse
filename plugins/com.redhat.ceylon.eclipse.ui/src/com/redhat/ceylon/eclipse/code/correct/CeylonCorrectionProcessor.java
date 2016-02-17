@@ -784,9 +784,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //        case 2101:
 //            addSpreadToSequenceParameterProposal(rootNode, node, proposals, file);
 //            break;
-        case 2500:
-            addTypeParameterProposal(file, rootNode, proposals, node);
-            break;
+//        case 2500:
+//            addTypeParameterProposal(file, rootNode, proposals, node);
+//            break;
         case 3000:
             CeylonEditor currentEditor = getCurrentCeylonEditor();
             addAssignToLocalProposal(currentEditor, rootNode, proposals, node, start);
@@ -1083,6 +1083,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }        
     }
 
+    @Deprecated
+    // see AddTypeParameterQuickFix
     void addTypeParameterProposal(IFile file, 
             Tree.CompilationUnit rootNode,
             Collection<ICompletionProposal> proposals, 
