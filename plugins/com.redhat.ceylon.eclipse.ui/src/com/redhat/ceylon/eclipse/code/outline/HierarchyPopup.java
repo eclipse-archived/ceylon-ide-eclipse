@@ -48,12 +48,12 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOutlinesPreferencePage;
-import com.redhat.ceylon.eclipse.code.search.FindContainerVisitor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
+import com.redhat.ceylon.ide.common.search.FindContainerVisitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 

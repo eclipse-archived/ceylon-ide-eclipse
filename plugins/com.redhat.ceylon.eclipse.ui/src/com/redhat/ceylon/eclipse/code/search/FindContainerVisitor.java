@@ -4,6 +4,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
+@Deprecated
+/**
+ * @deprecated use com.redhat.ceylon.ide.common.search.FindContainerVisitor instead
+ */
 public class FindContainerVisitor extends Visitor {
     
     private final Node node;

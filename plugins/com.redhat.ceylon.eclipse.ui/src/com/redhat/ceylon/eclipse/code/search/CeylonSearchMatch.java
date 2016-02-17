@@ -8,6 +8,7 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.ide.common.search.FindContainerVisitor;
 
 public class CeylonSearchMatch extends Match {
     
@@ -22,7 +23,7 @@ public class CeylonSearchMatch extends Match {
         FindContainerVisitor fcv = 
                 new FindContainerVisitor(match) {
             @Override
-            protected boolean accept(
+            public boolean accept(
                     Tree.StatementOrArgument node) {
                 if (node instanceof Tree.Declaration) {
                     Tree.Declaration dec = 
