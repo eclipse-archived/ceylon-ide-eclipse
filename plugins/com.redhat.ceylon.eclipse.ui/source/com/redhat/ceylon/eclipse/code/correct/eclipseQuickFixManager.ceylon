@@ -76,6 +76,7 @@ object eclipseQuickFixManager
     addTypeParameterQuickFix => eclipseAddTypeParameterQuickFix;
     shadowReferenceQuickFix => eclipseShadowReferenceQuickFix;
     changeInitialCaseQuickFix => eclipseChangeInitialCaseQuickFix;
+    fixMultilineStringIndentationQuickFix => eclipseFixMultilineStringIndentationQuickFix;
     
     shared actual void addImportProposals(Collection<ICompletionProposal> proposals, EclipseQuickFixData data) {
         data.proposals.addAll(proposals);

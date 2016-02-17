@@ -22,6 +22,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
+@Deprecated
 class FixMultilineStringIndentationProposal 
         extends CorrectionProposal {
     

@@ -43,7 +43,6 @@ import static com.redhat.ceylon.eclipse.code.correct.CreateTypeParameterProposal
 import static com.redhat.ceylon.eclipse.code.correct.DestructureProposal.addDestructureProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExpandTypeProposal.addExpandTypeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.FillInArgumentNameProposal.addFillInArgumentNameProposal;
-import static com.redhat.ceylon.eclipse.code.correct.FixMultilineStringIndentationProposal.addFixMultilineStringIndentation;
 import static com.redhat.ceylon.eclipse.code.correct.InvertIfElseProposal.addInvertIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.JoinDeclarationProposal.addJoinDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.JoinIfStatementsProposal.addJoinIfStatementsProposal;
@@ -809,9 +808,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //        case 5002:
 //            addChangeIdentifierCaseProposal(node, proposals, file);
 //            break;
-        case 6000:
-            addFixMultilineStringIndentation(proposals, file, rootNode, node);
-            break;
+//        case 6000:
+//            addFixMultilineStringIndentation(proposals, file, rootNode, node);
+//            break;
         case 7000:
             addModuleImportProposals(proposals, project, tc, node);
             break;
