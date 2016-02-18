@@ -824,10 +824,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //        case 9200:
 //            addChangeRefiningParametersProposal(file, rootNode, proposals, node);
 //            break;
-        case 10000:
-            addElseProposal(file, rootNode, proposals, node);
-            addCasesProposal(file, rootNode, proposals, node);
-            break;
+//        case 10000:
+//            addElseProposal(file, rootNode, proposals, node);
+//            addCasesProposal(file, rootNode, proposals, node);
+//            break;
         case 11000:
             addNamedArgumentsProposal(file, rootNode, proposals, node);
             break;
@@ -958,6 +958,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
+    @Deprecated
+    // see SwitchQuickFix
     private void addElseProposal(IFile file, 
             Tree.CompilationUnit rootNode,
             Collection<ICompletionProposal> proposals, 
@@ -985,6 +987,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
+    @Deprecated
+    // see SwitchQuickFix
     private void addCasesProposal(IFile file, 
             Tree.CompilationUnit rootNode,
             Collection<ICompletionProposal> proposals, 
