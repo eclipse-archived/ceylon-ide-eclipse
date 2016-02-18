@@ -87,6 +87,7 @@ object eclipseQuickFixManager
     changeRefiningTypeQuickType => eclipseChangeRefiningTypeQuickType;
     switchQuickFix => eclipseSwitchQuickFix;
     changeToQuickFix => eclipseChangeToQuickFix;
+    addNamedArgumentQuickFix => eclipseAddNamedArgumentQuickFix;
     
     shared actual void addImportProposals(Collection<ICompletionProposal> proposals, EclipseQuickFixData data) {
         data.proposals.addAll(proposals);
