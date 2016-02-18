@@ -831,19 +831,21 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         case 11000:
             addNamedArgumentsProposal(file, rootNode, proposals, node);
             break;
-        case 12000:
-        case 12100:
-        	changeToVoid(file, rootNode, node, proposals);
-        	break;
-        case 13000:
-        	changeToFunction(file, rootNode, node, proposals);
-        	break;
+//        case 12000:
+//        case 12100:
+//        	changeToVoid(file, rootNode, node, proposals);
+//        	break;
+//        case 13000:
+//        	changeToFunction(file, rootNode, node, proposals);
+//        	break;
 //        case 20000:
 //            addMakeNativeProposal(proposals, project, node, rootNode, file);
 //            break;
         }
     }
 
+    @Deprecated
+    // see ChangeToQuickFix
 	private void changeToFunction(IFile file, 
 			Tree.CompilationUnit rootNode, Node node, 
 			Collection<ICompletionProposal> proposals) {
@@ -872,6 +874,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 		}
 	}
 
+	@Deprecated
+	// see ChangeToQuickFix
 	private void changeToVoid(IFile file, 
 			Tree.CompilationUnit rootNode, Node node, 
 			Collection<ICompletionProposal> proposals) {
