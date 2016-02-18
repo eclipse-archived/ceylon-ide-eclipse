@@ -35,6 +35,7 @@ import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
+@Deprecated
 public class ChangeRefiningTypeProposal {
 
     static void addChangeRefiningTypeProposal(IFile file,

@@ -84,6 +84,7 @@ object eclipseQuickFixManager
     fixMultilineStringIndentationQuickFix => eclipseFixMultilineStringIndentationQuickFix;
     addModuleImportQuickFix => eclipseAddModuleImportQuickFix;
     renameDescriptorQuickFix => eclipseRenameDescriptorQuickFix;
+    changeRefiningTypeQuickType => eclipseChangeRefiningTypeQuickType;
     
     shared actual void addImportProposals(Collection<ICompletionProposal> proposals, EclipseQuickFixData data) {
         data.proposals.addAll(proposals);

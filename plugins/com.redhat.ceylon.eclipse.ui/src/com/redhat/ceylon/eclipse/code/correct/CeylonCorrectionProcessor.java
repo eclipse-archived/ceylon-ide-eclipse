@@ -17,8 +17,6 @@ import static com.redhat.ceylon.eclipse.code.correct.AssignToIfIsProposal.addAss
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfNonemptyProposal.addAssignToIfNonemptyProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAssignToLocalProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToTryProposal.addAssignToTryProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningParametersProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ChangeRefiningTypeProposal.addChangeRefiningTypeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ChangeToIfProposal.addChangeToIfProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertFunctionToGetterProposal.addConvertFunctionToGetterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertGetterToFunctionProposal.addConvertGetterToFunctionProposal;
@@ -819,13 +817,13 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                         context);
             }
             break;
-        case 9000:
-            addChangeRefiningTypeProposal(file, rootNode, proposals, node);
-            break;
-        case 9100:
-        case 9200:
-            addChangeRefiningParametersProposal(file, rootNode, proposals, node);
-            break;
+//        case 9000:
+//            addChangeRefiningTypeProposal(file, rootNode, proposals, node);
+//            break;
+//        case 9100:
+//        case 9200:
+//            addChangeRefiningParametersProposal(file, rootNode, proposals, node);
+//            break;
         case 10000:
             addElseProposal(file, rootNode, proposals, node);
             addCasesProposal(file, rootNode, proposals, node);
