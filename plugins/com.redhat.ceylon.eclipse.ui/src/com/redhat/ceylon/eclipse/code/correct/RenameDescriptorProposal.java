@@ -15,6 +15,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.ide.common.util.escaping_;
 
+@Deprecated
 class RenameDescriptorProposal {
     
     static void addRenameDescriptorProposal(Tree.CompilationUnit cu,

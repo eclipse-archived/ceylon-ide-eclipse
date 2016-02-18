@@ -49,8 +49,9 @@ class EclipseQuickFixData(ProblemLocation location,
     shared actual BaseCeylonProject ceylonProject)
         satisfies QuickFixData<IProject> {
     
-    shared actual Integer errorCode => location.problemId;
-    shared actual Integer problemOffset => location.offset;
+    errorCode => location.problemId;
+    problemOffset => location.offset;
+    problemLength => location.length;
 }
 
 object eclipseQuickFixManager
@@ -82,6 +83,7 @@ object eclipseQuickFixManager
     changeInitialCaseQuickFix => eclipseChangeInitialCaseQuickFix;
     fixMultilineStringIndentationQuickFix => eclipseFixMultilineStringIndentationQuickFix;
     addModuleImportQuickFix => eclipseAddModuleImportQuickFix;
+    renameDescriptorQuickFix => eclipseRenameDescriptorQuickFix;
     
     shared actual void addImportProposals(Collection<ICompletionProposal> proposals, EclipseQuickFixData data) {
         data.proposals.addAll(proposals);

@@ -55,7 +55,6 @@ import static com.redhat.ceylon.eclipse.code.correct.RefineEqualsHashProposal.ad
 import static com.redhat.ceylon.eclipse.code.correct.RefineFormalMembersProposal.addRefineFormalMembersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAliasProposal.addRemoveAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameAliasProposal.addRenameAliasProposal;
-import static com.redhat.ceylon.eclipse.code.correct.RenameDescriptorProposal.addRenameDescriptorProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameVersionProposal.addRenameVersionProposals;
 import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.addTypingProposals;
 import static com.redhat.ceylon.eclipse.code.correct.SplitDeclarationProposal.addSplitDeclarationProposals;
@@ -814,7 +813,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //            addModuleImportProposals(proposals, project, tc, node);
 //            break;
         case 8000:
-            addRenameDescriptorProposal(rootNode, context, problem, proposals, file);
+//            addRenameDescriptorProposal(rootNode, context, problem, proposals, file);
             if (context.getSourceViewer()!=null) {
                 addMoveDirProposal(file, rootNode, project, proposals, 
                         context);
