@@ -31,7 +31,6 @@ object eclipseAddConstructorQuickFix
     shared actual void newProposal(EclipseQuickFixData data, String name, 
         TextChange change, DefaultRegion region) {
         
-        data.proposals.add(AddConstructorProposal(name, change, 
-            Region(region.start, region.length)));
+        data.proposals.add(AddConstructorProposal(name, change, toRegion(region)));
     }
 }

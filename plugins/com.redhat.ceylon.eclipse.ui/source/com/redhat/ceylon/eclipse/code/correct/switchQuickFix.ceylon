@@ -32,6 +32,6 @@ object eclipseSwitchQuickFix
     shared actual void newProposal(EclipseQuickFixData data, String desc, 
         TextChange change, DefaultRegion region) {
         
-        data.proposals.add(CorrectionProposal(desc, change, Region(region.start, region.length)));
+        data.proposals.add(CorrectionProposal(desc, change, toRegion(region)));
     }
 }

@@ -40,7 +40,7 @@ object eclipseAddSatisfiesQuickFix
         value composite = CompositeChange(change.name);
         composite.add(change);
         
-        value reg = if (exists region) then Region(region.start, region.length) else null;
+        value reg = if (exists region) then toRegion(region) else null;
         
         value proposal = AddSatisfiesProposal(typeParam, description, 
             missingSatisfiedTypeText, composite, reg);
