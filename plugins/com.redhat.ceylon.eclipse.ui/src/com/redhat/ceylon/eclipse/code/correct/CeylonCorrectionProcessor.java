@@ -1191,8 +1191,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             eclipseQuickFixManager_.get_().addQuickAssists(data, file, doc,
                     statement, declaration, argument, imp, oe);
             
-            addOperatorProposals(proposals, file, oe);
-            addParenthesesProposals(proposals, file, node, rootNode, oe);
+//            addOperatorProposals(proposals, file, oe);
+//            addParenthesesProposals(proposals, file, node, rootNode, oe);
 
             addVerboseRefinementProposal(proposals, file, statement, rootNode);
             
@@ -1267,6 +1267,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         
     }
 
+    @Deprecated
     private static void addOperatorProposals(
             Collection<ICompletionProposal> proposals,
             IFile file,
