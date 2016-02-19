@@ -106,4 +106,12 @@ object eclipseQuickFixManager
         CreateTypeParameterProposal.addCreateTypeParameterProposal(
             data.proposals, data.project, data.rootNode, bt, brokenName);
     }
+    
+    shared void addQuickAssists(EclipseQuickFixData data, IFile file,
+        IDocument doc, Tree.Statement statement,
+        Tree.Declaration declaration, Tree.NamedArgument namedArgument,
+        Tree.ImportMemberOrType imp, Tree.OperatorExpression oe) {
+        
+        convertThenElseToIfElse.addConvertToIfElseProposal(data, file, doc, statement);
+    }
 }

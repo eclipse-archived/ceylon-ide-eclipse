@@ -25,7 +25,6 @@ import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addCo
 import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addConvertToVerbatimProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertSwitchToIfProposal.addConvertIfToSwitchProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertSwitchToIfProposal.addConvertSwitchToIfProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ConvertThenElseToIfElse.addConvertToIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToBlockProposal.addConvertToBlockProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToClassProposal.addConvertToClassProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToConcatenationProposal.addConvertToConcatenationProposal;
@@ -1186,6 +1185,12 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.ImportMemberOrType imp = findImport(rootNode, node);
             Tree.OperatorExpression oe = findOperator(rootNode, node);
             
+            EclipseQuickFixData data = new EclipseQuickFixData(
+                    null, rootNode, node, project, proposals, editor, null
+            );
+            eclipseQuickFixManager_.get_().addQuickAssists(data, file, doc,
+                    statement, declaration, argument, imp, oe);
+            
             addOperatorProposals(proposals, file, oe);
             addParenthesesProposals(proposals, file, node, rootNode, oe);
 
@@ -1219,7 +1224,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addRemoveAliasProposal(imp, proposals, file, editor);            
             addRenameVersionProposals(node, proposals, rootNode, editor);
             
-            addConvertToIfElseProposal(doc, proposals, file, statement);
+//            addConvertToIfElseProposal(doc, proposals, file, statement);
             addConvertToThenElseProposal(rootNode, doc, proposals, file, statement);
             addInvertIfElseProposal(doc, proposals, file, statement, node, rootNode);
             
@@ -1479,6 +1484,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
+    @Deprecated
     private void addCreationProposals(
             Tree.CompilationUnit cu, 
             final Node node, 

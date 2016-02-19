@@ -28,6 +28,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.ValueModifier;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Type;
 
+@Deprecated
 class ConvertThenElseToIfElse extends CorrectionProposal {
     
     ConvertThenElseToIfElse(int offset, TextChange change) {

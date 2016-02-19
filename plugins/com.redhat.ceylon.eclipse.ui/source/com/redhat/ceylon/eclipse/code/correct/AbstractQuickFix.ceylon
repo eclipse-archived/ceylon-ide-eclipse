@@ -60,6 +60,9 @@ import com.redhat.ceylon.ide.common.model {
     ModifiableSourceFile,
     IResourceAware
 }
+import com.redhat.ceylon.ide.common.refactoring {
+    DefaultRegion
+}
 
 interface EclipseAbstractQuickFix
         satisfies AbstractQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> {
@@ -77,6 +80,8 @@ interface EclipseAbstractQuickFix
     shared actual Indents<IDocument> indents => eclipseIndents;
     
     shared actual Region newRegion(Integer start, Integer length) => Region(start, length);
+    
+    shared Region toRegion(DefaultRegion region) => Region(region.start, region.length);
     
     shared actual TextChange newTextChange(String desc, PhasedUnit|IFile|IDocument u) {
         if (is IDocument u) {
