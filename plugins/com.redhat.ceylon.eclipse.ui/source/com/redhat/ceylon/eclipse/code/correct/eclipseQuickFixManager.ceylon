@@ -123,7 +123,7 @@ object eclipseQuickFixManager
         operatorQuickFix.addParenthesesProposals(data, file, oe);
         
         verboseRefinementQuickFix.addVerboseRefinementProposal(data, file, statement);
-        verboseRefinementQuickFix.addNonVerboseRefinementProposal(data, file, statement);
+        verboseRefinementQuickFix.addShortcutRefinementProposal(data, file, statement);
         specifyTypeQuickFix.addTypingProposals(data, file, declaration);
         eclipseMiscQuickFix.addAnonymousFunctionProposals(data, file);
         eclipseMiscQuickFix.addDeclarationProposals(data, file, declaration, currentOffset);
