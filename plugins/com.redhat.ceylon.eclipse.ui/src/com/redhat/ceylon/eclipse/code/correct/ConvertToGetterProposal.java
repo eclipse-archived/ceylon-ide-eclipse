@@ -17,6 +17,7 @@ import com.redhat.ceylon.model.typechecker.model.Value;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierOrInitializerExpression;
 
+@Deprecated
 class ConvertToGetterProposal extends CorrectionProposal {
     
     ConvertToGetterProposal(Declaration dec, int offset, 

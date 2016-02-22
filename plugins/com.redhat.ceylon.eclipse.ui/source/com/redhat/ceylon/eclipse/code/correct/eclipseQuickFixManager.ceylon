@@ -110,7 +110,8 @@ object eclipseQuickFixManager
     shared void addQuickAssists(EclipseQuickFixData data, IFile file,
         IDocument doc, Tree.Statement? statement,
         Tree.Declaration? declaration, Tree.NamedArgument? namedArgument,
-        Tree.ImportMemberOrType? imp, Tree.OperatorExpression? oe) {
+        Tree.ImportMemberOrType? imp, Tree.OperatorExpression? oe,
+        Integer currentOffset) {
         
         convertThenElseToIfElse.addConvertToIfElseProposal(data, file, doc, statement);
         
@@ -124,6 +125,7 @@ object eclipseQuickFixManager
         verboseRefinementQuickFix.addVerboseRefinementProposal(data, file, statement);
         verboseRefinementQuickFix.addNonVerboseRefinementProposal(data, file, statement);
         specifyTypeQuickFix.addTypingProposals(data, file, declaration);
-        eclipseAnonymousFunctionQuickFix.addAnonymousFunctionProposals(data, file);
+        eclipseMiscQuickFix.addAnonymousFunctionProposals(data, file);
+        eclipseMiscQuickFix.addDeclarationProposals(data, file, declaration, currentOffset);
     }
 }

@@ -1,5 +1,5 @@
 import com.redhat.ceylon.ide.common.correct {
-    AnonymousFunctionQuickFix
+    MiscQuickFixes
 }
 
 import org.eclipse.core.resources {
@@ -21,11 +21,12 @@ import org.eclipse.text.edits {
     TextEdit
 }
 
-object eclipseAnonymousFunctionQuickFix
-        satisfies AnonymousFunctionQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+object eclipseMiscQuickFix
+        satisfies MiscQuickFixes<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
                 & EclipseAbstractQuickFix
                 & EclipseDocumentChanges {
     
     convertToBlockQuickFix => eclipseConvertToBlockQuickFix;
     convertToSpecifierQuickFix => eclipseConvertToSpecifierQuickFix;
+    convertToGetterQuickFix => eclipseConvertToGetterQuickFix;
 }

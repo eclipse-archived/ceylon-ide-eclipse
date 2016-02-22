@@ -1186,7 +1186,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     null, rootNode, node, project, proposals, editor, null
             );
             eclipseQuickFixManager_.get_().addQuickAssists(data, file, doc,
-                    statement, declaration, argument, imp, oe);
+                    statement, declaration, argument, imp, oe, currentOffset);
             
 //            addOperatorProposals(proposals, file, oe);
 //            addParenthesesProposals(proposals, file, node, rootNode, oe);
@@ -1200,8 +1200,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //            addAnonymousFunctionProposals(editor, proposals, doc, file, rootNode, 
 //                    currentOffset);
             
-            addDeclarationProposals(editor, proposals, doc, file, rootNode, 
-                    declaration, currentOffset);
+//            addDeclarationProposals(editor, proposals, doc, file, rootNode, 
+//                    declaration, currentOffset);
             
             addAssignToFieldProposal(file, statement, declaration, proposals);
 
@@ -1365,6 +1365,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
+    @Deprecated
     private static void addDeclarationProposals(
             CeylonEditor editor,
             Collection<ICompletionProposal> proposals,
