@@ -123,5 +123,6 @@ object eclipseQuickFixManager
         
         verboseRefinementQuickFix.addVerboseRefinementProposal(data, file, statement);
         verboseRefinementQuickFix.addNonVerboseRefinementProposal(data, file, statement);
+        specifyTypeQuickFix.addTypingProposals(data, file, declaration);
     }
 }

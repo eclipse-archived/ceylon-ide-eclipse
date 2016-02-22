@@ -59,6 +59,8 @@ object eclipseSpecifyTypeQuickFix
         
         data.proposals.add(EclipseSpecifyTypeProposal(desc, type, cu, infType, data));
     }
+    
+    specifyTypeArgumentsQuickFix => eclipseSpecifyTypeArgumentsQuickFix;
 }
 
 class EclipseSpecifyTypeProposal(

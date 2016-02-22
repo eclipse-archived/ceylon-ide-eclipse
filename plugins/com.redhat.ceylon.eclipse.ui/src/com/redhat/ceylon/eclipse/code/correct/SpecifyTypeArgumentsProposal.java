@@ -14,6 +14,7 @@ import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
+@Deprecated
 public class SpecifyTypeArgumentsProposal extends CorrectionProposal {
 
     SpecifyTypeArgumentsProposal(String type, TextFileChange change) {

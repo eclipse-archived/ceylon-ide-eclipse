@@ -52,7 +52,6 @@ import static com.redhat.ceylon.eclipse.code.correct.RefineFormalMembersProposal
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAliasProposal.addRemoveAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameAliasProposal.addRenameAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameVersionProposal.addRenameVersionProposals;
-import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.addTypingProposals;
 import static com.redhat.ceylon.eclipse.code.correct.SplitDeclarationProposal.addSplitDeclarationProposals;
 import static com.redhat.ceylon.eclipse.code.correct.SplitIfStatementProposal.addSplitIfStatementProposal;
 import static com.redhat.ceylon.eclipse.code.correct.UseAliasProposal.addUseAliasProposal;
@@ -1196,7 +1195,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             
             addAnnotationProposals(proposals, project, declaration,
                     doc, currentOffset);
-            addTypingProposals(proposals, file, rootNode, node, declaration, editor);
+//            addTypingProposals(proposals, file, rootNode, node, declaration, editor);
             
             addAnonymousFunctionProposals(editor, proposals, doc, file, rootNode, 
                     currentOffset);
