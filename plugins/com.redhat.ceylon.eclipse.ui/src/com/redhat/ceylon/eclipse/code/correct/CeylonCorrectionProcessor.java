@@ -1197,8 +1197,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     doc, currentOffset);
 //            addTypingProposals(proposals, file, rootNode, node, declaration, editor);
             
-            addAnonymousFunctionProposals(editor, proposals, doc, file, rootNode, 
-                    currentOffset);
+//            addAnonymousFunctionProposals(editor, proposals, doc, file, rootNode, 
+//                    currentOffset);
             
             addDeclarationProposals(editor, proposals, doc, file, rootNode, 
                     declaration, currentOffset);
@@ -1334,6 +1334,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
     
+    @Deprecated
     private static void addAnonymousFunctionProposals(
             CeylonEditor editor,
             Collection<ICompletionProposal> proposals,

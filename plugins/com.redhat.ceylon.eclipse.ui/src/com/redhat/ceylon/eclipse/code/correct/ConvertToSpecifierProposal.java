@@ -15,6 +15,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
+@Deprecated
 class ConvertToSpecifierProposal extends CorrectionProposal {
     
     ConvertToSpecifierProposal(String desc, int offset, 

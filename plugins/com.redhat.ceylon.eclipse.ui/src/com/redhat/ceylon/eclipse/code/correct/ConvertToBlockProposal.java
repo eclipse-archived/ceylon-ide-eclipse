@@ -18,6 +18,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
+@Deprecated
 class ConvertToBlockProposal extends CorrectionProposal {
     
     private ConvertToBlockProposal(String desc, int offset, 
