@@ -80,8 +80,7 @@ class EclipseSpecifyTypeProposal(
     
     shared actual IContextInformation? contextInformation => null;
     
-    shared actual String displayString 
-            => "``desc`` '``infType.asString(data.rootNode.unit)``'";
+    shared actual String displayString => desc;
     
     shared actual Point? getSelection(IDocument? iDocument) => selection;
     
