@@ -44,7 +44,6 @@ import static com.redhat.ceylon.eclipse.code.correct.JoinDeclarationProposal.add
 import static com.redhat.ceylon.eclipse.code.correct.JoinIfStatementsProposal.addJoinIfStatementsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.MoveDirProposal.addMoveDirProposal;
 import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addInvertOperatorProposal;
-import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addParenthesesProposals;
 import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addReverseOperatorProposal;
 import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addSwapBinaryOperandsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.PrintProposal.addPrintProposal;
@@ -57,7 +56,6 @@ import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal.addTypi
 import static com.redhat.ceylon.eclipse.code.correct.SplitDeclarationProposal.addSplitDeclarationProposals;
 import static com.redhat.ceylon.eclipse.code.correct.SplitIfStatementProposal.addSplitIfStatementProposal;
 import static com.redhat.ceylon.eclipse.code.correct.UseAliasProposal.addUseAliasProposal;
-import static com.redhat.ceylon.eclipse.code.correct.VerboseRefinementProposal.addVerboseRefinementProposal;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.MODULE_DEPENDENCY_PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
@@ -1194,7 +1192,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //            addOperatorProposals(proposals, file, oe);
 //            addParenthesesProposals(proposals, file, node, rootNode, oe);
 
-            addVerboseRefinementProposal(proposals, file, statement, rootNode);
+//            addVerboseRefinementProposal(proposals, file, statement, rootNode);
             
             addAnnotationProposals(proposals, project, declaration,
                     doc, currentOffset);

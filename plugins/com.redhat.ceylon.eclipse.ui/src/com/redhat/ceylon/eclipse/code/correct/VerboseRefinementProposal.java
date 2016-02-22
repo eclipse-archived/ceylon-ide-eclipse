@@ -19,6 +19,7 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
+@Deprecated
 class VerboseRefinementProposal extends CorrectionProposal {
 
     private VerboseRefinementProposal(Change change) {

@@ -120,5 +120,8 @@ object eclipseQuickFixManager
             operatorQuickFix.addSwapBinaryOperandsProposal(data, file, oe);
         }
         operatorQuickFix.addParenthesesProposals(data, file, oe);
+        
+        verboseRefinementQuickFix.addVerboseRefinementProposal(data, file, statement);
+        verboseRefinementQuickFix.addNonVerboseRefinementProposal(data, file, statement);
     }
 }
