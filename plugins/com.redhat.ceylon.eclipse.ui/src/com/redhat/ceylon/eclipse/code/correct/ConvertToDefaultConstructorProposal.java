@@ -25,6 +25,7 @@ import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
+@Deprecated
 public class ConvertToDefaultConstructorProposal {
 
     static void addConvertToDefaultConstructorProposal(

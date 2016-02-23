@@ -26,7 +26,6 @@ import static com.redhat.ceylon.eclipse.code.correct.ConvertSwitchToIfProposal.a
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToBlockProposal.addConvertToBlockProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToClassProposal.addConvertToClassProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToConcatenationProposal.addConvertToConcatenationProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ConvertToDefaultConstructorProposal.addConvertToDefaultConstructorProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToGetterProposal.addConvertToGetterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToInterpolationProposal.addConvertToInterpolationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToNamedArgumentsProposal.addConvertToNamedArgumentsProposal;
@@ -1205,7 +1204,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 
 //            addChangeToIfProposal(proposals, doc, file, rootNode, statement);
             
-            addConvertToDefaultConstructorProposal(proposals, doc, file, rootNode, statement);
+//            addConvertToDefaultConstructorProposal(proposals, doc, file, rootNode, statement);
             
             addConvertToClassProposal(proposals, declaration, editor);
             addAssertExistsDeclarationProposals(proposals, doc, file, rootNode, declaration);

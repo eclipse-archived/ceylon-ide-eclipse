@@ -129,5 +129,6 @@ object eclipseQuickFixManager
         eclipseMiscQuickFix.addDeclarationProposals(data, file, declaration, currentOffset);
         assignToFieldQuickFix.addAssignToFieldProposal(data, file, statement, declaration);
         changeToIfQuickFix.addChangeToIfProposal(data, file, statement);
+        convertToDefaultConstructorQuickFix.addConvertToDefaultConstructorProposal(data, file, statement);
     }
 }
