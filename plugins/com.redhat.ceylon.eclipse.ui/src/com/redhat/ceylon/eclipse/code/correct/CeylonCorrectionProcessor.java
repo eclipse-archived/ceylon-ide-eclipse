@@ -10,7 +10,6 @@ import static com.redhat.ceylon.eclipse.code.correct.AssertExistsDeclarationProp
 import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertExistsProposal.addAssignToAssertExistsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertIsProposal.addAssignToAssertIsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertNonemptyProposal.addAssignToAssertNonemptyProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AssignToFieldProposal.addAssignToFieldProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToForProposal.addAssignToForProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfExistsProposal.addAssignToIfExistsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfIsProposal.addAssignToIfIsProposal;
@@ -1203,7 +1202,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //            addDeclarationProposals(editor, proposals, doc, file, rootNode, 
 //                    declaration, currentOffset);
             
-            addAssignToFieldProposal(file, statement, declaration, proposals);
+//            addAssignToFieldProposal(file, statement, declaration, proposals);
 
             addChangeToIfProposal(proposals, doc, file, rootNode, statement);
             

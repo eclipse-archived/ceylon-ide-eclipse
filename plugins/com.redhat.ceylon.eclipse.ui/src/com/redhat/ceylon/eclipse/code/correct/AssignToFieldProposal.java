@@ -21,6 +21,7 @@ import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 
+@Deprecated
 class AssignToFieldProposal {
 
     static void addAssignToFieldProposal(IFile file, 

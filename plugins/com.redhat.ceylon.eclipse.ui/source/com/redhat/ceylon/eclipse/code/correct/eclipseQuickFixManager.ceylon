@@ -127,5 +127,6 @@ object eclipseQuickFixManager
         specifyTypeQuickFix.addTypingProposals(data, file, declaration);
         eclipseMiscQuickFix.addAnonymousFunctionProposals(data, file);
         eclipseMiscQuickFix.addDeclarationProposals(data, file, declaration, currentOffset);
+        assignToFieldQuickFix.addAssignToFieldProposal(data, file, statement, declaration);
     }
 }
