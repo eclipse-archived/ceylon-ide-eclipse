@@ -17,6 +17,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
+@Deprecated
 public class ChangeToIfProposal {
 
     static void addChangeToIfProposal(Collection<ICompletionProposal> proposals,

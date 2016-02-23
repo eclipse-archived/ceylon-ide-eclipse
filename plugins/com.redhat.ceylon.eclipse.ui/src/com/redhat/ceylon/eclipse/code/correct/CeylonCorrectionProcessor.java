@@ -16,7 +16,6 @@ import static com.redhat.ceylon.eclipse.code.correct.AssignToIfIsProposal.addAss
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfNonemptyProposal.addAssignToIfNonemptyProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAssignToLocalProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToTryProposal.addAssignToTryProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ChangeToIfProposal.addChangeToIfProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertFunctionToGetterProposal.addConvertFunctionToGetterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertGetterToFunctionProposal.addConvertGetterToFunctionProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertIfElseToThenElse.addConvertToThenElseProposal;
@@ -1204,7 +1203,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             
 //            addAssignToFieldProposal(file, statement, declaration, proposals);
 
-            addChangeToIfProposal(proposals, doc, file, rootNode, statement);
+//            addChangeToIfProposal(proposals, doc, file, rootNode, statement);
             
             addConvertToDefaultConstructorProposal(proposals, doc, file, rootNode, statement);
             
