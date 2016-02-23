@@ -68,6 +68,7 @@ class ConvertThenElseToIfElse extends CorrectionProposal {
                 operation = assignOp.getRightTerm();
             } else if (statement instanceof Tree.SpecifierStatement) {
                 Tree.SpecifierStatement specifierStmt = (Tree.SpecifierStatement) statement;
+                if (specifierStmt.getRefinement()) return;
                 action = getTerm(doc, specifierStmt.getBaseMemberExpression()) + " = ";
                 operation = specifierStmt.getSpecifierExpression().getExpression();
             } else if (statement instanceof CustomTree.AttributeDeclaration) {
