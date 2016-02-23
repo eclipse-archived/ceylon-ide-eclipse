@@ -15,9 +15,9 @@ package com.redhat.ceylon.eclipse.code.preferences;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_RESOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.ide.common.util.toCeylonStringIterable_.toCeylonStringIterable;
 import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.io.File;
 import java.io.IOException;
@@ -129,7 +129,6 @@ import org.eclipse.ui.views.navigator.ResourceComparator;
 import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.common.config.CeylonConfig;
 import com.redhat.ceylon.common.config.CeylonConfigFinder;
-import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;

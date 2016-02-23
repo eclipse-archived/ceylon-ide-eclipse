@@ -68,9 +68,7 @@ import org.eclipse.jdt.core.dom {
     IBinding,
     ITypeBinding
 }
-import org.eclipse.ui.internal.keys.model {
-    ModelElement
-}
+
 shared interface EclipseJavaModelAware 
         satisfies IJavaModelAware<IProject, ITypeRoot, IJavaElement> {
     shared actual IJavaElement? toJavaElement(Declaration ceylonDeclaration, BaseProgressMonitor? monitor) {

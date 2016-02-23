@@ -18,7 +18,6 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.eclipse.java2ceylon.CorrectJ2C;
 import com.redhat.ceylon.ide.common.correct.IdeQuickFixManager;
 import com.redhat.ceylon.ide.common.correct.ImportProposals;

@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.common.Versions.JVM_BINARY_MAJOR_VERSION;
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.fullPath;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
@@ -34,8 +33,8 @@ import org.eclipse.swt.graphics.Point;
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
-import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
+import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;

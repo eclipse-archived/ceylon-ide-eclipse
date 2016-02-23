@@ -1,46 +1,45 @@
+import com.redhat.ceylon.compiler.typechecker.tree {
+    Tree
+}
+import com.redhat.ceylon.eclipse.code.correct {
+    EclipseDocumentChanges
+}
+import com.redhat.ceylon.eclipse.code.parse {
+    CeylonParseController
+}
+import com.redhat.ceylon.eclipse.util {
+    EditorUtil
+}
 import com.redhat.ceylon.ide.common.editor {
     AbstractTerminateStatementAction
 }
+import com.redhat.ceylon.ide.common.refactoring {
+    DefaultRegion
+}
+
+import java.util {
+    List
+}
+
+import org.antlr.runtime {
+    CommonToken
+}
+import org.eclipse.core.runtime {
+    NullProgressMonitor
+}
+import org.eclipse.jface.action {
+    Action
+}
 import org.eclipse.jface.text {
     IDocument
-}
-import org.eclipse.text.edits {
-    InsertEdit,
-    TextEdit
 }
 import org.eclipse.ltk.core.refactoring {
     TextChange,
     DocumentChange
 }
-import com.redhat.ceylon.eclipse.code.correct {
-    EclipseDocumentChanges
-}
-import com.redhat.ceylon.ide.common.typechecker {
-    LocalAnalysisResult
-}
-import com.redhat.ceylon.ide.common.refactoring {
-    DefaultRegion
-}
-import org.eclipse.jface.action {
-    Action
-}
-import com.redhat.ceylon.eclipse.util {
-    EditorUtil
-}
-import com.redhat.ceylon.eclipse.code.parse {
-    CeylonParseController
-}
-import org.eclipse.core.runtime {
-    NullProgressMonitor
-}
-import java.util {
-    List
-}
-import org.antlr.runtime {
-    CommonToken
-}
-import com.redhat.ceylon.compiler.typechecker.tree {
-    Tree
+import org.eclipse.text.edits {
+    InsertEdit,
+    TextEdit
 }
 
 class EclipseTerminateStatementAction(CeylonEditor editor)

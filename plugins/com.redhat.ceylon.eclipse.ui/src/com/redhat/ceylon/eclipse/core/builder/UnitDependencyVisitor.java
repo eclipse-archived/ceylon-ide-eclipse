@@ -11,9 +11,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
 
 import com.redhat.ceylon.compiler.java.loader.TypeFactory;

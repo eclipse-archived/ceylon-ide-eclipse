@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
@@ -59,8 +58,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
-import com.redhat.ceylon.ide.common.util.FindSubtypesVisitor;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.util.FindSubtypesVisitor;
 import com.redhat.ceylon.model.loader.ModelLoader;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;

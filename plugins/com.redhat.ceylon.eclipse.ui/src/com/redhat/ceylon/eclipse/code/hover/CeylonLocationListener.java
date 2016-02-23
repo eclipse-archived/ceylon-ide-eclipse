@@ -1,11 +1,10 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static java.lang.Integer.parseInt;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;

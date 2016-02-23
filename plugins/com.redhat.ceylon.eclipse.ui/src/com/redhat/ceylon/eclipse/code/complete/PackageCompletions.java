@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.common.Versions.JVM_BINARY_MAJOR_VERSION;
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.fullPath;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isModuleDescriptor;
@@ -8,6 +7,7 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumen
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackageName;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.importsJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getCompletionFont;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE;
@@ -16,7 +16,6 @@ import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isOverloadedVersion;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +41,8 @@ import org.eclipse.swt.graphics.Point;
 import com.redhat.ceylon.cmr.api.ModuleQuery;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
-import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
+import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;

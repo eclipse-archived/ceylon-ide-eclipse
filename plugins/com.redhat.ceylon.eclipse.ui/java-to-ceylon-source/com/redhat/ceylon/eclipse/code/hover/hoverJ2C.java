@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.hover;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControlCreator;
 

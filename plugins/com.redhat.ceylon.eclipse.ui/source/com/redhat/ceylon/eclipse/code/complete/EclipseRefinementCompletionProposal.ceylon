@@ -37,7 +37,6 @@ import java.lang {
 }
 
 import org.eclipse.core.resources {
-    IProject,
     IFile
 }
 import org.eclipse.jface.text {

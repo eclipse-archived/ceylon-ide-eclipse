@@ -7,12 +7,6 @@ import ceylon.interop.java {
     javaObjectArray
 }
 
-import com.redhat.ceylon.cmr.api {
-    RepositoryManager
-}
-import com.redhat.ceylon.eclipse.core.builder {
-    CeylonBuilder
-}
 import com.redhat.ceylon.eclipse.core.classpath {
     CeylonLanguageModuleContainer,
     CeylonProjectModulesContainer

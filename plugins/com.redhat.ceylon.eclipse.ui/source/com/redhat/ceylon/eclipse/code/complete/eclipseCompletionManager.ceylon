@@ -67,9 +67,6 @@ import java.util.regex {
     Pattern
 }
 
-import org.eclipse.core.resources {
-    IProject
-}
 import org.eclipse.core.runtime {
     NullProgressMonitor,
     IProgressMonitor

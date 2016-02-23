@@ -1,10 +1,9 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.common.Versions.JVM_BINARY_MAJOR_VERSION;
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.importsJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 import java.util.Collection;
 import java.util.List;

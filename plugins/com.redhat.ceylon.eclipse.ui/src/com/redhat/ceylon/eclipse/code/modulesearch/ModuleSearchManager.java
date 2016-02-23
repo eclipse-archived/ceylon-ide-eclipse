@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.code.modulesearch;
 
 import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
-import static com.redhat.ceylon.common.Versions.JVM_BINARY_MAJOR_VERSION;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleVersionQuery;
 
@@ -24,7 +23,6 @@ import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.common.Versions;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.modulesearch.ModuleNode;

@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.hover;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getModel;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getPreferences;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
@@ -12,10 +13,7 @@ import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK_DISABLED;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD_DISABLED;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
 
-
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;

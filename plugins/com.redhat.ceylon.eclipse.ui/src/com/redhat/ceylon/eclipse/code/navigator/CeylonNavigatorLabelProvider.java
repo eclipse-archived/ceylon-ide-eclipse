@@ -17,9 +17,9 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
+import org.eclipse.jdt.internal.ui.navigator.IExtensionStateConstants.Values;
 import org.eclipse.jdt.internal.ui.navigator.JavaNavigatorContentProvider;
 import org.eclipse.jdt.internal.ui.navigator.JavaNavigatorLabelProvider;
-import org.eclipse.jdt.internal.ui.navigator.IExtensionStateConstants.Values;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IMemento;
@@ -40,7 +40,6 @@ import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.model.cmr.Repository;
 
 public class CeylonNavigatorLabelProvider extends

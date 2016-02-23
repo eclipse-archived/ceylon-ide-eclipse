@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 
 import java.util.Collection;
 import java.util.List;

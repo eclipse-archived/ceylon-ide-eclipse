@@ -34,9 +34,9 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClassFile;
-import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
+import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.internal.core.JarEntryFile;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
@@ -106,7 +106,6 @@ import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.IResourceAware;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.ide.common.util.toJavaString_;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class EditorUtil {

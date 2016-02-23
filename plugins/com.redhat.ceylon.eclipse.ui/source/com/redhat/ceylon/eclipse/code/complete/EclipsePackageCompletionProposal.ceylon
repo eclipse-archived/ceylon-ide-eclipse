@@ -12,6 +12,9 @@ import com.redhat.ceylon.eclipse.ui {
     CeylonResources,
     CeylonPlugin
 }
+import com.redhat.ceylon.eclipse.util {
+    Highlights
+}
 import com.redhat.ceylon.ide.common.completion {
     ImportedModulePackageProposal
 }
@@ -25,9 +28,12 @@ import com.redhat.ceylon.model.typechecker.model {
     TypeDeclaration
 }
 
+import java.lang {
+    JCharacter=Character
+}
+
 import org.eclipse.core.resources {
-    IFile,
-    IProject
+    IFile
 }
 import org.eclipse.jface.text {
     IDocument,
@@ -43,6 +49,9 @@ import org.eclipse.jface.text.link {
     LinkedModeModel,
     ILinkedModeListener
 }
+import org.eclipse.jface.viewers {
+    StyledString
+}
 import org.eclipse.ltk.core.refactoring {
     TextChange
 }
@@ -53,15 +62,6 @@ import org.eclipse.swt.graphics {
 import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
-}
-import org.eclipse.jface.viewers {
-    StyledString
-}
-import com.redhat.ceylon.eclipse.util {
-    Highlights
-}
-import java.lang {
-    JCharacter=Character
 }
 
 class EclipseImportedModulePackageProposal(Integer offset, String prefix, String memberPackageSubname, Boolean withBody,

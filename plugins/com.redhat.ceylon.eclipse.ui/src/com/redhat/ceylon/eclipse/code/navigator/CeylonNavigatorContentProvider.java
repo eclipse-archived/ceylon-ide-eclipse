@@ -47,10 +47,6 @@ import org.eclipse.ui.progress.UIJob;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.impl.JDKRepository;
 import com.redhat.ceylon.cmr.impl.NodeUtils;
-import com.redhat.ceylon.common.config.Repositories;
-import com.redhat.ceylon.model.cmr.Repository;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
@@ -58,6 +54,8 @@ import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.Package;
 
 public class CeylonNavigatorContentProvider implements
         IPipelinedTreeContentProvider2, ICeylonModelListener {

@@ -14,7 +14,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
@@ -25,7 +24,6 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 
-import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.eclipse.code.open.FilteredItemsSelectionDialog;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
@@ -33,6 +31,7 @@ import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.IdeModule;
 import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
+import com.redhat.ceylon.model.typechecker.model.Module;
 
 public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
     

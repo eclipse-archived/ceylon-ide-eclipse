@@ -11,9 +11,6 @@ import java.lang.ref.SoftReference;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jdt.core.IClassFile;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;

@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSuppressedWarnings;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_PROJECT;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
@@ -13,10 +12,7 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.EnumSet;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
@@ -50,7 +46,6 @@ import com.redhat.ceylon.eclipse.code.preferences.CeylonRepoConfigBlock;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 
 public class NewProjectWizard extends NewElementWizard 

@@ -40,9 +40,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.PartInitException;
 
-import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
@@ -52,7 +49,9 @@ import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.IJavaModelAware;
-import com.redhat.ceylon.ide.common.model.IdeModelLoader;
+import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 
 public class CeylonOpenAction extends OpenAction {
 

@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.model.cmr.Repository;

@@ -23,7 +23,6 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
 import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;

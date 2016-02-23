@@ -17,12 +17,12 @@
  */
 package com.redhat.ceylon.eclipse.core.classpath;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.parseCeylonModel;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.ceylonSourceArchiveToJavaSourceArchive;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static java.util.Arrays.asList;
@@ -76,7 +76,6 @@ import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities;
-import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
