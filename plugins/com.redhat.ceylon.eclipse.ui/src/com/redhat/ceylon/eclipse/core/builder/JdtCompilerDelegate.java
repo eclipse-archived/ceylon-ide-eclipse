@@ -10,9 +10,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import com.redhat.ceylon.javax.tools.JavaFileManager;
-import com.redhat.ceylon.javax.tools.JavaFileObject;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.JavaModelException;
@@ -23,17 +20,12 @@ import com.redhat.ceylon.compiler.java.loader.CeylonEnter;
 import com.redhat.ceylon.compiler.java.loader.CeylonModelLoader;
 import com.redhat.ceylon.compiler.java.tools.CeylonPhasedUnit;
 import com.redhat.ceylon.compiler.java.tools.LanguageCompiler.CompilerDelegate;
-import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisError;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
-import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.ModuleImport;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.ModelState;
@@ -41,12 +33,19 @@ import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
 import com.redhat.ceylon.eclipse.core.model.JDTModule;
 import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
 import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.javax.tools.JavaFileManager;
+import com.redhat.ceylon.javax.tools.JavaFileObject;
 import com.redhat.ceylon.langtools.tools.javac.file.JavacFileManager;
 import com.redhat.ceylon.langtools.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.redhat.ceylon.langtools.tools.javac.util.Context;
 import com.redhat.ceylon.langtools.tools.javac.util.Names;
 import com.redhat.ceylon.langtools.tools.javac.util.Position;
 import com.redhat.ceylon.langtools.tools.javac.util.Position.LineMap;
+import com.redhat.ceylon.model.loader.AbstractModelLoader;
+import com.redhat.ceylon.model.typechecker.model.Module;
+import com.redhat.ceylon.model.typechecker.model.ModuleImport;
+import com.redhat.ceylon.model.typechecker.model.Unit;
+import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
 final class JdtCompilerDelegate implements CompilerDelegate {
     private final IProject project;
