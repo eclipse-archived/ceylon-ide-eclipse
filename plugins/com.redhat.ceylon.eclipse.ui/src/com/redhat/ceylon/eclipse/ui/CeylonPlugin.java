@@ -74,8 +74,6 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     };
     private static final String[] RUNTIME_LIBRARIES = new String[] {
         "ceylon.bootstrap-"+Versions.CEYLON_VERSION_NUMBER+".car",
-        "com.redhat.ceylon.compiler.java-"+Versions.CEYLON_VERSION_NUMBER+".jar",
-        "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "com.redhat.ceylon.module-resolver-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "com.redhat.ceylon.common-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "com.redhat.ceylon.model-"+Versions.CEYLON_VERSION_NUMBER+".jar",
