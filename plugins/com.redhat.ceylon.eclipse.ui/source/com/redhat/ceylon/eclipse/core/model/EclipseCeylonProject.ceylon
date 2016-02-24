@@ -219,9 +219,13 @@ shared class EclipseCeylonProject(ideArtifact)
             then {}
             else (withJavaModel {
                 do() =>
-                    javaProject.rawClasspath.iterable.coalesced.filter((entry) => isCeylonSourceEntry(entry)).map((entry) => ideArtifact.findMember(entry.path.makeRelativeTo(ideArtifact.fullPath)))
-                    .narrow<IFolder>()
-                    .filter((resource) => resource.\iexists());
+                    javaProject.rawClasspath.iterable.coalesced
+                        .filter((entry) => isCeylonSourceEntry(entry))
+                        .map { 
+                            IResource? collecting(IClasspathEntry entry) => 
+                                    ideArtifact.findMember(entry.path.makeRelativeTo(ideArtifact.fullPath));
+                        }.narrow<IFolder>()
+                        .filter((resource) => resource.\iexists());
             } else {});
 
     shared actual {IFolder*} resourceNativeFolders =>
@@ -296,8 +300,6 @@ shared class EclipseCeylonProject(ideArtifact)
 
     shared actual Boolean compileToJs => CeylonBuilder.compileToJs(ideArtifact);
     shared actual Boolean compileToJava => CeylonBuilder.compileToJava(ideArtifact);
-    
-    shared actual ModuleDependencies moduleDependencies => CeylonBuilder.getModuleDependenciesForProject(ideArtifact);
     
     shared actual void setPackageForNativeFolder(IFolder folder, WeakReference<Package> p) {
         folder.setSessionProperty(nativeFolderProperties.packageModel, p);
