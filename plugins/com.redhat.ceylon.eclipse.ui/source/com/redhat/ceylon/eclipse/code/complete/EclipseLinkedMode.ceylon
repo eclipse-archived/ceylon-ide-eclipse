@@ -21,7 +21,9 @@ import org.eclipse.jface.text.contentassist {
 }
 import org.eclipse.jface.text.link {
     LinkedModeModel,
-    ProposalPosition
+    ProposalPosition,
+    LinkedPositionGroup,
+    LinkedPosition
 }
 
 shared interface EclipseLinkedModeSupport satisfies LinkedModeSupport<LinkedModeModel, IDocument, ICompletionProposal> {
@@ -32,10 +34,21 @@ shared interface EclipseLinkedModeSupport satisfies LinkedModeSupport<LinkedMode
         LinkedMode.addLinkedPosition(lm, linkedPosition);
     }
 
-    shared actual void installLinkedMode(IDocument doc, LinkedModeModel lm, Object owner, Integer exitSeqNumber, Integer exitPosition) {
+    shared actual void addEditableRegions(LinkedModeModel lm, IDocument doc, Integer[3]+ positions) {
+        value group = LinkedPositionGroup();
+        
+        for (pos in positions) {
+            value [offset, length, exitSeq] = pos;
+            group.addPosition(LinkedPosition(doc, offset, length, exitSeq));
+        }
+
+        lm.addGroup(group);
+    }
+    
+    shared actual default void installLinkedMode(IDocument doc, LinkedModeModel lm, Object owner, Integer exitSeqNumber, Integer exitPosition) {
         assert(is CeylonEditor ceylonEditor = EditorUtil.currentEditor);
         LinkedMode.installLinkedMode(ceylonEditor, doc, lm, owner, LinkedMode.NullExitPolicy(), exitSeqNumber, exitPosition);
     }
     
-    shared actual LinkedModeModel newLinkedMode() => LinkedModeModel();
+    shared actual default LinkedModeModel newLinkedMode() => LinkedModeModel();
 }

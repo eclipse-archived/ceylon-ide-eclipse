@@ -27,6 +27,7 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
+@Deprecated
 class ConvertToClassProposal extends AbstractLinkedMode implements ICompletionProposal {
 
     private final Tree.ObjectDefinition node;

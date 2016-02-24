@@ -113,8 +113,6 @@ object eclipseQuickFixManager
         Tree.ImportMemberOrType? imp, Tree.OperatorExpression? oe,
         Integer currentOffset) {
         
-        convertThenElseToIfElse.addConvertToIfElseProposal(data, file, doc, statement);
-        
         if (is Tree.BinaryOperatorExpression oe) {
             operatorQuickFix.addReverseOperatorProposal(data, file, oe);
             operatorQuickFix.addInvertOperatorProposal(data, file, oe);
@@ -124,11 +122,21 @@ object eclipseQuickFixManager
         
         verboseRefinementQuickFix.addVerboseRefinementProposal(data, file, statement);
         verboseRefinementQuickFix.addShortcutRefinementProposal(data, file, statement);
+        
         specifyTypeQuickFix.addTypingProposals(data, file, declaration);
+        
         eclipseMiscQuickFix.addAnonymousFunctionProposals(data, file);
+        
         eclipseMiscQuickFix.addDeclarationProposals(data, file, declaration, currentOffset);
+        
         assignToFieldQuickFix.addAssignToFieldProposal(data, file, statement, declaration);
+        
         changeToIfQuickFix.addChangeToIfProposal(data, file, statement);
+        
         convertToDefaultConstructorQuickFix.addConvertToDefaultConstructorProposal(data, file, statement);
+
+        convertThenElseToIfElse.addConvertToIfElseProposal(data, file, doc, statement);
+        
+        convertToClassQuickFix.addConvertToClassProposal(data, declaration);
     }
 }
