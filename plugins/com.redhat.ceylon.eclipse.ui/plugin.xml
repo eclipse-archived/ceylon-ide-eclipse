@@ -3280,7 +3280,7 @@
       <launchDelegate
             delegate="com.redhat.ceylon.eclipse.core.launch.CeylonAwareJavaLaunchDelegate"
             id="com.redhat.ceylon.eclipse.ui.launching.javaApplicationLauncher"
-            modes="debug"
+            modes="run,debug"
             delegateDescription="The Eclipse JDT Java Application Launcher supports running and debugging local Java applications that contain or use Ceylon code."
             name="Ceylon-aware Eclipse JDT"
             type="org.eclipse.jdt.launching.localJavaApplication"/>
@@ -3294,7 +3294,7 @@
       <launchDelegate
             delegate="com.redhat.ceylon.eclipse.core.launch.CeylonAwareJUnitLaunchConfigurationDelegate"
             id="com.redhat.ceylon.eclipse.ui.launching.junitLauncher"
-            modes="debug"
+            modes="run,debug"
             delegateDescription="The Eclipse JUnit Launcher supports running and debugging JUnit tests and test suites that contain or use Ceylon code."
             name="Ceylon-aware Eclipse JUnit"
             type="org.eclipse.jdt.junit.launchconfig"/>
