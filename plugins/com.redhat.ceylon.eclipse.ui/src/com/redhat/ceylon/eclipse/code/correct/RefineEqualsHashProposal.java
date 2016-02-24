@@ -102,18 +102,18 @@ class RefineEqualsHashProposal
     @Override
     public void apply(IDocument doc) {
         try {
-            refineFormalMembers(doc);
+            refinEqualsHash(doc);
         } 
         catch (ExecutionException e) {
             e.printStackTrace();
         }
     }
     
-    private void refineFormalMembers(IDocument document) 
+    private void refinEqualsHash(IDocument document) 
             throws ExecutionException {
         if (rootNode==null) return;
         TextChange change = 
-                new DocumentChange("Refine Members", 
+                new DocumentChange("Refine Equals and Hash", 
                         document);
         change.setEdit(new MultiTextEdit());
         //TODO: copy/pasted from CeylonQuickFixAssistant
@@ -190,7 +190,7 @@ class RefineEqualsHashProposal
                 (ClassOrInterface) 
                     node.getScope();
         Unit unit = node.getUnit();
-        Set<String> ambiguousNames = new HashSet<String>();
+//        Set<String> ambiguousNames = new HashSet<String>();
         Declaration equals = 
                 ci.getMember("equals", null, false);
         Declaration hash = 
@@ -202,7 +202,7 @@ class RefineEqualsHashProposal
                         appendRefinementText(isInterface, 
                                 indent, result, ci, unit, d);
                         importSignatureTypes(d, rootNode, already);
-                        ambiguousNames.add(d.getName());
+//                        ambiguousNames.add(d.getName());
                     }
                 }
                 catch (Exception e) {
@@ -273,8 +273,7 @@ class RefineEqualsHashProposal
         if (node!=null) {
             Scope scope = node.getScope();
             if (scope instanceof ClassOrInterface) {
-                ClassOrInterface ci = 
-                        (ClassOrInterface) scope;
+                ClassOrInterface ci = (ClassOrInterface) scope;
                 String name = ci.getName();
                 if (name==null) {
                     return;
@@ -285,7 +284,37 @@ class RefineEqualsHashProposal
                 else {
                     name = "'" + name + "'";
                 }
-                String desc = "Refine 'equals()' and 'hash' of " + name;
+                
+                Declaration equals = 
+                        ci.getMember("equals", null, false);
+                Declaration hash = 
+                        ci.getMember("hash", null, false);
+                boolean hasEquals = true;
+                for (Declaration e: overloads(equals)) {
+                    if (ci.isInheritedFromSupertype(e)) {
+                        hasEquals = false;
+                    }
+                }
+                boolean hasHash = true;
+                for (Declaration h: overloads(hash)) {
+                    if (ci.isInheritedFromSupertype(h)) {
+                        hasHash = false;
+                    }
+                }
+                
+                String desc;
+                if (hasEquals && hasHash) {
+                    return;
+                }
+                else if (hasEquals) {
+                    desc = "Refine 'hash' attribute of " + name;
+                }
+                else if (hasHash) {
+                    desc = "Refine 'equals()' method of " + name;
+                }
+                else {
+                    desc = "Refine 'equals()' and 'hash' of " + name;
+                }
                 proposals.add(new RefineEqualsHashProposal(node, rootNode, desc));
             }
         }
