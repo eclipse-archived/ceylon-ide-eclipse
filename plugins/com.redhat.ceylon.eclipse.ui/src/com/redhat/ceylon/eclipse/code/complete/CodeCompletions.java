@@ -1191,15 +1191,26 @@ public class CodeCompletions {
 
     private static void appendHashImpl(Unit unit, String indent, 
             StringBuilder result, ClassOrInterface ci) {
-        result.append(" {")
-            .append(indent).append(getDefaultIndent())
-            .append("variable value hash = 1;")
-            .append(indent).append(getDefaultIndent());
-        String ind = indent + getDefaultIndent();
-        appendMembersToHash(unit, ind, result, ci);
-        result.append("return hash;")
-            .append(indent)
-            .append("}");
+        if (hasUniqueMemberForHash(unit, ci)) {
+            Value value = getUniqueMemberForHash(unit, ci);
+            result.append(" => ")
+                .append(value.getName());
+            if (!value.getType().isInteger()) {
+                result.append(".hash");
+            }
+            result.append(";");
+        }
+        else {
+            result.append(" {")
+                .append(indent).append(getDefaultIndent())
+                .append("variable value hash = 1;")
+                .append(indent).append(getDefaultIndent());
+            String ind = indent + getDefaultIndent();
+            appendMembersToHash(unit, ind, result, ci);
+            result.append("return hash;")
+                .append(indent)
+                .append("}");
+        }
     }
 
     private static void appendEqualsImpl(Unit unit, String indent,
@@ -1271,16 +1282,49 @@ public class CodeCompletions {
             if (m instanceof Value && 
                     !isObjectField(m) && !isConstructor(m)) {
                 Value value = (Value) m;
-                if (!value.isTransient()) {
-                    if (!nt.isSubtypeOf(value.getType())) {
-                        result.append("hash = 31*hash + ")
-                            .append(value.getName())
-                            .append(".hash;")
-                            .append(indent);
+                if (!value.isTransient() && 
+                        !nt.isSubtypeOf(value.getType())) {
+                    result.append("hash = 31*hash + ")
+                            .append(value.getName());
+                    if (!value.getType().isInteger()) {
+                        result.append(".hash");
                     }
+                    result.append(";").append(indent);
                 }
             }
         }
+    }
+
+    private static boolean hasUniqueMemberForHash(Unit unit,
+            ClassOrInterface ci) {
+        Type nt = unit.getNullValueDeclaration().getType();
+        for (Declaration m: ci.getMembers()) {
+            if (m instanceof Value && 
+                    !isObjectField(m) && !isConstructor(m)) {
+                Value value = (Value) m;
+                if (!value.isTransient() && 
+                        !nt.isSubtypeOf(value.getType())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static Value getUniqueMemberForHash(Unit unit,
+            ClassOrInterface ci) {
+        Type nt = unit.getNullValueDeclaration().getType();
+        for (Declaration m: ci.getMembers()) {
+            if (m instanceof Value && 
+                    !isObjectField(m) && !isConstructor(m)) {
+                Value value = (Value) m;
+                if (!value.isTransient() && 
+                        !nt.isSubtypeOf(value.getType())) {
+                    return value;
+                }
+            }
+        }
+        return null;
     }
 
     private static String extraIndent(String indent, boolean containsNewline) {
