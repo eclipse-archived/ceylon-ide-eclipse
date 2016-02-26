@@ -30,6 +30,7 @@ import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
+@Deprecated
 class AddModuleImportProposal 
         implements ICompletionProposal, 
                    ICompletionProposalExtension6 {

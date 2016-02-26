@@ -349,6 +349,7 @@ public class PackageCompletions {
         }
     }
 
+    @Deprecated
     static void addPackageCompletions(CeylonParseController cpc, 
             int offset, String prefix, Tree.ImportPath path, Node node, 
             List<ICompletionProposal> result, boolean withBody,
@@ -358,6 +359,7 @@ public class PackageCompletions {
                 withBody, node.getUnit(), cpc, result, monitor);
     }
 
+    @Deprecated
     private static void addPackageCompletions(
             int offset, String prefix,
             String fullPath, boolean withBody, 
@@ -432,6 +434,7 @@ public class PackageCompletions {
         }
     }
     
+    @Deprecated
     static void addPackageDescriptorCompletion(CeylonParseController cpc, 
             int offset, String prefix, List<ICompletionProposal> result) {
         if (!"package".startsWith(prefix)) return; 
@@ -442,6 +445,7 @@ public class PackageCompletions {
         }
     }    
 
+    @Deprecated
     static void addCurrentPackageNameCompletion(CeylonParseController cpc, 
             int offset, String prefix, List<ICompletionProposal> result) {
         IFile file = cpc.getProject().getFile(cpc.getPath());

@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMake
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeFormalDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeSharedDecProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.addMakeVariableDecProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AddParameterProposal.addParameterProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AddThrowsAnnotationProposal.addThrowsAnnotationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssertExistsDeclarationProposal.addAssertExistsDeclarationProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertExistsProposal.addAssignToAssertExistsProposal;
@@ -25,13 +24,10 @@ import static com.redhat.ceylon.eclipse.code.correct.ConvertSwitchToIfProposal.a
 import static com.redhat.ceylon.eclipse.code.correct.ConvertSwitchToIfProposal.addConvertSwitchToIfProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToBlockProposal.addConvertToBlockProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToConcatenationProposal.addConvertToConcatenationProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ConvertToGetterProposal.addConvertToGetterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToInterpolationProposal.addConvertToInterpolationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToNamedArgumentsProposal.addConvertToNamedArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToPositionalArgumentsProposal.addConvertToPositionalArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToSpecifierProposal.addConvertToSpecifierProposal;
-import static com.redhat.ceylon.eclipse.code.correct.CreateProposal.addCreateProposals;
-import static com.redhat.ceylon.eclipse.code.correct.CreateTypeParameterProposal.addCreateTypeParameterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.DestructureProposal.addDestructureProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExpandTypeProposal.addExpandTypeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.FillInArgumentNameProposal.addFillInArgumentNameProposal;
@@ -39,9 +35,6 @@ import static com.redhat.ceylon.eclipse.code.correct.InvertIfElseProposal.addInv
 import static com.redhat.ceylon.eclipse.code.correct.JoinDeclarationProposal.addJoinDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.JoinIfStatementsProposal.addJoinIfStatementsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.MoveDirProposal.addMoveDirProposal;
-import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addInvertOperatorProposal;
-import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addReverseOperatorProposal;
-import static com.redhat.ceylon.eclipse.code.correct.OperatorProposals.addSwapBinaryOperandsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.PrintProposal.addPrintProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RefineEqualsHashProposal.addRefineEqualsHashProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RefineFormalMembersProposal.addRefineFormalMembersProposal;
@@ -58,31 +51,14 @@ import static com.redhat.ceylon.eclipse.core.builder.MarkerCreator.ERROR_CODE_KE
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.correctJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
 import static com.redhat.ceylon.eclipse.util.Nodes.findArgument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
-import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 import static com.redhat.ceylon.eclipse.util.Nodes.findImport;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.findOperator;
 import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
-
-/*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *******************************************************************************/
-
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
-import static java.util.Collections.singletonList;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.lang.reflect.InvocationTargetException;
@@ -117,8 +93,6 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
-import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -142,12 +116,6 @@ import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.MarkerUtils;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.NamedArgumentList;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ParameterList;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypeParameter;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class CeylonCorrectionProcessor extends QuickAssistAssistant 
         implements IQuickAssistProcessor {
@@ -836,297 +804,297 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
-    @Deprecated
-    // see ChangeToQuickFix
-	private void changeToFunction(IFile file, 
-			Tree.CompilationUnit rootNode, Node node, 
-			Collection<ICompletionProposal> proposals) {
-		Tree.Declaration dec = 
-				findDeclarationWithBody(rootNode, node);
-		if (dec instanceof Tree.AnyMethod) {
-			Tree.Return ret = (Tree.Return) node;
-			Tree.AnyMethod m = (Tree.AnyMethod) dec;
-			Tree.Type type = m.getType();
-			if (type instanceof Tree.VoidModifier) {
-				TextFileChange tfc = 
-						new TextFileChange("Change To Function", 
-								file);
-				Unit unit = rootNode.getUnit();
-				Type rt = 
-						ret.getExpression()
-							.getTypeModel();
-				tfc.setEdit(new ReplaceEdit(
-						type.getStartIndex(), 
-						type.getDistance(), 
-						isTypeUnknown(rt) ? "function" :
-							rt.asSourceCodeString(unit)));
-				proposals.add(new CorrectionProposal(
-						"make function non-'void'", tfc, null));
-			}
-		}
-	}
+//    @Deprecated
+//    // see ChangeToQuickFix
+//	private void changeToFunction(IFile file, 
+//			Tree.CompilationUnit rootNode, Node node, 
+//			Collection<ICompletionProposal> proposals) {
+//		Tree.Declaration dec = 
+//				findDeclarationWithBody(rootNode, node);
+//		if (dec instanceof Tree.AnyMethod) {
+//			Tree.Return ret = (Tree.Return) node;
+//			Tree.AnyMethod m = (Tree.AnyMethod) dec;
+//			Tree.Type type = m.getType();
+//			if (type instanceof Tree.VoidModifier) {
+//				TextFileChange tfc = 
+//						new TextFileChange("Change To Function", 
+//								file);
+//				Unit unit = rootNode.getUnit();
+//				Type rt = 
+//						ret.getExpression()
+//							.getTypeModel();
+//				tfc.setEdit(new ReplaceEdit(
+//						type.getStartIndex(), 
+//						type.getDistance(), 
+//						isTypeUnknown(rt) ? "function" :
+//							rt.asSourceCodeString(unit)));
+//				proposals.add(new CorrectionProposal(
+//						"make function non-'void'", tfc, null));
+//			}
+//		}
+//	}
 
-	@Deprecated
-	// see ChangeToQuickFix
-	private void changeToVoid(IFile file, 
-			Tree.CompilationUnit rootNode, Node node, 
-			Collection<ICompletionProposal> proposals) {
-		Tree.Declaration dec = 
-				findDeclarationWithBody(rootNode, node);
-		if (dec instanceof Tree.AnyMethod) {
-			Tree.AnyMethod m = (Tree.AnyMethod) dec;
-			Tree.Type type = m.getType();
-			if (!(type instanceof Tree.VoidModifier)) {
-				TextFileChange tfc = 
-						new TextFileChange("Change To Void", 
-								file);
-				tfc.setEdit(new ReplaceEdit(
-						type.getStartIndex(), 
-						type.getDistance(), 
-						"void"));
-				proposals.add(new CorrectionProposal(
-						"make function 'void'", tfc, null));
-			}
-		}
-	}
+//	@Deprecated
+//	// see ChangeToQuickFix
+//	private void changeToVoid(IFile file, 
+//			Tree.CompilationUnit rootNode, Node node, 
+//			Collection<ICompletionProposal> proposals) {
+//		Tree.Declaration dec = 
+//				findDeclarationWithBody(rootNode, node);
+//		if (dec instanceof Tree.AnyMethod) {
+//			Tree.AnyMethod m = (Tree.AnyMethod) dec;
+//			Tree.Type type = m.getType();
+//			if (!(type instanceof Tree.VoidModifier)) {
+//				TextFileChange tfc = 
+//						new TextFileChange("Change To Void", 
+//								file);
+//				tfc.setEdit(new ReplaceEdit(
+//						type.getStartIndex(), 
+//						type.getDistance(), 
+//						"void"));
+//				proposals.add(new CorrectionProposal(
+//						"make function 'void'", tfc, null));
+//			}
+//		}
+//	}
 
-	@Deprecated
-	// See AddNamedArgumentQuickFix
-    private void addNamedArgumentsProposal(IFile file,
-            Tree.CompilationUnit rootNode,
-            Collection<ICompletionProposal> proposals, 
-            Node node) {
-        if (node instanceof Tree.NamedArgumentList) {
-            TextFileChange tfc = 
-                    new TextFileChange("Add Named Arguments", 
-                            file);
-            IDocument doc = EditorUtil.getDocument(tfc);
-            tfc.setEdit(new MultiTextEdit());
-            Tree.NamedArgumentList nal =
-                    (Tree.NamedArgumentList) node;
-            NamedArgumentList args = 
-                    nal.getNamedArgumentList();
-            int start = nal.getStartIndex();
-            int stop = nal.getEndIndex()-1;
-            int loc = start+1;
-            String sep = " ";
-            List<Tree.NamedArgument> nas = 
-                    nal.getNamedArguments();
-            if (!nas.isEmpty()) {
-                Tree.NamedArgument last = 
-                        nas.get(nas.size()-1);
-                loc = last.getEndIndex();
-                try {
-                    int firstLine = 
-                            doc.getLineOfOffset(start);
-                    int lastLine = 
-                            doc.getLineOfOffset(stop);
-                    if (firstLine!=lastLine) {
-                        sep = utilJ2C().indents().getDefaultLineDelimiter(doc) +
-                                utilJ2C().indents().getIndent(last, doc);
-                    }
-                }
-                catch (BadLocationException e) {
-                    e.printStackTrace();
-                }
-            }
-            ParameterList params = args.getParameterList();
-            String result = null;
-            boolean multipleResults = false;
-            for (Parameter param: params.getParameters()) {
-                if (!param.isDefaulted() &&
-                    !args.getArgumentNames()
-                        .contains(param.getName())) {
-                    multipleResults = result!=null;
-                    result = param.getName();
-                    tfc.addEdit(new InsertEdit(loc, 
-                            sep + param.getName() + 
-                            " = nothing;"));
-                }
-            }
-            if (loc==stop) {
-                tfc.addEdit(new InsertEdit(stop, " "));
-            }
-            String name = multipleResults ?
-                "Fill in missing named arguments" :
-                "Fill in missing named argument '" 
-                    + result + "'";
-            proposals.add(new CorrectionProposal(name, tfc, 
-                    new Region(loc, 0)));
-        }
-    }
+//	@Deprecated
+//	// See AddNamedArgumentQuickFix
+//    private void addNamedArgumentsProposal(IFile file,
+//            Tree.CompilationUnit rootNode,
+//            Collection<ICompletionProposal> proposals, 
+//            Node node) {
+//        if (node instanceof Tree.NamedArgumentList) {
+//            TextFileChange tfc = 
+//                    new TextFileChange("Add Named Arguments", 
+//                            file);
+//            IDocument doc = EditorUtil.getDocument(tfc);
+//            tfc.setEdit(new MultiTextEdit());
+//            Tree.NamedArgumentList nal =
+//                    (Tree.NamedArgumentList) node;
+//            NamedArgumentList args = 
+//                    nal.getNamedArgumentList();
+//            int start = nal.getStartIndex();
+//            int stop = nal.getEndIndex()-1;
+//            int loc = start+1;
+//            String sep = " ";
+//            List<Tree.NamedArgument> nas = 
+//                    nal.getNamedArguments();
+//            if (!nas.isEmpty()) {
+//                Tree.NamedArgument last = 
+//                        nas.get(nas.size()-1);
+//                loc = last.getEndIndex();
+//                try {
+//                    int firstLine = 
+//                            doc.getLineOfOffset(start);
+//                    int lastLine = 
+//                            doc.getLineOfOffset(stop);
+//                    if (firstLine!=lastLine) {
+//                        sep = utilJ2C().indents().getDefaultLineDelimiter(doc) +
+//                                utilJ2C().indents().getIndent(last, doc);
+//                    }
+//                }
+//                catch (BadLocationException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            ParameterList params = args.getParameterList();
+//            String result = null;
+//            boolean multipleResults = false;
+//            for (Parameter param: params.getParameters()) {
+//                if (!param.isDefaulted() &&
+//                    !args.getArgumentNames()
+//                        .contains(param.getName())) {
+//                    multipleResults = result!=null;
+//                    result = param.getName();
+//                    tfc.addEdit(new InsertEdit(loc, 
+//                            sep + param.getName() + 
+//                            " = nothing;"));
+//                }
+//            }
+//            if (loc==stop) {
+//                tfc.addEdit(new InsertEdit(stop, " "));
+//            }
+//            String name = multipleResults ?
+//                "Fill in missing named arguments" :
+//                "Fill in missing named argument '" 
+//                    + result + "'";
+//            proposals.add(new CorrectionProposal(name, tfc, 
+//                    new Region(loc, 0)));
+//        }
+//    }
 
-    @Deprecated
-    // see SwitchQuickFix
-    private void addElseProposal(IFile file, 
-            Tree.CompilationUnit rootNode,
-            Collection<ICompletionProposal> proposals, 
-            Node node) {
-        if (node instanceof Tree.SwitchClause) {
-            Tree.Statement st = 
-                    findStatement(rootNode, node);
-            if (st instanceof Tree.SwitchStatement) {
-                int offset = st.getEndIndex();
-                TextFileChange tfc = 
-                        new TextFileChange("Add Else", file);
-                IDocument doc = getDocument(tfc);
-                String text = 
-                        utilJ2C().indents().getDefaultLineDelimiter(doc) +
-                        utilJ2C().indents().getIndent(node, doc) +
-                        "else {}";
-                tfc.setEdit(new InsertEdit(offset, text));
-                Region selection =
-                        new Region(offset+text.length()-1, 0);
-                proposals.add(new CorrectionProposal(
-                        "Add 'else' clause", 
-                        tfc, selection));
-            }
-            //TODO: else handle switch *expressions* 
-        }
-    }
+//    @Deprecated
+//    // see SwitchQuickFix
+//    private void addElseProposal(IFile file, 
+//            Tree.CompilationUnit rootNode,
+//            Collection<ICompletionProposal> proposals, 
+//            Node node) {
+//        if (node instanceof Tree.SwitchClause) {
+//            Tree.Statement st = 
+//                    findStatement(rootNode, node);
+//            if (st instanceof Tree.SwitchStatement) {
+//                int offset = st.getEndIndex();
+//                TextFileChange tfc = 
+//                        new TextFileChange("Add Else", file);
+//                IDocument doc = getDocument(tfc);
+//                String text = 
+//                        utilJ2C().indents().getDefaultLineDelimiter(doc) +
+//                        utilJ2C().indents().getIndent(node, doc) +
+//                        "else {}";
+//                tfc.setEdit(new InsertEdit(offset, text));
+//                Region selection =
+//                        new Region(offset+text.length()-1, 0);
+//                proposals.add(new CorrectionProposal(
+//                        "Add 'else' clause", 
+//                        tfc, selection));
+//            }
+//            //TODO: else handle switch *expressions* 
+//        }
+//    }
 
-    @Deprecated
-    // see SwitchQuickFix
-    private void addCasesProposal(IFile file, 
-            Tree.CompilationUnit rootNode,
-            Collection<ICompletionProposal> proposals, 
-            Node node) {
-        if (node instanceof Tree.SwitchClause) {
-            Tree.SwitchClause sc = (Tree.SwitchClause) node;
-            Tree.Statement st = 
-                    findStatement(rootNode, node);
-            if (st instanceof Tree.SwitchStatement) {
-                //TODO: handle switch expressions!
-                Tree.SwitchStatement ss = 
-                        (Tree.SwitchStatement) st;
-                Tree.Expression e = 
-                        sc.getSwitched()
-                            .getExpression();
-                if (e!=null) {
-                    Type type = e.getTypeModel();
-                    if (type!=null) {
-                        Tree.SwitchCaseList scl = 
-                                ss.getSwitchCaseList();
-                        for (Tree.CaseClause cc: 
-                                scl.getCaseClauses()) {
-                            Tree.CaseItem item = 
-                                    cc.getCaseItem();
-                            if (item instanceof Tree.IsCase) {
-                                Tree.IsCase ic = 
-                                        (Tree.IsCase) item;
-                                Tree.Type tn = ic.getType();
-                                if (tn!=null) {
-                                    Type t = 
-                                            tn.getTypeModel();
-                                    if (!isTypeUnknown(t)) {
-                                        type = type.minus(t);
-                                    }
-                                }
-                            }
-                            else if (item instanceof Tree.MatchCase) {
-                                Tree.MatchCase ic = 
-                                        (Tree.MatchCase) item;
-                                Tree.ExpressionList il = 
-                                        ic.getExpressionList();
-                                for (Tree.Expression ex: 
-                                    il.getExpressions()) {
-                                    if (ex!=null) {
-                                        Type t = ex.getTypeModel();
-                                        if (t!=null && 
-                                                !isTypeUnknown(t)) {
-                                            type = type.minus(t);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        TextFileChange tfc = 
-                                new TextFileChange(
-                                        "Add Cases", file);
-                        IDocument doc = getDocument(tfc);
-                        String text = "";
-                        List<Type> list;
-                        List<Type> cts = type.getCaseTypes();
-                        if (cts!=null) {
-                            list = cts;
-                        }
-                        else {
-                            list = singletonList(type);
-                        }
-                        for (Type pt: list) {
-                            String is = 
-                                    pt.getDeclaration()
-                                        .isAnonymous() ? 
-                                    "" : "is ";
-                            Unit unit = rootNode.getUnit();
-                        text += utilJ2C().indents().getDefaultLineDelimiter(doc) +
-                                utilJ2C().indents().getIndent(node, doc) +
-                                    "case (" +
-                                    is + 
-                                    pt.asString(unit) +
-                                    ") {}"; 
-                        }
-                        int offset = ss.getEndIndex();
-                        tfc.setEdit(new InsertEdit(offset, text));
-                        proposals.add(new CorrectionProposal(
-                                "Add missing 'case' clauses", tfc, 
-                                new Region(offset+text.length()-1, 0)));
-                    }
-                }
-            }
-        }        
-    }
+//    @Deprecated
+//    // see SwitchQuickFix
+//    private void addCasesProposal(IFile file, 
+//            Tree.CompilationUnit rootNode,
+//            Collection<ICompletionProposal> proposals, 
+//            Node node) {
+//        if (node instanceof Tree.SwitchClause) {
+//            Tree.SwitchClause sc = (Tree.SwitchClause) node;
+//            Tree.Statement st = 
+//                    findStatement(rootNode, node);
+//            if (st instanceof Tree.SwitchStatement) {
+//                //TODO: handle switch expressions!
+//                Tree.SwitchStatement ss = 
+//                        (Tree.SwitchStatement) st;
+//                Tree.Expression e = 
+//                        sc.getSwitched()
+//                            .getExpression();
+//                if (e!=null) {
+//                    Type type = e.getTypeModel();
+//                    if (type!=null) {
+//                        Tree.SwitchCaseList scl = 
+//                                ss.getSwitchCaseList();
+//                        for (Tree.CaseClause cc: 
+//                                scl.getCaseClauses()) {
+//                            Tree.CaseItem item = 
+//                                    cc.getCaseItem();
+//                            if (item instanceof Tree.IsCase) {
+//                                Tree.IsCase ic = 
+//                                        (Tree.IsCase) item;
+//                                Tree.Type tn = ic.getType();
+//                                if (tn!=null) {
+//                                    Type t = 
+//                                            tn.getTypeModel();
+//                                    if (!isTypeUnknown(t)) {
+//                                        type = type.minus(t);
+//                                    }
+//                                }
+//                            }
+//                            else if (item instanceof Tree.MatchCase) {
+//                                Tree.MatchCase ic = 
+//                                        (Tree.MatchCase) item;
+//                                Tree.ExpressionList il = 
+//                                        ic.getExpressionList();
+//                                for (Tree.Expression ex: 
+//                                    il.getExpressions()) {
+//                                    if (ex!=null) {
+//                                        Type t = ex.getTypeModel();
+//                                        if (t!=null && 
+//                                                !isTypeUnknown(t)) {
+//                                            type = type.minus(t);
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                        TextFileChange tfc = 
+//                                new TextFileChange(
+//                                        "Add Cases", file);
+//                        IDocument doc = getDocument(tfc);
+//                        String text = "";
+//                        List<Type> list;
+//                        List<Type> cts = type.getCaseTypes();
+//                        if (cts!=null) {
+//                            list = cts;
+//                        }
+//                        else {
+//                            list = singletonList(type);
+//                        }
+//                        for (Type pt: list) {
+//                            String is = 
+//                                    pt.getDeclaration()
+//                                        .isAnonymous() ? 
+//                                    "" : "is ";
+//                            Unit unit = rootNode.getUnit();
+//                        text += utilJ2C().indents().getDefaultLineDelimiter(doc) +
+//                                utilJ2C().indents().getIndent(node, doc) +
+//                                    "case (" +
+//                                    is + 
+//                                    pt.asString(unit) +
+//                                    ") {}"; 
+//                        }
+//                        int offset = ss.getEndIndex();
+//                        tfc.setEdit(new InsertEdit(offset, text));
+//                        proposals.add(new CorrectionProposal(
+//                                "Add missing 'case' clauses", tfc, 
+//                                new Region(offset+text.length()-1, 0)));
+//                    }
+//                }
+//            }
+//        }        
+//    }
 
-    @Deprecated
-    // see AddTypeParameterQuickFix
-    void addTypeParameterProposal(IFile file, 
-            Tree.CompilationUnit rootNode,
-            Collection<ICompletionProposal> proposals, 
-            Node node) {
-        Tree.TypeConstraint tcn = (Tree.TypeConstraint) node;
-        TypeParameter tp = tcn.getDeclarationModel();
-        Tree.Declaration decNode = 
-                (Tree.Declaration) 
-                    getReferencedNodeInUnit(
-                            tp.getDeclaration(), 
-                            rootNode);
-        Tree.TypeParameterList tpl;
-        if (decNode instanceof Tree.ClassOrInterface) {
-            Tree.ClassOrInterface ci = 
-                    (Tree.ClassOrInterface) decNode;
-            tpl = ci.getTypeParameterList();
-        }
-        else if (decNode instanceof Tree.AnyMethod) {
-            Tree.AnyMethod am = (Tree.AnyMethod) decNode;
-            tpl = am.getTypeParameterList();
-        }
-        else if (decNode instanceof Tree.TypeAliasDeclaration) {
-            Tree.TypeAliasDeclaration ad = 
-                    (Tree.TypeAliasDeclaration) decNode;
-            tpl = ad.getTypeParameterList();
-        }
-        else {
-            return;
-        }
-        TextFileChange tfc = 
-                new TextFileChange("Add Type Parameter", file);
-        InsertEdit edit;
-        if (tpl==null) {
-            Tree.Identifier id = decNode.getIdentifier();
-            edit = new InsertEdit(id.getEndIndex(),
-                    "<" + tp.getName() + ">");
-        }
-        else {
-            edit = new InsertEdit(tpl.getEndIndex()-1,
-                    ", " + tp.getName());
-        }
-        tfc.setEdit(edit);
-        proposals.add(new CorrectionProposal(
-                "Add '" + tp.getName() +
-                "' to type parameter list of '" + 
-                decNode.getDeclarationModel().getName() + "'", 
-                tfc, null));
-    }
+//    @Deprecated
+//    // see AddTypeParameterQuickFix
+//    void addTypeParameterProposal(IFile file, 
+//            Tree.CompilationUnit rootNode,
+//            Collection<ICompletionProposal> proposals, 
+//            Node node) {
+//        Tree.TypeConstraint tcn = (Tree.TypeConstraint) node;
+//        TypeParameter tp = tcn.getDeclarationModel();
+//        Tree.Declaration decNode = 
+//                (Tree.Declaration) 
+//                    getReferencedNodeInUnit(
+//                            tp.getDeclaration(), 
+//                            rootNode);
+//        Tree.TypeParameterList tpl;
+//        if (decNode instanceof Tree.ClassOrInterface) {
+//            Tree.ClassOrInterface ci = 
+//                    (Tree.ClassOrInterface) decNode;
+//            tpl = ci.getTypeParameterList();
+//        }
+//        else if (decNode instanceof Tree.AnyMethod) {
+//            Tree.AnyMethod am = (Tree.AnyMethod) decNode;
+//            tpl = am.getTypeParameterList();
+//        }
+//        else if (decNode instanceof Tree.TypeAliasDeclaration) {
+//            Tree.TypeAliasDeclaration ad = 
+//                    (Tree.TypeAliasDeclaration) decNode;
+//            tpl = ad.getTypeParameterList();
+//        }
+//        else {
+//            return;
+//        }
+//        TextFileChange tfc = 
+//                new TextFileChange("Add Type Parameter", file);
+//        InsertEdit edit;
+//        if (tpl==null) {
+//            Tree.Identifier id = decNode.getIdentifier();
+//            edit = new InsertEdit(id.getEndIndex(),
+//                    "<" + tp.getName() + ">");
+//        }
+//        else {
+//            edit = new InsertEdit(tpl.getEndIndex()-1,
+//                    ", " + tp.getName());
+//        }
+//        tfc.setEdit(edit);
+//        proposals.add(new CorrectionProposal(
+//                "Add '" + tp.getName() +
+//                "' to type parameter list of '" + 
+//                decNode.getDeclarationModel().getName() + "'", 
+//                tfc, null));
+//    }
 
     private void addProposals(
             IQuickAssistInvocationContext context,
@@ -1209,7 +1177,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addAssertExistsDeclarationProposals(proposals, doc, file, rootNode, declaration);
             addSplitDeclarationProposals(proposals, doc, file, rootNode, declaration, statement);
             addJoinDeclarationProposal(proposals, rootNode, statement, file);
-            addParameterProposals(proposals, file, rootNode, declaration);
+//            addParameterProposals(proposals, file, rootNode, declaration);
             
             addArgumentProposals(proposals, doc, file, argument);
             addUseAliasProposal(imp, proposals, editor);
@@ -1260,19 +1228,19 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         
     }
 
-    @Deprecated
-    private static void addOperatorProposals(
-            Collection<ICompletionProposal> proposals,
-            IFile file,
-            Tree.OperatorExpression oe) {
-        if (oe instanceof Tree.BinaryOperatorExpression) {
-            Tree.BinaryOperatorExpression boe =
-                    (Tree.BinaryOperatorExpression) oe;
-            addReverseOperatorProposal(proposals, file, boe);
-            addInvertOperatorProposal(proposals, file, boe);
-            addSwapBinaryOperandsProposal(proposals, file, boe);
-        }
-    }
+//    @Deprecated
+//    private static void addOperatorProposals(
+//            Collection<ICompletionProposal> proposals,
+//            IFile file,
+//            Tree.OperatorExpression oe) {
+//        if (oe instanceof Tree.BinaryOperatorExpression) {
+//            Tree.BinaryOperatorExpression boe =
+//                    (Tree.BinaryOperatorExpression) oe;
+//            addReverseOperatorProposal(proposals, file, boe);
+//            addInvertOperatorProposal(proposals, file, boe);
+//            addSwapBinaryOperandsProposal(proposals, file, boe);
+//        }
+//    }
 
     private void addAnnotationProposals(
             Collection<ICompletionProposal> proposals,
@@ -1330,118 +1298,118 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
     
-    @Deprecated
-    private static void addAnonymousFunctionProposals(
-            CeylonEditor editor,
-            Collection<ICompletionProposal> proposals,
-            IDocument doc, IFile file,
-            Tree.CompilationUnit rootNode,
-            final int currentOffset) {
-        class FindAnonFunctionVisitor extends Visitor {
-            Tree.FunctionArgument result;
-            public void visit(Tree.FunctionArgument that) {
-                if (currentOffset>=that.getStartIndex() &&
-                    currentOffset<=that.getEndIndex()) {
-                    result = that;
-                }
-                super.visit(that);
-            }
-        }
-        FindAnonFunctionVisitor v = new FindAnonFunctionVisitor();
-        v.visit(rootNode);
-        Tree.FunctionArgument fun = v.result;
-        if (fun!=null) {
-            if (fun.getExpression()!=null) {
-                addConvertToBlockProposal(doc, proposals, file, fun);
-            }
-            if (fun.getBlock()!=null) {
-                addConvertToSpecifierProposal(doc, proposals, file, 
-                        fun.getBlock(), true);
-            }
-        }
-    }
+//    @Deprecated
+//    private static void addAnonymousFunctionProposals(
+//            CeylonEditor editor,
+//            Collection<ICompletionProposal> proposals,
+//            IDocument doc, IFile file,
+//            Tree.CompilationUnit rootNode,
+//            final int currentOffset) {
+//        class FindAnonFunctionVisitor extends Visitor {
+//            Tree.FunctionArgument result;
+//            public void visit(Tree.FunctionArgument that) {
+//                if (currentOffset>=that.getStartIndex() &&
+//                    currentOffset<=that.getEndIndex()) {
+//                    result = that;
+//                }
+//                super.visit(that);
+//            }
+//        }
+//        FindAnonFunctionVisitor v = new FindAnonFunctionVisitor();
+//        v.visit(rootNode);
+//        Tree.FunctionArgument fun = v.result;
+//        if (fun!=null) {
+//            if (fun.getExpression()!=null) {
+//                addConvertToBlockProposal(doc, proposals, file, fun);
+//            }
+//            if (fun.getBlock()!=null) {
+//                addConvertToSpecifierProposal(doc, proposals, file, 
+//                        fun.getBlock(), true);
+//            }
+//        }
+//    }
 
-    @Deprecated
-    private static void addDeclarationProposals(
-            CeylonEditor editor,
-            Collection<ICompletionProposal> proposals,
-            IDocument doc, IFile file,
-            Tree.CompilationUnit rootNode,
-            Tree.Declaration decNode,
-            int currentOffset) {
-        
-        if (decNode==null) return;
-        
-        if (decNode.getAnnotationList()!=null) {
-            Integer endIndex =
-                    decNode.getAnnotationList().getEndIndex();
-            if (endIndex!=null && currentOffset<=endIndex) {
-                return;
-            }
-        }
-        if (decNode instanceof Tree.TypedDeclaration) {
-            Tree.TypedDeclaration tdn = 
-                    (Tree.TypedDeclaration) decNode;
-            if (tdn.getType()!=null) {
-                Integer endIndex = tdn.getType().getEndIndex();
-                if (endIndex!=null && currentOffset<=endIndex) {
-                    return;
-                }
-            }
-        }
-            
-        if (decNode instanceof Tree.AttributeDeclaration) {
-            Tree.AttributeDeclaration attDecNode = 
-                    (Tree.AttributeDeclaration) decNode;
-            Tree.SpecifierOrInitializerExpression se = 
-                    attDecNode.getSpecifierOrInitializerExpression(); 
-            if (se instanceof Tree.LazySpecifierExpression) {
-                addConvertToBlockProposal(doc, proposals, file, decNode);
-            }
-            else {
-                addConvertToGetterProposal(doc, proposals, file, attDecNode);
-            }
-        }
-        if (decNode instanceof Tree.MethodDeclaration) {
-            Tree.MethodDeclaration methodDecNode = 
-                    (Tree.MethodDeclaration) decNode;
-            Tree.SpecifierOrInitializerExpression se = 
-                    methodDecNode.getSpecifierExpression(); 
-            if (se instanceof Tree.LazySpecifierExpression) {
-                addConvertToBlockProposal(doc, proposals, file, decNode);
-            }
-        }
-        if (decNode instanceof Tree.AttributeSetterDefinition) {
-            Tree.AttributeSetterDefinition setterDefNode = 
-                    (Tree.AttributeSetterDefinition) decNode;
-            Tree.SpecifierOrInitializerExpression se = 
-                    setterDefNode.getSpecifierExpression();
-            if (se instanceof Tree.LazySpecifierExpression) {
-                addConvertToBlockProposal(doc, proposals, file, decNode);
-            }
-            Tree.Block b = setterDefNode.getBlock(); 
-            if (b!=null) {
-                addConvertToSpecifierProposal(doc, proposals, file, b);
-            }
-        }
-        if (decNode instanceof Tree.AttributeGetterDefinition) {
-            Tree.AttributeGetterDefinition getterDefNode = 
-                    (Tree.AttributeGetterDefinition) decNode;
-            Tree.Block b = getterDefNode.getBlock(); 
-            if (b!=null) {
-                addConvertToSpecifierProposal(doc, proposals, file, b);
-            }
-        }
-        if (decNode instanceof Tree.MethodDefinition) {
-            Tree.MethodDefinition methodDefNode = 
-                    (Tree.MethodDefinition) decNode;
-            Tree.Block b = methodDefNode.getBlock(); 
-            if (b!=null) {
-                addConvertToSpecifierProposal(doc, proposals, file, b);
-            }
-        }
-        
-    }
+//    @Deprecated
+//    private static void addDeclarationProposals(
+//            CeylonEditor editor,
+//            Collection<ICompletionProposal> proposals,
+//            IDocument doc, IFile file,
+//            Tree.CompilationUnit rootNode,
+//            Tree.Declaration decNode,
+//            int currentOffset) {
+//        
+//        if (decNode==null) return;
+//        
+//        if (decNode.getAnnotationList()!=null) {
+//            Integer endIndex =
+//                    decNode.getAnnotationList().getEndIndex();
+//            if (endIndex!=null && currentOffset<=endIndex) {
+//                return;
+//            }
+//        }
+//        if (decNode instanceof Tree.TypedDeclaration) {
+//            Tree.TypedDeclaration tdn = 
+//                    (Tree.TypedDeclaration) decNode;
+//            if (tdn.getType()!=null) {
+//                Integer endIndex = tdn.getType().getEndIndex();
+//                if (endIndex!=null && currentOffset<=endIndex) {
+//                    return;
+//                }
+//            }
+//        }
+//            
+//        if (decNode instanceof Tree.AttributeDeclaration) {
+//            Tree.AttributeDeclaration attDecNode = 
+//                    (Tree.AttributeDeclaration) decNode;
+//            Tree.SpecifierOrInitializerExpression se = 
+//                    attDecNode.getSpecifierOrInitializerExpression(); 
+//            if (se instanceof Tree.LazySpecifierExpression) {
+//                addConvertToBlockProposal(doc, proposals, file, decNode);
+//            }
+//            else {
+//                addConvertToGetterProposal(doc, proposals, file, attDecNode);
+//            }
+//        }
+//        if (decNode instanceof Tree.MethodDeclaration) {
+//            Tree.MethodDeclaration methodDecNode = 
+//                    (Tree.MethodDeclaration) decNode;
+//            Tree.SpecifierOrInitializerExpression se = 
+//                    methodDecNode.getSpecifierExpression(); 
+//            if (se instanceof Tree.LazySpecifierExpression) {
+//                addConvertToBlockProposal(doc, proposals, file, decNode);
+//            }
+//        }
+//        if (decNode instanceof Tree.AttributeSetterDefinition) {
+//            Tree.AttributeSetterDefinition setterDefNode = 
+//                    (Tree.AttributeSetterDefinition) decNode;
+//            Tree.SpecifierOrInitializerExpression se = 
+//                    setterDefNode.getSpecifierExpression();
+//            if (se instanceof Tree.LazySpecifierExpression) {
+//                addConvertToBlockProposal(doc, proposals, file, decNode);
+//            }
+//            Tree.Block b = setterDefNode.getBlock(); 
+//            if (b!=null) {
+//                addConvertToSpecifierProposal(doc, proposals, file, b);
+//            }
+//        }
+//        if (decNode instanceof Tree.AttributeGetterDefinition) {
+//            Tree.AttributeGetterDefinition getterDefNode = 
+//                    (Tree.AttributeGetterDefinition) decNode;
+//            Tree.Block b = getterDefNode.getBlock(); 
+//            if (b!=null) {
+//                addConvertToSpecifierProposal(doc, proposals, file, b);
+//            }
+//        }
+//        if (decNode instanceof Tree.MethodDefinition) {
+//            Tree.MethodDefinition methodDefNode = 
+//                    (Tree.MethodDefinition) decNode;
+//            Tree.Block b = methodDefNode.getBlock(); 
+//            if (b!=null) {
+//                addConvertToSpecifierProposal(doc, proposals, file, b);
+//            }
+//        }
+//        
+//    }
 
 	private void addArgumentProposals(
 	        Collection<ICompletionProposal> proposals,
@@ -1480,66 +1448,66 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         }
     }
 
-    @Deprecated
-    private void addCreationProposals(
-            Tree.CompilationUnit cu, 
-            final Node node, 
-            ProblemLocation problem, 
-            Collection<ICompletionProposal> proposals, 
-            IProject project,
-            IFile file) {
-        if (node instanceof Tree.MemberOrTypeExpression) {
-            addCreateProposals(cu, node, proposals, project, file);
-        }
-        else if (node instanceof Tree.SimpleType) {
-            class FindExtendedTypeExpressionVisitor extends Visitor {
-                Tree.InvocationExpression invocationExpression;
-                @Override
-                public void visit(Tree.ExtendedType that) {
-                    super.visit(that);
-                    if (that.getType()==node) {
-                        invocationExpression = 
-                                that.getInvocationExpression();
-                    }
-                }
-            }
-            FindExtendedTypeExpressionVisitor v = 
-                    new FindExtendedTypeExpressionVisitor();
-            v.visit(cu);
-            if (v.invocationExpression!=null) {
-                addCreateProposals(cu, 
-                        v.invocationExpression.getPrimary(), 
-                        proposals, project, file);
-            }
-        }
-        //TODO: should we add this stuff back in??
-        /*else if (node instanceof Tree.BaseType) {
-            Tree.BaseType bt = (Tree.BaseType) node;
-            String brokenName = bt.getIdentifier().getText();
-            String idef = "interface " + brokenName + " {}";
-            String idesc = "interface '" + brokenName + "'";
-            String cdef = "class " + brokenName + "() {}";
-            String cdesc = "class '" + brokenName + "()'";
-            //addCreateLocalProposals(proposals, project, idef, idesc, INTERFACE, cu, bt);
-            addCreateLocalProposals(proposals, project, cdef, cdesc, CLASS, cu, bt, null, null);
-            addCreateToplevelProposals(proposals, project, idef, idesc, INTERFACE, cu, bt, null, null);
-            addCreateToplevelProposals(proposals, project, cdef, cdesc, CLASS, cu, bt, null, null);
-            CreateInNewUnitProposal.addCreateToplevelProposal(proposals, idef, idesc, 
-                    INTERFACE, file, brokenName, null, null);
-            CreateInNewUnitProposal.addCreateToplevelProposal(proposals, cdef, cdesc, 
-                    CLASS, file, brokenName, null, null);
-            
-        }*/
-        if (node instanceof Tree.BaseType) {
-            Tree.BaseType bt = (Tree.BaseType) node;
-            Tree.Identifier id = bt.getIdentifier();
-            if (id!=null) {
-                String brokenName = id.getText();
-                addCreateTypeParameterProposal(proposals,
-                        project, cu, bt, brokenName);
-            }
-        }
-    }
+//    @Deprecated
+//    private void addCreationProposals(
+//            Tree.CompilationUnit cu, 
+//            final Node node, 
+//            ProblemLocation problem, 
+//            Collection<ICompletionProposal> proposals, 
+//            IProject project,
+//            IFile file) {
+//        if (node instanceof Tree.MemberOrTypeExpression) {
+//            addCreateProposals(cu, node, proposals, project, file);
+//        }
+//        else if (node instanceof Tree.SimpleType) {
+//            class FindExtendedTypeExpressionVisitor extends Visitor {
+//                Tree.InvocationExpression invocationExpression;
+//                @Override
+//                public void visit(Tree.ExtendedType that) {
+//                    super.visit(that);
+//                    if (that.getType()==node) {
+//                        invocationExpression = 
+//                                that.getInvocationExpression();
+//                    }
+//                }
+//            }
+//            FindExtendedTypeExpressionVisitor v = 
+//                    new FindExtendedTypeExpressionVisitor();
+//            v.visit(cu);
+//            if (v.invocationExpression!=null) {
+//                addCreateProposals(cu, 
+//                        v.invocationExpression.getPrimary(), 
+//                        proposals, project, file);
+//            }
+//        }
+//        //TODO: should we add this stuff back in??
+//        /*else if (node instanceof Tree.BaseType) {
+//            Tree.BaseType bt = (Tree.BaseType) node;
+//            String brokenName = bt.getIdentifier().getText();
+//            String idef = "interface " + brokenName + " {}";
+//            String idesc = "interface '" + brokenName + "'";
+//            String cdef = "class " + brokenName + "() {}";
+//            String cdesc = "class '" + brokenName + "()'";
+//            //addCreateLocalProposals(proposals, project, idef, idesc, INTERFACE, cu, bt);
+//            addCreateLocalProposals(proposals, project, cdef, cdesc, CLASS, cu, bt, null, null);
+//            addCreateToplevelProposals(proposals, project, idef, idesc, INTERFACE, cu, bt, null, null);
+//            addCreateToplevelProposals(proposals, project, cdef, cdesc, CLASS, cu, bt, null, null);
+//            CreateInNewUnitProposal.addCreateToplevelProposal(proposals, idef, idesc, 
+//                    INTERFACE, file, brokenName, null, null);
+//            CreateInNewUnitProposal.addCreateToplevelProposal(proposals, cdef, cdesc, 
+//                    CLASS, file, brokenName, null, null);
+//            
+//        }*/
+//        if (node instanceof Tree.BaseType) {
+//            Tree.BaseType bt = (Tree.BaseType) node;
+//            Tree.Identifier id = bt.getIdentifier();
+//            if (id!=null) {
+//                String brokenName = id.getText();
+//                addCreateTypeParameterProposal(proposals,
+//                        project, cu, bt, brokenName);
+//            }
+//        }
+//    }
 
     public void collectWarningSuppressions(
             CeylonAnnotation annotation,

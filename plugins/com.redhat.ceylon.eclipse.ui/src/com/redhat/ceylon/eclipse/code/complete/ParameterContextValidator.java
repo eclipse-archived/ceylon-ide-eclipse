@@ -147,7 +147,6 @@ class ParameterContextValidator
         if (editor.isInLinkedMode()) {
             Object linkedModeOwner = editor.getLinkedModeOwner();
             if (linkedModeOwner instanceof InvocationCompletionProposal ||
-                linkedModeOwner instanceof RefinementCompletionProposal ||
                 linkedModeOwner instanceof ParametersCompletionProposal ||
                 linkedModeOwner instanceof com.redhat.ceylon.ide.common.completion.InvocationCompletionProposal ||
                 linkedModeOwner instanceof com.redhat.ceylon.ide.common.completion.RefinementCompletionProposal) {
