@@ -40,7 +40,7 @@ import com.redhat.ceylon.ide.common.model {
     BaseCeylonProject
 }
 
-class EclipseQuickFixData(ProblemLocation location,
+shared class EclipseQuickFixData(ProblemLocation location,
     shared actual Tree.CompilationUnit rootNode,
     shared actual Node node,
     shared actual IProject project,
@@ -135,9 +135,12 @@ object eclipseQuickFixManager
         
         convertToDefaultConstructorQuickFix.addConvertToDefaultConstructorProposal(data, file, statement);
 
-        convertThenElseToIfElse.addConvertToIfElseProposal(data, file, doc, statement);
-        
         convertToClassQuickFix.addConvertToClassProposal(data, declaration);
         addParameterQuickFix.addParameterProposals(data, file);
+
+
+        convertThenElseToIfElse.addConvertToIfElseProposal(data, file, doc, statement);
+        
+        refineFormalMembersQuickFix.addRefineFormalMembersProposal(data, false);
     }
 }

@@ -37,7 +37,6 @@ import static com.redhat.ceylon.eclipse.code.correct.JoinIfStatementsProposal.ad
 import static com.redhat.ceylon.eclipse.code.correct.MoveDirProposal.addMoveDirProposal;
 import static com.redhat.ceylon.eclipse.code.correct.PrintProposal.addPrintProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RefineEqualsHashProposal.addRefineEqualsHashProposal;
-import static com.redhat.ceylon.eclipse.code.correct.RefineFormalMembersProposal.addRefineFormalMembersProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAliasProposal.addRemoveAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameAliasProposal.addRenameAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameVersionProposal.addRenameVersionProposals;
@@ -1200,7 +1199,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             
             addThrowsAnnotationProposal(proposals, statement, rootNode, file, doc);            
 
-            addRefineFormalMembersProposal(proposals, node, rootNode, false);
+//            addRefineFormalMembersProposal(proposals, node, rootNode, false);
             addRefineEqualsHashProposal(proposals, node, rootNode);
             
             addConvertToVerbatimProposal(proposals, file, rootNode, node, doc);

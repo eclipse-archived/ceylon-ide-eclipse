@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.RefineFormalMembersProposal.addRefineFormalMembersProposal;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 
@@ -36,7 +35,13 @@ public class RefineFormalMembersHandler extends AbstractHandler {
                 Node node = findNode(rootNode, ce.getParseController().getTokens(), start, end);
                 List<ICompletionProposal> list = 
                         new ArrayList<ICompletionProposal>();
-                addRefineFormalMembersProposal(list, node, rootNode, false);
+                EclipseQuickFixData data = new EclipseQuickFixData(
+                        new ProblemLocation(0, 0, 0),
+                        rootNode, node, null, list, ce, null
+                );
+                eclipseRefineFormalMembersQuickFix_.get_()
+                    .addRefineFormalMembersProposal(data, false);
+
                 if (!list.isEmpty()) {
                     IDocument doc = ce.getCeylonSourceViewer().getDocument();
                     ICompletionProposal proposal = list.get(0);
