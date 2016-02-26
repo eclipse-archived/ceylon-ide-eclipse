@@ -1297,6 +1297,7 @@ public class CodeCompletions {
 
     private static boolean hasUniqueMemberForHash(Unit unit,
             ClassOrInterface ci) {
+        int count = 0;
         Type nt = unit.getNullValueDeclaration().getType();
         for (Declaration m: ci.getMembers()) {
             if (m instanceof Value && 
@@ -1304,11 +1305,11 @@ public class CodeCompletions {
                 Value value = (Value) m;
                 if (!value.isTransient() && 
                         !nt.isSubtypeOf(value.getType())) {
-                    return true;
+                    count++;
                 }
             }
         }
-        return false;
+        return count==1;
     }
 
     private static Value getUniqueMemberForHash(Unit unit,
