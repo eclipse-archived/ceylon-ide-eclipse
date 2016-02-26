@@ -2,7 +2,7 @@
 <feature
       id="com.redhat.ceylon.eclipse.feature"
       label="%featureName"
-      version="1.2.1.qualifier"
+      version="1.2.2.qualifier"
       provider-name="%providerName"
       plugin="com.redhat.ceylon.eclipse.ui">
 
@@ -19,9 +19,9 @@
    </license>
 
    <requires>
-      <import feature="com.redhat.ceylon.dist.feature" version="1.2.1" match="equivalent"/>
-      <import feature="ceylon.tool.converter.java2ceylon.feature" version="1.2.1" match="equivalent"/>
-      <import feature="com.redhat.ceylon.ide.common.feature" version="1.2.1" match="equivalent"/>
+      <import feature="com.redhat.ceylon.dist.feature" version="1.2.2" match="equivalent"/>
+      <import feature="ceylon.tool.converter.java2ceylon.feature" version="1.2.2" match="equivalent"/>
+      <import feature="com.redhat.ceylon.ide.common.feature" version="1.2.2" match="equivalent"/>
       <import feature="org.eclipse.zest" version="1.5.0" match="greaterOrEqual"/>
    </requires>
 
