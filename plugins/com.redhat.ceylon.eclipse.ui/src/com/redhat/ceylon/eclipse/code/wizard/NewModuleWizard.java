@@ -32,6 +32,7 @@ import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import com.redhat.ceylon.cmr.api.ModuleSearchResult;
 import com.redhat.ceylon.eclipse.code.preferences.ModuleImportContentProvider;
 import com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog;
+import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
 
@@ -94,7 +95,8 @@ public class NewModuleWizard extends Wizard implements INewWizard {
             StringBuilder packageDescriptor = 
                     new StringBuilder();
             if (page.isShared()) {
-                packageDescriptor.append("shared "); 
+                packageDescriptor
+                    .append("shared "); 
             }
             packageDescriptor
                     .append("package ")
@@ -111,12 +113,30 @@ public class NewModuleWizard extends Wizard implements INewWizard {
             boolean preamble = page.isIncludePreamble();
             String newline = System.lineSeparator();
             StringBuilder moduleDescriptor = 
-                    new StringBuilder("module ")
-                        .append(moduleName)
-                        .append(" \"")
-                        .append(page.getVersion())
-                        .append("\"")
-                        .append(" {");
+                    new StringBuilder();
+            IProject project = pf.getResource().getProject();
+            boolean compileToJava = CeylonBuilder.compileToJava(project );
+            boolean compileToJs = CeylonBuilder.compileToJs(project);
+            if (compileToJava==compileToJs) {
+                //no native annotation
+            }
+            else if (!compileToJs) {
+                moduleDescriptor
+                    .append("native(\"jvm\")")
+                    .append(newline);
+            }
+            else if (!compileToJava) {
+                moduleDescriptor
+                    .append("native(\"js\")")
+                    .append(newline);
+            }
+            moduleDescriptor
+                    .append("module ")
+                    .append(moduleName)
+                    .append(" \"")
+                    .append(page.getVersion())
+                    .append("\"")
+                    .append(" {");
             for (Map.Entry<String,String> entry: 
                     imports.entrySet()) {
                 String name = entry.getKey();
