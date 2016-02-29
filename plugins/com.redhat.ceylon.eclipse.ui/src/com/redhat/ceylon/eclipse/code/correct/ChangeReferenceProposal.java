@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.getProposals;
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.levenshteinDistance;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importEdits;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.isImported;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
@@ -28,6 +27,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.util.NormalizedLevenshtein;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.OccurrenceLocation;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -54,7 +54,7 @@ class ChangeReferenceProposal extends CorrectionProposal {
             Collection<ICompletionProposal> proposals, 
             IFile file, 
             String brokenName, 
-            Declaration dec, int dist,
+            Declaration dec,
             Tree.CompilationUnit rootNode) {
         TextFileChange change = 
                 new TextFileChange("Change Reference", 
@@ -174,22 +174,25 @@ class ChangeReferenceProposal extends CorrectionProposal {
             boolean bnuc = 
                     isUpperCase(brokenName.codePointAt(0));
             if (nuc==bnuc) {
-                int distance = 
-                        levenshteinDistance(brokenName, name); //+dwp.getProximity()/3;
-                //TODO: would it be better to just sort by dist, and
-                //      then select the 3 closest possibilities?
-                if (distance <= brokenName.length()/3+1) {
+                double similarity = 
+                        distance.similarity(brokenName, name);
+                //TODO: would it be better to just sort by distance,
+                //      and then select the 3 closest possibilities?
+                if (similarity > 0.6) {
                     addChangeReferenceProposal(problem, 
                             proposals, file, 
-                            brokenName, declaration, distance, 
+                            brokenName, declaration, 
                             rootNode);
                 }
             }
         }
     }
+    
     @Override
     public StyledString getStyledDisplayString() {
         return Highlights.styleProposal(getDisplayString(), true);
     }
+    
+    static final NormalizedLevenshtein distance = new NormalizedLevenshtein();
     
 }
