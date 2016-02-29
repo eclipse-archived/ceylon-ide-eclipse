@@ -517,7 +517,8 @@ public class DocumentationHover extends SourceInfoHover {
                   .append(unabbreviated)
                   .append("</p>");
         }
-        if (!simplified.equals(unabbreviated)) {
+        if (!simplified.equals(unabbreviated) &&
+            !simplified.equals(abbreviated)) {
             buffer.append("<p>Simplifies&nbsp;to&nbsp;")
                   .append(simplified)
                   .append("</p>");
