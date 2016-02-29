@@ -18,7 +18,6 @@ import com.redhat.ceylon.eclipse.core.model {
     JDTModule
 }
 import com.redhat.ceylon.ide.common.util {
-    platformUtils,
     toJavaStringList
 }
 import com.redhat.ceylon.model.cmr {
@@ -71,6 +70,9 @@ import org.eclipse.pde.internal.launching.sourcelookup {
 import org.eclipse.pde.launching {
     EclipseApplicationLaunchConfiguration,
     PDEJUnitLaunchConfigurationDelegate=JUnitLaunchConfigurationDelegate
+}
+import com.redhat.ceylon.eclipse.util {
+    EclipseLogger
 }
 
 shared interface CeylonAwareLaunchConfigurationDelegate satisfies ILaunchConfigurationDelegate {
@@ -133,13 +135,11 @@ shared interface ClassPathEnricher {
                             .coalesced) {
             CeylonRepoManagerBuilder repoManagerBuilder = CeylonRepoManagerBuilder().offline(referencedProject.configuration.offline)
                             .cwd(referencedProject.rootDirectory)
-                            .systemRepo(referencedProject.systemRepository)
+                            .systemRepo(CeylonBuilder.getInterpolatedCeylonSystemRepo(referencedProject.ideArtifact))
                             .outRepo(CeylonBuilder.getCeylonModulesOutputDirectory(referencedProject.ideArtifact).absolutePath)
                             .extraUserRepos(
-                                toJavaStringList(
-                                    referencedProject.referencedCeylonProjects.map((p) 
-                                        => p.ceylonModulesOutputDirectory.absolutePath)))
-                            .logger(platformUtils.cmrLogger)
+                                CeylonBuilder.getReferencedProjectsOutputRepositories(referencedProject.ideArtifact))
+                            .logger(EclipseLogger())
                             .isJDKIncluded(false);
                     
             Modules? modules = CeylonBuilder.getProjectModules(referencedProject.ideArtifact);
@@ -155,7 +155,7 @@ shared interface ClassPathEnricher {
                 }
                 value moduleList = CeylonIterable(modules.listOfModules)
                     .narrow<JDTModule>()
-                    .filter((m)=>m.isProjectModule && !m.default)
+                    .filter((m)=>m.projectModule && !m.default)
                     .flatMap(
                         (m) => 
                             moduleClassPath(m))

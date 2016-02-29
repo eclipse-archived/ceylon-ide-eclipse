@@ -1389,11 +1389,12 @@ public class JDTModelLoader extends AbstractModelLoader {
         }
         
         if (unit == null) {
-            unit = unitsByPackage.get(pkg);
+            String key = getPackageCacheKey(pkg);
+            unit = unitsByPackage.get(key);
             if(unit == null){
                 unit = new PackageTypeFactory(pkg);
                 unit.setPackage(pkg);
-                unitsByPackage.put(pkg, unit);
+                unitsByPackage.put(key, unit);
             }
         }
         return unit;

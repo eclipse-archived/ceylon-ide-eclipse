@@ -25,6 +25,7 @@ import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 
 /** 
  * Ceylon Language Module Classpath Container - resolves a classpath container id to the ceylon.language binary archive
@@ -50,7 +51,7 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
      * 
      */
     public CeylonLanguageModuleContainer(IProject project) {
-        modelJ2C().ceylonModel().addProject(project);
+        modelJ2C.ceylonModel().addProject(project);
         fPath = new Path(CeylonLanguageModuleContainer.CONTAINER_ID + "/default");
         fProject = JavaCore.create(project);
         RepositoryManager repoManager;
