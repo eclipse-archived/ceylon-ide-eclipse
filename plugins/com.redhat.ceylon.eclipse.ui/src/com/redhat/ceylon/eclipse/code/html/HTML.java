@@ -24,6 +24,8 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jface.preference.JFacePreferences;
+import org.eclipse.jface.util.Util;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -115,26 +117,28 @@ public class HTML {
                 EditorUtil.createColor(
                         JFacePreferences.getPreferenceStore(),
                         JFacePreferences.ACTIVE_HYPERLINK_COLOR);
-        return HTMLPrinter.convertTopLevelFont(fgStyleSheet, textFontData)
-                .replaceFirst("pre", "pre, tt, code")
-                .replaceFirst("font-family: monospace;", 
-                        "font-family: '" + 
-                                monospaceFontData.getName() + "', monospace;" +
-                        "font-size: " + monospaceSize + ";") + 
-                "body { padding: 15px; }\n" +
-                ".paragraph { margin-top: 10px; }\n" +
-                "a:link { color: " + toHex(linkColor) + "; }\n" + 
-                "a:hover { color: " + toHex(activeLinkColor) + "; }\n";
+        
+        boolean bold = (textFontData.getStyle() & SWT.BOLD) != 0;
+        boolean italic = (textFontData.getStyle() & SWT.ITALIC) != 0;
+        String size = Integer.toString(textFontData.getHeight()) + UNIT;
+        String family = textFontData.getName();
+        
+        return fgStyleSheet
+        		.replaceFirst("%fontFamily", family)
+        		.replaceFirst("%fontSize", size)
+        		.replaceFirst("%fontStyle", italic ? "italic" : "normal")
+        		.replaceFirst("%fontWeight", bold ? "bold" : "normal")
+                .replaceFirst("%monospaceFontFamily", monospaceFontData.getName())
+                .replaceFirst("%monospaceFontSize", monospaceSize.toString())
+                .replaceFirst("%linkColor", toHex(linkColor))
+                .replaceFirst("%activeLinkColor", toHex(activeLinkColor));
     }
 
-    /**
-     * Loads and returns the Javadoc hover style sheet.
-     * @return the style sheet, or <code>null</code> if unable to load
-     * @since 3.4
-     */
+    private static final String UNIT = Util.isMac() ? "px" : "pt";
+    
     public static String loadStyleSheet() {
-        Bundle bundle= Platform.getBundle(JavaPlugin.getPluginId());
-        URL styleSheetURL= bundle.getEntry("/JavadocHoverStyleSheet.css"); 
+        Bundle bundle = Platform.getBundle(CeylonPlugin.PLUGIN_ID);
+        URL styleSheetURL = bundle.getEntry("/css/hover.css"); 
         if (styleSheetURL != null) {
             BufferedReader reader= null;
             try {
