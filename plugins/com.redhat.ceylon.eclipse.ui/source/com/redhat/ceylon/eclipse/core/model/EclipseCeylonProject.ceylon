@@ -303,17 +303,14 @@ shared class EclipseCeylonProject(ideArtifact)
     
     shared actual void setPackageForNativeFolder(IFolder folder, WeakReference<Package> p) {
         folder.setSessionProperty(nativeFolderProperties.packageModel, p);
-        folder.setSessionProperty(CeylonBuilder.\iRESOURCE_PROPERTY_PACKAGE_MODEL, p);
     }
     
     shared actual void setRootForNativeFolder(IFolder folder, WeakReference<FolderVirtualFile<IProject,IResource,IFolder,IFile>> root) {
         folder.setSessionProperty(nativeFolderProperties.root, root);
-        folder.setSessionProperty(CeylonBuilder.\iRESOURCE_PROPERTY_ROOT_FOLDER, root.get()?.nativeResource);
     }
     
     shared actual void setRootIsForSource(IFolder rootFolder, Boolean isSource) { 
-        rootFolder.setSessionProperty(nativeFolderProperties.root, isSource);
-        rootFolder.setSessionProperty(CeylonBuilder.\iRESOURCE_PROPERTY_ROOT_FOLDER_TYPE, if (isSource) then CeylonBuilder.RootFolderType.\iSOURCE else CeylonBuilder.RootFolderType.\iRESOURCE);
+        rootFolder.setSessionProperty(nativeFolderProperties.rootIsSource, isSource);
     }
 
     shared actual void createOverridesProblemMarker(Exception theOverridesException, File absoluteFile, Integer overridesLine, Integer overridesColumn) =>

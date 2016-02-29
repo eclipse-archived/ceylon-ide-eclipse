@@ -93,14 +93,14 @@ shared class IFolderVirtualFile
     shared actual Integer hash
             => (super of FolderVirtualFile<IProject,IResource, IFolder, IFile>).hash;
 
-    shared actual Boolean isSource => 
+    shared actual Boolean? isSource => 
             let (root = rootFolder) 
             if (exists root)
             then
                 if (root == this)
                 then unsafeCast<Boolean>(nativeResource.getSessionProperty(nativeFolderProperties.rootIsSource))
                 else root.isSource
-            else false;
+            else null;
     
     shared actual FolderVirtualFile<IProject,IResource,IFolder,IFile>? rootFolder {
         value folder = nativeResource;

@@ -183,6 +183,7 @@ import com.redhat.ceylon.ide.common.util.toCeylonString_;
 import com.redhat.ceylon.ide.common.util.toJavaList_;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
+import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
 import com.redhat.ceylon.javax.tools.DiagnosticListener;
 import com.redhat.ceylon.javax.tools.FileObject;
 import com.redhat.ceylon.javax.tools.JavaFileObject;
@@ -638,11 +639,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         SOURCE,
         RESOURCE
     }
-    
-    public static final QualifiedName RESOURCE_PROPERTY_PACKAGE_MODEL = new QualifiedName(CeylonPlugin.PLUGIN_ID, "resourceProperty_packageModel");
-    public static final QualifiedName RESOURCE_PROPERTY_ROOT_FOLDER = new QualifiedName(CeylonPlugin.PLUGIN_ID, "resourceProperty_rootFolder"); 
-    public static final QualifiedName RESOURCE_PROPERTY_ROOT_FOLDER_TYPE = new QualifiedName(CeylonPlugin.PLUGIN_ID, "resourceProperty_rootFolderType"); 
-    
+        
     private static CeylonBuildHook buildHook = new CeylonBuildHook() {
         List<CeylonBuildHook> contributedHooks = new LinkedList<>();
 
@@ -861,7 +858,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 projectDeltas.add(getDelta(requiredProject));
             }
             
-            boolean somethingToDo = chooseBuildTypeFromDeltas(kind, project,
+            boolean somethingToDo = chooseBuildTypeFromDeltas(kind, ceylonProject,
                     projectDeltas, mustDoFullBuild, mustResolveClasspathContainer);
             
             if (!somethingToDo && (args==null || !args.containsKey(BUILDER_ID + ".reentrant"))) {
@@ -1593,7 +1590,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                                 if (getPackage(folder) == null || getRootFolder(folder) == null) {
                                                     IContainer parent = folder.getParent();
                                                     if (parent instanceof IFolder) {
-                                                        ceylonProject.addFolder(folder, (IFolder)parent, rootVirtualFolder);
+                                                        ceylonProject.addFolder(folder, (IFolder)parent);
                                                     }
                                                 }
                                             }
@@ -1610,24 +1607,24 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    public boolean chooseBuildTypeFromDeltas(final int kind, final IProject project,
+    public boolean chooseBuildTypeFromDeltas(final int kind, final CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject,
             final List<IResourceDelta> currentDeltas,
             final BooleanHolder mustDoFullBuild,
             final BooleanHolder mustResolveClasspathContainer) {
         
         mustDoFullBuild.value = kind == FULL_BUILD || kind == CLEAN_BUILD || 
-                !isModelParsed(project);
+                !ceylonProject.getParsed();
         mustResolveClasspathContainer.value = kind==FULL_BUILD; //false;
         final BooleanHolder somethingToBuild = new BooleanHolder();
         
-        if (JavaProjectStateMirror.hasClasspathChanged(project)) {
+        if (JavaProjectStateMirror.hasClasspathChanged(ceylonProject.getIdeArtifact())) {
             mustDoFullBuild.value = true;
         }
         if (!mustDoFullBuild.value || !mustResolveClasspathContainer.value) {
             for (IResourceDelta currentDelta: currentDeltas) {
                 if (currentDelta != null) {
                     try {
-                        currentDelta.accept(new DeltaScanner(mustDoFullBuild, project,
+                        currentDelta.accept(new DeltaScanner(mustDoFullBuild, ceylonProject,
                                 somethingToBuild, mustResolveClasspathContainer));
                     } 
                     catch (CoreException e) {
@@ -1648,7 +1645,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 return mustDoFullBuild.value || 
                         mustResolveClasspathContainer.value ||
                         somethingToBuild.value ||
-                        ! isModelTypeChecked(project);
+                        ! ceylonProject.getTypechecked();
             }
         }; DecisionMaker decisionMaker = new DecisionMaker(); 
         
@@ -3771,33 +3768,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 //    }
 
     public static IFolder getRootFolder(IFolder folder) {
-        if (folder.isLinked(IResource.CHECK_ANCESTORS) 
-                && ExternalSourceArchiveManager.isInSourceArchive(folder)) {
-            return null;
-        }
-        if (! folder.exists()) {
-            for (IFolder sourceFolder: getSourceFolders(folder.getProject())) {
-                if (sourceFolder.getFullPath().isPrefixOf(folder.getFullPath())) {
-                    return sourceFolder;
-                }
-            }
-            for (IFolder resourceFolder: getResourceFolders(folder.getProject())) {
-                if (resourceFolder.getFullPath().isPrefixOf(folder.getFullPath())) {
-                    return resourceFolder;
-                }
-            }
-            return null;
-        }
-
-        try {
-            Object property = folder.getSessionProperty(RESOURCE_PROPERTY_ROOT_FOLDER);
-            if (property instanceof IFolder) {
-                return (IFolder) property;
-            }
-        } catch (CoreException e) {
-            CeylonPlugin.getInstance().getLog().log(new Status(Status.WARNING, CeylonPlugin.PLUGIN_ID, "Unexpected exception", e));
-        }
-        return null;
+        FolderVirtualFile<IProject, IResource, IFolder, IFile> resourceVirtualFile = 
+                vfsJ2C().eclipseVFS().createVirtualFolder(folder, folder.getProject());
+        return resourceVirtualFile.getRootFolder().getNativeResource();
     }
     
     public static RootFolderType getRootFolderType(IPackageFragmentRoot pfr) {
@@ -3849,27 +3822,21 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static RootFolderType getRootFolderType(IFolder folder) {
-        IFolder rootFolder = getRootFolder(folder);
-        if (rootFolder == null) {
+        ceylon.language.Boolean isSourceFolder = 
+                vfsJ2C().eclipseVFS().createVirtualFolder(folder, folder.getProject()).getIsSource();
+        if (isSourceFolder == null) {
             return null;
         }
-        try {
-            Object property = rootFolder.getSessionProperty(RESOURCE_PROPERTY_ROOT_FOLDER_TYPE);
-            if (property instanceof RootFolderType) {
-                return (RootFolderType) property;
-            }
-        } catch (CoreException e) {
-            CeylonPlugin.getInstance().getLog().log(new Status(Status.WARNING, CeylonPlugin.PLUGIN_ID, "Unexpected exception", e));
-        }
-        return null;
+        return  isSourceFolder.booleanValue() ? RootFolderType.SOURCE : RootFolderType.RESOURCE;
     }
     
     public static RootFolderType getRootFolderType(IFile file) {
-        IFolder rootFolder = getRootFolder(file);
-        if (rootFolder == null) {
+        ceylon.language.Boolean isSourceFolder = 
+                vfsJ2C().eclipseVFS().createVirtualFile(file, file.getProject()).getIsSource();
+        if (isSourceFolder == null) {
             return null;
         }
-        return getRootFolderType(rootFolder);
+        return  isSourceFolder.booleanValue() ? RootFolderType.SOURCE : RootFolderType.RESOURCE;
     }
     
     public static boolean isInSourceFolder(IFile file) {
@@ -3888,49 +3855,23 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     public static Package getPackage(IFolder resource) {
-        if (resource.isLinked(IResource.CHECK_ANCESTORS) 
-        		&& ExternalSourceArchiveManager.isInSourceArchive(resource)) {
-            return null;
-        }
-        Object property = null;
-        if (! resource.exists()) {
-            IFolder rootFolder = getRootFolder(resource);
-            if (rootFolder != null) {
-                IPath rootRelativePath = resource.getFullPath().makeRelativeTo(rootFolder.getFullPath());
-                BaseIdeModelLoader modelLoader = getProjectModelLoader(resource.getProject());
-                if (modelLoader != null) {
-                    return modelLoader.findPackage(ModelUtil.formatPath(Arrays.asList(rootRelativePath.segments()), '.'));
-                }
-            }
-            return null;
-        }
-        try {
-            property = resource.getSessionProperty(RESOURCE_PROPERTY_PACKAGE_MODEL);
-        } catch (CoreException e) {
-            CeylonPlugin.getInstance().getLog().log(new Status(Status.WARNING, CeylonPlugin.PLUGIN_ID, "Unexpected exception", e));
-        }
-        if (property instanceof WeakReference<?>) {
-            Object pkg = ((WeakReference<?>) property).get();
-            if (pkg instanceof Package) {
-                return (Package) pkg;
-            }
-        }
-        return null;
+        ResourceVirtualFile<IProject, IResource, IFolder, IFile> resourceVirtualFile = 
+                vfsJ2C().eclipseVFS().createVirtualResource(resource, resource.getProject());
+        return resourceVirtualFile.getCeylonPackage();
     }
     
     public static Package getPackage(IFile file) {
-        if (file.getParent() instanceof IFolder) {
-            return getPackage((IFolder) file.getParent());
-        }
-        return null;
+        ResourceVirtualFile<IProject, IResource, IFolder, IFile> resourceVirtualFile = 
+                vfsJ2C().eclipseVFS().createVirtualResource(file, file.getProject());
+        return resourceVirtualFile.getCeylonPackage();
     }    
 
     public static Package getPackage(VirtualFile virtualFile) {
-        if (vfsJ2C().instanceOfIFileVirtualFile(virtualFile)) {
-            return getPackage(vfsJ2C().getIFileVirtualFile(virtualFile).getNativeResource());
+        if (virtualFile instanceof FileVirtualFile) {
+            return ((FileVirtualFile<IProject, IResource, IFolder, IFile>)virtualFile).getCeylonPackage();
         }
-        if (vfsJ2C().instanceOfIFolderVirtualFile(virtualFile)) {
-            return getPackage(vfsJ2C().getIFolderVirtualFile(virtualFile).getNativeResource());
+        if (virtualFile instanceof FolderVirtualFile) {
+            return ((FolderVirtualFile<IProject, IResource, IFolder, IFile>)virtualFile).getCeylonPackage();
         }
         String virtualPath = virtualFile.getPath();
         if (virtualPath.contains("!/")) { // TODO : this test could be replaced by an instanceof if the ZipEntryVirtualFile was public

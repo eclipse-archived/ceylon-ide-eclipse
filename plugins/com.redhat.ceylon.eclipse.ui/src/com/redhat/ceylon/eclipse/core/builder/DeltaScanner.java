@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.IPath;
 
 import com.redhat.ceylon.common.FileUtil;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BooleanHolder;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 import com.redhat.ceylon.ide.common.model.IResourceAware;
 import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
@@ -36,6 +37,7 @@ import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
 final class DeltaScanner implements IResourceDeltaVisitor {
     private final BooleanHolder mustDoFullBuild;
+    CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject;
     private final IProject project;
     private final BooleanHolder somethingToBuild;
     private final BooleanHolder mustResolveClasspathContainer;
@@ -44,11 +46,12 @@ final class DeltaScanner implements IResourceDeltaVisitor {
     private boolean astAwareIncrementalBuild = true;
     private IFile overridesResource = null;
     
-    DeltaScanner(BooleanHolder mustDoFullBuild, IProject project,
+    DeltaScanner(BooleanHolder mustDoFullBuild, CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject,
             BooleanHolder somethingToBuild,
             BooleanHolder mustResolveClasspathContainer) {
         this.mustDoFullBuild = mustDoFullBuild;
-        this.project = project;
+        this.ceylonProject = ceylonProject;
+        this.project = ceylonProject.getIdeArtifact();
         this.somethingToBuild = somethingToBuild;
         this.mustResolveClasspathContainer = mustResolveClasspathContainer;
         IFolder explodedFolder = CeylonBuilder.getCeylonClassesOutputFolder(project);
@@ -127,13 +130,7 @@ final class DeltaScanner implements IResourceDeltaVisitor {
                     if (getPackage(folder) == null || getRootFolder(folder) == null) {
                         IContainer parent = folder.getParent();
                         if (parent instanceof IFolder) {
-                            Package parentPkg = getPackage((IFolder)parent);
-                            IFolder rootFolder = getRootFolder((IFolder)parent);
-                            if (parentPkg != null && rootFolder != null) {
-                                Package pkg = getProjectModelLoader(project).findOrCreatePackage(parentPkg.getModule(), parentPkg.getNameAsString() + "." + folder.getName());
-                                resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_PACKAGE_MODEL, new WeakReference<Package>(pkg));
-                                resource.setSessionProperty(CeylonBuilder.RESOURCE_PROPERTY_ROOT_FOLDER, rootFolder);
-                            }
+                            ceylonProject.addFolder(folder, (IFolder)parent);
                         }
                     }
                 }
