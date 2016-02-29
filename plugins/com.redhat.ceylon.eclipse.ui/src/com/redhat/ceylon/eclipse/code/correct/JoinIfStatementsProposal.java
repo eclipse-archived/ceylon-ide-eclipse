@@ -47,7 +47,8 @@ class JoinIfStatementsProposal {
                             Tree.ConditionList icl = 
                                     inner.getIfClause()
                                         .getConditionList();
-                            if (ocl!=null && icl!=null) {
+                            if (ocl!=null && icl!=null &&
+                                    inner.getElseClause()==null) {
                                 TextChange change = 
                                         new TextFileChange(
                                                 "Join If Statements", 
@@ -84,22 +85,24 @@ class JoinIfStatementsProposal {
                             Tree.ConditionList icl = 
                                     inner.getIfClause()
                                         .getConditionList();
-                            TextChange change = 
-                                    new TextFileChange(
-                                            "Join If Statements", 
-                                            file);
-                            change.setEdit(new MultiTextEdit());
-                            int from = block.getStartIndex();
-                            int to = inner.getStartIndex();
-                            change.addEdit(new DeleteEdit(from, to-from));
-                            decrementIndent(doc, inner, icl, change,
-                                    getIndent(inner, doc),
-                                    getIndent(outer, doc));
-                            change.addEdit(new DeleteEdit(inner.getEndIndex(), 
-                                    outer.getEndIndex()-inner.getEndIndex()));
-                            proposals.add(new CorrectionProposal(
-                                    "Join 'if' statements at 'else'", 
-                                    change, null));
+                            if (icl!=null) {
+                                TextChange change = 
+                                        new TextFileChange(
+                                                "Join If Statements", 
+                                                file);
+                                change.setEdit(new MultiTextEdit());
+                                int from = block.getStartIndex();
+                                int to = inner.getStartIndex();
+                                change.addEdit(new DeleteEdit(from, to-from));
+                                decrementIndent(doc, inner, icl, change,
+                                        getIndent(inner, doc),
+                                        getIndent(outer, doc));
+                                change.addEdit(new DeleteEdit(inner.getEndIndex(), 
+                                        outer.getEndIndex()-inner.getEndIndex()));
+                                proposals.add(new CorrectionProposal(
+                                        "Join 'if' statements at 'else'", 
+                                        change, null));
+                            }
                         }
                     }
                 }
