@@ -50,6 +50,8 @@ IEclipsePreferences#org-eclipse-ui-workbench {
     preferences:
         'CONTENT_ASSIST_BACKGROUND_COLOR=0,0,0'
         'CONTENT_ASSIST_FOREGROUND_COLOR=255,255,255'
+        'HYPERLINK_COLOR=254,90,185'
+        'ACTIVE_HYPERLINK_COLOR=163,32,110'
         'com.redhat.ceylon.eclipse.ui.theme.color.initializerAnnotation=153,102,0'
         'com.redhat.ceylon.eclipse.ui.theme.color.rangeIndicatorAnnotation=51,0,0'
         'com.redhat.ceylon.eclipse.ui.theme.color.keywords=184,186,175'

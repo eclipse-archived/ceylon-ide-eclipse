@@ -23,6 +23,8 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
+import org.eclipse.jface.preference.JFacePreferences;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
@@ -34,6 +36,7 @@ import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Escaping;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -104,13 +107,24 @@ public class HTML {
                 }
             }
         });
+        Color linkColor =
+                EditorUtil.createColor(
+                        JFacePreferences.getPreferenceStore(),
+                        JFacePreferences.HYPERLINK_COLOR);
+        Color activeLinkColor =
+                EditorUtil.createColor(
+                        JFacePreferences.getPreferenceStore(),
+                        JFacePreferences.ACTIVE_HYPERLINK_COLOR);
         return HTMLPrinter.convertTopLevelFont(fgStyleSheet, textFontData)
                 .replaceFirst("pre", "pre, tt, code")
                 .replaceFirst("font-family: monospace;", 
                         "font-family: '" + 
                                 monospaceFontData.getName() + "', monospace;" +
                         "font-size: " + monospaceSize + ";") + 
-                "body { padding: 15px; }\n";
+                "body { padding: 15px; }\n" +
+                ".paragraph { margin-top: 10px; }\n" +
+                "a:link { color: " + toHex(linkColor) + "; }\n" + 
+                "a:hover { color: " + toHex(activeLinkColor) + "; }\n";
     }
 
     /**
