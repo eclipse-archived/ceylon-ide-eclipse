@@ -123,7 +123,7 @@ object eclipseQuickFixManager
         verboseRefinementQuickFix.addVerboseRefinementProposal(data, file, statement);
         verboseRefinementQuickFix.addShortcutRefinementProposal(data, file, statement);
         
-        addAnnotationProposals(data, declaration, doc, currentOffset,
+        addAnnotations.addContextualAnnotationProposals(data, declaration, doc, currentOffset,
             (doc, offset) => doc.getLineOfOffset(offset));
         specifyTypeQuickFix.addTypingProposals(data, file, declaration);
         
