@@ -29,7 +29,7 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal;
+import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -480,11 +480,13 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     private void addSharedAndActualAnnotations(TextChange originalUnitChange) {
         for (Tree.TypedDeclaration member : extractedMembers) {
             if (!member.getDeclarationModel().isShared()) {
-                InsertEdit createInsertAnnotationEdit = AddAnnotionProposal.createInsertAnnotationEdit("shared", member, document);
+                InsertEdit createInsertAnnotationEdit = new correctJ2C()
+                        .addAnnotationsQuickFix().createInsertAnnotationEdit("shared", member, document);
                 originalUnitChange.addEdit(createInsertAnnotationEdit);
             }
             if (!member.getDeclarationModel().isActual()) {
-                InsertEdit createInsertAnnotationEdit = AddAnnotionProposal.createInsertAnnotationEdit("actual", member, document);
+                InsertEdit createInsertAnnotationEdit = new correctJ2C()
+                        .addAnnotationsQuickFix().createInsertAnnotationEdit("actual", member, document);
                 originalUnitChange.addEdit(createInsertAnnotationEdit);
             }
         }

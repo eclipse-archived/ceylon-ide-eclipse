@@ -64,7 +64,7 @@ import com.redhat.ceylon.ide.common.refactoring {
     DefaultRegion
 }
 
-interface EclipseAbstractQuickFix
+shared interface EclipseAbstractQuickFix
         satisfies AbstractQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> {
     
     shared actual IdeCompletionManager<out Anything,out ICompletionProposal,IDocument> completionManager 

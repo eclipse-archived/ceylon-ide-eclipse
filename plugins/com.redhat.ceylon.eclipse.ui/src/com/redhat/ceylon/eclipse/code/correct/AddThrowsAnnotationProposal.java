@@ -1,8 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.createInsertAnnotationEdit;
-import static com.redhat.ceylon.eclipse.code.correct.AddAnnotionProposal.getAnnotationIdentifier;
-
 import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
@@ -13,11 +10,11 @@ import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.ide.common.util.FindContainerVisitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.ide.common.util.FindContainerVisitor;
 
 public class AddThrowsAnnotationProposal extends CorrectionProposal {
     
@@ -41,7 +38,8 @@ public class AddThrowsAnnotationProposal extends CorrectionProposal {
         }
 
         String throwsAnnotation = "throws (`class " + exceptionType.asString() + "`, \"\")";
-        InsertEdit throwsAnnotationInsertEdit = createInsertAnnotationEdit(throwsAnnotation, throwContainer, doc);
+        InsertEdit throwsAnnotationInsertEdit = new correctJ2C().addAnnotationsQuickFix()
+                .createInsertAnnotationEdit(throwsAnnotation, throwContainer, doc);
         TextFileChange throwsAnnotationChange = new TextFileChange("Add Throws Annotation", file);
         throwsAnnotationChange.setEdit(throwsAnnotationInsertEdit);
 
@@ -85,7 +83,10 @@ public class AddThrowsAnnotationProposal extends CorrectionProposal {
         Tree.AnnotationList annotationList = throwContainer.getAnnotationList();
         if (annotationList != null) {
             for (Tree.Annotation annotation : annotationList.getAnnotations()) {
-                String annotationIdentifier = getAnnotationIdentifier(annotation);
+                ceylon.language.String str = new correctJ2C().addAnnotationsQuickFix()
+                        .getAnnotationIdentifier(annotation);
+                String annotationIdentifier = str == null ? null : str.value;
+                
                 if ("throws".equals(annotationIdentifier)) {
                     Tree.PositionalArgumentList positionalArgumentList = annotation.getPositionalArgumentList();
                     if (positionalArgumentList != null && 

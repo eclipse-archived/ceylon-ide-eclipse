@@ -19,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.java2ceylon.CorrectJ2C;
+import com.redhat.ceylon.ide.common.correct.AddAnnotationQuickFix;
 import com.redhat.ceylon.ide.common.correct.IdeQuickFixManager;
 import com.redhat.ceylon.ide.common.correct.ImportProposals;
 import com.redhat.ceylon.ide.common.correct.QuickFixData;
@@ -32,6 +33,10 @@ public class correctJ2C implements CorrectJ2C {
     
     public IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,IFile,ICompletionProposal,? extends QuickFixData<IProject>,LinkedModeModel> eclipseQuickFixManager() {
         return eclipseQuickFixManager_.get_();
+    }
+    
+    public AddAnnotationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,? extends QuickFixData<IProject>,ICompletionProposal> addAnnotationsQuickFix() {
+        return eclipseAnnotationsQuickFix_.get_();
     }
     
     public void addQuickFixes(
