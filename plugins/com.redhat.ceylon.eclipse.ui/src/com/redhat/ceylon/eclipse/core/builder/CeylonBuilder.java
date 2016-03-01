@@ -3768,9 +3768,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 //    }
 
     public static IFolder getRootFolder(IFolder folder) {
-        FolderVirtualFile<IProject, IResource, IFolder, IFile> resourceVirtualFile = 
-                vfsJ2C().eclipseVFS().createVirtualFolder(folder, folder.getProject());
-        return resourceVirtualFile.getRootFolder().getNativeResource();
+        FolderVirtualFile<IProject, IResource, IFolder, IFile> rootVirtualFile = 
+                vfsJ2C().eclipseVFS().createVirtualFolder(folder, folder.getProject()).getRootFolder();
+        if (rootVirtualFile == null) {
+            return null;
+        }
+        return rootVirtualFile.getNativeResource();
     }
     
     public static RootFolderType getRootFolderType(IPackageFragmentRoot pfr) {
