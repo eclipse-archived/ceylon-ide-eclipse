@@ -614,10 +614,16 @@ public class AddAnnotionProposal extends CorrectionProposal {
             Declaration dec = mte.getDeclaration();
             if (dec instanceof Value) {
                 Value value = (Value) dec;
-                if (value.getOriginalDeclaration()==null) {
+                if (value.getOriginalDeclaration()==null
+                		 && !value.isTransient()) {
                     addAddAnnotationProposal(node, 
                     		"variable", "Make Variable", 
                             dec, proposals, project);
+                    if (dec.isClassMember()) {
+                    	addAddAnnotationProposal(node, 
+                    			"late", "Make Late", 
+                    			dec, proposals, project);
+                    }
                 }
             }
         }
