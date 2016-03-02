@@ -41,13 +41,19 @@ shared object eclipseAnnotationsQuickFix
     shared actual void newAddAnnotationQuickFix(Referenceable dec, String text,
         String desc, Integer offset, TextChange change, Region? selection, EclipseQuickFixData data) {
         
-        data.proposals.add(AddRemoveAnnotionProposal(dec, text, desc, change, selection));
+        value proposal = AddRemoveAnnotionProposal(dec, text, desc, change, selection);
+        if (!data.proposals.contains(proposal)) {
+            data.proposals.add(proposal);
+        }
     }
 
     shared actual void newRemoveAnnotationQuickFix(Declaration dec, String annotation,
         String desc, Integer offset, TextChange change, Region selection, EclipseQuickFixData data) {
         
-        data.proposals.add(AddRemoveAnnotionProposal(dec, annotation, desc, change, selection));
+        value proposal = AddRemoveAnnotionProposal(dec, annotation, desc, change, selection);
+        if (!data.proposals.contains(proposal)) {
+            data.proposals.add(proposal);
+        }
     }
     
     shared actual AbstractModuleImportUtil<IFile,IProject,IDocument,InsertEdit,TextEdit,TextChange> moduleImportUtil
