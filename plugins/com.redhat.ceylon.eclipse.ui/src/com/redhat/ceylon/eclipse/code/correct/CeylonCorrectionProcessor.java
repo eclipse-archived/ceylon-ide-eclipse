@@ -32,7 +32,6 @@ import static com.redhat.ceylon.eclipse.code.correct.RefineEqualsHashProposal.ad
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAliasProposal.addRemoveAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameAliasProposal.addRenameAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameVersionProposal.addRenameVersionProposals;
-import static com.redhat.ceylon.eclipse.code.correct.SplitDeclarationProposal.addSplitDeclarationProposals;
 import static com.redhat.ceylon.eclipse.code.correct.SplitIfStatementProposal.addSplitIfStatementProposal;
 import static com.redhat.ceylon.eclipse.code.correct.UseAliasProposal.addUseAliasProposal;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.MODULE_DEPENDENCY_PROBLEM_MARKER_ID;
@@ -871,7 +870,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             
 //            addConvertToClassProposal(proposals, declaration, editor);
 //            addAssertExistsDeclarationProposals(proposals, doc, file, rootNode, declaration);
-            addSplitDeclarationProposals(proposals, doc, file, rootNode, declaration, statement);
+//            addSplitDeclarationProposals(proposals, doc, file, rootNode, declaration, statement);
             addJoinDeclarationProposal(proposals, rootNode, statement, file);
 //            addParameterProposals(proposals, file, rootNode, declaration);
             
