@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.AddThrowsAnnotationProposal.addThrowsAnnotationProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AssertExistsDeclarationProposal.addAssertExistsDeclarationProposals;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertExistsProposal.addAssignToAssertExistsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertIsProposal.addAssignToAssertIsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertNonemptyProposal.addAssignToAssertNonemptyProposal;
@@ -871,7 +870,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //            addConvertToDefaultConstructorProposal(proposals, doc, file, rootNode, statement);
             
 //            addConvertToClassProposal(proposals, declaration, editor);
-            addAssertExistsDeclarationProposals(proposals, doc, file, rootNode, declaration);
+//            addAssertExistsDeclarationProposals(proposals, doc, file, rootNode, declaration);
             addSplitDeclarationProposals(proposals, doc, file, rootNode, declaration, statement);
             addJoinDeclarationProposal(proposals, rootNode, statement, file);
 //            addParameterProposals(proposals, file, rootNode, declaration);

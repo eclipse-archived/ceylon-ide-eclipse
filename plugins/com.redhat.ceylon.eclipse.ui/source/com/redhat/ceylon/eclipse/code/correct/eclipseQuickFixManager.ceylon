@@ -138,6 +138,7 @@ object eclipseQuickFixManager
         convertToDefaultConstructorQuickFix.addConvertToDefaultConstructorProposal(data, file, statement);
 
         convertToClassQuickFix.addConvertToClassProposal(data, declaration);
+        assertExistsDeclarationQuickFix.addAssertExistsDeclarationProposals(data, file, declaration);
         addParameterQuickFix.addParameterProposals(data, file);
 
         eclipseMiscQuickFix.addArgumentProposals(data, file, namedArgument);
