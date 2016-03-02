@@ -19,7 +19,9 @@ import com.redhat.ceylon.eclipse.ui {
     CeylonPlugin
 }
 import com.redhat.ceylon.eclipse.util {
-    withJavaModel
+    withJavaModel,
+    eclipsePlatformUtils,
+    EclipseProgressMonitor
 }
 import com.redhat.ceylon.ide.common.model {
     CeylonProject,
@@ -55,7 +57,8 @@ import org.eclipse.core.runtime {
     IProgressMonitor,
     Path,
     QualifiedName,
-    IPath
+    IPath,
+    SubMonitor
 }
 import org.eclipse.jdt.core {
     JavaCore,
@@ -66,6 +69,16 @@ import org.eclipse.jface.dialogs {
 }
 import org.eclipse.swt.widgets {
     Display
+}
+import com.redhat.ceylon.ide.common.util {
+    ProgressMonitor,
+    platformUtils,
+    BaseProgressMonitor
+}
+import com.redhat.ceylon.ide.common.model.parsing {
+    ModulesScanner,
+    ProjectFilesScanner,
+    RootFolderScanner
 }
 
 Boolean isCeylonSourceEntry(IClasspathEntry entry) => 
@@ -321,4 +334,12 @@ shared class EclipseCeylonProject(ideArtifact)
     
     shared actual String systemRepository => 
             CeylonBuilder.getInterpolatedCeylonSystemRepo(ideArtifact);
+    
+    shared actual void scanRootFolder(RootFolderScanner<IProject, IResource, IFolder, IFile> scanner) {
+        scanner.nativeRootDir.accept(object satisfies IResourceVisitor {
+            shared actual Boolean visit(IResource resource) {
+                return scanner.visitNativeResource(resource);
+            }
+        });
+    }
  }

@@ -58,7 +58,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
-import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -98,12 +97,10 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
-import org.xml.sax.SAXParseException;
 
 import com.redhat.ceylon.cmr.api.ArtifactCallback;
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.ArtifactCreator;
-import com.redhat.ceylon.cmr.api.Overrides;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
 import com.redhat.ceylon.cmr.impl.ShaSigner;
@@ -173,9 +170,7 @@ import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
 import com.redhat.ceylon.ide.common.model.ProjectState;
 import com.redhat.ceylon.ide.common.model.SourceFile;
 import com.redhat.ceylon.ide.common.model.delta.CompilationUnitDelta;
-import com.redhat.ceylon.ide.common.model.parsing.ModulesScanner;
 import com.redhat.ceylon.ide.common.model.parsing.ProjectSourceParser;
-import com.redhat.ceylon.ide.common.model.parsing.RootFolderScanner;
 import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.util.CarUtils;
@@ -2142,9 +2137,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             
                             phasedUnits.getModuleManager().prepareForTypeChecking();
                             
-                            scanFiles(ceylonProject, javaProject, 
-                                    typeChecker, phasedUnits, moduleManager, moduleSourceMapper, modelLoader, 
-                                    defaultModule, monitor.newChild(10));
+                            ceylonProject.scanFiles(utilJ2C().newProgressMonitor(monitor.newChild(10)));
                             
                             if (monitor.isCanceled()) {
                                 throw new OperationCanceledException();
@@ -2369,99 +2362,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         typeCheckerBuilder.setRepositoryManager(repositoryManager);
         TypeChecker typeChecker = typeCheckerBuilder.getTypeChecker();
         return typeChecker;
-    }
-
-    private static void scanFiles(CeylonProject<IProject, IResource, IFolder, IFile> project, IJavaProject javaProject, 
-            final TypeChecker typeChecker, final PhasedUnits phasedUnits, 
-            final IdeModuleManager<IProject,IResource,IFolder,IFile> moduleManager, 
-            final IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper, 
-            final BaseIdeModelLoader modelLoader, 
-            final Module defaultModule, IProgressMonitor mon) throws CoreException {
-        SubMonitor monitor = SubMonitor.convert(mon, 10000);
-        final List<IFile> projectFiles = new ArrayList<IFile>();
-
-        final Collection<IFolder> sourceFolders = new LinkedList<>();
-        for (IFolder sourceFolder : getSourceFolders(project.getIdeArtifact())) {
-            if (sourceFolder.exists()) {
-                sourceFolders.add(sourceFolder);
-            }
-        }
-        final Collection<IFolder> resourceFolders = new LinkedList<>();
-        for (IFolder resourceFolder : getResourceFolders(project.getIdeArtifact())) {
-            if (resourceFolder.exists()) {
-                resourceFolders.add(resourceFolder);
-            }
-        }
-
-        // First scan all non-default source modules and attach the contained packages 
-        for (IFolder srcFolder : sourceFolders) {
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
-            }
-
-            final FolderVirtualFile<IProject, IResource,IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(srcFolder, project.getIdeArtifact());
-            
-            final ModulesScanner<IProject, IResource, IFolder, IFile> modulesScanner = new ModulesScanner<IProject, IResource, IFolder, IFile>(
-                    td(IProject.class),
-                    td(IResource.class),
-                    td(IFolder.class),
-                    td(IFile.class),
-                    project,
-                    srcDir, utilJ2C().newProgressMonitor(monitor));
-            
-            srcFolder.accept(new IResourceVisitor() {
-                @Override
-                public boolean visit(IResource resource) throws CoreException {
-                    return modulesScanner.visitNativeResource(resource);
-                }
-            });
-        }
-
-        // Then scan all source files
-        for (final IFolder sourceFolder : sourceFolders) {
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
-            }
-
-            final FolderVirtualFile<IProject, IResource,IFolder, IFile> srcDir = vfsJ2C().createVirtualFolder(sourceFolder, project.getIdeArtifact());
-            final RootFolderScanner<IProject, IResource, IFolder, IFile> sourcesScanner = new RootFolderScanner<IProject, IResource, IFolder, IFile>(
-                    td(IProject.class),
-                    td(IResource.class),
-                    td(IFolder.class),
-                    td(IFile.class), 
-                    project,
-                    srcDir, true, project.getProjectFileList(), utilJ2C().newProgressMonitor(monitor));
-            
-            sourceFolder.accept(new IResourceVisitor() {
-                @Override
-                public boolean visit(IResource resource) throws CoreException {
-                    return sourcesScanner.visitNativeResource(resource);
-                }
-            });
-        }
-
-        // Then scan all resource files
-        for (final IFolder resourceFolder : resourceFolders) {
-            if (monitor.isCanceled()) {
-                throw new OperationCanceledException();
-            }
-
-            final FolderVirtualFile<IProject, IResource,IFolder, IFile> rscDir = vfsJ2C().createVirtualFolder(resourceFolder, project.getIdeArtifact());
-            final RootFolderScanner<IProject, IResource, IFolder, IFile> resourcesScanner = new RootFolderScanner<IProject, IResource, IFolder, IFile>(
-                    td(IProject.class),
-                    td(IResource.class),
-                    td(IFolder.class),
-                    td(IFile.class), 
-                    project, 
-                    rscDir, false, project.getProjectFileList(), utilJ2C().newProgressMonitor(monitor));
-            
-            resourceFolder.accept(new IResourceVisitor() {
-                @Override
-                public boolean visit(IResource resource) throws CoreException {
-                    return resourcesScanner.visitNativeResource(resource);
-                }
-            });
-        }
     }
 
     private static void addProblemAndTaskMarkers(final List<PhasedUnit> units, 
@@ -3360,7 +3260,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
     public static TypeChecker getProjectTypeChecker(IProject project) {
         CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
-        if (ceylonProject != null) {
+        if (ceylonProject != null && ceylonProject.getParsed()) {
             return ceylonProject.getTypechecker();
         }
         return null;
@@ -3559,69 +3459,69 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         job.schedule();
     }
     
-    // TODO ABSTRACTION : should be moved to the CeylonProject class
-    public static RepositoryManager createProjectRepositoryManager(final IProject project) throws CoreException {
-        modelJ2C().ceylonModel().addProject(project);
-        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
 
-        RepositoryManager repositoryManager = new CeylonUtils.CeylonRepoManagerBuilder() {
-                    protected com.redhat.ceylon.cmr.api.Overrides getOverrides(String path) {
-                        if (path == null) {
-                            removeOverridesProblemMarker(project);
-                        }
-                        return super.getOverrides(path);
-                    }
-                    protected com.redhat.ceylon.cmr.api.Overrides getOverrides(File absoluteFile) {
-                        Overrides result = null;
-                        Exception overridesException = null;
-                        int overridesLine = -1;
-                        int overridesColumn = -1;
-                        try {
-                            result = super.getOverrides(absoluteFile);
-                        } catch(Overrides.InvalidOverrideException e) {
-                            overridesException = e;
-                            overridesLine = e.line;
-                            overridesColumn = e.column;
-                        } catch(IllegalStateException e) {
-                            Throwable cause = e.getCause();
-                            if (cause instanceof SAXParseException) {
-                                SAXParseException parseException = (SAXParseException) cause;
-                                overridesException = parseException;
-                                overridesLine = parseException.getLineNumber();
-                                overridesColumn = parseException.getColumnNumber();
-                            } else if (cause instanceof Exception) {
-                                overridesException = (Exception) cause;
-                            } else {
-                                overridesException = e;
-                            }
-                        } catch(Exception e) {
-                            overridesException = e;
-                        }
-
-                        if (overridesException != null) {
-                            createOverridesProblemMarker(
-                                    project, 
-                                    overridesException, 
-                                    absoluteFile, 
-                                    overridesLine, 
-                                    overridesColumn);
-                        } else {
-                            removeOverridesProblemMarker(project);
-                        }
-                        return result;
-                    };
-                    
-                }
-                .offline(ceylonProject.getConfiguration().getOffline())
-                .cwd(project.getLocation().toFile())
-                .systemRepo(getInterpolatedCeylonSystemRepo(project))
-                .extraUserRepos(getReferencedProjectsOutputRepositories(project))
-                .logger(new EclipseLogger())
-                .isJDKIncluded(true)
-                .buildManager();
-
-        return repositoryManager;
-    }
+//    public static RepositoryManager createProjectRepositoryManager(final IProject project) throws CoreException {
+//        modelJ2C().ceylonModel().addProject(project);
+//        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
+//
+//        RepositoryManager repositoryManager = new CeylonUtils.CeylonRepoManagerBuilder() {
+//                    protected com.redhat.ceylon.cmr.api.Overrides getOverrides(String path) {
+//                        if (path == null) {
+//                            removeOverridesProblemMarker(project);
+//                        }
+//                        return super.getOverrides(path);
+//                    }
+//                    protected com.redhat.ceylon.cmr.api.Overrides getOverrides(File absoluteFile) {
+//                        Overrides result = null;
+//                        Exception overridesException = null;
+//                        int overridesLine = -1;
+//                        int overridesColumn = -1;
+//                        try {
+//                            result = super.getOverrides(absoluteFile);
+//                        } catch(Overrides.InvalidOverrideException e) {
+//                            overridesException = e;
+//                            overridesLine = e.line;
+//                            overridesColumn = e.column;
+//                        } catch(IllegalStateException e) {
+//                            Throwable cause = e.getCause();
+//                            if (cause instanceof SAXParseException) {
+//                                SAXParseException parseException = (SAXParseException) cause;
+//                                overridesException = parseException;
+//                                overridesLine = parseException.getLineNumber();
+//                                overridesColumn = parseException.getColumnNumber();
+//                            } else if (cause instanceof Exception) {
+//                                overridesException = (Exception) cause;
+//                            } else {
+//                                overridesException = e;
+//                            }
+//                        } catch(Exception e) {
+//                            overridesException = e;
+//                        }
+//
+//                        if (overridesException != null) {
+//                            createOverridesProblemMarker(
+//                                    project, 
+//                                    overridesException, 
+//                                    absoluteFile, 
+//                                    overridesLine, 
+//                                    overridesColumn);
+//                        } else {
+//                            removeOverridesProblemMarker(project);
+//                        }
+//                        return result;
+//                    };
+//                    
+//                }
+//                .offline(ceylonProject.getConfiguration().getOffline())
+//                .cwd(project.getLocation().toFile())
+//                .systemRepo(getInterpolatedCeylonSystemRepo(project))
+//                .extraUserRepos(getReferencedProjectsOutputRepositories(project))
+//                .logger(new EclipseLogger())
+//                .isJDKIncluded(true)
+//                .buildManager();
+//
+//        return repositoryManager;
+//    }
     
     public static Collection<CeylonProject<IProject, IResource, IFolder, IFile>> getCeylonProjects() {
         return toJavaList_.toJavaList(td(CeylonProject.class), modelJ2C().ceylonModel().getCeylonProjects());
