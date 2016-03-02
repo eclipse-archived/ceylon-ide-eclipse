@@ -140,6 +140,7 @@ object eclipseQuickFixManager
         convertToClassQuickFix.addConvertToClassProposal(data, declaration);
         addParameterQuickFix.addParameterProposals(data, file);
 
+        eclipseMiscQuickFix.addArgumentProposals(data, file, namedArgument);
 
         convertThenElseToIfElse.addConvertToIfElseProposal(data, file, doc, statement);
         

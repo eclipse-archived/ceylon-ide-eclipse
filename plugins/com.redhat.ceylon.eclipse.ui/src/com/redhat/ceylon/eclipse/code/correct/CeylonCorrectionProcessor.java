@@ -18,15 +18,12 @@ import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addCo
 import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addConvertToVerbatimProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertSwitchToIfProposal.addConvertIfToSwitchProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertSwitchToIfProposal.addConvertSwitchToIfProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ConvertToBlockProposal.addConvertToBlockProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToConcatenationProposal.addConvertToConcatenationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToInterpolationProposal.addConvertToInterpolationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToNamedArgumentsProposal.addConvertToNamedArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToPositionalArgumentsProposal.addConvertToPositionalArgumentsProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ConvertToSpecifierProposal.addConvertToSpecifierProposal;
 import static com.redhat.ceylon.eclipse.code.correct.DestructureProposal.addDestructureProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExpandTypeProposal.addExpandTypeProposal;
-import static com.redhat.ceylon.eclipse.code.correct.FillInArgumentNameProposal.addFillInArgumentNameProposal;
 import static com.redhat.ceylon.eclipse.code.correct.InvertIfElseProposal.addInvertIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.JoinDeclarationProposal.addJoinDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.JoinIfStatementsProposal.addJoinIfStatementsProposal;
@@ -879,7 +876,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addJoinDeclarationProposal(proposals, rootNode, statement, file);
 //            addParameterProposals(proposals, file, rootNode, declaration);
             
-            addArgumentProposals(proposals, doc, file, argument);
+//            addArgumentProposals(proposals, doc, file, argument);
             addUseAliasProposal(imp, proposals, editor);
             addRenameAliasProposal(imp, proposals, editor);
             addRemoveAliasProposal(imp, proposals, file, editor);            
@@ -928,43 +925,6 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         
     }
     
-	private void addArgumentProposals(
-	        Collection<ICompletionProposal> proposals,
-            IDocument doc, IFile file,
-            Tree.StatementOrArgument node) {
-        if (node instanceof Tree.MethodArgument) {
-            Tree.MethodArgument ma =
-                    (Tree.MethodArgument) node;
-            Tree.SpecifierOrInitializerExpression se = 
-                    ma.getSpecifierExpression(); 
-            if (se instanceof Tree.LazySpecifierExpression) {
-                addConvertToBlockProposal(doc, proposals, file, node);
-            }
-            Tree.Block b = ma.getBlock(); 
-            if (b!=null) {
-                addConvertToSpecifierProposal(doc, proposals, file, b);
-            }
-        }
-        if (node instanceof Tree.AttributeArgument) {
-            Tree.AttributeArgument aa =
-                    (Tree.AttributeArgument) node;
-            Tree.SpecifierOrInitializerExpression se = 
-                    aa.getSpecifierExpression(); 
-            if (se instanceof Tree.LazySpecifierExpression) {
-                addConvertToBlockProposal(doc, proposals, file, node);
-            }
-            Tree.Block b = aa.getBlock(); 
-            if (b!=null) {
-                addConvertToSpecifierProposal(doc, proposals, file, b);
-            }
-        }
-        if (node instanceof Tree.SpecifiedArgument) {
-            Tree.SpecifiedArgument sa =
-                    (Tree.SpecifiedArgument) node;
-            addFillInArgumentNameProposal(proposals, doc, file, sa);
-        }
-    }
-
     public void collectWarningSuppressions(
             CeylonAnnotation annotation,
             IQuickAssistInvocationContext context,
@@ -1101,6 +1061,43 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     }
 
 }
+
+//private void addArgumentProposals(
+//Collection<ICompletionProposal> proposals,
+//IDocument doc, IFile file,
+//Tree.StatementOrArgument node) {
+//if (node instanceof Tree.MethodArgument) {
+//Tree.MethodArgument ma =
+//        (Tree.MethodArgument) node;
+//Tree.SpecifierOrInitializerExpression se = 
+//        ma.getSpecifierExpression(); 
+//if (se instanceof Tree.LazySpecifierExpression) {
+//    addConvertToBlockProposal(doc, proposals, file, node);
+//}
+//Tree.Block b = ma.getBlock(); 
+//if (b!=null) {
+//    addConvertToSpecifierProposal(doc, proposals, file, b);
+//}
+//}
+//if (node instanceof Tree.AttributeArgument) {
+//Tree.AttributeArgument aa =
+//        (Tree.AttributeArgument) node;
+//Tree.SpecifierOrInitializerExpression se = 
+//        aa.getSpecifierExpression(); 
+//if (se instanceof Tree.LazySpecifierExpression) {
+//    addConvertToBlockProposal(doc, proposals, file, node);
+//}
+//Tree.Block b = aa.getBlock(); 
+//if (b!=null) {
+//    addConvertToSpecifierProposal(doc, proposals, file, b);
+//}
+//}
+//if (node instanceof Tree.SpecifiedArgument) {
+//Tree.SpecifiedArgument sa =
+//        (Tree.SpecifiedArgument) node;
+//addFillInArgumentNameProposal(proposals, doc, file, sa);
+//}
+//}
 
 //private void addAnnotationProposals(
 //Collection<ICompletionProposal> proposals,

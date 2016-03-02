@@ -1,5 +1,5 @@
 import com.redhat.ceylon.ide.common.correct {
-    MiscQuickFixes
+    FillInArgumentNameQuickFix
 }
 
 import org.eclipse.core.resources {
@@ -21,13 +21,12 @@ import org.eclipse.text.edits {
     TextEdit
 }
 
-object eclipseMiscQuickFix
-        satisfies MiscQuickFixes<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+object eclipseFillInArgumentNameQuickFix
+        satisfies FillInArgumentNameQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
                 & EclipseAbstractQuickFix
                 & EclipseDocumentChanges {
     
-    convertToBlockQuickFix => eclipseConvertToBlockQuickFix;
-    convertToSpecifierQuickFix => eclipseConvertToSpecifierQuickFix;
-    convertToGetterQuickFix => eclipseConvertToGetterQuickFix;
-    fillInQuickFix => eclipseFillInArgumentNameQuickFix;
+    shared actual void newProposal(EclipseQuickFixData data, String desc, TextChange change) {
+        data.proposals.add(CorrectionProposal(desc, change, null));
+    }
 }
