@@ -5,7 +5,6 @@ import static com.redhat.ceylon.compiler.java.util.Util.getModuleArchiveName;
 import static com.redhat.ceylon.compiler.java.util.Util.getModulePath;
 import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
-import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
@@ -98,7 +97,6 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 
-import com.redhat.ceylon.cmr.api.ArtifactCallback;
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.ArtifactCreator;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
@@ -125,11 +123,8 @@ import com.redhat.ceylon.compiler.java.util.RepositoryLister;
 import com.redhat.ceylon.compiler.js.JsCompiler;
 import com.redhat.ceylon.compiler.js.util.Options;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.TypeCheckerBuilder;
 import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleValidator;
 import com.redhat.ceylon.compiler.typechecker.analyzer.Warning;
-import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
@@ -139,13 +134,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
-import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.compiler.typechecker.util.WarningSuppressionVisitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
-import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
-import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
@@ -161,8 +153,6 @@ import com.redhat.ceylon.ide.common.model.CeylonUnit;
 import com.redhat.ceylon.ide.common.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.IResourceAware;
 import com.redhat.ceylon.ide.common.model.IdeModelLoader;
-import com.redhat.ceylon.ide.common.model.IdeModuleManager;
-import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.model.JavaCompilationUnit;
 import com.redhat.ceylon.ide.common.model.JavaUnit;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies;
@@ -174,6 +164,7 @@ import com.redhat.ceylon.ide.common.model.parsing.ProjectSourceParser;
 import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.util.CarUtils;
+import com.redhat.ceylon.ide.common.util.ProgressMonitor;
 import com.redhat.ceylon.ide.common.util.toCeylonString_;
 import com.redhat.ceylon.ide.common.util.toJavaList_;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
@@ -191,13 +182,10 @@ import com.redhat.ceylon.langtools.tools.javac.file.RelativePath.RelativeFile;
 import com.redhat.ceylon.langtools.tools.javac.tree.JCTree;
 import com.redhat.ceylon.langtools.tools.javac.tree.JCTree.JCClassDecl;
 import com.redhat.ceylon.langtools.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.redhat.ceylon.model.cmr.ArtifactResult;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.typechecker.context.TypeCache;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -469,15 +457,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     private static Set<IProject> containersInitialized = new HashSet<IProject>();
-    private final static Set<ICeylonModelListener> modelListeners = new LinkedHashSet<ICeylonModelListener>();
-
-    public static void addModelListener(ICeylonModelListener listener) {
-        modelListeners.add(listener);
-    }
-    
-    public static void removeModelListener(ICeylonModelListener listener) {
-        modelListeners.remove(listener);
-    }
 
     public static final String CEYLON_CONSOLE= "Ceylon Build";
     //private long startTime;
@@ -576,6 +555,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return rootFolderType == RootFolderType.RESOURCE;
     }
 
+    @SuppressWarnings("unchecked")
     public static IdeModelLoader<IProject, IResource, IFolder, IFile, ITypeRoot, IType> getModelLoader(TypeChecker typeChecker) {
         BaseIdeModuleManager moduleManager = (BaseIdeModuleManager) 
                 typeChecker.getPhasedUnits().getModuleManager();
@@ -802,14 +782,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         modelJ2C().ceylonModel().addProject(project.getProject());
         final CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
         final IJavaProject javaProject = JavaCore.create(project);
-        final SubMonitor monitor = SubMonitor.convert(new ProgressMonitorWrapper(mon) {
+        final ProgressMonitor<? extends IProgressMonitor> ceylonMonitor = utilJ2C().newProgressMonitor(new ProgressMonitorWrapper(mon) {
             @Override
             public boolean isCanceled() {
                 return super.isCanceled() || 
                         PlatformUI.getWorkbench().isClosing();
             }
-        }, 
-        "Ceylon build of project " + project.getName(), 100);
+        }).convert(100, "Ceylon build of project " + project.getName());
+        
+        final SubMonitor monitor = (SubMonitor) ceylonMonitor.getWrapped();
         try {
             buildHook.startBuild(kind, args, project, getBuildConfig(), getContext(), monitor);
         } catch (CoreException e) {
@@ -914,12 +895,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     //if we already resolved the classpath, the
                     //model has already been freshly-parsed
                     buildHook.parseCeylonModel();
-                    typeChecker = parseCeylonModel(ceylonProject, 
-                            monitor.newChild(19, PREPEND_MAIN_LABEL_TO_SUBTASK));
+                    ceylonProject.parseCeylonModel(
+                            ceylonMonitor.newChild(19, true));
                 }
-                else {
-                    typeChecker = getProjectTypeChecker(project);
-                }
+                typeChecker = ceylonProject.getTypechecker();
                 
                 monitor.setWorkRemaining(80);
                 if (monitor.isCanceled()) {
@@ -2086,282 +2065,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             });
         ceylonProject.setState(ProjectState.getProjectState$typechecked());
         return builtPhasedUnits;
-    }
-
-    public static TypeChecker parseCeylonModel(final CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject,
-            final IProgressMonitor mon) throws CoreException {
-        final IProject project = ceylonProject.getIdeArtifact();
-        try {
-            return doWithSourceModel(project, false, 20, new Callable<TypeChecker>() {
-                @Override
-                public TypeChecker call() throws Exception {
-                    return doWithCeylonModelCaching(new Callable<TypeChecker>() {
-                        @Override
-                        public TypeChecker call() throws CoreException {
-                            SubMonitor monitor = SubMonitor.convert(mon,
-                                    "Setting up typechecker for project " + project.getName(), 113);
-
-                            ceylonProject.setState(ProjectState.getProjectState$parsing());
-                            modelJ2C().setTypeCheckerOnCeylonProject(ceylonProject, null);
-                            ceylonProject.resetRepositoryManager();
-                            ceylonProject.getProjectFilesMap().clear();
-                            ceylonProject.getModuleDependencies().reset();
-
-                            if (monitor.isCanceled()) {
-                                throw new OperationCanceledException();
-                            }
-                            
-                            final IJavaProject javaProject = JavaCore.create(project);
-                            TypeChecker typeChecker = buildTypeChecker(ceylonProject);
-                            modelJ2C().setTypeCheckerOnCeylonProject(ceylonProject, typeChecker);
-                            PhasedUnits phasedUnits = typeChecker.getPhasedUnits();
-
-                            IdeModuleManager<IProject,IResource,IFolder,IFile> moduleManager = 
-                                    (IdeModuleManager<IProject,IResource,IFolder,IFile>) phasedUnits.getModuleManager();
-                            IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper = 
-                                    (IdeModuleSourceMapper<IProject,IResource,IFolder,IFile>) phasedUnits.getModuleSourceMapper();
-                            moduleManager.setTypeChecker(typeChecker);
-                            moduleSourceMapper.setTypeChecker(typeChecker);
-                            Context context = typeChecker.getContext();
-                            BaseIdeModelLoader modelLoader = moduleManager.getModelLoader();
-                            Module defaultModule = context.getModules().getDefaultModule();
-
-                            monitor.worked(1);
-                            
-                            monitor.subTask("parsing source files for project " 
-                                        + project.getName());
-
-                            if (monitor.isCanceled()) {
-                                throw new OperationCanceledException();
-                            }
-                            
-                            phasedUnits.getModuleManager().prepareForTypeChecking();
-                            
-                            ceylonProject.scanFiles(utilJ2C().newProgressMonitor(monitor.newChild(10)));
-                            
-                            if (monitor.isCanceled()) {
-                                throw new OperationCanceledException();
-                            }
-                            modelLoader.setupSourceFileObjects(typeChecker.getPhasedUnits().getPhasedUnits());
-
-                            monitor.worked(1);
-                            
-                            // Parsing of ALL units in the source folder should have been done
-
-                            if (monitor.isCanceled()) {
-                                throw new OperationCanceledException();
-                            }
-
-                            monitor.subTask("determining module dependencies for " 
-                                    + project.getName());
-
-                            phasedUnits.visitModules();
-
-                            //By now the language module version should be known (as local)
-                            //or we should use the default one.
-                            Module languageModule = context.getModules().getLanguageModule();
-                            if (languageModule.getVersion() == null) {
-                                languageModule.setVersion(TypeChecker.LANGUAGE_MODULE_VERSION);
-                            }
-
-                            if (monitor.isCanceled()) {
-                                throw new OperationCanceledException();
-                            }
-
-                            final ModuleValidator moduleValidator = new ModuleValidator(context, phasedUnits) {
-                                @Override
-                                protected void executeExternalModulePhases() {}
-                                @Override
-                                protected Exception catchIfPossible(Exception e) {
-                                    if (e instanceof OperationCanceledException) {
-                                        throw (OperationCanceledException)e;
-                                    }
-                                    return e;
-                                }
-                            };
-
-                            final int maxModuleValidatorWork = 100000;
-                            final SubMonitor validatorProgress = SubMonitor.convert(monitor.newChild(100), maxModuleValidatorWork);
-                            moduleValidator.setListener(new ModuleValidator.ProgressListener() {
-                                @Override
-                                public void retrievingModuleArtifact(final Module module,
-                                        final ArtifactContext artifactContext) {
-                                    final long numberOfModulesNotAlreadySearched = moduleValidator.numberOfModulesNotAlreadySearched();
-                                    final long totalNumberOfModules = numberOfModulesNotAlreadySearched + moduleValidator.numberOfModulesAlreadySearched();
-                                    final long oneModuleWork = maxModuleValidatorWork / totalNumberOfModules;
-                                    final int workRemaining = (int) ((double)numberOfModulesNotAlreadySearched * oneModuleWork);
-                                    if(validatorProgress.isCanceled()) {
-                                        throw new OperationCanceledException("Interrupted the retrieving of module : " + module.getSignature());
-                                    }
-                                    validatorProgress.setWorkRemaining(workRemaining);
-                                    artifactContext.setCallback(new ArtifactCallback() {
-                                        SubMonitor artifactProgress = null;
-                                        long size;
-                                        long alreadyDownloaded = 0;
-                                        StringBuilder messageBuilder = new StringBuilder("- downloading module ")
-                                                                        .append(module.getSignature())
-                                                                        .append(' ');
-                                        @Override
-                                        public void start(String nodeFullPath, long size, String contentStore) {
-                                            this.size = size;
-                                            int ticks = size > 0 ? (int) size : 100000; 
-                                            artifactProgress = SubMonitor.convert(validatorProgress.newChild((int)oneModuleWork), ticks);
-                                            if (! contentStore.isEmpty()) {
-                                                messageBuilder.append("from ").append(contentStore);
-                                            }
-                                            artifactProgress.subTask(messageBuilder.toString());
-                                            if (artifactProgress.isCanceled()) {
-                                                throw new OperationCanceledException("Interrupted the download of module : " + module.getSignature());
-                                            }
-                                        }
-                                        @Override
-                                        public void read(byte[] bytes, int length) {
-                                            if (artifactProgress.isCanceled()) {
-                                                throw new OperationCanceledException("Interrupted the download of module : " + module.getSignature());
-                                            }
-                                            if (size < 0) {
-                                                artifactProgress.setWorkRemaining(length*100);
-                                            } else {
-                                                artifactProgress.subTask(new StringBuilder(messageBuilder)
-                                                                            .append(" ( ")
-                                                                            .append(alreadyDownloaded * 100 / size)
-                                                                            .append("% )").toString());
-                                            }
-                                            alreadyDownloaded += length;
-                                            artifactProgress.worked(length);
-                                        }
-                                        @Override
-                                        public void error(File localFile, Throwable t) {
-                                            localFile.delete();
-                                            artifactProgress.setWorkRemaining(0);
-                                            if (t instanceof OperationCanceledException) {
-                                               throw (OperationCanceledException)t;
-                                            }
-                                        }
-                                        @Override
-                                        public void done(File arg0) {
-                                            artifactProgress.setWorkRemaining(0);
-                                        }
-                                    });
-                                }
-
-                                @Override
-                                public void resolvingModuleArtifact(Module module,
-                                        ArtifactResult artifactResult) {
-                                    if (validatorProgress.isCanceled()) {
-                                        throw new OperationCanceledException("Interrupted the resolving of module : " + module.getSignature());
-                                    }
-                                    long numberOfModulesNotAlreadySearched = moduleValidator.numberOfModulesNotAlreadySearched();
-                                    validatorProgress.setWorkRemaining((int) (numberOfModulesNotAlreadySearched * 100
-                                                                               / (numberOfModulesNotAlreadySearched + moduleValidator.numberOfModulesAlreadySearched())));
-                                    validatorProgress.subTask(new StringBuilder("resolving module ")
-                                    .append(module.getSignature())
-                                    .toString());
-                                }
-
-                                @Override
-                                public void retrievingModuleArtifactFailed(Module arg0, ArtifactContext arg1) {
-                                }
-
-                                @Override
-                                public void retrievingModuleArtifactSuccess(Module arg0, ArtifactResult arg1) {
-                                }
-                            });
-
-                            moduleValidator.verifyModuleDependencyTree();
-
-                            validatorProgress.setWorkRemaining(0);
-
-                            typeChecker.setPhasedUnitsOfDependencies(moduleValidator.getPhasedUnitsOfDependencies());
-                            
-                            for (PhasedUnits dependencyPhasedUnits: typeChecker.getPhasedUnitsOfDependencies()) {
-                                modelLoader.addSourceArchivePhasedUnits(dependencyPhasedUnits.getPhasedUnits());
-                            }
-                            
-                            modelLoader.setModuleAndPackageUnits();
-                            
-                            if (compileToJs(project)) {
-                                for (Module module : typeChecker.getContext().getModules().getListOfModules()) {
-                                    if (module instanceof BaseIdeModule) {
-                                        BaseIdeModule jdtModule = (BaseIdeModule) module;
-                                        if (jdtModule.getIsCeylonArchive()
-                                                && ModelUtil.isForBackend(jdtModule.getNativeBackends(), Backend.JavaScript.asSet())) {
-                                            List<ModuleImport> importedModuleImports = new ArrayList<>();
-                                            for(ModuleImport moduleImport : moduleSourceMapper.retrieveModuleImports(jdtModule)) {
-                                                if (ModelUtil.isForBackend(moduleImport.getNativeBackends(), Backend.JavaScript.asSet())) {
-                                                    importedModuleImports.add(moduleImport);
-                                                }
-                                            }
-                                            if (! importedModuleImports.isEmpty()) {
-                                                File artifact = ceylonProject.getRepositoryManager().getArtifact(
-                                                        new ArtifactContext(
-                                                                jdtModule.getNameAsString(), 
-                                                                jdtModule.getVersion(), 
-                                                                ArtifactContext.JS));
-                                                if (artifact == null) {
-                                                    for (ModuleImport importInError : importedModuleImports) {
-                                                        moduleSourceMapper.attachErrorToModuleImport(importInError, 
-                                                                "module not available for JavaScript platform: '" + 
-                                                                        module.getNameAsString() + "' \"" + 
-                                                                        module.getVersion() + "\"");
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            ceylonProject.getModuleDependencies().addModulesWithDependencies(typeChecker.getContext().getModules().getListOfModules());
-
-                            monitor.worked(1);
-
-                            ceylonProject.setState(ProjectState.getProjectState$parsed());
-
-                            ExternalSourceArchiveManager externalArchiveManager = getExternalSourceArchiveManager();
-                            externalArchiveManager.updateProjectSourceArchives(project, monitor);
-                            
-                            for (ICeylonModelListener listener : modelListeners) {
-                                listener.modelParsed(project);
-                            }
-                            
-                            monitor.done();
-                            
-                            return typeChecker;
-                        }
-                    });
-                }
-            });
-        } catch(RuntimeException re) {
-            if (re.getCause() instanceof CoreException) {
-                throw (CoreException) re.getCause();
-            } else {
-                throw re;
-            }
-        }
-    }
-
-    private static TypeChecker buildTypeChecker(final CeylonProject<IProject, IResource, IFolder, IFile> project) {
-        TypeCheckerBuilder typeCheckerBuilder = new TypeCheckerBuilder(
-                modelJ2C().ceylonModel().getVfs())
-            .verbose(false)
-            .moduleManagerFactory(new ModuleManagerFactory(){
-                @Override
-                public ModuleManager createModuleManager(Context context) {
-                    return modelJ2C().newModuleManager(context, project);
-                }
-
-                @Override
-                public ModuleSourceMapper createModuleManagerUtil(Context context, ModuleManager moduleManager) {
-                    return modelJ2C().newModuleSourceMapper(context, (IdeModuleManager<IProject,IResource,IFolder,IFile>) moduleManager);
-                }
-            });
-        
-        RepositoryManager repositoryManager = project.getRepositoryManager();
-        
-        typeCheckerBuilder.setRepositoryManager(repositoryManager);
-        TypeChecker typeChecker = typeCheckerBuilder.getTypeChecker();
-        return typeChecker;
     }
 
     private static void addProblemAndTaskMarkers(final List<PhasedUnit> units, 

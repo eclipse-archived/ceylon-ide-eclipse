@@ -33,6 +33,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static java.util.ResourceBundle.getBundle;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
@@ -63,6 +64,7 @@ import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -160,10 +162,12 @@ import com.redhat.ceylon.eclipse.code.preferences.CeylonSaveActionsPreferencePag
 import com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems;
 import com.redhat.ceylon.eclipse.code.search.FindMenuItems;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
+import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.ModelListener;
 
 /**
  * An editor for Ceylon source code.
@@ -172,7 +176,7 @@ import com.redhat.ceylon.eclipse.util.Highlights;
  * @author Chris Laffra
  * @author Robert M. Fuhrer
  */
-public class CeylonEditor extends TextEditor implements ICeylonModelListener {
+public class CeylonEditor extends TextEditor implements ModelListener<IProject, IResource, IFolder, IFile> {
     
     private static final Pattern TRAILING_WS = 
             Pattern.compile("[ \\t]+$", Pattern.MULTILINE);
@@ -1492,7 +1496,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
         getWorkspace()
             .addResourceChangeListener(buildListener, 
                     IResourceChangeEvent.POST_BUILD);
-        CeylonBuilder.addModelListener(this);
+        modelJ2C().ceylonModel().addModelListener(this);
         
         parserScheduler.schedule();
         
@@ -1630,7 +1634,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
             moveListener = null;
         }
         
-        CeylonBuilder.removeModelListener(this);
+        modelJ2C().ceylonModel().removeModelListener(this);
         
         IDocument document = 
                 getParseController().getDocument();
@@ -2112,7 +2116,7 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
     }
     
     @Override
-    public void modelParsed(IProject project) {
+    public Object modelParsed(CeylonProject<IProject, IResource, IFolder, IFile> project) {
         IEditorInput input = getEditorInput();
         if (input instanceof FileStoreEditorInput) {
             FileStoreEditorInput fsei = 
@@ -2135,5 +2139,6 @@ public class CeylonEditor extends TextEditor implements ICeylonModelListener {
                 }
             }
         }
+        return null;
     }
 }

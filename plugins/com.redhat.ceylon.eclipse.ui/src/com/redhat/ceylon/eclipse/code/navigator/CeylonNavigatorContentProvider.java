@@ -50,15 +50,16 @@ import com.redhat.ceylon.cmr.impl.NodeUtils;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.RootFolderType;
 import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
-import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.ModelListener;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 
 public class CeylonNavigatorContentProvider implements
-        IPipelinedTreeContentProvider2, ICeylonModelListener {
+        IPipelinedTreeContentProvider2, ModelListener<IProject, IResource, IFolder, IFile> {
     
 	private org.eclipse.ui.navigator.IExtensionStateModel javaNavigatorStateModel;
 
@@ -473,7 +474,7 @@ public class CeylonNavigatorContentProvider implements
 
     @Override
     public void init(ICommonContentExtensionSite aConfig) {
-        CeylonBuilder.addModelListener(this);
+        modelJ2C().ceylonModel().addModelListener(this);
     	INavigatorContentExtension javaNavigatorExtension = null;
         @SuppressWarnings("unchecked")
         Set<INavigatorContentExtension> set = aConfig.getService().findContentExtensionsByTriggerPoint(JavaCore.create(ResourcesPlugin.getWorkspace().getRoot()));
@@ -614,7 +615,7 @@ public class CeylonNavigatorContentProvider implements
     
     @Override
     public void dispose() {
-        CeylonBuilder.removeModelListener(this);
+        modelJ2C().ceylonModel().removeModelListener(this);
     }
 
     private StructuredViewer viewer = null;
@@ -668,10 +669,10 @@ public class CeylonNavigatorContentProvider implements
     }
 
     @Override
-    public void modelParsed(IProject project) {
+    public Object modelParsed(CeylonProject<IProject, IResource, IFolder, IFile> project) {
         if (project != null) {
             try {
-                for (IPackageFragmentRoot pfr : JavaCore.create(project).getAllPackageFragmentRoots()) {
+                for (IPackageFragmentRoot pfr : JavaCore.create(project.getIdeArtifact()).getAllPackageFragmentRoots()) {
                     if (CeylonBuilder.isSourceFolder(pfr)) {
                         scheduleRefresh(pfr);
                     }
@@ -680,6 +681,7 @@ public class CeylonNavigatorContentProvider implements
                 e.printStackTrace();
             }
         }
+        return null;
     }
 
 }

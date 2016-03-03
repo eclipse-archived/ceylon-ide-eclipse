@@ -20,9 +20,9 @@ package com.redhat.ceylon.eclipse.core.classpath;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.parseCeylonModel;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.ceylonSourceArchiveToJavaSourceArchive;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static java.util.Arrays.asList;
@@ -293,7 +293,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
 
             TypeChecker typeChecker = null;
             if (!reparse) {
-                typeChecker = getProjectTypeChecker(project);
+                typeChecker = ceylonProject.getTypechecker();
             }
             IClasspathEntry[] oldEntries = classpathEntries;
             if (typeChecker==null) {
@@ -314,9 +314,11 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
                 JavaCore.setClasspathContainer(getPath(), 
                         new IJavaProject[]{javaProject}, 
                         new IClasspathContainer[]{ new CeylonProjectModulesContainer(javaProject, getPath(), resetEntries, attributes)} , monitor);
-                typeChecker = parseCeylonModel(ceylonProject, monitor);
+                ceylonProject.parseCeylonModel(utilJ2C().newProgressMonitor(monitor));
             }
             
+            typeChecker = ceylonProject.getTypechecker();
+
             IFolder explodedModulesFolder = getCeylonClassesOutputFolder(project);
             if (isExplodeModulesEnabled(project)) {
                 if (!explodedModulesFolder.exists()) {

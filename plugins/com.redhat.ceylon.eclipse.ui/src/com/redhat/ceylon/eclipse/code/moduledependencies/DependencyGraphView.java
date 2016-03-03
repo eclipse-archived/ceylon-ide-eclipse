@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.moduledependencies;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModule;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModuleDependenciesForProject;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectSourceModules;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.createColor;
 import static com.redhat.ceylon.eclipse.util.Highlights.DOC_BACKGROUND;
@@ -83,11 +84,12 @@ import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.model.ICeylonModelListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.ModelListener;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies.Dependency;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies.ModuleReference;
@@ -96,7 +98,7 @@ import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 
 
-public class DependencyGraphView extends ViewPart implements IShowInTarget, ICeylonModelListener {
+public class DependencyGraphView extends ViewPart implements IShowInTarget, ModelListener<IProject, IResource, IFolder, IFile> {
 
     private enum Layout {
         spring("Spring"),
@@ -381,7 +383,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
         createViewer(parent);
         createMenu();
         setProject(projectMap.get(projectCombo.getText()));
-        CeylonBuilder.addModelListener(this);
+        modelJ2C().ceylonModel().addModelListener(this);
     }
 
     LayoutAlgorithm getCurrentLayoutAlgorithm() {
@@ -732,7 +734,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
     @Override
     public void dispose() {
         getWorkspace().removeResourceChangeListener(updateProjectComboListener);
-        CeylonBuilder.removeModelListener(this);
+        modelJ2C().ceylonModel().removeModelListener(this);
     }
     
     @Override
@@ -827,17 +829,18 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, ICey
     }
 
     @Override
-    public void modelParsed(final IProject project) {
+    public Object modelParsed(final CeylonProject<IProject, IResource, IFolder, IFile> project) {
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
                 if (!projectCombo.isDisposed()) {
                     if (project.getName().equals(projectCombo.getText())) {
-                        setProject(project);
+                        setProject(project.getIdeArtifact());
                     }
                 }
             }
         });
+        return null;
     }
     
 }

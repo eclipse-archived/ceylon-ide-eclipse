@@ -27,7 +27,8 @@ import com.redhat.ceylon.ide.common.model {
     CeylonProject,
     ModuleDependencies,
     CeylonProjectConfig,
-    CeylonProjects
+    CeylonProjects,
+    IdeModuleManager
 }
 import com.redhat.ceylon.ide.common.vfs {
     FolderVirtualFile
@@ -73,12 +74,25 @@ import org.eclipse.swt.widgets {
 import com.redhat.ceylon.ide.common.util {
     ProgressMonitor,
     platformUtils,
-    BaseProgressMonitor
+    BaseProgressMonitor,
+    unsafeCast
 }
 import com.redhat.ceylon.ide.common.model.parsing {
     ModulesScanner,
     ProjectFilesScanner,
     RootFolderScanner
+}
+import com.redhat.ceylon.model.typechecker.util {
+    ModuleManager
+}
+import com.redhat.ceylon.compiler.typechecker.context {
+    Context
+}
+import com.redhat.ceylon.compiler.typechecker.util {
+    ModuleManagerFactory
+}
+import com.redhat.ceylon.eclipse.core.external {
+    ExternalSourceArchiveManager
 }
 
 Boolean isCeylonSourceEntry(IClasspathEntry entry) => 
@@ -95,7 +109,6 @@ shared object nativeFolderProperties {
 
 shared class EclipseCeylonProject(ideArtifact) 
         extends CeylonProject<IProject, IResource, IFolder, IFile>() {
-    shared actual variable TypeChecker? typechecker = null;
 
     shared actual IProject ideArtifact;
 
@@ -342,4 +355,20 @@ shared class EclipseCeylonProject(ideArtifact)
             }
         });
     }
+    
+    shared actual ModuleManagerFactory moduleManagerFactory =>
+            object satisfies ModuleManagerFactory {
+                createModuleManager(Context c) => 
+                        JDTModuleManager(c, outer);
+                
+                createModuleManagerUtil(Context c, ModuleManager mm) => 
+                        JDTModuleSourceMapper(c, 
+                            unsafeCast<IdeModuleManager<IProject,IResource,IFolder,IFile>>(mm));
+            };
+            
+    shared actual void completeCeylonModelParsing(BaseProgressMonitor monitor) {
+        ExternalSourceArchiveManager externalArchiveManager = ExternalSourceArchiveManager.externalSourceArchiveManager;
+        externalArchiveManager.updateProjectSourceArchives(ideArtifact, unsafeCast<ProgressMonitor<IProgressMonitor>>(monitor).wrapped);
+    }
+    
  }
