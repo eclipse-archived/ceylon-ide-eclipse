@@ -876,7 +876,17 @@ public abstract class FilteredItemsSelectionDialog extends
         statusArea = new ViewForm(parent, /*SWT.BORDER |*/ SWT.FLAT);
         statusArea.setEnabled(false);
         statusArea.setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
-        final Composite content = new Composite(statusArea, SWT.NONE);
+        final Composite content = new Composite(statusArea, SWT.NONE) {
+            @Override
+            public Point computeSize(int wh, int hh, boolean changed) {
+                //ensures that menu dropdown stays on the window
+                return new Point(10, super.computeSize(wh, hh, changed).y);
+            }
+            @Override
+            protected void checkSubclass() {
+                // noop, allow subclassing, since we know what we are doing
+            }
+        };
         content.setLayout(GridLayoutFactory.fillDefaults().numColumns(3).equalWidth(false).spacing(0, 0).create());
         content.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
         statusArea.setContent(content);
