@@ -488,6 +488,11 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             return null;
         }
     }
+    
+    static String truncate(String name) {
+        return name.length()<=25 ? name :
+            "..." + name.substring(name.length()-25-3);
+    }
 
     static class DetailsLabelProvider 
             extends BaseLabelProvider
@@ -498,7 +503,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             Declaration dec = toDeclaration(element);
             if (dec!=null) {
                 try {
-                    return getPackageLabel(dec);
+                    return truncate(getPackageLabel(dec));
                             /*+ " \u2014 " + getLocation(dwp)*/
                 }
                 catch (Exception e) {
@@ -508,7 +513,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 }
             }
             else if (element instanceof String) {
-                return (String) element;
+                return truncate((String) element);
             }
             else {
                 return "";
@@ -535,7 +540,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             Declaration dec = toDeclaration(element);
             if (dec!=null) {
                 try {
-                    return getModuleLabel(dec);
+                    return truncate(getModuleLabel(dec));
                             /* + " \u2014 " + getLocation(dwp)*/
                 }
                 catch (Exception e) {
@@ -545,7 +550,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 }
             }
             else if (element instanceof String) {
-                return (String) element;
+                return truncate((String) element);
             }
             else {
                 return "";
@@ -573,7 +578,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             Declaration dec = toDeclaration(element);
             if (dec!=null) {
                 try {
-                    return getLocation(dec);
+                    return truncate(getLocation(dec));
                 }
                 catch (Exception e) {
                     System.err.println(dec.getName());
@@ -582,7 +587,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 }
             }
             else if (element instanceof String) {
-                return (String) element;
+                return truncate((String) element);
             }
             else {
                 return "";
