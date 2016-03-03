@@ -16,6 +16,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getOpenDialogFont;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_MODULE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_PACKAGE;
@@ -480,11 +481,6 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
     
-    static String truncate(String name) {
-        return name.length()<=25 ? name :
-            "..." + name.substring(name.length()-25-3);
-    }
-
     static class DetailsLabelProvider 
             extends BaseLabelProvider
             implements ILabelProvider {
@@ -494,7 +490,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             Declaration dec = toDeclaration(element);
             if (dec!=null) {
                 try {
-                    return truncate(getPackageLabel(dec));
+                    return getPackageLabel(dec);
                             /*+ " \u2014 " + getLocation(dwp)*/
                 }
                 catch (Exception e) {
@@ -504,7 +500,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 }
             }
             else if (element instanceof String) {
-                return truncate((String) element);
+                return (String) element;
             }
             else {
                 return "";
@@ -531,7 +527,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             Declaration dec = toDeclaration(element);
             if (dec!=null) {
                 try {
-                    return truncate(getModuleLabel(dec));
+                    return getModuleLabel(dec);
                             /* + " \u2014 " + getLocation(dwp)*/
                 }
                 catch (Exception e) {
@@ -541,7 +537,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 }
             }
             else if (element instanceof String) {
-                return truncate((String) element);
+                return (String) element;
             }
             else {
                 return "";
@@ -569,7 +565,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             Declaration dec = toDeclaration(element);
             if (dec!=null) {
                 try {
-                    return truncate(getLocation(dec));
+                    return getLocation(dec);
                 }
                 catch (Exception e) {
                     System.err.println(dec.getName());
@@ -578,7 +574,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 }
             }
             else if (element instanceof String) {
-                return truncate((String) element);
+                return (String) element;
             }
             else {
                 return "";
