@@ -140,6 +140,7 @@ object eclipseQuickFixManager
         convertToClassQuickFix.addConvertToClassProposal(data, declaration);
         assertExistsDeclarationQuickFix.addAssertExistsDeclarationProposals(data, file, declaration);
         splitDeclarationQuickFix.addSplitDeclarationProposals(data, file, declaration, statement);
+        joinDeclarationQuickFix.addJoinDeclarationProposal(data, file, statement);
         addParameterQuickFix.addParameterProposals(data, file);
 
         eclipseMiscQuickFix.addArgumentProposals(data, file, namedArgument);

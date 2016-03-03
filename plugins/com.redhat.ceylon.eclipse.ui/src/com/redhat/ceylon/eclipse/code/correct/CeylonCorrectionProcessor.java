@@ -24,7 +24,6 @@ import static com.redhat.ceylon.eclipse.code.correct.ConvertToPositionalArgument
 import static com.redhat.ceylon.eclipse.code.correct.DestructureProposal.addDestructureProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExpandTypeProposal.addExpandTypeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.InvertIfElseProposal.addInvertIfElseProposal;
-import static com.redhat.ceylon.eclipse.code.correct.JoinDeclarationProposal.addJoinDeclarationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.JoinIfStatementsProposal.addJoinIfStatementsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.MoveDirProposal.addMoveDirProposal;
 import static com.redhat.ceylon.eclipse.code.correct.PrintProposal.addPrintProposal;
@@ -871,7 +870,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //            addConvertToClassProposal(proposals, declaration, editor);
 //            addAssertExistsDeclarationProposals(proposals, doc, file, rootNode, declaration);
 //            addSplitDeclarationProposals(proposals, doc, file, rootNode, declaration, statement);
-            addJoinDeclarationProposal(proposals, rootNode, statement, file);
+//            addJoinDeclarationProposal(proposals, rootNode, statement, file);
 //            addParameterProposals(proposals, file, rootNode, declaration);
             
 //            addArgumentProposals(proposals, doc, file, argument);
