@@ -25,7 +25,8 @@ import com.redhat.ceylon.ide.common.typechecker {
 }
 import com.redhat.ceylon.ide.common.correct {
     AbstractQuickFix,
-    ImportProposals
+    ImportProposals,
+    GenericQuickFix
 }
 import com.redhat.ceylon.ide.common.util {
     Indents
@@ -107,4 +108,14 @@ shared interface EclipseAbstractQuickFix
         }
         return null;
     }
+}
+
+interface EclipseGenericQuickFix 
+        satisfies EclipseAbstractQuickFix
+                & GenericQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> {
+    
+    shared actual void newProposal(EclipseQuickFixData data, String desc, 
+        TextChange change, DefaultRegion? region)
+            => data.proposals.add(CorrectionProposal(desc, change, 
+                if (exists region) then toRegion(region) else null));
 }

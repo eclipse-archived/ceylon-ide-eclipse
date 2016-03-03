@@ -146,6 +146,7 @@ object eclipseQuickFixManager
 
         convertThenElseToIfElse.addConvertToIfElseProposal(data, file, doc, statement);
         convertIfElseToThenElse.addConvertToThenElseProposal(data, file, doc, statement);
+        invertIfElseQuickFix.addInvertIfElseProposal(data, file, doc, statement);
         
         refineFormalMembersQuickFix.addRefineFormalMembersProposal(data, false);
     }

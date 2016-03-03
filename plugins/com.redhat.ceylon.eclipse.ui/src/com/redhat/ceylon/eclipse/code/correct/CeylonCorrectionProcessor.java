@@ -22,7 +22,6 @@ import static com.redhat.ceylon.eclipse.code.correct.ConvertToNamedArgumentsProp
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToPositionalArgumentsProposal.addConvertToPositionalArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.DestructureProposal.addDestructureProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExpandTypeProposal.addExpandTypeProposal;
-import static com.redhat.ceylon.eclipse.code.correct.InvertIfElseProposal.addInvertIfElseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.JoinIfStatementsProposal.addJoinIfStatementsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.MoveDirProposal.addMoveDirProposal;
 import static com.redhat.ceylon.eclipse.code.correct.PrintProposal.addPrintProposal;
@@ -880,7 +879,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             
 //            addConvertToIfElseProposal(doc, proposals, file, statement);
 //            addConvertToThenElseProposal(rootNode, doc, proposals, file, statement);
-            addInvertIfElseProposal(doc, proposals, file, statement, node, rootNode);
+//            addInvertIfElseProposal(doc, proposals, file, statement, node, rootNode);
             
             addConvertSwitchToIfProposal(proposals, doc, file, statement);
             addConvertIfToSwitchProposal(proposals, doc, file, statement);
