@@ -3,19 +3,16 @@ import org.eclipse.core.runtime {
     SubMonitor
 }
 import com.redhat.ceylon.ide.common.util {
-    ProgressMonitor,
-    unsafeCast
+    ProgressMonitor
 }
-shared class EclipseProgressMonitor 
-        extends ProgressMonitor<IProgressMonitor> {
+shared class EclipseProgressMonitor(IProgressMonitor nativeMonitor)
+        extends ProgressMonitor<IProgressMonitor>() {
+    assert(is Identifiable theNativeMonitor=nativeMonitor);
     shared actual SubMonitor wrapped;
-    shared new(IProgressMonitor nativeMonitor) 
-            extends ProgressMonitor<IProgressMonitor>() {
-        if (is SubMonitor nativeMonitor) {
-            wrapped = nativeMonitor;
-        } else {
-            wrapped = SubMonitor.convert(nativeMonitor);
-        }
+    if (is SubMonitor nativeMonitor) {
+        wrapped = nativeMonitor;
+    } else {
+        wrapped = SubMonitor.convert(nativeMonitor of IProgressMonitor);
     }
     
     shared actual void worked(Integer amount) => wrapped.worked(amount);
@@ -23,13 +20,24 @@ shared class EclipseProgressMonitor
     shared actual Boolean cancelled => wrapped.canceled;
     shared actual ProgressMonitor<IProgressMonitor> convert(Integer work, String taskName) =>
             let (subMonitor = SubMonitor.convert(wrapped, taskName, work))
-            if (subMonitor === unsafeCast<Identifiable>(wrapped))
+            if (subMonitor === wrapped)
             then this
             else EclipseProgressMonitor(subMonitor);
     
-    shared actual ProgressMonitor<IProgressMonitor> newChild(Integer work) => 
-            EclipseProgressMonitor(wrapped.newChild(work));
+    shared actual ProgressMonitor<IProgressMonitor> newChild(Integer work, Boolean prependMainLabelToSubtask) => 
+            EclipseProgressMonitor(wrapped.newChild(
+                work, 
+                if (prependMainLabelToSubtask) 
+                then SubMonitor.\iSUPPRESS_SETTASKNAME 
+                else SubMonitor.\iSUPPRESS_BEGINTASK));
     
     shared actual void updateRemainingWork(Integer remainingWork) =>
             wrapped.setWorkRemaining(remainingWork);
+    
+    shared actual void done() {
+        if (! (theNativeMonitor === wrapped)) {
+            wrapped.done();
+        }
+        theNativeMonitor.done();
+    }
 }
