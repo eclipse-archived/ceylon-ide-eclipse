@@ -9,7 +9,8 @@ import com.redhat.ceylon.ide.common.correct {
     JoinDeclarationQuickFix,
     ConvertThenElseToIfElse,
     ConvertIfElseToThenElseQuickFix,
-    InvertIfElseQuickFix
+    InvertIfElseQuickFix,
+    ConvertSwitchToIfQuickFix
 }
 
 import org.eclipse.core.resources {
@@ -83,5 +84,10 @@ object convertIfElseToThenElse
 
 object invertIfElseQuickFix
         satisfies InvertIfElseQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+        & EclipseGenericQuickFix {
+}
+
+object convertSwitchToIfQuickFix
+        satisfies ConvertSwitchToIfQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
         & EclipseGenericQuickFix {
 }

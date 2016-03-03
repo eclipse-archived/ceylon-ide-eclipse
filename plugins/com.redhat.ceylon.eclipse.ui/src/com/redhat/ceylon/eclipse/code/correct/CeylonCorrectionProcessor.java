@@ -14,8 +14,6 @@ import static com.redhat.ceylon.eclipse.code.correct.ConvertFunctionToGetterProp
 import static com.redhat.ceylon.eclipse.code.correct.ConvertGetterToFunctionProposal.addConvertGetterToFunctionProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addConvertFromVerbatimProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addConvertToVerbatimProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ConvertSwitchToIfProposal.addConvertIfToSwitchProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ConvertSwitchToIfProposal.addConvertSwitchToIfProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToConcatenationProposal.addConvertToConcatenationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToInterpolationProposal.addConvertToInterpolationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToNamedArgumentsProposal.addConvertToNamedArgumentsProposal;
@@ -881,8 +879,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //            addConvertToThenElseProposal(rootNode, doc, proposals, file, statement);
 //            addInvertIfElseProposal(doc, proposals, file, statement, node, rootNode);
             
-            addConvertSwitchToIfProposal(proposals, doc, file, statement);
-            addConvertIfToSwitchProposal(proposals, doc, file, statement);
+//            addConvertSwitchToIfProposal(proposals, doc, file, statement);
+//            addConvertIfToSwitchProposal(proposals, doc, file, statement);
             
             addSplitIfStatementProposal(proposals, doc, file, statement);
             addJoinIfStatementsProposal(proposals, doc, file, statement);
