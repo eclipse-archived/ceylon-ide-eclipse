@@ -26,11 +26,13 @@ import com.redhat.ceylon.ide.common.correct.QuickFixData;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 
 public class correctJ2C implements CorrectJ2C {
+    @Override
     public ImportProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange>
         importProposals() {
         return eclipseImportProposals_.get_();
     }
     
+    @Override
     public IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,IFile,ICompletionProposal,? extends QuickFixData<IProject>,LinkedModeModel> eclipseQuickFixManager() {
         return eclipseQuickFixManager_.get_();
     }
@@ -39,6 +41,7 @@ public class correctJ2C implements CorrectJ2C {
         return eclipseAnnotationsQuickFix_.get_();
     }
     
+    @Override
     public void addQuickFixes(
             ProblemLocation problem,
             Tree.CompilationUnit rootNode,
@@ -53,5 +56,27 @@ public class correctJ2C implements CorrectJ2C {
                 node, project, proposals, editor, ceylonProject);
 
         eclipseQuickFixManager_.get_().addQuickFixes(data, tc, file);
+    }
+
+    @Override
+    public void addQuickAssists(
+            Tree.CompilationUnit rootNode,
+            Node node,
+            IProject project,
+            Collection<ICompletionProposal> proposals,
+            CeylonEditor editor, 
+            IFile file,
+            IDocument doc,
+            Tree.Statement statement,
+            Tree.Declaration declaration,
+            Tree.NamedArgument argument,
+            Tree.ImportMemberOrType imp,
+            Tree.OperatorExpression oe,
+            int currentOffset) {
+        BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
+        EclipseQuickFixData data = new EclipseQuickFixData(null, rootNode, 
+                node, project, proposals, editor, ceylonProject);
+
+        eclipseQuickFixManager_.get_().addQuickAssists(data, file, doc, statement, declaration, argument, imp, oe, currentOffset);
     }
 }

@@ -836,12 +836,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.ImportMemberOrType imp = findImport(rootNode, node);
             Tree.OperatorExpression oe = findOperator(rootNode, node);
             
-            EclipseQuickFixData data = new EclipseQuickFixData(
-                    null, rootNode, node, project, proposals, editor, null
-            );
-            eclipseQuickFixManager_.get_().addQuickAssists(data, file, doc,
-                    statement, declaration, argument, imp, oe, currentOffset);
-            
+            correctJ2C().addQuickAssists(rootNode, node, project, proposals, currentEditor, file, doc, statement, declaration, argument, imp, oe, currentOffset);
+
 //            addOperatorProposals(proposals, file, oe);
 //            addParenthesesProposals(proposals, file, node, rootNode, oe);
 

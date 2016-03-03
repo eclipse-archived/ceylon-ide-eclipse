@@ -15,6 +15,12 @@ import org.eclipse.text.edits.TextEdit;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.NamedArgument;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.OperatorExpression;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.correct.ProblemLocation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.ide.common.correct.IdeQuickFixManager;
@@ -35,4 +41,18 @@ public interface CorrectJ2C {
         CeylonEditor editor, 
         TypeChecker tc, 
         IFile file);
-}
+
+    void addQuickAssists(
+            CompilationUnit rootNode,
+            Node node,
+            IProject project,
+            Collection<ICompletionProposal> proposals,
+            CeylonEditor editor,
+            IFile file, 
+            IDocument doc, 
+            Statement statement,
+            Declaration declaration,
+            NamedArgument argument,
+            ImportMemberOrType imp, 
+            OperatorExpression oe, 
+            int currentOffset);}
