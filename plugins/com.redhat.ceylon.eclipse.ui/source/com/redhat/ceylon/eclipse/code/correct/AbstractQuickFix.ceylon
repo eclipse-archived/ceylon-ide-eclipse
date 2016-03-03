@@ -82,7 +82,8 @@ shared interface EclipseAbstractQuickFix
     
     shared actual Region newRegion(Integer start, Integer length) => Region(start, length);
     
-    shared Region toRegion(DefaultRegion region) => Region(region.start, region.length);
+    shared Region? toRegion(DefaultRegion? region) => 
+            if (exists region) then Region(region.start, region.length) else null;
     
     shared actual TextChange newTextChange(String desc, PhasedUnit|IFile|IDocument u) {
         if (is IDocument u) {
@@ -112,9 +113,10 @@ shared interface EclipseAbstractQuickFix
 
 interface EclipseGenericQuickFix 
         satisfies EclipseAbstractQuickFix
-                & GenericQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> {
+                & GenericQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+                & EclipseDocumentChanges {
     
-    shared actual void newProposal(EclipseQuickFixData data, String desc, 
+    shared default actual void newProposal(EclipseQuickFixData data, String desc, 
         TextChange change, DefaultRegion? region)
             => data.proposals.add(CorrectionProposal(desc, change, 
                 if (exists region) then toRegion(region) else null));

@@ -23,10 +23,6 @@ import org.eclipse.text.edits {
 
 object assignToFieldQuickFix
         satisfies AssignToFieldQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
-                & EclipseAbstractQuickFix
-                & EclipseDocumentChanges {
+                & EclipseGenericQuickFix {
     
-    shared actual void newProposal(EclipseQuickFixData data, String desc, TextChange change) {
-        data.proposals.add(CorrectionProposal(desc, change, null));
-    }
 }

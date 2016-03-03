@@ -1,9 +1,6 @@
 import com.redhat.ceylon.ide.common.correct {
     ConvertIfElseToThenElseQuickFix
 }
-import com.redhat.ceylon.ide.common.refactoring {
-    DefaultRegion
-}
 
 import org.eclipse.core.resources {
     IProject,
@@ -26,12 +23,6 @@ import org.eclipse.text.edits {
 
 object convertIfElseToThenElse
         satisfies ConvertIfElseToThenElseQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
-                & EclipseAbstractQuickFix
-                & EclipseDocumentChanges {
+                & EclipseGenericQuickFix {
 
-    shared actual void newProposal(EclipseQuickFixData data, String name, 
-        TextChange change, DefaultRegion region) {
-        
-        data.proposals.add(CorrectionProposal(name, change, toRegion(region)));
-    }
 }
