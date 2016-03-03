@@ -30,4 +30,6 @@ shared object eclipsePlatformUtils satisfies IdePlatformUtils {
     shared actual RuntimeException newOperationCanceledException(String message) => 
             OperationCanceledException("Operation Cancelled : ``message``");
     
+    shared actual Boolean isOperationCanceledException(Exception exception) =>
+            exception is OperationCanceledException;
 }
