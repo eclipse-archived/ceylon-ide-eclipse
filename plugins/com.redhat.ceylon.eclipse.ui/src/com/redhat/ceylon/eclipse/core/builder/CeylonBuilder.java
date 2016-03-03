@@ -2104,7 +2104,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             ceylonProject.setState(ProjectState.getProjectState$parsing());
                             modelJ2C().setTypeCheckerOnCeylonProject(ceylonProject, null);
                             ceylonProject.resetRepositoryManager();
-                            ceylonProject.getProjectFileList().clear();
+                            ceylonProject.getProjectFilesMap().clear();
                             ceylonProject.getModuleDependencies().reset();
 
                             if (monitor.isCanceled()) {
