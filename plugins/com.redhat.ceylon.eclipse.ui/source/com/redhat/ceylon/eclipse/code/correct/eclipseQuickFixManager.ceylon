@@ -123,8 +123,7 @@ object eclipseQuickFixManager
         verboseRefinementQuickFix.addVerboseRefinementProposal(data, file, statement);
         verboseRefinementQuickFix.addShortcutRefinementProposal(data, file, statement);
         
-        addAnnotations.addContextualAnnotationProposals(data, declaration, doc, currentOffset,
-            (doc, offset) => doc.getLineOfOffset(offset));
+        addAnnotations.addContextualAnnotationProposals(data, declaration, doc, currentOffset);
         specifyTypeQuickFix.addTypingProposals(data, file, declaration);
         
         eclipseMiscQuickFix.addAnonymousFunctionProposals(data, file);
@@ -146,6 +145,7 @@ object eclipseQuickFixManager
         eclipseMiscQuickFix.addArgumentProposals(data, file, namedArgument);
 
         convertThenElseToIfElse.addConvertToIfElseProposal(data, file, doc, statement);
+        convertIfElseToThenElse.addConvertToThenElseProposal(data, file, doc, statement);
         
         refineFormalMembersQuickFix.addRefineFormalMembersProposal(data, false);
     }

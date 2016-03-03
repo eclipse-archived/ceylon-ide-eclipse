@@ -40,9 +40,6 @@ object eclipseCreateQuickFix
     shared actual CreateParameterQuickFix<IFile,IProject,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal> createParameterQuickFix
             => eclipseCreateParameterQuickFix;
     
-    shared actual Integer getLineOfOffset(IDocument doc, Integer offset)
-             => doc.getLineOfOffset(offset);
-    
     shared actual void newCreateQuickFix(EclipseQuickFixData data, String desc, Scope scope,
         Unit unit, Type? returnType, Icons image, TextChange change, Integer exitPos, Region selection) {
         
@@ -53,6 +50,4 @@ object eclipseCreateQuickFix
         
         data.proposals.add(CreateProposal(desc, scope, unit, returnType, icon, change, exitPos, selection));
     }
-    
-    
 }

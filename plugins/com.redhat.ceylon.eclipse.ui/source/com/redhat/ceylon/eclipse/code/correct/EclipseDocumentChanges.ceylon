@@ -53,4 +53,14 @@ shared interface EclipseDocumentChanges
     
     shared actual String getDocContent(IDocument doc, Integer start, Integer length) 
             => doc.get(start, length);
+    
+    shared actual Integer getLineOfOffset(IDocument doc, Integer offset)
+            => doc.getLineOfOffset(offset);
+    
+    shared actual Integer getLineStartOffset(IDocument doc, Integer line)
+            => doc.getLineInformation(line).offset;
+    
+    shared actual String getLineContent(IDocument doc, Integer line)
+            => let (info = doc.getLineInformation(line))
+               doc.get(info.offset, info.length);
 }

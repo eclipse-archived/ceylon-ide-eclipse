@@ -1,5 +1,5 @@
 import com.redhat.ceylon.ide.common.correct {
-    AddNamedArgumentQuickFix
+    ConvertIfElseToThenElseQuickFix
 }
 import com.redhat.ceylon.ide.common.refactoring {
     DefaultRegion
@@ -24,14 +24,14 @@ import org.eclipse.text.edits {
     TextEdit
 }
 
-object eclipseAddNamedArgumentQuickFix
-        satisfies AddNamedArgumentQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+object convertIfElseToThenElse
+        satisfies ConvertIfElseToThenElseQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
                 & EclipseAbstractQuickFix
                 & EclipseDocumentChanges {
-    
-    shared actual void newProposal(EclipseQuickFixData data, String desc, 
+
+    shared actual void newProposal(EclipseQuickFixData data, String name, 
         TextChange change, DefaultRegion region) {
         
-        data.proposals.add(CorrectionProposal(desc, change, toRegion(region)));
+        data.proposals.add(CorrectionProposal(name, change, toRegion(region)));
     }
 }

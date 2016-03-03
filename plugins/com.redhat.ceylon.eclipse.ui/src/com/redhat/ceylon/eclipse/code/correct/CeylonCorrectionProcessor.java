@@ -12,7 +12,6 @@ import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAs
 import static com.redhat.ceylon.eclipse.code.correct.AssignToTryProposal.addAssignToTryProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertFunctionToGetterProposal.addConvertFunctionToGetterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertGetterToFunctionProposal.addConvertGetterToFunctionProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ConvertIfElseToThenElse.addConvertToThenElseProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addConvertFromVerbatimProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addConvertToVerbatimProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertSwitchToIfProposal.addConvertIfToSwitchProposal;
@@ -880,7 +879,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addRenameVersionProposals(node, proposals, rootNode, editor);
             
 //            addConvertToIfElseProposal(doc, proposals, file, statement);
-            addConvertToThenElseProposal(rootNode, doc, proposals, file, statement);
+//            addConvertToThenElseProposal(rootNode, doc, proposals, file, statement);
             addInvertIfElseProposal(doc, proposals, file, statement, node, rootNode);
             
             addConvertSwitchToIfProposal(proposals, doc, file, statement);
