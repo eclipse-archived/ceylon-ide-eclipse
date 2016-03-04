@@ -151,6 +151,8 @@ object eclipseQuickFixManager
         convertSwitchToIfQuickFix.addConvertSwitchToIfProposal(data, file, statement);
         convertSwitchToIfQuickFix.addConvertIfToSwitchProposal(data, file, statement);
         
+        splitIfStatementQuickFix.addSplitIfStatementProposal(data, file, statement);
+        
         refineFormalMembersQuickFix.addRefineFormalMembersProposal(data, false);
     }
 }

@@ -27,7 +27,6 @@ import static com.redhat.ceylon.eclipse.code.correct.RefineEqualsHashProposal.ad
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAliasProposal.addRemoveAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameAliasProposal.addRenameAliasProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RenameVersionProposal.addRenameVersionProposals;
-import static com.redhat.ceylon.eclipse.code.correct.SplitIfStatementProposal.addSplitIfStatementProposal;
 import static com.redhat.ceylon.eclipse.code.correct.UseAliasProposal.addUseAliasProposal;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.MODULE_DEPENDENCY_PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
@@ -878,7 +877,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //            addConvertSwitchToIfProposal(proposals, doc, file, statement);
 //            addConvertIfToSwitchProposal(proposals, doc, file, statement);
             
-            addSplitIfStatementProposal(proposals, doc, file, statement);
+//            addSplitIfStatementProposal(proposals, doc, file, statement);
             addJoinIfStatementsProposal(proposals, doc, file, statement);
             
             addConvertGetterToFunctionProposal(proposals, editor, statement);

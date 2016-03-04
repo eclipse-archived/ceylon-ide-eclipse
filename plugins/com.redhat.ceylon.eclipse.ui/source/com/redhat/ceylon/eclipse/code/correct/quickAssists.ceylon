@@ -10,7 +10,8 @@ import com.redhat.ceylon.ide.common.correct {
     ConvertThenElseToIfElse,
     ConvertIfElseToThenElseQuickFix,
     InvertIfElseQuickFix,
-    ConvertSwitchToIfQuickFix
+    ConvertSwitchToIfQuickFix,
+    SplitIfStatementQuickFix
 }
 
 import org.eclipse.core.resources {
@@ -91,3 +92,9 @@ object convertSwitchToIfQuickFix
         satisfies ConvertSwitchToIfQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
         & EclipseGenericQuickFix {
 }
+
+object splitIfStatementQuickFix
+        satisfies SplitIfStatementQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+        & EclipseGenericQuickFix {
+}
+      
