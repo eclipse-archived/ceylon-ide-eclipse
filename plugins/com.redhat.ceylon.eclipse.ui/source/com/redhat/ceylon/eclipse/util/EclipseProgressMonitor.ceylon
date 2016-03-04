@@ -5,14 +5,14 @@ import org.eclipse.core.runtime {
 import com.redhat.ceylon.ide.common.util {
     ProgressMonitor
 }
-shared class EclipseProgressMonitor(IProgressMonitor nativeMonitor)
+shared class EclipseProgressMonitor(IProgressMonitor? nativeMonitor)
         extends ProgressMonitor<IProgressMonitor>() {
-    assert(is Identifiable theNativeMonitor=nativeMonitor);
+    assert(is Identifiable? theNativeMonitor=nativeMonitor);
     shared actual SubMonitor wrapped;
     if (is SubMonitor nativeMonitor) {
         wrapped = nativeMonitor;
     } else {
-        wrapped = SubMonitor.convert(nativeMonitor of IProgressMonitor);
+        wrapped = SubMonitor.convert(nativeMonitor);
     }
     
     shared actual void worked(Integer amount) => wrapped.worked(amount);
@@ -35,9 +35,13 @@ shared class EclipseProgressMonitor(IProgressMonitor nativeMonitor)
             wrapped.setWorkRemaining(remainingWork);
     
     shared actual void done() {
-        if (! (theNativeMonitor === wrapped)) {
+        if (exists theNativeMonitor) {
+            if (!(theNativeMonitor === wrapped)) {
+                wrapped.done();
+            }
+            theNativeMonitor.done();
+        } else {
             wrapped.done();
         }
-        theNativeMonitor.done();
     }
 }
