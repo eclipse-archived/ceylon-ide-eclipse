@@ -138,7 +138,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                         IPath sap = 
                                 pfr.getSourceAttachmentPath();
                         if (sap!=null) {
-                            path = sap.toOSString();
+                            path = sap.toPortableString();
                         }
                     }
                     catch (JavaModelException e) {
@@ -339,28 +339,34 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                     IJavaModelAware unit = 
                             CeylonBuilder.getUnit(type);
                     if (unit instanceof CeylonBinaryUnit) {
-                        String path = ((CeylonBinaryUnit)unit).getSourceFullPath();
-                        if (path != null) {
-                            styledString.append(
-                                    " \u2014 " + path, 
-                                COUNTER_STYLER);
+                        CeylonBinaryUnit bu = 
+                                (CeylonBinaryUnit)unit;
+                        String fullPath = 
+                                bu.getSourceFullPath();
+                        if (fullPath != null) {
+                            return styledString.append(
+                                    " \u2014 " + fullPath, 
+                                    COUNTER_STYLER);
                         }
                     }
                     if (unit instanceof JavaClassFile) {
-                        JavaClassFile javaClassFile = (JavaClassFile) unit;
-                        JDTModule module = javaClassFile.getModule();
+                        JavaClassFile javaClassFile = 
+                                (JavaClassFile) unit;
+                        JDTModule module = 
+                                javaClassFile.getModule();
                         if (module.isCeylonBinaryArchive()) {
-                            String sourceRelativePath = module.toSourceUnitRelativePath(javaClassFile.getRelativePath());
-                            if (sourceRelativePath != null) {
-                                String sourceArchivePath = module.getSourceArchivePath();
-                                if (sourceArchivePath != null) {
-                                    return styledString.append(
-                                             " \u2014 "
-                                             + sourceArchivePath 
-                                             + "!/" + 
-                                             sourceRelativePath, 
-                                            COUNTER_STYLER);
-                                }
+                            String sourceRelativePath = 
+                                    module.toSourceUnitRelativePath(javaClassFile.getRelativePath());
+                            String sourceArchivePath = 
+                                    module.getSourceArchivePath();
+                            if (sourceRelativePath != null && 
+                                sourceArchivePath != null) {
+                                return styledString.append(
+                                         " \u2014 "
+                                         + sourceArchivePath 
+                                         + "!/"
+                                         + sourceRelativePath, 
+                                        COUNTER_STYLER);
                             }
                         }
                     }
@@ -378,30 +384,34 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                         PackageFragment pkgFrag = 
                                 (PackageFragment) 
                                     type.getPackageFragment();
-                        IPath sap = root.getSourceAttachmentPath();
-                        if (sap != null) {
-                            IPath result = sap;
-                            IPath sarp = root.getSourceAttachmentRootPath();
-                            if (sarp != null) {
-                                result = result.append(sarp);
-                            }
+                        IPath sourceArchivePath = 
+                                root.getSourceAttachmentPath();
+                        IPath sourceFolderPath = 
+                                root.getSourceAttachmentRootPath();
+                        if (sourceArchivePath != null && 
+                            sourceFolderPath != null) {
+                            IPath subpath = 
+                                    sourceFolderPath.makeAbsolute();
                             for (String pn: pkgFrag.names) {
-                                result = result.append(pn);
+                                subpath = subpath.append(pn);
                             }
-                            result.append(simpleSourceFileName);
-                            styledString.append(
-                                    " \u2014 " + result.toOSString(), 
+                            subpath.append(simpleSourceFileName);
+                            return styledString.append(
+                                    " \u2014 " 
+                                    + sourceArchivePath.toPortableString()
+                                    + "!"
+                                    + subpath.toPortableString(), 
                                     COUNTER_STYLER);
                         }
                     }
                     else if (type instanceof SourceType) {
-                        String path = 
+                        String fullPath = 
                                 type.getCompilationUnit()
                                     .getCorrespondingResource()
                                     .getFullPath()
                                     .toPortableString();
-                        styledString.append(
-                                " \u2014 " + path, 
+                        return styledString.append(
+                                " \u2014 " + fullPath, 
                                 COUNTER_STYLER);
                     }
                     //new SourceMapper(root.getSourceAttachmentPath(), root.getSourceAttachmentRootPath()==null ? null : root.getSourceAttachmentRootPath().toString(), null)
