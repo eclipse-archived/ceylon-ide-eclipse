@@ -136,8 +136,11 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                         IPackageFragmentRoot pfr = 
                                 (IPackageFragmentRoot) 
                                     element;
-                        path = pfr.getSourceAttachmentPath()
-                                .toOSString();
+                        IPath sap = 
+                                pfr.getSourceAttachmentPath();
+                        if (sap!=null) {
+                            path = sap.toOSString();
+                        }
                     }
                     catch (JavaModelException e) {
                         e.printStackTrace();
