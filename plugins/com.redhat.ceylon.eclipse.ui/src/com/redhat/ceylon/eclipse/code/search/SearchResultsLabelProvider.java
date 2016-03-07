@@ -341,26 +341,40 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                     IType type = 
                             (IType) je.getAncestor(TYPE);
                     
-                    IJavaModelAware unit = CeylonBuilder.getUnit(type);
+                    IJavaModelAware unit = 
+                            CeylonBuilder.getUnit(type);
                     if (unit instanceof CeylonBinaryUnit) {
-                        String path = toJavaString(((CeylonBinaryUnit)unit).getSourceFullPath());
+                        CeylonBinaryUnit bu = 
+                                (CeylonBinaryUnit)unit;
+                        String path = 
+                                toJavaString(bu.getSourceFullPath());
                         if (path != null) {
-                            styledString.append(" \u2014 " + path, 
+                            styledString.append(
+                                    " \u2014 " + path, 
                                 COUNTER_STYLER);
                         }
                     }
                     if (unit instanceof JavaClassFile) {
-                        JavaClassFile javaClassFile = (JavaClassFile) unit;
-                        BaseIdeModule module = javaClassFile.getCeylonModule();
+                        JavaClassFile javaClassFile = 
+                                (JavaClassFile) unit;
+                        BaseIdeModule module = 
+                                javaClassFile.getCeylonModule();
                         if (module.getIsCeylonBinaryArchive()) {
                             String sourceRelativePath = 
-                                    toJavaString(module.toSourceUnitRelativePath(
-                                                    toCeylonString(javaClassFile.getRelativePath())));
+                                    sourceRelativePath(
+                                            javaClassFile, 
+                                            module);
                             if (sourceRelativePath != null) {
-                                String sourceArchivePath = toJavaString(module.getSourceArchivePath());
+                                String sourceArchivePath = 
+                                        toJavaString(module.getSourceArchivePath());
                                 if (sourceArchivePath != null) {
-                                    String path = sourceArchivePath + "!/" + sourceRelativePath;
-                                    return styledString.append(" \u2014 " + path, 
+                                    StringBuilder builder = 
+                                            new StringBuilder(" \u2014 ");
+                                    builder.append(sourceArchivePath)
+                                        .append("!/")
+                                        .append(sourceRelativePath);
+                                    return styledString.append(
+                                             builder.toString(), 
                                             COUNTER_STYLER);
                                 }
                             }
@@ -380,20 +394,23 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                         PackageFragment pkgFrag = 
                                 (PackageFragment) 
                                     type.getPackageFragment();
-                        String rootPath = 
-                                root.getSourceAttachmentPath()
-                                    .toPortableString();
-                        IPath sap = root.getSourceAttachmentRootPath();
+                        IPath sap = 
+                                root.getSourceAttachmentPath();
                         if (sap!=null) {
-                            rootPath += 
-                                    sap.toPortableString() + '/';
+                            StringBuilder builder =
+                                    new StringBuilder(" \u2014 ");
+                            builder.append(sap.toPortableString());
+                            IPath sarp = 
+                                    root.getSourceAttachmentRootPath();
+                            if (sarp!=null) {
+                                builder.append(sarp.toPortableString());
+                            }
+                            builder.append('/')
+                                .append(concatWith(pkgFrag.names, 
+                                            simpleSourceFileName, '/'));
+                            styledString.append(builder.toString(), 
+                                    COUNTER_STYLER);
                         }
-                        String path = 
-                                rootPath + '/' + 
-                                concatWith(pkgFrag.names, 
-                                        simpleSourceFileName, '/');
-                        styledString.append(" \u2014 " + path, 
-                                COUNTER_STYLER);
                     }
                     else if (type instanceof SourceType) {
                         String path = 
@@ -413,6 +430,14 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             }
         }
         return styledString;
+    }
+
+    private static String sourceRelativePath(
+            JavaClassFile javaClassFile, 
+            BaseIdeModule module) {
+        ceylon.language.String path = 
+                toCeylonString(javaClassFile.getRelativePath());
+        return toJavaString(module.toSourceUnitRelativePath(path));
     }
 
     private static String getImageKeyForDeclaration(
