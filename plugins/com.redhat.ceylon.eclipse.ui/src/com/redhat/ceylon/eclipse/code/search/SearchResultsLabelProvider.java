@@ -337,11 +337,13 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                     IType type = 
                             (IType) je.getAncestor(TYPE);
                     
-                    IJavaModelAware unit = CeylonBuilder.getUnit(type);
+                    IJavaModelAware unit = 
+                            CeylonBuilder.getUnit(type);
                     if (unit instanceof CeylonBinaryUnit) {
                         String path = ((CeylonBinaryUnit)unit).getSourceFullPath();
                         if (path != null) {
-                            styledString.append(" \u2014 " + path, 
+                            styledString.append(
+                                    " \u2014 " + path, 
                                 COUNTER_STYLER);
                         }
                     }
@@ -353,8 +355,13 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                             if (sourceRelativePath != null) {
                                 String sourceArchivePath = module.getSourceArchivePath();
                                 if (sourceArchivePath != null) {
-                                    String path = sourceArchivePath + "!/" + sourceRelativePath;
-                                    return styledString.append(" \u2014 " + path, 
+                                    StringBuilder builder = 
+                                            new StringBuilder(" \u2014 ");
+                                    builder.append(sourceArchivePath)
+                                        .append("!/")
+                                        .append(sourceRelativePath);
+                                    return styledString.append(
+                                             builder.toString(), 
                                             COUNTER_STYLER);
                                 }
                             }
@@ -374,20 +381,23 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                         PackageFragment pkgFrag = 
                                 (PackageFragment) 
                                     type.getPackageFragment();
-                        String rootPath = 
-                                root.getSourceAttachmentPath()
-                                    .toPortableString();
-                        IPath sap = root.getSourceAttachmentRootPath();
+                        IPath sap = 
+                                root.getSourceAttachmentPath();
                         if (sap!=null) {
-                            rootPath += 
-                                    sap.toPortableString() + '/';
+                            StringBuilder builder =
+                                    new StringBuilder(" \u2014 ");
+                            builder.append(sap.toPortableString());
+                            IPath sarp = 
+                                    root.getSourceAttachmentRootPath();
+                            if (sarp!=null) {
+                                builder.append(sarp.toPortableString());
+                            }
+                            builder.append('/')
+                                .append(concatWith(pkgFrag.names, 
+                                            simpleSourceFileName, '/'));
+                            styledString.append(builder.toString(), 
+                                    COUNTER_STYLER);
                         }
-                        String path = 
-                                rootPath + '/' + 
-                                concatWith(pkgFrag.names, 
-                                        simpleSourceFileName, '/');
-                        styledString.append(" \u2014 " + path, 
-                                COUNTER_STYLER);
                     }
                     else if (type instanceof SourceType) {
                         String path = 
