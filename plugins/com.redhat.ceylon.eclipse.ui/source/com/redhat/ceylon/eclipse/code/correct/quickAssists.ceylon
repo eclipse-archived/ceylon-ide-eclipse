@@ -12,7 +12,8 @@ import com.redhat.ceylon.ide.common.correct {
     InvertIfElseQuickFix,
     ConvertSwitchToIfQuickFix,
     SplitIfStatementQuickFix,
-    JoinIfStatementsQuickFix
+    JoinIfStatementsQuickFix,
+    AddThrowsAnnotationQuickFix
 }
 
 import org.eclipse.core.resources {
@@ -103,4 +104,10 @@ object joinIfStatementsQuickFix
         satisfies JoinIfStatementsQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
         & EclipseGenericQuickFix {
 }
-      
+
+object addThrowsAnnotationQuickFix
+        satisfies AddThrowsAnnotationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+        & EclipseGenericQuickFix {
+    
+    addAnnotationsQuickFix => eclipseAnnotationsQuickFix;
+}

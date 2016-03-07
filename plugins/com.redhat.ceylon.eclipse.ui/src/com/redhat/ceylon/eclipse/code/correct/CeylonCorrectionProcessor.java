@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.AddThrowsAnnotationProposal.addThrowsAnnotationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertExistsProposal.addAssignToAssertExistsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertIsProposal.addAssignToAssertIsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToAssertNonemptyProposal.addAssignToAssertNonemptyProposal;
@@ -882,7 +881,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addConvertGetterToFunctionProposal(proposals, editor, statement);
             addConvertFunctionToGetterProposal(proposals, editor, statement);
             
-            addThrowsAnnotationProposal(proposals, statement, rootNode, file, doc);            
+//            addThrowsAnnotationProposal(proposals, statement, rootNode, file, doc);            
 
 //            addRefineFormalMembersProposal(proposals, node, rootNode, false);
             addRefineEqualsHashProposal(proposals, node, rootNode);
