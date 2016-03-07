@@ -158,5 +158,10 @@ object eclipseQuickFixManager
         
         refineFormalMembersQuickFix.addRefineFormalMembersProposal(data, false);
         refineEqualsHashQuickFix.addRefineEqualsHashProposal(data, file, currentOffset);
+        
+        convertStringQuickFix.addConvertToVerbatimProposal(data, file);
+        convertStringQuickFix.addConvertFromVerbatimProposal(data, file);
+        convertStringQuickFix.addConvertToConcatenationProposal(data, file);
+        convertStringQuickFix.addConvertToInterpolationProposal(data, file);
     }
 }

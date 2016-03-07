@@ -11,10 +11,6 @@ import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAs
 import static com.redhat.ceylon.eclipse.code.correct.AssignToTryProposal.addAssignToTryProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertFunctionToGetterProposal.addConvertFunctionToGetterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertGetterToFunctionProposal.addConvertGetterToFunctionProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addConvertFromVerbatimProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ConvertStringProposal.addConvertToVerbatimProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ConvertToConcatenationProposal.addConvertToConcatenationProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ConvertToInterpolationProposal.addConvertToInterpolationProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToNamedArgumentsProposal.addConvertToNamedArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToPositionalArgumentsProposal.addConvertToPositionalArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.DestructureProposal.addDestructureProposal;
@@ -885,10 +881,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //            addRefineFormalMembersProposal(proposals, node, rootNode, false);
 //            addRefineEqualsHashProposal(proposals, node, rootNode);
             
-            addConvertToVerbatimProposal(proposals, file, rootNode, node, doc);
-            addConvertFromVerbatimProposal(proposals, file, rootNode, node, doc);
-            addConvertToConcatenationProposal(proposals, file, rootNode, node, doc);
-            addConvertToInterpolationProposal(proposals, file, rootNode, node, doc);
+//            addConvertToVerbatimProposal(proposals, file, rootNode, node, doc);
+//            addConvertFromVerbatimProposal(proposals, file, rootNode, node, doc);
+//            addConvertToConcatenationProposal(proposals, file, rootNode, node, doc);
+//            addConvertToInterpolationProposal(proposals, file, rootNode, node, doc);
             
             addExpandTypeProposal(editor, statement, file, doc, proposals);
 
