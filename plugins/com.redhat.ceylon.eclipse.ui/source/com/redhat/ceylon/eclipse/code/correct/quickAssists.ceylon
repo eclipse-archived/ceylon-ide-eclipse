@@ -11,7 +11,8 @@ import com.redhat.ceylon.ide.common.correct {
     ConvertIfElseToThenElseQuickFix,
     InvertIfElseQuickFix,
     ConvertSwitchToIfQuickFix,
-    SplitIfStatementQuickFix
+    SplitIfStatementQuickFix,
+    JoinIfStatementsQuickFix
 }
 
 import org.eclipse.core.resources {
@@ -95,6 +96,11 @@ object convertSwitchToIfQuickFix
 
 object splitIfStatementQuickFix
         satisfies SplitIfStatementQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+        & EclipseGenericQuickFix {
+}
+      
+object joinIfStatementsQuickFix
+        satisfies JoinIfStatementsQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
         & EclipseGenericQuickFix {
 }
       

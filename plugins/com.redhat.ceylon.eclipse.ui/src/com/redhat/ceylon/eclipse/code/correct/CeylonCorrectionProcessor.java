@@ -20,7 +20,6 @@ import static com.redhat.ceylon.eclipse.code.correct.ConvertToNamedArgumentsProp
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToPositionalArgumentsProposal.addConvertToPositionalArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.DestructureProposal.addDestructureProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ExpandTypeProposal.addExpandTypeProposal;
-import static com.redhat.ceylon.eclipse.code.correct.JoinIfStatementsProposal.addJoinIfStatementsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.MoveDirProposal.addMoveDirProposal;
 import static com.redhat.ceylon.eclipse.code.correct.PrintProposal.addPrintProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RefineEqualsHashProposal.addRefineEqualsHashProposal;
@@ -878,7 +877,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //            addConvertIfToSwitchProposal(proposals, doc, file, statement);
             
 //            addSplitIfStatementProposal(proposals, doc, file, statement);
-            addJoinIfStatementsProposal(proposals, doc, file, statement);
+//            addJoinIfStatementsProposal(proposals, doc, file, statement);
             
             addConvertGetterToFunctionProposal(proposals, editor, statement);
             addConvertFunctionToGetterProposal(proposals, editor, statement);
