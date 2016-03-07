@@ -77,7 +77,8 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
         } else if (element instanceof IJavaModelAware && 
                 element instanceof IdeUnit) {
             IdeUnit unit = (IdeUnit) element;
-            String sourceFileName = toJavaString(unit.getSourceFileName());
+            String sourceFileName = 
+                    toJavaString(unit.getSourceFileName());
             if (sourceFileName != null  &&
                     sourceFileName.endsWith("java")) {
                 key = JAVA_FILE;
@@ -138,8 +139,11 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                         IPackageFragmentRoot pfr = 
                                 (IPackageFragmentRoot) 
                                     element;
-                        path = pfr.getSourceAttachmentPath()
-                                .toOSString();
+                        IPath sap = 
+                                pfr.getSourceAttachmentPath();
+                        if (sap!=null) {
+                            path = sap.toOSString();
+                        }
                     }
                     catch (JavaModelException e) {
                         e.printStackTrace();
@@ -153,7 +157,8 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             return styledString;
         } else if (element instanceof IdeUnit) {
             IdeUnit unit = (IdeUnit) element;
-            String displayedFileName = toJavaString(unit.getSourceFileName());
+            String displayedFileName = 
+                    toJavaString(unit.getSourceFileName());
             if (displayedFileName == null) {
                 displayedFileName = unit.getFilename();
             }
