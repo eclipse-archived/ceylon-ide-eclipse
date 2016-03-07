@@ -10,6 +10,9 @@ import com.redhat.ceylon.ide.common.correct {
     QuickFixData,
     SpecifyTypeQuickFix
 }
+import com.redhat.ceylon.ide.common.model {
+    BaseCeylonProject
+}
 
 import java.util {
     Collection
@@ -35,9 +38,6 @@ import org.eclipse.ltk.core.refactoring {
 import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
-}
-import com.redhat.ceylon.ide.common.model {
-    BaseCeylonProject
 }
 
 shared class EclipseQuickFixData(ProblemLocation location,
@@ -163,5 +163,9 @@ object eclipseQuickFixManager
         convertStringQuickFix.addConvertFromVerbatimProposal(data, file);
         convertStringQuickFix.addConvertToConcatenationProposal(data, file);
         convertStringQuickFix.addConvertToInterpolationProposal(data, file);
+        
+        value selectionStart = data.editor.selection.offset;
+        value selectionStop = data.editor.selection.offset + data.editor.selection.length;
+        expandTypeQuickFix.addExpandTypeProposal(data, file, statement, selectionStart, selectionStop);
     }
 }

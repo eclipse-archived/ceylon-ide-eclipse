@@ -14,7 +14,6 @@ import static com.redhat.ceylon.eclipse.code.correct.ConvertGetterToFunctionProp
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToNamedArgumentsProposal.addConvertToNamedArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertToPositionalArgumentsProposal.addConvertToPositionalArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.DestructureProposal.addDestructureProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ExpandTypeProposal.addExpandTypeProposal;
 import static com.redhat.ceylon.eclipse.code.correct.MoveDirProposal.addMoveDirProposal;
 import static com.redhat.ceylon.eclipse.code.correct.PrintProposal.addPrintProposal;
 import static com.redhat.ceylon.eclipse.code.correct.RemoveAliasProposal.addRemoveAliasProposal;
@@ -886,7 +885,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //            addConvertToConcatenationProposal(proposals, file, rootNode, node, doc);
 //            addConvertToInterpolationProposal(proposals, file, rootNode, node, doc);
             
-            addExpandTypeProposal(editor, statement, file, doc, proposals);
+//            addExpandTypeProposal(editor, statement, file, doc, proposals);
 
             RenameProposal.add(proposals, editor);
             InlineDeclarationProposal.add(proposals, editor);

@@ -18,7 +18,8 @@ import com.redhat.ceylon.ide.common.correct {
     JoinIfStatementsQuickFix,
     AddThrowsAnnotationQuickFix,
     RefineEqualsHashQuickFix,
-    ConvertStringQuickFix
+    ConvertStringQuickFix,
+    ExpandTypeQuickFix
 }
 import com.redhat.ceylon.ide.common.refactoring {
     DefaultRegion
@@ -147,3 +148,7 @@ object convertStringQuickFix
         & EclipseGenericQuickFix {
 }
 
+object expandTypeQuickFix
+        satisfies ExpandTypeQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+        & EclipseGenericQuickFix {
+}
