@@ -399,15 +399,27 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                         if (sap!=null) {
                             StringBuilder builder =
                                     new StringBuilder(" \u2014 ");
-                            builder.append(sap.toPortableString());
+                            String rootPath = sap.toPortableString();
+                            builder.append(rootPath);
                             IPath sarp = 
                                     root.getSourceAttachmentRootPath();
                             if (sarp!=null) {
-                                builder.append(sarp.toPortableString());
+                                String subpath = 
+                                        sarp.toPortableString();
+                                if (!rootPath.endsWith("/") &&
+                                    !subpath.startsWith("/")) {
+                                    builder.append('/');
+                                }
+                                builder.append(subpath);
                             }
-                            builder.append('/')
-                                .append(concatWith(pkgFrag.names, 
-                                            simpleSourceFileName, '/'));
+                            if (builder.length()>0 && 
+                                builder.charAt(builder.length()-1)!='/') {
+                                builder.append('/');
+                            }
+                            builder.append(
+                                    concatWith(pkgFrag.names, 
+                                            simpleSourceFileName, 
+                                            '/'));
                             styledString.append(builder.toString(), 
                                     COUNTER_STYLER);
                         }
