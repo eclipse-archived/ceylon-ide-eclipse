@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.java2ceylon;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -55,4 +56,20 @@ public interface CorrectJ2C {
             NamedArgument argument,
             ImportMemberOrType imp, 
             OperatorExpression oe, 
-            int currentOffset);}
+            int currentOffset);
+    
+    void addRefineFormalMembersProposal(
+            CompilationUnit rootNode,
+            Node node,
+            List<ICompletionProposal> list,
+            CeylonEditor ce,
+            IProject project);
+
+    
+    void addRefineEqualsHashProposal(
+            CompilationUnit rootNode,
+            Node node,
+            List<ICompletionProposal> list,
+            CeylonEditor ce,
+            IProject project);
+}

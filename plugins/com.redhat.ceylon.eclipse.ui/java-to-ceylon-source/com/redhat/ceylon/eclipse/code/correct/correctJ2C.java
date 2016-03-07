@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -17,8 +18,10 @@ import org.eclipse.text.edits.TextEdit;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.java2ceylon.CorrectJ2C;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.ide.common.correct.AddAnnotationQuickFix;
 import com.redhat.ceylon.ide.common.correct.IdeQuickFixManager;
 import com.redhat.ceylon.ide.common.correct.ImportProposals;
@@ -78,5 +81,47 @@ public class correctJ2C implements CorrectJ2C {
                 node, project, proposals, editor, ceylonProject);
 
         eclipseQuickFixManager_.get_().addQuickAssists(data, file, doc, statement, declaration, argument, imp, oe, currentOffset);
+    }
+
+    @Override
+    public void addRefineFormalMembersProposal(
+            CompilationUnit rootNode,
+            Node node,
+            List<ICompletionProposal> list,
+            CeylonEditor ce,
+            IProject project) {
+
+        BaseCeylonProject ceylonProject = modelJ2C().ceylonModel()
+                .getProject(project);
+        
+        EclipseQuickFixData data = new EclipseQuickFixData(
+                new ProblemLocation(0, 0, 0),
+                rootNode, node, null, list, ce, ceylonProject
+        );
+
+        eclipseRefineFormalMembersQuickFix_.get_()
+            .addRefineFormalMembersProposal(data, false);
+    }
+
+    @Override
+    public void addRefineEqualsHashProposal(
+            CompilationUnit rootNode,
+            Node node,
+            List<ICompletionProposal> list,
+            CeylonEditor ce,
+            IProject project) {
+        
+        BaseCeylonProject ceylonProject = modelJ2C().ceylonModel()
+                .getProject(project);
+        
+        EclipseQuickFixData data = new EclipseQuickFixData(
+                new ProblemLocation(0, 0, 0),
+                rootNode, node, null, list, ce, ceylonProject
+        );
+
+        IFile file = EditorUtil.getFile(ce.getEditorInput());
+
+        refineEqualsHashQuickFix_.get_()
+            .addRefineEqualsHashProposal(data, file, ce.getSelection().getOffset());        
     }
 }

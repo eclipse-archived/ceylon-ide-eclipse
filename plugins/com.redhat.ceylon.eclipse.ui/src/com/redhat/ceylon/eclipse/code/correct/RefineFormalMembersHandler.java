@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.correctJ2C;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 
@@ -9,6 +10,7 @@ import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -17,6 +19,7 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 public class RefineFormalMembersHandler extends AbstractHandler {
 
@@ -35,13 +38,9 @@ public class RefineFormalMembersHandler extends AbstractHandler {
                 Node node = findNode(rootNode, ce.getParseController().getTokens(), start, end);
                 List<ICompletionProposal> list = 
                         new ArrayList<ICompletionProposal>();
-                EclipseQuickFixData data = new EclipseQuickFixData(
-                        new ProblemLocation(0, 0, 0),
-                        rootNode, node, null, list, ce, null
-                );
-                eclipseRefineFormalMembersQuickFix_.get_()
-                    .addRefineFormalMembersProposal(data, false);
-
+                IProject project = EditorUtil.getProject(editor.getEditorInput());
+                correctJ2C().addRefineFormalMembersProposal(rootNode, node, list, ce, project);
+                
                 if (!list.isEmpty()) {
                     IDocument doc = ce.getCeylonSourceViewer().getDocument();
                     ICompletionProposal proposal = list.get(0);

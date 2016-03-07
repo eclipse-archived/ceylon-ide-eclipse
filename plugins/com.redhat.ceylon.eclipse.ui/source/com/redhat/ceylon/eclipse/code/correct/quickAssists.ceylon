@@ -1,3 +1,6 @@
+import com.redhat.ceylon.eclipse.code.complete {
+    RefinementCompletionProposal
+}
 import com.redhat.ceylon.ide.common.correct {
     OperatorQuickFix,
     VerboseRefinementQuickFix,
@@ -13,7 +16,11 @@ import com.redhat.ceylon.ide.common.correct {
     ConvertSwitchToIfQuickFix,
     SplitIfStatementQuickFix,
     JoinIfStatementsQuickFix,
-    AddThrowsAnnotationQuickFix
+    AddThrowsAnnotationQuickFix,
+    RefineEqualsHashQuickFix
+}
+import com.redhat.ceylon.ide.common.refactoring {
+    DefaultRegion
 }
 
 import org.eclipse.core.resources {
@@ -33,6 +40,9 @@ import org.eclipse.ltk.core.refactoring {
 import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
+}
+import org.eclipse.jface.viewers {
+    StyledString
 }
 
 object operatorQuickFix
@@ -110,4 +120,23 @@ object addThrowsAnnotationQuickFix
         & EclipseGenericQuickFix {
     
     addAnnotationsQuickFix => eclipseAnnotationsQuickFix;
+}
+
+object refineEqualsHashQuickFix
+        satisfies RefineEqualsHashQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+        & EclipseGenericQuickFix {
+    
+    shared actual void newProposal(EclipseQuickFixData data, String desc, 
+        TextChange _change, DefaultRegion? region) { 
+        
+        value proposal = object extends CorrectionProposal(desc, _change, 
+                null, RefinementCompletionProposal.\iDEFAULT_REFINEMENT) {
+             
+             styledDisplayString =>
+                     let(hint=CorrectionUtil.shortcut("com.redhat.ceylon.eclipse.ui.action.refineEqualsHash"))
+                     super.styledDisplayString.append(hint, StyledString.\iQUALIFIER_STYLER);
+        };
+        data.proposals.add(proposal); 
+    }
+
 }

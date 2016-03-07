@@ -157,5 +157,6 @@ object eclipseQuickFixManager
         addThrowsAnnotationQuickFix.addThrowsAnnotationProposal(data, file, doc, statement);
         
         refineFormalMembersQuickFix.addRefineFormalMembersProposal(data, false);
+        refineEqualsHashQuickFix.addRefineEqualsHashProposal(data, file, currentOffset);
     }
 }
