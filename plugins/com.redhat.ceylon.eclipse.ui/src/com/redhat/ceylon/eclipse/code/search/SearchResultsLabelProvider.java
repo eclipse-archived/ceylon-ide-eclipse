@@ -15,7 +15,6 @@ import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
 import static org.eclipse.jdt.core.IJavaElement.TYPE;
 import static org.eclipse.jdt.core.Signature.getSignatureSimpleName;
-import static org.eclipse.jdt.internal.core.util.Util.concatWith;
 import static org.eclipse.jface.viewers.StyledString.COUNTER_STYLER;
 
 import org.eclipse.core.runtime.IPath;
@@ -368,13 +367,11 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                                 String sourceArchivePath = 
                                         toJavaString(module.getSourceArchivePath());
                                 if (sourceArchivePath != null) {
-                                    StringBuilder builder = 
-                                            new StringBuilder(" \u2014 ");
-                                    builder.append(sourceArchivePath)
-                                        .append("!/")
-                                        .append(sourceRelativePath);
                                     return styledString.append(
-                                             builder.toString(), 
+                                             " \u2014 "
+                                             + sourceArchivePath 
+                                             + "!/" + 
+                                             sourceRelativePath, 
                                             COUNTER_STYLER);
                                 }
                             }
@@ -394,33 +391,19 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                         PackageFragment pkgFrag = 
                                 (PackageFragment) 
                                     type.getPackageFragment();
-                        IPath sap = 
-                                root.getSourceAttachmentPath();
-                        if (sap!=null) {
-                            StringBuilder builder =
-                                    new StringBuilder(" \u2014 ");
-                            String rootPath = sap.toPortableString();
-                            builder.append(rootPath);
-                            IPath sarp = 
-                                    root.getSourceAttachmentRootPath();
-                            if (sarp!=null) {
-                                String subpath = 
-                                        sarp.toPortableString();
-                                if (!rootPath.endsWith("/") &&
-                                    !subpath.startsWith("/")) {
-                                    builder.append('/');
-                                }
-                                builder.append(subpath);
+                        IPath sap = root.getSourceAttachmentPath();
+                        if (sap != null) {
+                            IPath result = sap;
+                            IPath sarp = root.getSourceAttachmentRootPath();
+                            if (sarp != null) {
+                                result = result.append(sarp);
                             }
-                            if (builder.length()>0 && 
-                                builder.charAt(builder.length()-1)!='/') {
-                                builder.append('/');
+                            for (String pn: pkgFrag.names) {
+                                result = result.append(pn);
                             }
-                            builder.append(
-                                    concatWith(pkgFrag.names, 
-                                            simpleSourceFileName, 
-                                            '/'));
-                            styledString.append(builder.toString(), 
+                            result.append(simpleSourceFileName);
+                            styledString.append(
+                                    " \u2014 " + result.toOSString(), 
                                     COUNTER_STYLER);
                         }
                     }
@@ -430,7 +413,8 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                                     .getCorrespondingResource()
                                     .getFullPath()
                                     .toPortableString();
-                        styledString.append(" \u2014 " + path, 
+                        styledString.append(
+                                " \u2014 " + path, 
                                 COUNTER_STYLER);
                     }
                     //new SourceMapper(root.getSourceAttachmentPath(), root.getSourceAttachmentRootPath()==null ? null : root.getSourceAttachmentRootPath().toString(), null)
