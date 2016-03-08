@@ -112,8 +112,11 @@ class AssignToForProposal extends LocalProposal {
 
     @Override
     boolean isEnabled(Type resultType) {
+        Unit unit = rootNode.getUnit();
         return resultType!=null &&
-                rootNode.getUnit().isIterableType(resultType);
+                (unit.isIterableType(resultType) ||
+                 unit.isJavaIterableType(resultType) ||
+                 unit.isJavaArrayType(resultType));
     }
 
     static void addAssignToForProposal(CeylonEditor ceylonEditor, Tree.CompilationUnit cu, 
