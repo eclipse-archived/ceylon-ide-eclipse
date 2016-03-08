@@ -428,7 +428,7 @@ public class Navigation {
             final IJavaModelAware<IProject, ITypeRoot, IJavaElement> javaModelAware = 
                     (IJavaModelAware<IProject, ITypeRoot, IJavaElement>) 
                         declaration.getUnit();
-            return javaModelAware.toJavaElement(declaration, utilJ2C().newProgressMonitor(monitor));
+            return javaModelAware.toJavaElement(declaration, utilJ2C().wrapProgressMonitor(monitor));
         }
         return null;
     }

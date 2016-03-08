@@ -24,6 +24,7 @@ import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.ceylo
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static java.util.Arrays.asList;
 import static java.util.Collections.synchronizedSet;
@@ -51,6 +52,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ElementChangedEvent;
@@ -79,6 +81,9 @@ import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.util.ProgressMonitor;
+import com.redhat.ceylon.ide.common.util.ProgressMonitor$impl;
+import com.redhat.ceylon.ide.common.util.toCeylonString_;
 import com.redhat.ceylon.model.cmr.ArtifactResultType;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -184,14 +189,17 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
             @Override 
             protected IStatus run(IProgressMonitor monitor) {
                 final IProject project = javaProject.getProject();
+                ProgressMonitor$impl<IProgressMonitor>.Progress progress = 
+                        utilJ2C().wrapProgressMonitor(monitor)
+                            .Progress$new$(1000, toCeylonString("Resolving classpath of project " + project.getName()));
                 try {
                     
                     final IClasspathEntry[] classpath = constructModifiedClasspath(javaProject);                    
                     javaProject.setRawClasspath(classpath, monitor);
                     
-                    boolean changed = resolveClasspath(monitor, false);
+                    boolean changed = resolveClasspath(progress.newChild(800), false);
                     if(changed) {
-                        refreshClasspathContainer(monitor);
+                        refreshClasspathContainer(progress.newChild(200));
                     }
                     
                     // Rebuild the project :
@@ -211,6 +219,9 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
                     e.printStackTrace();
                     return new Status(IStatus.ERROR, PLUGIN_ID,
                             "could not resolve dependencies", e);
+                }
+                finally {
+                    progress.destroy(null);
                 }
             }            
         };
@@ -283,10 +294,10 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
      * @param reparse
      * @return true if the classpath was changed, false otherwise.
      */
-    public boolean resolveClasspath(IProgressMonitor monitor, boolean reparse)  {
+    public boolean resolveClasspath(ProgressMonitor<IProgressMonitor> mon, boolean reparse)  {
         IJavaProject javaProject = getJavaProject();
         IProject project = javaProject.getProject();
-        
+        ProgressMonitor$impl<IProgressMonitor>.Progress ceylonMonitor = mon.Progress$new$(1000, toCeylonString("Resolving classpath of project " + project.getName()));
         CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
         
         try {
@@ -313,8 +324,8 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
                 
                 JavaCore.setClasspathContainer(getPath(), 
                         new IJavaProject[]{javaProject}, 
-                        new IClasspathContainer[]{ new CeylonProjectModulesContainer(javaProject, getPath(), resetEntries, attributes)} , monitor);
-                ceylonProject.parseCeylonModel(utilJ2C().newProgressMonitor(monitor));
+                        new IClasspathContainer[]{ new CeylonProjectModulesContainer(javaProject, getPath(), resetEntries, attributes)} , ceylonMonitor.newChild(100).getWrapped());
+                ceylonProject.parseCeylonModel(ceylonMonitor.newChild(800));
             }
             
             typeChecker = ceylonProject.getTypechecker();
@@ -322,16 +333,16 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
             IFolder explodedModulesFolder = getCeylonClassesOutputFolder(project);
             if (isExplodeModulesEnabled(project)) {
                 if (!explodedModulesFolder.exists()) {
-                    CoreUtility.createDerivedFolder(explodedModulesFolder, true, true, monitor);
+                    CoreUtility.createDerivedFolder(explodedModulesFolder, true, true, ceylonMonitor.newChild(10).getWrapped());
                 } else {
                     if (!explodedModulesFolder.isDerived()) {
-                        explodedModulesFolder.setDerived(true, monitor);
+                        explodedModulesFolder.setDerived(true, ceylonMonitor.newChild(10).getWrapped());
                     }
                 }
             }
             else {
                 if (explodedModulesFolder.exists()) {
-                    explodedModulesFolder.delete(true, monitor);
+                    explodedModulesFolder.delete(true, ceylonMonitor.newChild(10).getWrapped());
                 }
             }
 
@@ -349,14 +360,17 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
         catch (CoreException e) {
             e.printStackTrace();
         }
+        finally {
+            ceylonMonitor.destroy(null);
+        }
         return false;
         
     }
 
-    public void refreshClasspathContainer(IProgressMonitor monitor) throws JavaModelException {
+    public void refreshClasspathContainer(ProgressMonitor<IProgressMonitor> monitor) throws JavaModelException {
         IJavaProject javaProject = getJavaProject();
         setClasspathContainer(path, new IJavaProject[] { javaProject },
-                new IClasspathContainer[] {new CeylonProjectModulesContainer(this)}, new SubProgressMonitor(monitor, 1));
+                new IClasspathContainer[] {new CeylonProjectModulesContainer(this)}, monitor.getWrapped());
         LookupEnvironmentUtilities.Provider modelLoader = (LookupEnvironmentUtilities.Provider) CeylonBuilder.getProjectModelLoader(javaProject.getProject());
         if (modelLoader != null) {
             modelLoader.refreshNameEnvironment();

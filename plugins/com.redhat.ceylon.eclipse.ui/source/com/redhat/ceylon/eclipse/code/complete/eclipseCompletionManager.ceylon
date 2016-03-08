@@ -37,7 +37,8 @@ import com.redhat.ceylon.eclipse.ui {
 }
 import com.redhat.ceylon.eclipse.util {
     EclipseProgressMonitor,
-    eclipseIndents
+    eclipseIndents,
+    wrapProgressMonitor
 }
 import com.redhat.ceylon.ide.common.completion {
     IdeCompletionManager,
@@ -133,13 +134,13 @@ shared class EclipseCompletionManager(CeylonEditor editor)
             shared variable ICompletionProposal?[] _contentProposals = [];
             
             shared actual void run(IProgressMonitor monitor) {
-                monitor.beginTask("Preparing completions...", IProgressMonitor.\iUNKNOWN);
-                _contentProposals = getEclipseContentProposals(editor.parseController, offset, viewer, secondLevel, returnedParamInfo, monitor);
-                if (_contentProposals.size == 1 && 
-                    _contentProposals.first is InvocationCompletionProposal.ParameterInfo) {
-                    returnedParamInfo = true;
+                try(progress = wrapProgressMonitor(monitor).Progress(-1, "Preparing completions...")) {
+                    _contentProposals = getEclipseContentProposals(editor.parseController, offset, viewer, secondLevel, returnedParamInfo, progress.newChild(-1));
+                    if (_contentProposals.size == 1 && 
+                        _contentProposals.first is InvocationCompletionProposal.ParameterInfo) {
+                        returnedParamInfo = true;
+                    }
                 }
-                monitor.done();
             }
         }
         
@@ -369,17 +370,17 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     }
     
     ICompletionProposal[] getEclipseContentProposals(CeylonParseController? controller, Integer offset,
-        ITextViewer? viewer, Boolean secondLevel, Boolean returnedParamInfo, IProgressMonitor monitor) {
+        ITextViewer? viewer, Boolean secondLevel, Boolean returnedParamInfo, EclipseProgressMonitor monitor) {
         if (exists controller, exists viewer, 
             exists rn = controller.lastCompilationUnit, exists t = controller.tokens, 
-            exists pu = controller.parseAndTypecheck(viewer.document, 10, monitor, null)) {
+            exists pu = controller.parseAndTypecheck(viewer.document, 10, monitor.wrapped, null)) {
             
             editor.annotationCreator.updateAnnotations();
             
             value line = CompletionUtil.getLine(offset, viewer);
             return getContentProposals(pu.compilationUnit, controller, offset, line,
-                secondLevel, EclipseProgressMonitor(monitor), returnedParamInfo,
-                EclipseProgressMonitor(monitor));
+                secondLevel, monitor, returnedParamInfo,
+                monitor);
         }
         else {
             return [];

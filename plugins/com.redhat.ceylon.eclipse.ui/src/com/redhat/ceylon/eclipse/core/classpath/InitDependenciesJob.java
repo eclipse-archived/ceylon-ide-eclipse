@@ -1,6 +1,8 @@
 package com.redhat.ceylon.eclipse.core.classpath;
 
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -12,6 +14,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.ide.common.util.ProgressMonitor$impl;
 
 public class InitDependenciesJob extends Job {
     
@@ -24,7 +27,10 @@ public class InitDependenciesJob extends Job {
     }
 
     @Override 
-    protected IStatus run(IProgressMonitor monitor) {            
+    protected IStatus run(IProgressMonitor monitor) {
+        ProgressMonitor$impl<IProgressMonitor>.Progress progress = 
+                utilJ2C().wrapProgressMonitor(monitor)
+                    .Progress$new$(1000, null);
         try {
             final IJavaProject javaProject = container.getJavaProject();
             final IProject project = javaProject.getProject();
@@ -48,9 +54,9 @@ public class InitDependenciesJob extends Job {
                 return Status.OK_STATUS;
             }
             
-            boolean changed = container.resolveClasspath(monitor, true);
+            boolean changed = container.resolveClasspath(progress.newChild(800), true);
             if(changed) {
-                container.refreshClasspathContainer(monitor);
+                container.refreshClasspathContainer(progress.newChild(200));
             }
 
             // Schedule a build of the project :
@@ -111,6 +117,9 @@ public class InitDependenciesJob extends Job {
             // unless there are issues with the JDT, this should never happen
             return new Status(IStatus.ERROR, PLUGIN_ID,
                     "could not get container", ex);
+        }
+        finally {
+            progress.destroy(null);
         }
     }
 
