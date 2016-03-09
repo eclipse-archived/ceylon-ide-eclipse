@@ -15,7 +15,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getSortedPr
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleClass;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleMethod;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleValue;
-import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
+import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.withinBounds;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.applyImports;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importParameterTypes;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importSignatureTypes;
@@ -83,7 +83,6 @@ import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.Reference;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
@@ -415,7 +414,6 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                         value, loc));
         }
         //declarations
-        TypeDeclaration td = type.getDeclaration();
         for (DeclarationWithProximity dwp: 
                 getSortedProposedValues(scope, unit, null)) {
             if (dwp.isUnimported()) {
@@ -449,8 +447,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 }
                 Type vt = value.getType();
                 if (vt!=null && !vt.isNothing() &&
-                    (isTypeParamInBounds(td, vt) || 
-                            vt.isSubtypeOf(type))) {
+                        withinBounds(type, vt)) {
                     props.add(new NestedCompletionProposal(d, loc));
                 }
             }
@@ -464,8 +461,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 }
                 Type mt = method.getType();
                 if (mt!=null && !mt.isNothing() &&
-                    (isTypeParamInBounds(td, mt) || 
-                            mt.isSubtypeOf(type))) {
+                        withinBounds(type, mt)) {
                     props.add(new NestedCompletionProposal(d, loc));
                 }
             }
@@ -479,10 +475,9 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                     }
                     Type ct = clazz.getType();
                     if (ct!=null && !ct.isNothing() &&
-                            (isTypeParamInBounds(td, ct) || 
+                            (withinBounds(type, ct) ||
                                     ct.getDeclaration()
-                                        .equals(type.getDeclaration()) ||
-                                    ct.isSubtypeOf(type))) {
+                                        .equals(type.getDeclaration()))) {
                         if (clazz.getParameterList()!=null) {
                             props.add(new NestedCompletionProposal(d, loc));
                         }
@@ -496,16 +491,6 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                     }
                 }
             }
-        }
-    }
-
-    private boolean isTypeParamInBounds(TypeDeclaration td, Type t) {
-        if (td instanceof TypeParameter) {
-            TypeParameter tp = (TypeParameter) td;
-            return isInBounds(tp.getSatisfiedTypes(), t);
-        }
-        else {
-            return false;
         }
     }
     

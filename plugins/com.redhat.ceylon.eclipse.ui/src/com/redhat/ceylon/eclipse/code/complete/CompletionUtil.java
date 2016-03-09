@@ -38,6 +38,7 @@ import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
@@ -496,6 +497,36 @@ public class CompletionUtil {
          }
         else {
             return new String[0];
+        }
+    }
+
+    @Deprecated
+    protected static boolean withinBounds(Type requiredType, Type type) {
+        TypeDeclaration td = requiredType.resolveAliases().getDeclaration();
+        if (type.isSubtypeOf(requiredType)) {
+            return true;
+        }
+        else if (td instanceof TypeParameter) {
+            return isInBounds(td.getSatisfiedTypes(), type);
+        }
+        else if (type.getDeclaration().inherits(td)) {
+            Type supertype = type.getSupertype(td);
+            for (TypeParameter tp: td.getTypeParameters()) {
+                Type ta = supertype.getTypeArguments().get(tp);
+                Type rta = requiredType.getTypeArguments().get(tp);
+                if (ta!=null && rta!=null) {
+                    if (!withinBounds(rta, ta)) {
+                        return false;
+                    }
+                }
+                else {
+                    return false;
+                }
+            }
+            return true;
+        }
+        else {
+            return false;
         }
     }
 
