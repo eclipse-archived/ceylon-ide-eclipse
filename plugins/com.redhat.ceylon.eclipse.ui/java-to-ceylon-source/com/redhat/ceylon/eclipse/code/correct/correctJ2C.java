@@ -91,7 +91,7 @@ public class correctJ2C implements CorrectJ2C {
             CeylonEditor ce,
             IProject project) {
 
-        EclipseQuickFixData data = newData(rootNode, node, list, ce, project);
+        EclipseQuickFixData data = (EclipseQuickFixData) newData(rootNode, node, list, ce, project);
 
         eclipseRefineFormalMembersQuickFix_.get_()
             .addRefineFormalMembersProposal(data, false);
@@ -105,7 +105,7 @@ public class correctJ2C implements CorrectJ2C {
             CeylonEditor ce,
             IProject project) {
         
-        EclipseQuickFixData data = newData(rootNode, node, list, ce, project);
+        EclipseQuickFixData data = (EclipseQuickFixData) newData(rootNode, node, list, ce, project);
         IFile file = EditorUtil.getFile(ce.getEditorInput());
 
         refineEqualsHashQuickFix_.get_()
@@ -117,13 +117,13 @@ public class correctJ2C implements CorrectJ2C {
             List<ICompletionProposal> list, CeylonEditor ce) {
 
         IProject project = EditorUtil.getProject(ce.getEditorInput());
-        EclipseQuickFixData data = newData(rootNode, node, list, ce, project);
+        EclipseQuickFixData data = (EclipseQuickFixData) newData(rootNode, node, list, ce, project);
         IFile file = EditorUtil.getFile(ce.getEditorInput());
        
         eclipseAssignToLocalQuickFix_.get_().addProposal(data, file);
     }
     
-    EclipseQuickFixData newData(CompilationUnit rootNode, Node node,
+    Object newData(CompilationUnit rootNode, Node node,
             List<ICompletionProposal> list, CeylonEditor ce, IProject project) {
         
         BaseCeylonProject ceylonProject = modelJ2C().ceylonModel()
