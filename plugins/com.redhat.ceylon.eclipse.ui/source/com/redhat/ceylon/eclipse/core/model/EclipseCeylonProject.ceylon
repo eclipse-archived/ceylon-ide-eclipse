@@ -1,40 +1,51 @@
 import ceylon.collection {
     HashSet
 }
-import ceylon.interop.java {
-    CeylonIterable
-}
 
 import com.redhat.ceylon.common {
     Constants
 }
-import com.redhat.ceylon.compiler.typechecker {
-    TypeChecker
+import com.redhat.ceylon.compiler.typechecker.context {
+    Context
+}
+import com.redhat.ceylon.compiler.typechecker.util {
+    ModuleManagerFactory
 }
 import com.redhat.ceylon.eclipse.core.builder {
     CeylonBuilder
+}
+import com.redhat.ceylon.eclipse.core.external {
+    ExternalSourceArchiveManager
 }
 import com.redhat.ceylon.eclipse.ui {
     CeylonEncodingSynchronizer,
     CeylonPlugin
 }
 import com.redhat.ceylon.eclipse.util {
-    withJavaModel,
-    eclipsePlatformUtils,
-    EclipseProgressMonitor
+    withJavaModel
 }
 import com.redhat.ceylon.ide.common.model {
     CeylonProject,
-    ModuleDependencies,
     CeylonProjectConfig,
     CeylonProjects,
     IdeModuleManager
+}
+import com.redhat.ceylon.ide.common.model.parsing {
+    RootFolderScanner
+}
+import com.redhat.ceylon.ide.common.util {
+    unsafeCast,
+    BaseProgressMonitorChild,
+    ProgressMonitorChild
 }
 import com.redhat.ceylon.ide.common.vfs {
     FolderVirtualFile
 }
 import com.redhat.ceylon.model.typechecker.model {
     Package
+}
+import com.redhat.ceylon.model.typechecker.util {
+    ModuleManager
 }
 
 import java.io {
@@ -58,8 +69,7 @@ import org.eclipse.core.runtime {
     IProgressMonitor,
     Path,
     QualifiedName,
-    IPath,
-    SubMonitor
+    IPath
 }
 import org.eclipse.jdt.core {
     JavaCore,
@@ -70,29 +80,6 @@ import org.eclipse.jface.dialogs {
 }
 import org.eclipse.swt.widgets {
     Display
-}
-import com.redhat.ceylon.ide.common.util {
-    ProgressMonitor,
-    platformUtils,
-    BaseProgressMonitor,
-    unsafeCast
-}
-import com.redhat.ceylon.ide.common.model.parsing {
-    ModulesScanner,
-    ProjectFilesScanner,
-    RootFolderScanner
-}
-import com.redhat.ceylon.model.typechecker.util {
-    ModuleManager
-}
-import com.redhat.ceylon.compiler.typechecker.context {
-    Context
-}
-import com.redhat.ceylon.compiler.typechecker.util {
-    ModuleManagerFactory
-}
-import com.redhat.ceylon.eclipse.core.external {
-    ExternalSourceArchiveManager
 }
 
 Boolean isCeylonSourceEntry(IClasspathEntry entry) => 
@@ -366,9 +353,9 @@ shared class EclipseCeylonProject(ideArtifact)
                             unsafeCast<IdeModuleManager<IProject,IResource,IFolder,IFile>>(mm));
             };
             
-    shared actual void completeCeylonModelParsing(BaseProgressMonitor monitor) {
+    shared actual void completeCeylonModelParsing(BaseProgressMonitorChild monitor) {
         ExternalSourceArchiveManager externalArchiveManager = ExternalSourceArchiveManager.externalSourceArchiveManager;
-        externalArchiveManager.updateProjectSourceArchives(ideArtifact, unsafeCast<ProgressMonitor<IProgressMonitor>>(monitor).wrapped);
+        externalArchiveManager.updateProjectSourceArchives(ideArtifact, unsafeCast<ProgressMonitorChild<IProgressMonitor>>(monitor).wrapped);
     }
     
  }

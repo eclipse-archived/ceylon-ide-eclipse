@@ -38,7 +38,8 @@ import com.redhat.ceylon.eclipse.ui {
 import com.redhat.ceylon.eclipse.util {
     EclipseProgressMonitor,
     eclipseIndents,
-    wrapProgressMonitor
+    wrapProgressMonitor,
+    EclipseProgressMonitorChild
 }
 import com.redhat.ceylon.ide.common.completion {
     IdeCompletionManager,
@@ -370,7 +371,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     }
     
     ICompletionProposal[] getEclipseContentProposals(CeylonParseController? controller, Integer offset,
-        ITextViewer? viewer, Boolean secondLevel, Boolean returnedParamInfo, EclipseProgressMonitor monitor) {
+        ITextViewer? viewer, Boolean secondLevel, Boolean returnedParamInfo, EclipseProgressMonitorChild monitor) {
         if (exists controller, exists viewer, 
             exists rn = controller.lastCompilationUnit, exists t = controller.tokens, 
             exists pu = controller.parseAndTypecheck(viewer.document, 10, monitor.wrapped, null)) {

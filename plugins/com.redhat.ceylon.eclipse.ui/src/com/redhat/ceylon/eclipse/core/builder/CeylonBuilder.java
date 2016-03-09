@@ -166,6 +166,7 @@ import com.redhat.ceylon.ide.common.util.CarUtils;
 import com.redhat.ceylon.ide.common.util.ProgressMonitor;
 import com.redhat.ceylon.ide.common.util.ProgressMonitor$impl;
 import com.redhat.ceylon.ide.common.util.ProgressMonitor$impl.Progress;
+import com.redhat.ceylon.ide.common.util.ProgressMonitorChild;
 import com.redhat.ceylon.ide.common.util.toCeylonString_;
 import com.redhat.ceylon.ide.common.util.toJavaList_;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
@@ -792,8 +793,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         PlatformUI.getWorkbench().isClosing();
             }
         }).Progress$new$(1000, toCeylonString("Ceylon build of project " + project.getName()));
-        try {
-    
+        try {    
             try {
                 buildHook.startBuild(kind, args, project, getBuildConfig(), getContext(), ceylonMonitor.newChild(10).getWrapped());
             } catch (CoreException e) {
@@ -1236,7 +1236,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     private void sheduleIncrementalRebuild(@SuppressWarnings("rawtypes") Map args, final IProject project, 
-            ProgressMonitor<IProgressMonitor> monitor) {
+            ProgressMonitorChild<IProgressMonitor> monitor) {
         try {
             getCeylonClassesOutputFolder(project).refreshLocal(DEPTH_INFINITE, monitor.getWrapped());
         } 

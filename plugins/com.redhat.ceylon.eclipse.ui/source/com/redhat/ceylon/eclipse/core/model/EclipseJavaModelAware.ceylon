@@ -99,7 +99,7 @@ shared interface EclipseJavaModelAware
                         value list = LinkedList<IJavaElement>();
                         traverseModel(typeRoot.primaryElement, list);
                         value theModelElements = createJavaObjectArray(list);
-                        value theBindings = parser.createBindings(theModelElements, monitor?.wrapped);
+                        value theBindings = parser.createBindings(theModelElements, monitor?.Progress(1000, null)?.newChild(1000)?.wrapped);
                         assert (theBindings.size == theModelElements.size);
                         value newResolvedElements = object satisfies ResolvedElements {
                             modelElements => theModelElements;

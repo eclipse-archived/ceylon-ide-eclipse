@@ -18,7 +18,6 @@
 package com.redhat.ceylon.eclipse.core.classpath;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.ceylonSourceArchiveToJavaSourceArchive;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
@@ -52,8 +51,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.IClasspathAttribute;
@@ -83,7 +80,7 @@ import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.util.ProgressMonitor;
 import com.redhat.ceylon.ide.common.util.ProgressMonitor$impl;
-import com.redhat.ceylon.ide.common.util.toCeylonString_;
+import com.redhat.ceylon.ide.common.util.ProgressMonitorChild;
 import com.redhat.ceylon.model.cmr.ArtifactResultType;
 import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -367,7 +364,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
         
     }
 
-    public void refreshClasspathContainer(ProgressMonitor<IProgressMonitor> monitor) throws JavaModelException {
+    public void refreshClasspathContainer(ProgressMonitorChild<IProgressMonitor> monitor) throws JavaModelException {
         IJavaProject javaProject = getJavaProject();
         setClasspathContainer(path, new IJavaProject[] { javaProject },
                 new IClasspathContainer[] {new CeylonProjectModulesContainer(this)}, monitor.getWrapped());
