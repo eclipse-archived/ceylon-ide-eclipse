@@ -24,7 +24,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.Nodes;
-import com.redhat.ceylon.model.typechecker.model.Cancellable;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -500,7 +499,6 @@ public class CompletionUtil {
         }
     }
 
-    @Deprecated
     protected static boolean withinBounds(Type requiredType, Type type) {
         TypeDeclaration td = requiredType.resolveAliases().getDeclaration();
         if (type.isSubtypeOf(requiredType)) {
