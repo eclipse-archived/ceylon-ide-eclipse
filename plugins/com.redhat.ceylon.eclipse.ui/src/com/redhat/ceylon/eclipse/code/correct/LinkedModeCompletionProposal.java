@@ -38,11 +38,11 @@ public class LinkedModeCompletionProposal
                    ICompletionProposalExtension2,
                    ICompletionProposalExtension6 {
     
-    private static final class NullProposal 
+    static final class NullProposal 
             implements ICompletionProposal, ICompletionProposalExtension2 {
         private List<ICompletionProposal> proposals;
 
-        private NullProposal(List<ICompletionProposal> proposals) {
+        NullProposal(List<ICompletionProposal> proposals) {
             this.proposals = proposals;
             
         }
@@ -111,14 +111,14 @@ public class LinkedModeCompletionProposal
     private String breakChars;
     private String regionChars;
     
-    private LinkedModeCompletionProposal(String name,
+    LinkedModeCompletionProposal(String name,
             int offset, int position) {
         this(name, offset, name, position, null);
         breakChars = " (<";
         regionChars = "\\";
     }
     
-    private LinkedModeCompletionProposal(Type type,
+    LinkedModeCompletionProposal(Type type,
             Unit unit, int offset, int position) {
         this(type.asString(unit), 
                 offset, 
@@ -127,7 +127,7 @@ public class LinkedModeCompletionProposal
                 getImageForDeclaration(type.getDeclaration()));
     }
     
-    private LinkedModeCompletionProposal(String description,
+    LinkedModeCompletionProposal(String description,
             int offset, String text, int position, Image image) {
         this.description = description;
         this.text=text;

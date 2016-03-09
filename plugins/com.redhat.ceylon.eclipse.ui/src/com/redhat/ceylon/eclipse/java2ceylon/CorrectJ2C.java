@@ -72,4 +72,10 @@ public interface CorrectJ2C {
             List<ICompletionProposal> list,
             CeylonEditor ce,
             IProject project);
+    
+    void addAssignToLocalProposal(
+            CompilationUnit rootNode,
+            Node node,
+            List<ICompletionProposal> list,
+            CeylonEditor ce);
 }

@@ -91,13 +91,7 @@ public class correctJ2C implements CorrectJ2C {
             CeylonEditor ce,
             IProject project) {
 
-        BaseCeylonProject ceylonProject = modelJ2C().ceylonModel()
-                .getProject(project);
-        
-        EclipseQuickFixData data = new EclipseQuickFixData(
-                new ProblemLocation(0, 0, 0),
-                rootNode, node, null, list, ce, ceylonProject
-        );
+        EclipseQuickFixData data = newData(rootNode, node, list, ce, project);
 
         eclipseRefineFormalMembersQuickFix_.get_()
             .addRefineFormalMembersProposal(data, false);
@@ -111,17 +105,33 @@ public class correctJ2C implements CorrectJ2C {
             CeylonEditor ce,
             IProject project) {
         
-        BaseCeylonProject ceylonProject = modelJ2C().ceylonModel()
-                .getProject(project);
-        
-        EclipseQuickFixData data = new EclipseQuickFixData(
-                new ProblemLocation(0, 0, 0),
-                rootNode, node, null, list, ce, ceylonProject
-        );
-
+        EclipseQuickFixData data = newData(rootNode, node, list, ce, project);
         IFile file = EditorUtil.getFile(ce.getEditorInput());
 
         refineEqualsHashQuickFix_.get_()
             .addRefineEqualsHashProposal(data, file, ce.getSelection().getOffset());        
+    }
+
+    @Override
+    public void addAssignToLocalProposal(CompilationUnit rootNode, Node node,
+            List<ICompletionProposal> list, CeylonEditor ce) {
+
+        IProject project = EditorUtil.getProject(ce.getEditorInput());
+        EclipseQuickFixData data = newData(rootNode, node, list, ce, project);
+        IFile file = EditorUtil.getFile(ce.getEditorInput());
+       
+        eclipseAssignToLocalQuickFix_.get_().addProposal(data, file);
+    }
+    
+    EclipseQuickFixData newData(CompilationUnit rootNode, Node node,
+            List<ICompletionProposal> list, CeylonEditor ce, IProject project) {
+        
+        BaseCeylonProject ceylonProject = modelJ2C().ceylonModel()
+                .getProject(project);
+        
+        return new EclipseQuickFixData(
+                new ProblemLocation(0, 0, 0),
+                rootNode, node, null, list, ce, ceylonProject
+        );
     }
 }

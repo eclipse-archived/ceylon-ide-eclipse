@@ -6,7 +6,8 @@ import com.redhat.ceylon.compiler.typechecker.context {
     PhasedUnit
 }
 import com.redhat.ceylon.eclipse.code.complete {
-    EclipseCompletionManager
+    EclipseCompletionManager,
+    EclipseLinkedModeSupport
 }
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
@@ -15,7 +16,9 @@ import com.redhat.ceylon.eclipse.core.builder {
     CeylonBuilder
 }
 import com.redhat.ceylon.eclipse.util {
-    eclipseIndents
+    eclipseIndents,
+    EditorUtil,
+    Highlights
 }
 import com.redhat.ceylon.ide.common.completion {
     IdeCompletionManager
@@ -26,13 +29,15 @@ import com.redhat.ceylon.ide.common.typechecker {
 import com.redhat.ceylon.ide.common.correct {
     AbstractQuickFix,
     ImportProposals,
-    GenericQuickFix
+    GenericQuickFix,
+    AbstractLocalProposal
 }
 import com.redhat.ceylon.ide.common.util {
     Indents
 }
 import com.redhat.ceylon.model.typechecker.model {
-    Unit
+    Unit,
+    Type
 }
 
 import org.eclipse.core.resources {
@@ -46,7 +51,9 @@ import org.eclipse.jface.text {
     Region
 }
 import org.eclipse.jface.text.contentassist {
-    ICompletionProposal
+    ICompletionProposal,
+    ICompletionProposalExtension6,
+    IContextInformation
 }
 import org.eclipse.ltk.core.refactoring {
     TextChange,
@@ -63,6 +70,22 @@ import com.redhat.ceylon.ide.common.model {
 }
 import com.redhat.ceylon.ide.common.refactoring {
     DefaultRegion
+}
+import org.eclipse.jface.text.link {
+    LinkedModeModel,
+    LinkedPosition
+}
+import com.redhat.ceylon.eclipse.code.refactor {
+    AbstractLinkedMode
+}
+import org.eclipse.swt.graphics {
+    Point
+}
+import com.redhat.ceylon.eclipse.ui {
+    CeylonResources
+}
+import org.eclipse.jface.viewers {
+    StyledString
 }
 
 shared interface EclipseAbstractQuickFix
@@ -120,4 +143,68 @@ interface EclipseGenericQuickFix
         TextChange change, DefaultRegion? region)
             => data.proposals.add(CorrectionProposal(desc, change, 
                 if (exists region) then toRegion(region) else null));
+}
+
+abstract class EclipseLocalProposal(EclipseQuickFixData data, shared actual String displayString)
+        extends AbstractLinkedMode(data.editor)
+        satisfies AbstractLocalProposal<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal,LinkedModeModel>
+                & EclipseAbstractQuickFix
+                & EclipseDocumentChanges
+                & EclipseLinkedModeSupport
+                & ICompletionProposal & ICompletionProposalExtension6 {
+    
+    shared actual variable Integer currentOffset = -1;
+    
+    shared actual variable Integer exitPos = 0;
+    
+    shared actual variable {String*} names = empty;
+    
+    shared actual variable Integer offset = 0;
+    
+    shared actual variable Type? type = null;
+    
+    hintTemplate => "Enter type and name for new local {0}";
+    
+    newLinkedMode() => linkedModeModel;
+    
+    shared actual void updatePopupLocation() {
+        LinkedPosition? pos = currentLinkedPosition;
+        value popup = infoPopup;
+        if (!exists pos) {
+            popup.setHintTemplate(hintTemplate);
+        } else if (pos.sequenceNumber == 1) {
+            popup.setHintTemplate("Enter type for new local {0}");
+        } else {
+            popup.setHintTemplate("Enter name for new local {0}");
+        }
+    }
+    
+    shared actual void apply(IDocument doc) {
+        currentOffset = data.editor.selection.offset;
+        
+        value change = performInitialChange(data, 
+            EditorUtil.getFile(data.editor.editorInput), currentOffset);
+        
+        if (exists change) {
+            EditorUtil.performChange(change);
+            value unit = data.editor.parseController.lastCompilationUnit.unit;
+            if (exists lm = addLinkedPositions(doc, unit)) {
+                enterLinkedMode(doc, 2, exitPosition);
+                openPopup();
+            }
+        }
+    }
+    
+    Integer exitPosition => exitPos + initialName.size + 9;
+    
+    shared actual default StyledString styledDisplayString
+            => Highlights.styleProposal(displayString, false, true);
+    
+    shared actual Point? getSelection(IDocument? doc) => null;
+    
+    shared actual String? additionalProposalInfo => null;
+    
+    image => CeylonResources.\iMINOR_CHANGE;
+    
+    shared actual IContextInformation? contextInformation => null;
 }

@@ -88,6 +88,7 @@ object eclipseQuickFixManager
     switchQuickFix => eclipseSwitchQuickFix;
     changeToQuickFix => eclipseChangeToQuickFix;
     addNamedArgumentQuickFix => eclipseAddNamedArgumentQuickFix;
+    assignToLocalQuickFix => eclipseAssignToLocalQuickFix;
     
     shared actual void addImportProposals(Collection<ICompletionProposal> proposals, EclipseQuickFixData data) {
         data.proposals.addAll(proposals);
@@ -112,6 +113,8 @@ object eclipseQuickFixManager
         Tree.Declaration? declaration, Tree.NamedArgument? namedArgument,
         Tree.ImportMemberOrType? imp, Tree.OperatorExpression? oe,
         Integer currentOffset) {
+        
+        assignToLocalQuickFix.addProposal(data, file);
         
         if (is Tree.BinaryOperatorExpression oe) {
             operatorQuickFix.addReverseOperatorProposal(data, file, oe);

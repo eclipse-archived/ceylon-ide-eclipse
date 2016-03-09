@@ -7,7 +7,6 @@ import static com.redhat.ceylon.eclipse.code.correct.AssignToForProposal.addAssi
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfExistsProposal.addAssignToIfExistsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfIsProposal.addAssignToIfIsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToIfNonemptyProposal.addAssignToIfNonemptyProposal;
-import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAssignToLocalProposal;
 import static com.redhat.ceylon.eclipse.code.correct.AssignToTryProposal.addAssignToTryProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertFunctionToGetterProposal.addConvertFunctionToGetterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertGetterToFunctionProposal.addConvertGetterToFunctionProposal;
@@ -523,7 +522,8 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         int end = start + problem.getLength();
         Node node = findNode(rootNode, null, start, end);
 
-        correctJ2C().addQuickFixes(problem, rootNode, node, project, proposals, editor, tc, file);
+        correctJ2C().addQuickFixes(problem, rootNode, node, project, proposals,
+                getCurrentCeylonEditor(), tc, file);
 
         switch (problem.getProblemId()) {
 //        case 100:
@@ -713,7 +713,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //            break;
         case 3000:
             CeylonEditor currentEditor = getCurrentCeylonEditor();
-            addAssignToLocalProposal(currentEditor, rootNode, proposals, node, start);
+//            addAssignToLocalProposal(currentEditor, rootNode, proposals, node, start);
             addDestructureProposal(currentEditor, rootNode, proposals, node, start);
             addAssignToForProposal(currentEditor, rootNode, proposals, node, start);
             addAssignToIfExistsProposal(currentEditor, rootNode, proposals, node, start);
@@ -804,7 +804,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             
             CeylonEditor currentEditor = getCurrentCeylonEditor();
 
-            addAssignToLocalProposal(currentEditor, rootNode, proposals, node, currentOffset);
+//            addAssignToLocalProposal(currentEditor, rootNode, proposals, node, currentOffset);
             addDestructureProposal(currentEditor, rootNode, proposals, node, currentOffset);
             addAssignToForProposal(currentEditor, rootNode, proposals, node, currentOffset);
             addAssignToIfExistsProposal(currentEditor, rootNode, proposals, node, currentOffset);
@@ -827,7 +827,9 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             Tree.ImportMemberOrType imp = findImport(rootNode, node);
             Tree.OperatorExpression oe = findOperator(rootNode, node);
             
-            correctJ2C().addQuickAssists(rootNode, node, project, proposals, currentEditor, file, doc, statement, declaration, argument, imp, oe, currentOffset);
+            correctJ2C().addQuickAssists(rootNode, node, project, proposals, 
+                    editor, file, doc, statement, declaration, argument,
+                    imp, oe, currentOffset);
 
 //            addOperatorProposals(proposals, file, oe);
 //            addParenthesesProposals(proposals, file, node, rootNode, oe);

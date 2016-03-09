@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.AssignToLocalProposal.addAssignToLocalProposal;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.correctJ2C;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 
@@ -36,7 +36,7 @@ public class AssignToLocalHandler extends AbstractHandler {
                 Node node = findNode(rootNode, ce.getParseController().getTokens(), start, end);
                 List<ICompletionProposal> list = 
                         new ArrayList<ICompletionProposal>();
-                addAssignToLocalProposal((CeylonEditor)editor, rootNode, list, node, start);
+                correctJ2C().addAssignToLocalProposal(rootNode, node, list, ce);
                 if (!list.isEmpty()) {
                     IDocument doc = ce.getCeylonSourceViewer().getDocument();
                     ICompletionProposal proposal = list.get(0);
