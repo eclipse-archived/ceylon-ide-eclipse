@@ -275,6 +275,7 @@ public class LinkedModeCompletionProposal
         return proposals;
     }
     
+    // Ceylon version in AssignToLocalProposal.getSupertypes()
     public static ICompletionProposal[] getSupertypeProposals(int offset, 
             Unit unit, final Type type, boolean includeValue, String kind,
             final LinkedModeImporter importer) {
