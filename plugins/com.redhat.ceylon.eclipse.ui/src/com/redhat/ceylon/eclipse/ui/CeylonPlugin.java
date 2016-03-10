@@ -268,6 +268,32 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         }.schedule();
     }
 
+    public static File getEmbeddedCeylonRepository() {
+        File repo = null;
+        try {
+            Bundle bundle = Platform.getBundle(EMBEDDED_REPO_PLUGIN_ID);
+            IPath path = new Path("repo");
+            if (bundle == null) {
+                bundle = Platform.getBundle(DIST_PLUGIN_ID);
+                path = new Path("embeddedRepository").append(path);
+            }
+            URL eclipseUrl = 
+                    FileLocator.find(bundle, path, null);
+            URL fileURL = 
+                    FileLocator.resolve(eclipseUrl);
+            String urlPath = fileURL.getPath();
+            URI fileURI = 
+                    new URI("file", null, urlPath, null);
+            repo = new File(fileURI);
+            try {
+                repo = repo.getCanonicalFile();
+            } catch(Exception e) {}
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return repo;
+    }
     
     /**
      * - If the property is not empty, return the 
@@ -290,28 +316,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
             }
         }
         if (ceylonRepository == null) {
-            try {
-                Bundle bundle = Platform.getBundle(EMBEDDED_REPO_PLUGIN_ID);
-                IPath path = new Path("repo");
-                if (bundle == null) {
-                    bundle = Platform.getBundle(DIST_PLUGIN_ID);
-                    path = new Path("embeddedRepository").append(path);
-                }
-                URL eclipseUrl = 
-                        FileLocator.find(bundle, path, null);
-                URL fileURL = 
-                        FileLocator.resolve(eclipseUrl);
-                String urlPath = fileURL.getPath();
-                URI fileURI = 
-                        new URI("file", null, urlPath, null);
-                ceylonRepository = new File(fileURI);
-                try {
-                    ceylonRepository = ceylonRepository.getCanonicalFile();
-                } catch(Exception e) {}
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+            ceylonRepository = getEmbeddedCeylonRepository();
         }
         return ceylonRepository;
     }
