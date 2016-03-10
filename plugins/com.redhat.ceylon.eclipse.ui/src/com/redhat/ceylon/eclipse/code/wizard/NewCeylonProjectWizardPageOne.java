@@ -1103,6 +1103,8 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
     private boolean compileJava;
     private boolean compileJs;
 
+    private boolean createBoostrapFiles = true;
+
     private boolean astAwareIncrementalBuildsEnabled = true;
 
     /**
@@ -1491,6 +1493,10 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         return compileJs;
     }
     
+    public boolean isCreateBoostrapFiles() {
+        return createBoostrapFiles;
+    }
+    
     public boolean areAstAwareIncrementalBuildsEnabled() {
         return astAwareIncrementalBuildsEnabled;
     }
@@ -1552,6 +1558,15 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
 
+        final Button createBootstrapFilesButton = new Button(composite, SWT.CHECK);
+        createBootstrapFilesButton.setText("Create ceylon bootstrap files");
+        createBootstrapFilesButton.setSelection(true);
+        createBootstrapFilesButton.addListener(SWT.Selection, new Listener() {
+            public void handleEvent(Event e) {
+                createBoostrapFiles = createBootstrapFilesButton.getSelection();
+            }
+        });
+        
         jc.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {

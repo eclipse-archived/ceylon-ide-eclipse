@@ -2978,6 +2978,26 @@
         </visibility>
      </objectContribution>
 
+     <objectContribution
+           objectClass="org.eclipse.core.resources.IProject"
+           adaptable="true"
+           nameFilter="*"
+           id="com.redhat.ceylon.eclipse.ui.ceylonProjectContextMenu">
+         <action
+               class="com.redhat.ceylon.eclipse.code.wizard.CreateBootstrapFilesHandler"
+               id="com.redhat.ceylon.eclipse.ui.actions.createBootstrapFiles"
+               label="Create Ceylon Bootstrap Files"
+               menubarPath="group.build"
+               tooltip="Create the Ceylon bootstrap files">
+         </action>
+        <visibility>
+          <and>
+            <objectState name="open" value="true"/>
+            <objectState name="nature" value="com.redhat.ceylon.eclipse.ui.ceylonNature"/>
+          </and>
+        </visibility>
+     </objectContribution>
+
       <objectContribution
             objectClass="org.eclipse.jdt.debug.core.IJavaStackFrame"
             id="com.redhat.ceylon.eclipse.ui.ReceivingStackFrameActions">
