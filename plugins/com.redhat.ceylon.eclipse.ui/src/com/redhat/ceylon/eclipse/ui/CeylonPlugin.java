@@ -427,6 +427,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
           reg.put(CEYLON_LOCAL_CLASS, image("innerclass_private_obj.png"));
           reg.put(CEYLON_LOCAL_INTERFACE, image("innerinterface_private_obj.png"));
           reg.put(CEYLON_METHOD, image("methpub_obj.png"));
+          reg.put(CEYLON_PARAMETER_METHOD, image("methpro_obj.png"));
           reg.put(CEYLON_LOCAL_METHOD, image("methpri_obj.png"));
           reg.put(CEYLON_ATTRIBUTE, image("field_public_obj.png"));
           reg.put(CEYLON_LOCAL_ATTRIBUTE, image("field_private_obj.png"));
