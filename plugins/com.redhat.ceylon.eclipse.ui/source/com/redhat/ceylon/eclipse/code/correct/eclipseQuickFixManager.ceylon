@@ -114,7 +114,7 @@ object eclipseQuickFixManager
         Tree.ImportMemberOrType? imp, Tree.OperatorExpression? oe,
         Integer currentOffset) {
         
-        assignToLocalQuickFix.addProposal(data, file);
+        assignToLocalQuickFix.addProposal(data, file, currentOffset);
         
         if (is Tree.BinaryOperatorExpression oe) {
             operatorQuickFix.addReverseOperatorProposal(data, file, oe);
