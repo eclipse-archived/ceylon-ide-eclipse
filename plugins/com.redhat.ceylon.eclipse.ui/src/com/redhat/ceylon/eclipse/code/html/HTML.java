@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jface.preference.JFacePreferences;
+import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.util.Util;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -37,8 +38,8 @@ import org.osgi.framework.Bundle;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.util.Escaping;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -113,10 +114,16 @@ public class HTML {
                 EditorUtil.createColor(
                         JFacePreferences.getPreferenceStore(),
                         JFacePreferences.HYPERLINK_COLOR);
+        if (linkColor == null) {
+            linkColor = JFaceColors.getHyperlinkText(display);
+        }
         Color activeLinkColor =
                 EditorUtil.createColor(
                         JFacePreferences.getPreferenceStore(),
                         JFacePreferences.ACTIVE_HYPERLINK_COLOR);
+        if (activeLinkColor == null) {
+            activeLinkColor = JFaceColors.getActiveHyperlinkText(display);
+        }
         
         boolean bold = (textFontData.getStyle() & SWT.BOLD) != 0;
         boolean italic = (textFontData.getStyle() & SWT.ITALIC) != 0;
