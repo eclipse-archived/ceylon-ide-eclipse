@@ -28,10 +28,14 @@ public class MoveOutProposal implements ICompletionProposal, ICompletionProposal
     public MoveOutProposal(CeylonEditor editor, Node node) {
         action = new MoveOutRefactoringAction(editor);
         if (node instanceof Tree.Declaration) {
-            Declaration dec = ((Tree.Declaration) node).getDeclarationModel();
+            Tree.Declaration d = (Tree.Declaration) node;
+            Declaration dec = d.getDeclarationModel();
             if (dec!=null) {
-                Tree.Declaration container = getContainer(editor.getParseController().getLastCompilationUnit(), 
-                        dec);
+                Tree.CompilationUnit rootNode = 
+                        editor.getParseController()
+                            .getLastCompilationUnit();
+                Tree.Declaration container = 
+                        getContainer(rootNode, dec);
                 if (container!=null) {
                     name = container.getDeclarationModel().getName();
                 }

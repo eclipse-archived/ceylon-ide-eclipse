@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
 import static com.redhat.ceylon.eclipse.util.Nodes.text;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStatus;
@@ -37,7 +37,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Class;
@@ -153,7 +152,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         Declaration dec = declaration.getDeclarationModel();
         Tree.TypeDeclaration owner = 
                 (Tree.TypeDeclaration) 
-                    Nodes.getContainer(rootNode, dec);
+                    getContainer(rootNode, dec);
 
         for (PhasedUnit pu: getAllUnits()) {
             if (searchInFile(pu)) {
