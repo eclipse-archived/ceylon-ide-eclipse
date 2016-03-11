@@ -5,6 +5,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_CO
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
+import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
 import static com.redhat.ceylon.eclipse.util.Nodes.text;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.addToUnion;
 import static java.util.Collections.singletonList;
@@ -573,10 +574,19 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         rootNode.visit(fsv);
         Tree.Declaration decNode = fsv.getDeclaration();
         Declaration dec = decNode.getDeclarationModel();
+        if (decNode instanceof Tree.AttributeDeclaration) {
+            Tree.Declaration container = 
+                    getContainer(rootNode, dec);
+            if (container!=null) {
+                decNode = container;
+                dec = decNode.getDeclarationModel();
+            }
+        }
         FindLocalReferencesVisitor flrv = 
                 new FindLocalReferencesVisitor(
-                        node.getScope(), 
-                        getContainingScope(decNode));
+                        node.getScope(),
+                        decNode.getDeclarationModel()
+                            .getContainer());
         term.visit(flrv);
         List<Tree.BaseMemberExpression> localRefs = 
                 flrv.getLocalReferences();
@@ -617,7 +627,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         String indent = 
                 utilJ2C().indents().getDefaultLineDelimiter(doc) + 
                 utilJ2C().indents().getIndent(decNode, doc);
-        String extraIndent = indent + utilJ2C().indents().getDefaultIndent();
+        String extraIndent = 
+                indent + utilJ2C().indents().getDefaultIndent();
 
         StringBuilder typeParams = new StringBuilder();
         StringBuilder constraints = new StringBuilder();
@@ -696,9 +707,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
             else {
                 String header = text(cpl, tokens) + " => ";
                 invocation = header + newName + "(" + args + ")";
-                refStart = start + header.length(); {
-                    
-                }
+                refStart = start + header.length();
             }
         }
         else {
@@ -712,10 +721,6 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         int nl = newName.length();
         decRegion = new Region(decStart+il+type.length()+1, nl);
         refRegion = new Region(refStart+il+text.length(), nl);
-    }
-
-    private Scope getContainingScope(Tree.Declaration decNode) {
-        return decNode.getDeclarationModel().getContainer();
     }
 
     private void extractStatementsInFile(TextChange tfc) {
@@ -739,7 +744,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         FindLocalReferencesVisitor flrv = 
                 new FindLocalReferencesVisitor(
                         node.getScope(),
-                        getContainingScope(decNode));
+                        decNode.getDeclarationModel()
+                            .getContainer());
         for (Tree.Statement s: statements) {
             s.visit(flrv); {
                 
