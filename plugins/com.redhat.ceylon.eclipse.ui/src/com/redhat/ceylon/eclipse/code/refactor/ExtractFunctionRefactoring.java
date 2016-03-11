@@ -3,8 +3,8 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.util.Nodes.text;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.addToUnion;
 import static java.util.Collections.singletonList;
@@ -301,7 +301,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                     }
                     if (currentDec instanceof TypedDeclaration) {
                         TypedDeclaration od = 
-                                ((TypedDeclaration)currentDec).getOriginalDeclaration();
+                                ((TypedDeclaration)currentDec)
+                                    .getOriginalDeclaration();
                         if (od!=null && od.equals(dec)) return;
                     }
                 }
@@ -390,8 +391,10 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
     public boolean getEnabled() {
         return sourceFile!=null &&
                 getEditable() &&
-                !sourceFile.getName().equals("module.ceylon") &&
-                !sourceFile.getName().equals("package.ceylon") &&
+                !sourceFile.getName()
+                    .equals("module.ceylon") &&
+                !sourceFile.getName()
+                    .equals("package.ceylon") &&
                 (node instanceof Tree.Term || 
                  node instanceof Tree.Body &&
                     !statements.isEmpty() &&
@@ -547,19 +550,21 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
             Tree.FunctionArgument fa = 
                     (Tree.FunctionArgument) unparened;
             returnType = fa.getType().getTypeModel();
-            if (fa.getBlock()!=null) {
-                body = text(fa.getBlock(), tokens);
+            Tree.Block block = fa.getBlock();
+            Tree.Expression expression = fa.getExpression();
+            if (block!=null) {
+                body = text(block, tokens);
             }
-            else if (fa.getExpression()!=null) {
-                body = "=> " + text(fa.getExpression(), tokens) + ";";
+            else if (expression!=null) {
+                body = "=> " + text(expression, tokens) + ";";
             }
             else {
                 body = "=>;";
             }
         }
         else {
-            returnType = unit
-                    .denotableType(term.getTypeModel());
+            Type t = term.getTypeModel();
+            returnType = unit.denotableType(t);
             body = "=> " + text(unparened, tokens) + ";";
         }
         
@@ -578,10 +583,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         List<TypeDeclaration> localTypes = 
                 new ArrayList<TypeDeclaration>();
         for (Tree.BaseMemberExpression bme: localRefs) {
-            addLocalType(dec, 
-                    unit.denotableType(bme.getTypeModel()), 
-                    localTypes, 
-                    new ArrayList<Type>());
+            Type t = unit.denotableType(bme.getTypeModel());
+            addLocalType(dec, t, localTypes, new ArrayList<Type>());
         }
         
         StringBuilder params = new StringBuilder();
@@ -602,8 +605,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                     params.append("dynamic");
                 }
                 else {
-                    params.append(unit.denotableType(bme.getTypeModel())
-                            .asSourceCodeString(unit));
+                    Type t = unit.denotableType(bme.getTypeModel());
+                    params.append(t.asSourceCodeString(unit));
                 }
                 String name = bme.getIdentifier().getText();
                 params.append(" ").append(name);
@@ -676,7 +679,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         }
 
         String text = 
-                type + " " + newName + typeParams + "(" + params + ")" + 
+                type + " " + newName + 
+                typeParams + "(" + params + ")" + 
                 constraints + " " + body + indent + indent;
         String invocation;
         int refStart;
@@ -690,8 +694,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                 refStart = start;
             }
             else {
-                String header = 
-                        text(cpl, tokens) + " => ";
+                String header = text(cpl, tokens) + " => ";
                 invocation = header + newName + "(" + args + ")";
                 refStart = start + header.length(); {
                     
@@ -749,19 +752,15 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         final Declaration dec = 
                 decNode.getDeclarationModel();
         for (Tree.BaseMemberExpression bme: localReferences) {
-            addLocalType(dec, 
-                    unit.denotableType(
-                            bme.getTypeModel()), 
-                            localTypes, 
-                            new ArrayList<Type>());
+            Type t = unit.denotableType(bme.getTypeModel());
+            addLocalType(dec, t, localTypes, new ArrayList<Type>());
         }
         for (Tree.Statement s: statements) {
             new Visitor() {
                 public void visit(Tree.TypeArgumentList that) {
                     for (Type pt: that.getTypeModels()) {
-                        addLocalType(dec, 
-                                unit.denotableType(pt), 
-                                localTypes, 
+                        Type t = unit.denotableType(pt);
+                        addLocalType(dec, t, localTypes, 
                                 new ArrayList<Type>());
                     }
                 }
@@ -792,18 +791,14 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                     if (bmed instanceof Value && 
                             ((Value) bmed).isVariable()) {
                         params += "variable ";
-                    } { {
-                        
-                    }
-                        
                     }
                     if (bmed instanceof TypedDeclaration && 
                             ((TypedDeclaration) bmed).isDynamicallyTyped()) {
                         params += "dynamic";
                     }
                     else {
-                        params += unit.denotableType(bme.getTypeModel())
-                                .asSourceCodeString(unit);
+                        Type t = unit.denotableType(bme.getTypeModel());
+                        params += t.asSourceCodeString(unit);
                     }
                     params += " " + bme.getIdentifier().getText() + ", ";
                     args += bme.getIdentifier().getText() + ", ";
@@ -827,10 +822,10 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         if (!localTypes.isEmpty()) {
             for (TypeDeclaration t: localTypes) {
                 typeParams += t.getName() + ", ";
-                List<Type> sts = 
-                        t.getSatisfiedTypes();
+                List<Type> sts = t.getSatisfiedTypes();
                 if (!sts.isEmpty()) {
-                    constraints += extraIndent + 
+                    constraints += 
+                            extraIndent + 
                             utilJ2C().indents().getDefaultIndent() + 
                             "given " + 
                             t.getName() + 
@@ -855,8 +850,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
             List<Type> list = 
                     new ArrayList<Type>();
             for (Tree.Return r: returns) {
-                addToUnion(list, 
-                        r.getExpression().getTypeModel());
+                Type t = r.getExpression().getTypeModel();
+                addToUnion(list, t);
             }
             ut.setCaseTypes(list);
             returnType = ut.getType();
@@ -889,10 +884,11 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
         if (resultDeclaration!=null && 
                 !(result instanceof Tree.Declaration) &&
                 !resultDeclaration.isVariable()) { //TODO: wrong condition, check if initialized!
-            content += extraIndent +
-                resultDeclaration.getType()
-                    .asSourceCodeString(unit) +
-                " " + resultDeclaration.getName() + ";";
+            content += 
+                    extraIndent +
+                    resultDeclaration.getType()
+                            .asSourceCodeString(unit) +
+                    " " + resultDeclaration.getName() + ";";
         }
         Tree.Statement last = 
                 statements.isEmpty() ? null : 
@@ -919,7 +915,9 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
             }
         }
         if (resultDeclaration!=null) {
-            content += extraIndent + "return " + 
+            content += 
+                    extraIndent + 
+                    "return " + 
                     resultDeclaration.getName() + ";";
         }
         content += indent + "}" + indent + indent;
@@ -937,7 +935,8 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                     modifs = "value ";
                 }
             }
-            invocation = modifs + 
+            invocation = 
+                    modifs + 
                     resultDeclaration.getName() + 
                     "=" + invocation;
         }
