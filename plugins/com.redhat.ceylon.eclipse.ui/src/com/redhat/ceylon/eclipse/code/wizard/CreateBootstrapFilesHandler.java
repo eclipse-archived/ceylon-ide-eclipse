@@ -1,6 +1,9 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.action.IAction;
@@ -13,7 +16,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
-import com.redhat.ceylon.eclipse.core.model.modelJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 
@@ -25,7 +28,7 @@ public class CreateBootstrapFilesHandler implements IWorkbenchWindowActionDelega
     
     public void init(IWorkbenchWindow window) {}
 
-    public static boolean createBootstrapFiles(CeylonProject<IProject> ceylonProject, Shell shell) {
+    public static boolean createBootstrapFiles(CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject, Shell shell) {
         if (shell == null) {
             shell = Display.getDefault().getActiveShell();
         }
@@ -71,7 +74,7 @@ public class CreateBootstrapFilesHandler implements IWorkbenchWindowActionDelega
     }
 
     public void run(IAction action) {
-        CeylonProject<IProject> ceylonProject = modelJ2C.ceylonModel().getProject(fProject);
+        CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = modelJ2C().ceylonModel().getProject(fProject);
         if (ceylonProject != null) {
             Shell shell = Display.getDefault().getActiveShell();
             boolean success = createBootstrapFiles(ceylonProject, null);

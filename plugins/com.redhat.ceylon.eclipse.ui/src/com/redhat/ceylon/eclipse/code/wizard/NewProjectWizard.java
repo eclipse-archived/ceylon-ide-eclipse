@@ -12,7 +12,10 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.EnumSet;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
@@ -49,6 +52,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 
 public class NewProjectWizard extends NewElementWizard 
@@ -152,7 +156,7 @@ public class NewProjectWizard extends NewElementWizard
             
             IProject project = getCreatedElement().getProject();
             
-            BaseCeylonProject ceylonProject = 
+            CeylonProject<IProject, IResource,IFolder,IFile> ceylonProject = 
                     modelJ2C().ceylonModel().getProject(project);
             CeylonProjectConfig projectConfig = 
                     ceylonProject.getConfiguration();
