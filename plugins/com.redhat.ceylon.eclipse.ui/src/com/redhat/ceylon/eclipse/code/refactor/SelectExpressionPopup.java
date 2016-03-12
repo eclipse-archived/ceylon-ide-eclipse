@@ -36,7 +36,6 @@ import org.eclipse.swt.widgets.TableItem;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -47,7 +46,7 @@ abstract class SelectExpressionPopup extends PopupDialog {
     
     private CeylonEditor editor;
     private TableViewer table;
-    private List<Term> containingExpressions;
+    private List<Tree.Term> containingExpressions;
     
     abstract ExtractLinkedMode linkedMode();
 
@@ -185,8 +184,7 @@ abstract class SelectExpressionPopup extends PopupDialog {
             public void handleEvent(Event event) {
                 Rectangle bounds = event.getBounds();
                 Point point = new Point(bounds.x, bounds.y);
-                TableItem item = 
-                        tab.getItem(point);
+                TableItem item = tab.getItem(point);
                 if (item!=null) {
                     StructuredSelection selection = 
                             new StructuredSelection(
