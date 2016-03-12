@@ -450,7 +450,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 }
                 Type vt = value.getType();
                 if (vt!=null && !vt.isNothing() &&
-                        withinBounds(type, vt)) {
+                        withinBounds(type, vt, scope)) {
                     props.add(new NestedCompletionProposal(d, loc, getUnit()));
                 }
             }
@@ -464,7 +464,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 }
                 Type mt = method.getType();
                 if (mt!=null && !mt.isNothing() &&
-                        withinBounds(type, mt)) {
+                        withinBounds(type, mt, scope)) {
                     props.add(new NestedCompletionProposal(d, loc, getUnit()));
                 }
             }
@@ -478,7 +478,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                     }
                     Type ct = clazz.getType();
                     if (ct!=null && !ct.isNothing() &&
-                            (withinBounds(type, ct) ||
+                            (withinBounds(type, ct, scope) ||
                                     ct.getDeclaration()
                                         .equals(type.getDeclaration()))) {
                         if (clazz.getParameterList()!=null) {

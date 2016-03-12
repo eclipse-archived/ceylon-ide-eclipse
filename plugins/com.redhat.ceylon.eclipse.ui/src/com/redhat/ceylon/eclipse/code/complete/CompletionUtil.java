@@ -500,13 +500,14 @@ public class CompletionUtil {
     }
 
     @Deprecated
-    protected static boolean withinBounds(Type requiredType, Type type) {
+    protected static boolean withinBounds(Type requiredType, Type type, Scope scope) {
         TypeDeclaration td = requiredType.resolveAliases().getDeclaration();
         if (type.isSubtypeOf(requiredType)) {
             return true;
         }
         else if (td instanceof TypeParameter) {
-            return isInBounds(td.getSatisfiedTypes(), type);
+            return !td.isDefinedInScope(scope) &&
+                    isInBounds(td.getSatisfiedTypes(), type);
         }
         else if (type.getDeclaration().inherits(td)) {
             Type supertype = type.getSupertype(td);
@@ -514,7 +515,7 @@ public class CompletionUtil {
                 Type ta = supertype.getTypeArguments().get(tp);
                 Type rta = requiredType.getTypeArguments().get(tp);
                 if (ta!=null && rta!=null) {
-                    if (!withinBounds(rta, ta)) {
+                    if (!withinBounds(rta, ta, scope)) {
                         return false;
                     }
                 }

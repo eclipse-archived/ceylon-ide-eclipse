@@ -245,7 +245,7 @@ class InvocationCompletionProposal extends CompletionProposal {
         Type mt = ptr.getType();
         if (mt!=null && 
                 (requiredType==null ||
-                 withinBounds(requiredType, mt) ||
+                 withinBounds(requiredType, mt, scope) ||
                  dec instanceof Class &&
                      dec.equals(requiredType.getDeclaration()))) {
             String qualifier = dec.getName() + ".";
@@ -1092,7 +1092,7 @@ class InvocationCompletionProposal extends CompletionProposal {
             }
             Type vt = value.getType();
             if (vt!=null && !vt.isNothing()) {
-                if (withinBounds(type, vt)) {
+                if (withinBounds(type, vt, scope)) {
                     boolean isIterArg = 
                             namedInvocation && last && 
                             unit.isIterableParameterType(type);
@@ -1129,7 +1129,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                 }
                 Type mt = method.getType();
                 if (mt!=null && !mt.isNothing() && 
-                        withinBounds(type, mt)) {
+                        withinBounds(type, mt, scope)) {
                     boolean isIterArg = 
                             namedInvocation && last && 
                             unit.isIterableParameterType(type);
@@ -1153,7 +1153,7 @@ class InvocationCompletionProposal extends CompletionProposal {
                 }
                 Type ct = clazz.getType();
                 if (ct!=null &&
-                        (withinBounds(type, ct) || 
+                        (withinBounds(type, ct, scope) || 
                          clazz.equals(type.getDeclaration()))) {
                     boolean isIterArg = 
                             namedInvocation && last && 
