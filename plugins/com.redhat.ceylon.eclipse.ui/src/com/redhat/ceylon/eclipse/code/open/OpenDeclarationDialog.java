@@ -902,44 +902,54 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         for (IProject project: projectsToSearch) {
             TypeChecker typeChecker = 
                     getProjectTypeChecker(project);
-            fill(contentProvider, itemsFilter, 
+            fillUnits(contentProvider, itemsFilter, 
                     typeChecker.getPhasedUnits()
-                        .getPhasedUnits());
-            monitor.worked(1);
+                        .getPhasedUnits(),
+                    monitor);
             if (monitor.isCanceled()) break;
             Modules modules = 
-                    typeChecker.getContext().getModules();
-            for (Module m: modules.getListOfModules()) {
-                if (m instanceof IdeModule &&
-                        !filters.isFiltered(m)) {
-                    IdeModule<IProject,IResource,IFolder,IFile> module = (IdeModule<IProject,IResource,IFolder,IFile>) m;
+                    typeChecker.getContext()
+                        .getModules();
+            for (Module module: modules.getListOfModules()) {
+                fillModule(module, 
+                        contentProvider, itemsFilter, 
+                        monitor, searchedArchives, 
+                        projectsToSearch);
+                if (monitor.isCanceled()) break;
+            }
+        }
+        monitor.done();
+    }
 
-                    BaseCeylonProject originalProject = 
-                            module.getOriginalProject();
-                    if (originalProject != null 
-                            && projectsToSearch.contains(
-                                    originalProject)) {
-                        continue;
-                    }
-                    
-                    String moduleName = 
-                            module.getNameAsString();
-                    if (module.isAvailable() &&
+    private void fillModule(Module mod, 
+            AbstractContentProvider contentProvider, 
+            ItemsFilter itemsFilter,
+            IProgressMonitor monitor, 
+            Set<String> searchedArchives, 
+            Collection<IProject> projectsToSearch) {
+        if (mod instanceof IdeModule &&
+                !filters.isFiltered(mod)) {
+            IdeModule<IProject,IResource,IFolder,IFile> module = 
+                    (IdeModule<IProject,IResource,IFolder,IFile>) mod;
+            BaseCeylonProject originalProject = 
+                    module.getOriginalProject();
+            if (originalProject == null || 
+                    !projectsToSearch.contains(
+                            originalProject)) {
+                String moduleName = module.getNameAsString();
+                if (module.isAvailable() &&
                         (!excludeJDK || 
                                 !isJDKModule(moduleName)) &&
                         (!excludeOracleJDK || 
                                 !isOracleJDKModule(moduleName)) &&
-                            searchedArchives.add(
-                                    uniqueIdentifier(module))) {
-                        fill(contentProvider, itemsFilter, 
-                                module, monitor);
-                        monitor.worked(1);
-                        if (monitor.isCanceled()) break;
-                    }
+                        searchedArchives.add(
+                                uniqueIdentifier(module))) {
+                    fill(contentProvider, itemsFilter, 
+                            module, monitor);
+                    monitor.worked(1);
                 }
             }
         }
-        monitor.done();
     }
 
     private void fill(AbstractContentProvider contentProvider,
@@ -1027,10 +1037,11 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
     }
     
-    private void fill(
+    private void fillUnits(
             AbstractContentProvider contentProvider,
             ItemsFilter itemsFilter, 
-            List<? extends PhasedUnit> units) {
+            List<? extends PhasedUnit> units, 
+            IProgressMonitor monitor) {
         for (PhasedUnit unit: units) {
             BaseIdeModule jdtModule = (BaseIdeModule) 
                     unit.getPackage().getModule();
@@ -1044,6 +1055,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             }
             
         }
+        monitor.worked(1);
     }
 
     protected String getFilterListAsString(String preference) {
