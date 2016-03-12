@@ -136,8 +136,8 @@ public final class ExtractParameterLinkedMode
             Shell shell = editor.getSite().getShell();
             new SelectExpressionPopup(shell, 0, editor,
                     "Extract Parameter") {
-                ExtractLinkedMode linkedMode() {
-                    return new ExtractParameterLinkedMode(editor);
+                @Override void finish() {
+                    new ExtractParameterLinkedMode(editor).start();
                 }
             }
             .open();

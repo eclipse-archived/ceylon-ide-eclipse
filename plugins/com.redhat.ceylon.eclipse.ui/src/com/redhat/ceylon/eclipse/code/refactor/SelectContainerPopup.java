@@ -1,12 +1,15 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getOutlineFont;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getContainingDeclaration;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.antlr.runtime.CommonToken;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -34,29 +37,31 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 
-abstract class SelectExpressionPopup extends PopupDialog {
+abstract class SelectContainerPopup extends PopupDialog {
     
     private CeylonEditor editor;
     private TableViewer table;
-    private List<Tree.Term> containingExpressions;
+    private List<Tree.Declaration> containingDeclarations;
+    private Tree.Declaration result;
     
     abstract void finish();
+    abstract boolean isEnabled();
 
-    SelectExpressionPopup(Shell parent, int shellStyle, 
+    SelectContainerPopup(Shell parent, int shellStyle, 
             CeylonEditor editor, String title) {
         super(parent, shellStyle, true, true, false, false,
                 false, null, null);
         this.editor = editor;
         setTitleText(title);
-        containingExpressions = containingExpressions();
+        containingDeclarations = containingDeclarations();
     }
     
     private Point getLocation() {
@@ -76,7 +81,7 @@ abstract class SelectExpressionPopup extends PopupDialog {
     
     @Override
     public int open() {
-        if (containingExpressions.size()>1) {
+        if (isEnabled() && containingDeclarations.size()>1) {
             int result = super.open();
             getShell().setLocation(getLocation());
             setFocus();
@@ -88,42 +93,30 @@ abstract class SelectExpressionPopup extends PopupDialog {
         }
     }
     
-    private List<Tree.Term> containingExpressions() {
-        final List<Tree.Term> expressions = 
-                new ArrayList<Tree.Term>();
+    private List<Tree.Declaration> containingDeclarations() {
+        final List<Tree.Declaration> declarations = 
+                new ArrayList<Tree.Declaration>();
         Tree.CompilationUnit rootNode = 
                 editor.getParseController()
                     .getLastCompilationUnit();
         if (rootNode!=null) {
             new Visitor() {
                 IRegion selection = editor.getSelection();
-                private void option(Tree.Term that) {
-                    if (!(that instanceof Tree.Expression)) {
-                        if (that.getStartIndex() 
-                                <= selection.getOffset() &&
-                            that.getEndIndex()
-                                >= selection.getOffset()+
-                                   selection.getLength()) {
-                            expressions.add(that);
-                        }
-                    }
-                }
                 @Override
-                public void visit(Tree.Term that) {
-                    super.visit(that);
-                    option(that);
-                }
-                @Override
-                public void visit(Tree.StringTemplate that) {
-                    //don't visit the string fragments
-                    for (Tree.Expression e: that.getExpressions()) {
-                        e.visit(this);
+                public void visit(Tree.Declaration that) {
+                    if (//!(that instanceof Tree.AttributeDeclaration) &&
+                        that.getStartIndex() 
+                            <= selection.getOffset() &&
+                        that.getEndIndex()
+                            >= selection.getOffset()+
+                               selection.getLength()) {
+                        super.visit(that);
+                        declarations.add(that);
                     }
-                    option(that);
                 }
             }.visit(rootNode);
         }
-        return expressions;
+        return declarations;
     }
     
     @Override
@@ -144,26 +137,35 @@ abstract class SelectExpressionPopup extends PopupDialog {
         table.setLabelProvider(new StyledCellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
-                Tree.Term e = 
-                        (Tree.Term) 
+                Tree.Declaration dec = 
+                        (Tree.Declaration) 
                             cell.getElement();
-                StyledString result = new StyledString();
-                List<CommonToken> tokens = 
-                        editor.getParseController()
-                            .getTokens();
-                String text = 
-                        Nodes.text(e, tokens)
-                            .replaceAll("\\s\\s+|\n|\r|\f", " ");
-                Highlights.styleFragment(result, 
-                        text, false, null, 
-                        CeylonPlugin.getCompletionFont());
-                cell.setText(result.toString());
-                cell.setStyleRanges(result.getStyleRanges());
+                Declaration d = 
+                        getContainingDeclaration(
+                                dec.getDeclarationModel());
+                if (d==null) {
+                    StyledString result = new StyledString();
+                    String pname = 
+                            dec.getUnit().getPackage()
+                                .getQualifiedNameString();
+                    Highlights.styleFragment(result, 
+                            "package " + pname, 
+                            true, "", getOutlineFont());
+                    cell.setText(result.toString());
+                    cell.setStyleRanges(result.getStyleRanges());
+                    cell.setImage(CeylonResources.PACKAGE);
+                }
+                else {
+                    StyledString result = getQualifiedDescriptionFor(d);
+                    cell.setText(result.toString());
+                    cell.setStyleRanges(result.getStyleRanges());
+                    cell.setImage(getImageForDeclaration(d));
+                }
                 super.update(cell);
             }
         });
         table.setContentProvider(ArrayContentProvider.getInstance());
-        table.setInput(containingExpressions);
+        table.setInput(containingDeclarations);
         tab.setSelection(0);
         tab.addKeyListener(new KeyListener() {
             @Override
@@ -219,15 +221,18 @@ abstract class SelectExpressionPopup extends PopupDialog {
         IStructuredSelection selection = 
                 (IStructuredSelection) 
                     table.getSelection();
-        Node e = (Node) selection.getFirstElement();
-        if (e!=null) {
-            editor.getSelectionProvider()
-                .setSelection(new TextSelection(
-                        e.getStartIndex(), 
-                        e.getDistance()));
-        }
+        setResult((Tree.Declaration) 
+            selection.getFirstElement());
         close();
         finish();
+    }
+
+    Tree.Declaration getResult() {
+        return result;
+    }
+
+    void setResult(Tree.Declaration result) {
+        this.result = result;
     }
 
 

@@ -149,8 +149,8 @@ public final class ExtractValueLinkedMode
             Shell shell = editor.getSite().getShell();
             new SelectExpressionPopup(shell, 0, editor,
                     "Extract Value") {
-                ExtractLinkedMode linkedMode() {
-                    return new ExtractValueLinkedMode(editor);
+                @Override void finish() {
+                    new ExtractValueLinkedMode(editor).start();
                 }
             }
             .open();

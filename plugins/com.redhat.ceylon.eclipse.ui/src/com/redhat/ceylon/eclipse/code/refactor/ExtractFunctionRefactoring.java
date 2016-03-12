@@ -4,6 +4,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COM
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
 import static com.redhat.ceylon.eclipse.util.Nodes.text;
@@ -40,7 +41,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.ide.common.refactoring.ExtractLinkedModeEnabled;
 import com.redhat.ceylon.ide.common.util.FindContainerVisitor;
@@ -322,6 +322,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
     private List<Tree.Statement> statements;
     List<Tree.Return> returns;
     private Type returnType;
+    private Tree.Declaration target;
 
     public ExtractFunctionRefactoring(IEditorPart editor) {
         super(editor);
@@ -342,6 +343,12 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                 }
             }
         }
+    }
+
+    public ExtractFunctionRefactoring(CeylonEditor editor,
+            Tree.Declaration target) {
+        this(editor);
+        this.target = target;
     }
 
     private void init(ITextSelection selection) {
@@ -539,7 +546,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
 
     private void extractExpressionInFile(TextChange tfc) {
         tfc.setEdit(new MultiTextEdit());
-        IDocument doc = EditorUtil.getDocument(tfc);
+        IDocument doc = getDocument(tfc);
         
         Tree.Term term = (Tree.Term) node;
         Integer start = term.getStartIndex();
@@ -569,24 +576,30 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
             body = "=> " + text(unparened, tokens) + ";";
         }
         
-        FindContainerVisitor fsv = 
-                new FindContainerVisitor(term);
-        rootNode.visit(fsv);
-        Tree.Declaration decNode = fsv.getDeclaration();
-        Declaration dec = decNode.getDeclarationModel();
-        if (decNode instanceof Tree.AttributeDeclaration) {
-            Tree.Declaration container = 
-                    getContainer(rootNode, dec);
-            if (container!=null) {
-                decNode = container;
-                dec = decNode.getDeclarationModel();
+        Tree.Declaration decNode;
+        if (target==null) {
+            FindContainerVisitor fsv = 
+                    new FindContainerVisitor(term);
+            rootNode.visit(fsv);
+            decNode = fsv.getDeclaration();
+            if (decNode instanceof Tree.AttributeDeclaration) {
+                Tree.Declaration container = 
+                        getContainer(rootNode, 
+                                decNode.getDeclarationModel());
+                if (container!=null) {
+                    decNode = container;
+                }
             }
         }
+        else {
+            decNode = target;
+        }
+        Declaration dec = decNode.getDeclarationModel();
+        
         FindLocalReferencesVisitor flrv = 
                 new FindLocalReferencesVisitor(
                         node.getScope(),
-                        decNode.getDeclarationModel()
-                            .getContainer());
+                        dec.getContainer());
         term.visit(flrv);
         List<Tree.BaseMemberExpression> localRefs = 
                 flrv.getLocalReferences();
@@ -725,7 +738,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
 
     private void extractStatementsInFile(TextChange tfc) {
         tfc.setEdit(new MultiTextEdit());
-        IDocument doc = EditorUtil.getDocument(tfc);
+        IDocument doc = getDocument(tfc);
         final Unit unit = node.getUnit();
         
         Tree.Body body = (Tree.Body) node;
@@ -737,26 +750,30 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                 statements.get(statements.size()-1)
                     .getEndIndex() 
                         - start;
-        FindContainerVisitor fsv = 
-                new FindContainerVisitor(body);
-        rootNode.visit(fsv);
-        Tree.Declaration decNode = fsv.getDeclaration();
+        
+        Tree.Declaration decNode;
+        if (target==null) {
+            FindContainerVisitor fsv = 
+                    new FindContainerVisitor(body);
+            rootNode.visit(fsv);
+            decNode = fsv.getDeclaration();
+        }
+        else {
+            decNode = target;
+        }
+        final Declaration dec = decNode.getDeclarationModel();
+        
         FindLocalReferencesVisitor flrv = 
                 new FindLocalReferencesVisitor(
                         node.getScope(),
-                        decNode.getDeclarationModel()
-                            .getContainer());
+                        dec.getContainer());
         for (Tree.Statement s: statements) {
-            s.visit(flrv); {
-                
-            }
+            s.visit(flrv);
         }
         final List<TypeDeclaration> localTypes = 
                 new ArrayList<TypeDeclaration>();
         List<BaseMemberExpression> localReferences = 
                 flrv.getLocalReferences();
-        final Declaration dec = 
-                decNode.getDeclarationModel();
         for (Tree.BaseMemberExpression bme: localReferences) {
             Type t = unit.denotableType(bme.getTypeModel());
             addLocalType(dec, t, localTypes, new ArrayList<Type>());
@@ -798,16 +815,25 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
                             ((Value) bmed).isVariable()) {
                         params += "variable ";
                     }
-                    if (bmed instanceof TypedDeclaration && 
-                            ((TypedDeclaration) bmed).isDynamicallyTyped()) {
-                        params += "dynamic";
+                    Type bmet = bme.getTypeModel();
+                    if (bmed instanceof TypedDeclaration) {
+                        TypedDeclaration td = 
+                                (TypedDeclaration) bmed;
+                        if (td.isDynamicallyTyped()) {
+                            params += "dynamic";
+                        }
+                        else {
+                            Type t = unit.denotableType(bmet);
+                            params += t.asSourceCodeString(unit);
+                        }
                     }
                     else {
-                        Type t = unit.denotableType(bme.getTypeModel());
+                        Type t = unit.denotableType(bmet);
                         params += t.asSourceCodeString(unit);
                     }
-                    params += " " + bme.getIdentifier().getText() + ", ";
-                    args += bme.getIdentifier().getText() + ", ";
+                    Tree.Identifier id = bme.getIdentifier();
+                    params += " " + id.getText() + ", ";
+                    args += id.getText() + ", ";
                     nonempty = true;
                 }
             }
@@ -856,8 +882,11 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
             List<Type> list = 
                     new ArrayList<Type>();
             for (Tree.Return r: returns) {
-                Type t = r.getExpression().getTypeModel();
-                addToUnion(list, t);
+                Tree.Expression e = r.getExpression();
+                if (e!=null) {
+                    Type t = e.getTypeModel();
+                    addToUnion(list, t);
+                }
             }
             ut.setCaseTypes(list);
             returnType = ut.getType();
@@ -871,7 +900,7 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
             if (returnType.isUnknown()) {
                 content = "dynamic";
             }
-            else if (explicitType||dec.isToplevel()) {
+            else if (explicitType || dec.isToplevel()) {
                 content = returnType.asSourceCodeString(unit);
                 HashSet<Declaration> already = 
                         new HashSet<Declaration>();

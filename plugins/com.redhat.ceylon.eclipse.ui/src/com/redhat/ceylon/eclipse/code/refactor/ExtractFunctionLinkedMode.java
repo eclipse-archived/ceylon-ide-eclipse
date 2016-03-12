@@ -8,6 +8,7 @@ import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.swt.widgets.Shell;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -21,6 +22,11 @@ public final class ExtractFunctionLinkedMode
     public ExtractFunctionLinkedMode(CeylonEditor editor) {
         super(editor);
         this.refactoring = new ExtractFunctionRefactoring(editor);
+    }
+    
+    public ExtractFunctionLinkedMode(CeylonEditor editor, Tree.Declaration target) {
+        super(editor);
+        this.refactoring = new ExtractFunctionRefactoring(editor, target);
     }
     
     @Override
@@ -133,15 +139,33 @@ public final class ExtractFunctionLinkedMode
 
     public static void selectExpressionAndStart(
             final CeylonEditor editor) {
+        final Shell shell = editor.getSite().getShell();
         if (editor.getSelection().getLength()>0) {
-            new ExtractFunctionLinkedMode(editor).start();
+            new SelectContainerPopup(shell, 0, editor,
+                    "Extract Function To") {
+                @Override void finish() {
+                    new ExtractFunctionLinkedMode(editor, getResult()).start();
+                }
+                @Override boolean isEnabled() {
+                    return new ExtractFunctionRefactoring(editor).getEnabled();
+                }
+            }
+            .open();
         }
         else {
-            Shell shell = editor.getSite().getShell();
             new SelectExpressionPopup(shell, 0, editor,
                     "Extract Function") {
-                ExtractLinkedMode linkedMode() {
-                    return new ExtractFunctionLinkedMode(editor);
+                @Override void finish() {
+                    new SelectContainerPopup(shell, 0, editor,
+                            "Extract Function To") {
+                        @Override void finish() {
+                            new ExtractFunctionLinkedMode(editor, getResult()).start();
+                        }
+                        @Override boolean isEnabled() {
+                            return new ExtractFunctionRefactoring(editor).getEnabled();
+                        }
+                    }
+                    .open();
                 }
             }
             .open();
