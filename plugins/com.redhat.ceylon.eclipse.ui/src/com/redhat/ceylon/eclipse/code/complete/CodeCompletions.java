@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getDefaultV
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.appendTypeName;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.Highlights.ANN_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.ARROW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
@@ -11,8 +12,8 @@ import static com.redhat.ceylon.eclipse.util.Highlights.MEMBER_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.styleIdentifier;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.EXTENDS;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.intersectionOfSupertypes;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
@@ -1216,9 +1217,31 @@ public class CodeCompletions {
     private static void appendEqualsImpl(Unit unit, String indent,
             StringBuilder result, ClassOrInterface ci, List<Parameter> ps) {
         Parameter p = ps.get(0);
+        StringBuilder targs = new StringBuilder();
+        if (!ci.getTypeParameters().isEmpty()) {
+            targs.append("<");
+            for (TypeParameter tp: ci.getTypeParameters()) {
+                if (targs.length()>1) {
+                    targs.append(",");
+                }
+                String bounds = 
+                        unit.denotableType(intersectionOfSupertypes(tp))
+                            .asSourceCodeString(unit);
+                if (tp.isCovariant()) {
+                    targs.append(bounds);
+                }
+                else if (tp.isContravariant()) {
+                    targs.append("Nothing");
+                }
+                else {
+                    targs.append("out ").append(bounds);
+                }
+            }
+            targs.append(">");
+        }
         result.append(" {")
             .append(indent).append(utilJ2C().indents().getDefaultIndent())
-            .append("if (is ").append(ci.getName()).append(" ").append(p.getName()).append(") {")
+            .append("if (is ").append(ci.getName()).append(targs).append(" ").append(p.getName()).append(") {")
             .append(indent).append(utilJ2C().indents().getDefaultIndent()).append(utilJ2C().indents().getDefaultIndent())
             .append("return ");
         String ind = indent+utilJ2C().indents().getDefaultIndent()+utilJ2C().indents().getDefaultIndent()+utilJ2C().indents().getDefaultIndent();
