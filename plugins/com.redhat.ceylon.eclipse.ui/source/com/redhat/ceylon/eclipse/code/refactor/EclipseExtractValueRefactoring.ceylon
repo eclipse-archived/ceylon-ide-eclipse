@@ -1,5 +1,4 @@
 import com.redhat.ceylon.eclipse.code.correct {
-    EclipseImportProposals,
     eclipseImportProposals,
     EclipseDocumentChanges
 }
@@ -25,7 +24,6 @@ import org.eclipse.jface.text.contentassist {
     ICompletionProposal
 }
 import org.eclipse.ltk.core.refactoring {
-    Change,
     RefactoringStatus,
     TextChange
 }
@@ -41,7 +39,9 @@ class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbst
         satisfies ExtractValueRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion>
         & EclipseDocumentChanges
         & EclipseExtractLinkedModeEnabled {
-    shared actual EclipseImportProposals importProposals => eclipseImportProposals;
+    
+    importProposals => eclipseImportProposals;
+    
     shared actual variable String? internalNewName=null;
     shared actual variable Boolean canBeInferred=false;
     shared actual variable Boolean explicitType=false;
@@ -51,27 +51,25 @@ class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbst
     shared actual variable IRegion? refRegion=null;
     shared actual variable Boolean getter=false;
     
-    shared actual RefactoringStatus checkFinalConditions(IProgressMonitor? iProgressMonitor)
+    checkFinalConditions(IProgressMonitor? monitor)
             => if (exists node=editorData?.node,
-        exists mop=node.scope.getMemberOrParameter(node.unit, newName, null, false))
-    then RefactoringStatus.createWarningStatus(
-            "An existing declaration named '``newName``' already exists in the same scope")
-    else RefactoringStatus();
+                   exists mop=node.scope.getMemberOrParameter(node.unit, newName, null, false))
+            then RefactoringStatus.createWarningStatus(
+                    "An existing declaration named '``newName``' already exists in the same scope")
+            else RefactoringStatus();
     
-    shared actual RefactoringStatus checkInitialConditions(IProgressMonitor? iProgressMonitor)
+    checkInitialConditions(IProgressMonitor? monitor)
             => RefactoringStatus();
     
-    shared actual Change createChange(IProgressMonitor? iProgressMonitor) {
+    shared actual TextChange createChange(IProgressMonitor? monitor) {
         TextChange tc = newLocalChange();
         extractInFile(tc);
         return tc;
     }
     
-    shared actual IRegion newRegion(Integer start, Integer length)
-            => Region(start, length);
+    newRegion(Integer start, Integer length) => Region(start, length);
     
-    shared actual void extractInFile(TextChange tfc)
-            => build(tfc);
+    extractInFile(TextChange tfc) => build(tfc);
     
     shared actual String name => (super of ExtractValueRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion>).name;
 }
