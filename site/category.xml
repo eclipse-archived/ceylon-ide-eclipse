@@ -19,25 +19,25 @@
    <feature url="features/com.redhat.ceylon.eclipse.android.feature_0.0.0.jar" id="com.redhat.ceylon.eclipse.android.feature" version="0.0.0">
       <category name="ceylon-ide"/>
    </feature>
-   <feature id="com.redhat.ceylon.dist.feature" version="1.2.2.qualifier">
+   <feature id="com.redhat.ceylon.dist.feature" version="1.2.3.qualifier">
       <category name="ceylon-ide-runtime-modules"/>
    </feature>
-   <feature id="ceylon.tool.converter.java2ceylon.feature" version="1.2.2.qualifier">
+   <feature id="ceylon.tool.converter.java2ceylon.feature" version="1.2.3.qualifier">
       <category name="ceylon-ide-runtime-modules"/>
    </feature>
-   <feature id="com.redhat.ceylon.ide.common.feature" version="1.2.2.qualifier">
+   <feature id="com.redhat.ceylon.ide.common.feature" version="1.2.3.qualifier">
       <category name="ceylon-ide-runtime-modules"/>
    </feature>
-   <bundle id="ceylon.formatter" version="1.2.2.qualifier">
+   <bundle id="ceylon.formatter" version="1.2.3.qualifier">
       <category name="ceylon-ide-runtime-modules"/>
    </bundle>
-   <bundle id="ceylon.file" version="1.2.2.qualifier">
+   <bundle id="ceylon.file" version="1.2.3.qualifier">
       <category name="ceylon-ide-runtime-modules"/>
    </bundle>
-   <bundle id="ceylon.interop.java" version="1.2.2.qualifier">
+   <bundle id="ceylon.interop.java" version="1.2.3.qualifier">
       <category name="ceylon-ide-runtime-modules"/>
    </bundle>
-   <bundle id="ceylon.collection" version="1.2.2.qualifier">
+   <bundle id="ceylon.collection" version="1.2.3.qualifier">
       <category name="ceylon-ide-runtime-modules"/>
    </bundle>
 </site>

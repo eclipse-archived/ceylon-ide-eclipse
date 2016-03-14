@@ -7,5 +7,5 @@
      - the `META-INF/MANIFEST.MF` file (in the `Require-Bundle` and
      `Import-Package` headers)
      - the `AdditionalBundles.properties` file"
-native("jvm") module com.redhat.ceylon.eclipseDependencies "1.2.2" {
+native("jvm") module com.redhat.ceylon.eclipseDependencies "1.2.3" {
 /* ADD GENERATED IMPORTS HERE */}

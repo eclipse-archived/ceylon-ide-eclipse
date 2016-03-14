@@ -2,9 +2,9 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Ceylon Android Compatibility Plugin
 Bundle-SymbolicName: com.redhat.ceylon.eclipse.android.plugin;singleton:=true
-Bundle-Version: 1.2.2.qualifier
+Bundle-Version: 1.2.3.qualifier
 Bundle-Activator: com.redhat.ceylon.eclipse.android.plugin.CeylonAndroidPlugin
-Require-Bundle: com.redhat.ceylon.eclipse.ui;bundle-version="1.2.2",
+Require-Bundle: com.redhat.ceylon.eclipse.ui;bundle-version="1.2.3",
  org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
