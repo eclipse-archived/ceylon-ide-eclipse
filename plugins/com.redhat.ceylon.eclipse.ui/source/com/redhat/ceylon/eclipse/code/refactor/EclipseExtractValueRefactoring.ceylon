@@ -35,7 +35,8 @@ import org.eclipse.ui {
     IEditorPart
 }
 
-class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbstractRefactoring<TextChange>(editorPart)
+class EclipseExtractValueRefactoring(IEditorPart editorPart) 
+        extends EclipseAbstractRefactoring<TextChange>(editorPart)
         satisfies ExtractValueRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion>
         & EclipseDocumentChanges
         & EclipseExtractLinkedModeEnabled {
@@ -55,7 +56,7 @@ class EclipseExtractValueRefactoring(IEditorPart editorPart) extends EclipseAbst
             => if (exists node=editorData?.node,
                    exists mop=node.scope.getMemberOrParameter(node.unit, newName, null, false))
             then RefactoringStatus.createWarningStatus(
-                    "An existing declaration named '``newName``' already exists in the same scope")
+                    "An existing declaration named '``newName``' is already visible this scope")
             else RefactoringStatus();
     
     checkInitialConditions(IProgressMonitor? monitor)
