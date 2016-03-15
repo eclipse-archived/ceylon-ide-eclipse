@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.refactor.ExtractLinkedMode.useLinkedMode;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.refactorJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CHANGE;
 
 import java.util.Collection;
@@ -18,7 +19,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.ExtractFunctionLinkedMode;
-import com.redhat.ceylon.eclipse.code.refactor.ExtractFunctionRefactoring;
 import com.redhat.ceylon.eclipse.code.refactor.ExtractFunctionRefactoringAction;
 
 public class ExtractFunctionProposal 
@@ -76,9 +76,7 @@ public class ExtractFunctionProposal
                 return;
             }
         }
-        ExtractFunctionRefactoring efr = 
-                new ExtractFunctionRefactoring(editor);
-        if (efr.getEnabled()) {
+        if (refactorJ2C().newExtractFunctionRefactoring(editor).getEnabled()) {
             proposals.add(new ExtractFunctionProposal(editor));
         }
     }

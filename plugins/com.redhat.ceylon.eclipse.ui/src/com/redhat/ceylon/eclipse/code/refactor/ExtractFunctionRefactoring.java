@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
+/*import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
@@ -1056,4 +1056,4 @@ public class ExtractFunctionRefactoring extends AbstractRefactoring implements E
     public IRegion newRegion(long start, long length) {
         return new Region((int) start, (int) length);
     }
-}
+}*/

@@ -85,7 +85,7 @@ public class RefactorMenuItems extends CompoundContributionItem {
                         CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.extractFunction", 
                         "Extract &Function...",
-                        editor!=null && new ExtractFunctionRefactoring(editor).getEnabled(),
+                        editor!=null && refactorJ2C().newExtractFunctionRefactoring(editor).getEnabled(),
                         CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.extractInterface", 
                         "Extract Interface...",

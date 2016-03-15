@@ -1,5 +1,10 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -12,7 +17,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.text.edits.InsertEdit;
+import org.eclipse.text.edits.TextEdit;
 
+import com.redhat.ceylon.ide.common.refactoring.ExtractFunctionRefactoring;
 import com.redhat.ceylon.ide.common.util.escaping_;
 
 public class ExtractFunctionInputPage extends UserInputWizardPage {
@@ -44,7 +52,8 @@ public class ExtractFunctionInputPage extends UserInputWizardPage {
         checkbox.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-                getExtractFunctionRefactoring().setExplicitType();
+                getExtractFunctionRefactoring().setExplicitType(
+                        !getExtractFunctionRefactoring().getExplicitType());
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
@@ -54,9 +63,11 @@ public class ExtractFunctionInputPage extends UserInputWizardPage {
         text.setFocus();
     }
 
-    private ExtractFunctionRefactoring getExtractFunctionRefactoring() {
-        return (ExtractFunctionRefactoring) getRefactoring();
+    @SuppressWarnings("unchecked")
+    private ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> getExtractFunctionRefactoring() {
+        return (ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion>) getRefactoring();
     }
+
 
     void validateIdentifier(String name) {
         if (!name.matches("^[a-z_]\\w*$")) {

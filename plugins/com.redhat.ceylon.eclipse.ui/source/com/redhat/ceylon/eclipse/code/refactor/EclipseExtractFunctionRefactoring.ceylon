@@ -57,11 +57,13 @@ import org.eclipse.ui {
     IEditorPart
 }
 
-class EclipseExtractFunctionRefactoring(IEditorPart editorPart) 
+class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null) 
         extends EclipseAbstractRefactoring<TextChange>(editorPart)
         satisfies ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion>
         & EclipseDocumentChanges
         & EclipseExtractLinkedModeEnabled {
+    
+    shared actual Tree.Declaration? target;
     
     importProposals => eclipseImportProposals;
     
@@ -77,7 +79,6 @@ class EclipseExtractFunctionRefactoring(IEditorPart editorPart)
     shared actual variable Type? returnType = null;
     shared actual variable List<Tree.Return> returns = empty;
     shared actual variable List<Tree.Statement> statements = empty;
-    shared actual variable Tree.Declaration? target = null;
     shared variable Tree.Body? body = null;
     
     if (!is CeylonEditor editorPart) {

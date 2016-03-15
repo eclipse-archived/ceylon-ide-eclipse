@@ -11,6 +11,7 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.ide.common.refactoring.ExtractLinkedModeEnabled;
 import com.redhat.ceylon.ide.common.refactoring.ExtractValueRefactoring;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.ide.common.refactoring.ExtractFunctionRefactoring;
 
 public interface RefactorJ2C {
@@ -23,6 +24,9 @@ public interface RefactorJ2C {
 
     ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> newExtractFunctionRefactoring(
             IEditorPart editorPart);
+
+    ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> newExtractFunctionRefactoring(
+            IEditorPart editorPart, Tree.Declaration target);
 
     ExtractLinkedModeEnabled<IRegion> toExtractLinkedModeEnabled(
             ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> refactoring);

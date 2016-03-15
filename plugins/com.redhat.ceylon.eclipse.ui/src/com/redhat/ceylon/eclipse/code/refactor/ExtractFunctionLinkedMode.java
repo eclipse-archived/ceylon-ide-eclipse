@@ -1,32 +1,41 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.refactorJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.text.edits.InsertEdit;
+import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.ide.common.refactoring.ExtractLinkedModeEnabled;
+import com.redhat.ceylon.ide.common.refactoring.ExtractFunctionRefactoring;
 import com.redhat.ceylon.model.typechecker.model.Type;
 
 public final class ExtractFunctionLinkedMode 
         extends ExtractLinkedMode {
         
-    private final ExtractFunctionRefactoring refactoring;
+    private final ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> refactoring;
     
     public ExtractFunctionLinkedMode(CeylonEditor editor) {
         super(editor);
-        this.refactoring = new ExtractFunctionRefactoring(editor);
+        this.refactoring = refactorJ2C().newExtractFunctionRefactoring(editor);
     }
     
     public ExtractFunctionLinkedMode(CeylonEditor editor, Tree.Declaration target) {
         super(editor);
-        this.refactoring = new ExtractFunctionRefactoring(editor, target);
+        this.refactoring = refactorJ2C().newExtractFunctionRefactoring(editor, target);
     }
     
     @Override
@@ -34,7 +43,7 @@ public final class ExtractFunctionLinkedMode
         DocumentChange change = 
                 new DocumentChange("Extract Function", 
                         document);
-        refactoring.extractInFile(change);
+        refactoring.build(change);
         EditorUtil.performChange(change);
         return 0;
     }
@@ -46,37 +55,44 @@ public final class ExtractFunctionLinkedMode
     
     @Override
     protected int getNameOffset() {
-        return refactoring.getDecRegion().getOffset();
+        return refactorJ2C().toExtractLinkedModeEnabled(refactoring)
+                .getDecRegion().getOffset();
     }
     
     @Override
     protected int getTypeOffset() {
-        return refactoring.getTypeRegion().getOffset();
+        return refactorJ2C().toExtractLinkedModeEnabled(refactoring)
+                .getTypeRegion().getOffset();
     }
     
     @Override
     protected int getExitPosition(int selectionOffset, int adjust) {
-        return refactoring.getRefRegion().getOffset();
+        return refactorJ2C().toExtractLinkedModeEnabled(refactoring)
+                .getRefRegion().getOffset();
     }
     
     @Override
     protected String[] getNameProposals() {
-    	return refactoring.getNameProposals();
+    	return refactorJ2C().toExtractLinkedModeEnabled(refactoring)
+    	        .getNameProposals();
     }
     
     @Override
     protected void addLinkedPositions(IDocument document,
             CompilationUnit rootNode, int adjust) {
         
+        ExtractLinkedModeEnabled<IRegion> elme = 
+                refactorJ2C().toExtractLinkedModeEnabled(refactoring);
+        
         addNamePosition(document, 
-                refactoring.getRefRegion().getOffset(),
-                refactoring.getRefRegion().getLength());
+                elme.getRefRegion().getOffset(),
+                elme.getRefRegion().getLength());
         
         Type type = refactoring.getType();
         if (!isTypeUnknown(type)) {
             addTypePosition(document, type, 
-                    refactoring.getTypeRegion().getOffset(), 
-                    refactoring.getTypeRegion().getLength());
+                    elme.getTypeRegion().getOffset(), 
+                    elme.getTypeRegion().getLength());
         }
     }
     
@@ -105,11 +121,11 @@ public final class ExtractFunctionLinkedMode
         new ExtractFunctionRefactoringAction(editor) {
             @Override
             public Refactoring createRefactoring() {
-                return ExtractFunctionLinkedMode.this.refactoring;
+                return (Refactoring) ExtractFunctionLinkedMode.this.refactoring;
             }
             @Override
             public RefactoringWizard createWizard(Refactoring refactoring) {
-                return new ExtractFunctionWizard((ExtractFunctionRefactoring) refactoring) {
+                return new ExtractFunctionWizard(refactoring) {
                     @Override
                     protected void addUserInputPages() {}
                 };
@@ -122,14 +138,14 @@ public final class ExtractFunctionLinkedMode
         new ExtractFunctionRefactoringAction(editor) {
             @Override
             public Refactoring createRefactoring() {
-                return ExtractFunctionLinkedMode.this.refactoring;
+                return (Refactoring) ExtractFunctionLinkedMode.this.refactoring;
             }
         }.run();
     }
     
     @Override
     public boolean canBeInferred() {
-        return refactoring.canBeInferred();
+        return refactoring.getCanBeInferred();
     }
     
     @Override
@@ -147,7 +163,7 @@ public final class ExtractFunctionLinkedMode
                     new ExtractFunctionLinkedMode(editor, getResult()).start();
                 }
                 @Override boolean isEnabled() {
-                    return new ExtractFunctionRefactoring(editor).getEnabled();
+                    return new refactorJ2C().newExtractFunctionRefactoring(editor).getEnabled();
                 }
             }
             .open();
@@ -162,7 +178,7 @@ public final class ExtractFunctionLinkedMode
                             new ExtractFunctionLinkedMode(editor, getResult()).start();
                         }
                         @Override boolean isEnabled() {
-                            return new ExtractFunctionRefactoring(editor).getEnabled();
+                            return new refactorJ2C().newExtractFunctionRefactoring(editor).getEnabled();
                         }
                     }
                     .open();
