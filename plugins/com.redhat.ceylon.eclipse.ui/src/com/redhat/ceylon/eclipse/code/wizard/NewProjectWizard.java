@@ -203,7 +203,7 @@ public class NewProjectWizard extends NewElementWizard
                 .addToProject(project);
 
             if (firstPage.isCreateBoostrapFiles()) {
-                CreateBootstrapFilesHandler.createBootstrapFiles(ceylonProject, getShell());
+                CreateBootstrapFilesHandler.createBootstrapFiles(ceylonProject, firstPage.getBoostrapVersion(), getShell());
             }
             
             BasicNewProjectResourceWizard.updatePerspective(fConfigElement);

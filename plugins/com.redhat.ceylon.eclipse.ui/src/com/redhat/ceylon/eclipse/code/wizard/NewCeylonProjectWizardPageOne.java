@@ -97,6 +97,8 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.WorkingSetConfigurationBlock;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.ide.common.model.versionsAvailableForBoostrap_;
+import com.redhat.ceylon.ide.common.util.toJavaStringList_;
 
 /**
  * The first page of the New Java Project wizard. This page is typically used in combination with
@@ -1104,6 +1106,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
     private boolean compileJs;
 
     private boolean createBoostrapFiles = true;
+    private String bootstrapVersion = null;
 
     private boolean astAwareIncrementalBuildsEnabled = true;
 
@@ -1497,6 +1500,10 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         return createBoostrapFiles;
     }
     
+    public String getBoostrapVersion() {
+        return bootstrapVersion;
+    }
+    
     public boolean areAstAwareIncrementalBuildsEnabled() {
         return astAwareIncrementalBuildsEnabled;
     }
@@ -1558,12 +1565,33 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
 
-        final Button createBootstrapFilesButton = new Button(composite, SWT.CHECK);
+        Composite bootstrapComposite = new Composite(composite, NONE);
+        GridData bcgdb = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        bcgdb.grabExcessHorizontalSpace=true;
+        bootstrapComposite.setLayoutData(bcgdb);
+        GridLayout bclayoutb = new GridLayout();
+        bclayoutb.numColumns = 2;
+        bclayoutb.marginLeft = -5;
+        bootstrapComposite.setLayout(bclayoutb);
+
+        final Button createBootstrapFilesButton = new Button(bootstrapComposite, SWT.CHECK);
+        final Combo createBootstrapFilesVersionsCombo = new Combo(bootstrapComposite, SWT.READ_ONLY);
+        String[] choices = toJavaStringList_.toJavaStringList(versionsAvailableForBoostrap_.get_()).toArray(new String[0]);
+        createBootstrapFilesVersionsCombo.setItems(choices);
+        createBootstrapFilesVersionsCombo.select(0);
+        bootstrapVersion = choices[0];
         createBootstrapFilesButton.setText("Create ceylon bootstrap files");
         createBootstrapFilesButton.setSelection(true);
         createBootstrapFilesButton.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event e) {
                 createBoostrapFiles = createBootstrapFilesButton.getSelection();
+                createBootstrapFilesVersionsCombo.setEnabled(createBoostrapFiles);
+            }
+        });
+        createBootstrapFilesVersionsCombo.addListener(SWT.Selection, new Listener() {
+            public void handleEvent(Event e) {
+                bootstrapVersion = createBootstrapFilesVersionsCombo.getItem(
+                                    createBootstrapFilesVersionsCombo.getSelectionIndex());
             }
         });
         
