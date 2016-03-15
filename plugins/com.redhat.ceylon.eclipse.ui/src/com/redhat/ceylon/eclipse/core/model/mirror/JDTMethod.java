@@ -510,4 +510,10 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
     public ClassMirror getEnclosingClass() {
         return enclosingClass;
     }
+
+    @Override
+    public boolean isDefaultMethod() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 }
