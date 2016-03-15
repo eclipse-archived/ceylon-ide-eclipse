@@ -41,12 +41,12 @@ public class CreateBootstrapFilesHandler implements IWorkbenchWindowActionDelega
                 success = ((ceylon.language.Boolean) result).booleanValue();
                 if (!success) {
                     if (shell == null) {
-                        CeylonPlugin.log(Status.WARNING, "The Ceylon boostrap files already exist.");
+                        CeylonPlugin.log(Status.WARNING, "The Ceylon bootstrap files already exist.");
                         break;
                     }
                     MessageBox mb = new MessageBox(shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
                     mb.setText("Ceylon bootstrap files creation");
-                    mb.setMessage("The Ceylon boostrap files already exist. Would you like to overrwrite them ?");
+                    mb.setMessage("The Ceylon bootstrap files already exist. Would you like to overwrite them?");
                     if (mb.open() == SWT.NO) {
                         break;
                     }
@@ -54,13 +54,13 @@ public class CreateBootstrapFilesHandler implements IWorkbenchWindowActionDelega
                 }
             } else if (result instanceof ceylon.language.String ) {
                 if (shell == null) {
-                    CeylonPlugin.log(Status.ERROR, "An error occured during the creation of the Ceylon boostrap files:\n"
+                    CeylonPlugin.log(Status.ERROR, "An error occured during the creation of the Ceylon bootstrap files:\n"
                             + result.toString());
                     break;
                 }
                 MessageBox mb = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
                 mb.setText("Ceylon bootstrap files creation");
-                mb.setMessage("An error occured during the creation of the Ceylon boostrap files:\n\n"
+                mb.setMessage("An error occured during the creation of the Ceylon bootstrap files:\n\n"
                         + "    " + result.toString() + "\n\n"
                         + "Would you like to retry ?");
                 if (mb.open() == SWT.NO) {
@@ -80,11 +80,11 @@ public class CreateBootstrapFilesHandler implements IWorkbenchWindowActionDelega
             boolean success = createBootstrapFiles(ceylonProject, null);
             if (success) {
                 if (shell == null) {
-                    CeylonPlugin.log(Status.WARNING, "The Ceylon boostrap files already exist.");
+                    CeylonPlugin.log(Status.WARNING, "The Ceylon bootstrap files already exist.");
                 } else {
                     MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.OK);
                     mb.setText("Ceylon bootstrap files creation");
-                    mb.setMessage("The Ceylon boostrap files have been successfuly created.");
+                    mb.setMessage("The Ceylon bootstrap files have been successfuly created.");
                     mb.open();
                 }
             }
