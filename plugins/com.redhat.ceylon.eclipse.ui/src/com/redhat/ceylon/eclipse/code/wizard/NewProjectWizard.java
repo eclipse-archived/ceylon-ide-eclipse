@@ -32,9 +32,7 @@ import org.eclipse.jdt.ui.IPackagesViewPart;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
@@ -46,7 +44,6 @@ import com.redhat.ceylon.compiler.typechecker.analyzer.Warning;
 import com.redhat.ceylon.eclipse.code.explorer.PackageExplorerPart;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonRepoConfigBlock;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
@@ -199,7 +196,7 @@ public class NewProjectWizard extends NewElementWizard
                 .addToProject(project);
 
             if (firstPage.isCreateBoostrapFiles()) {
-                CreateBootstrapFilesHandler.createBootstrapFiles(ceylonProject, getShell());
+                CreateBootstrapFilesHandler.createBootstrapFiles(ceylonProject, firstPage.getBoostrapVersion(), getShell());
             }
             
             BasicNewProjectResourceWizard.updatePerspective(fConfigElement);

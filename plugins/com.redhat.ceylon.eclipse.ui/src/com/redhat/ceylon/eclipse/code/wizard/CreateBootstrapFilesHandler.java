@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
+import javax.swing.JOptionPane;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
@@ -16,6 +18,8 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.versionsAvailableForBoostrap_;
+import com.redhat.ceylon.ide.common.util.toJavaStringList_;
 
 public class CreateBootstrapFilesHandler implements IWorkbenchWindowActionDelegate {
     
@@ -25,14 +29,15 @@ public class CreateBootstrapFilesHandler implements IWorkbenchWindowActionDelega
     
     public void init(IWorkbenchWindow window) {}
 
-    public static boolean createBootstrapFiles(CeylonProject<IProject> ceylonProject, Shell shell) {
+    public static boolean createBootstrapFiles(CeylonProject<IProject> ceylonProject, String chosenVersion, Shell shell) {
         if (shell == null) {
             shell = Display.getDefault().getActiveShell();
         }
+        
         boolean success = false;
         boolean force = false;
         do {
-            Object result = ceylonProject.createBootstrapFiles(CeylonPlugin.getEmbeddedCeylonRepository().getParentFile(), force);
+            Object result = ceylonProject.createBootstrapFiles(CeylonPlugin.getEmbeddedCeylonRepository().getParentFile(), chosenVersion, force);
             
             if (result instanceof ceylon.language.Boolean) {
                 success = ((ceylon.language.Boolean) result).booleanValue();
@@ -74,15 +79,25 @@ public class CreateBootstrapFilesHandler implements IWorkbenchWindowActionDelega
         CeylonProject<IProject> ceylonProject = modelJ2C.ceylonModel().getProject(fProject);
         if (ceylonProject != null) {
             Shell shell = Display.getDefault().getActiveShell();
-            boolean success = createBootstrapFiles(ceylonProject, null);
-            if (success) {
-                if (shell == null) {
-                    CeylonPlugin.log(Status.WARNING, "The Ceylon boostrap files already exist.");
-                } else {
-                    MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.OK);
-                    mb.setText("Ceylon bootstrap files creation");
-                    mb.setMessage("The Ceylon boostrap files have been successfuly created.");
-                    mb.open();
+            String[] choices = toJavaStringList_.toJavaStringList(versionsAvailableForBoostrap_.get_()).toArray(new String[0]);
+            String chosenVersion = (String) JOptionPane.showInputDialog(null, "Select a Ceylon version...",
+                "Ceylon bootstrap files creation", JOptionPane.QUESTION_MESSAGE, null, // Use
+                                                                                // default
+                                                                                // icon
+                choices, // Array of choices
+                choices[0]); // Initial choice
+
+            if (chosenVersion != null) {
+                boolean success = createBootstrapFiles(ceylonProject, chosenVersion, null);
+                if (success) {
+                    if (shell == null) {
+                        CeylonPlugin.log(Status.WARNING, "The Ceylon boostrap files already exist.");
+                    } else {
+                        MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.OK);
+                        mb.setText("Ceylon bootstrap files creation");
+                        mb.setMessage("The Ceylon boostrap files have been successfuly created.");
+                        mb.open();
+                    }
                 }
             }
         }
