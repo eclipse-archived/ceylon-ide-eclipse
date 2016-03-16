@@ -36,7 +36,6 @@ import com.redhat.ceylon.eclipse.ui {
     CeylonPlugin
 }
 import com.redhat.ceylon.eclipse.util {
-    EclipseProgressMonitor,
     eclipseIndents,
     wrapProgressMonitor,
     EclipseProgressMonitorChild

@@ -1,7 +1,15 @@
+import com.redhat.ceylon.eclipse.core.builder {
+    CeylonBuilder
+}
+import com.redhat.ceylon.eclipse.core.external {
+    ExternalSourceArchiveManager
+}
 import com.redhat.ceylon.eclipse.core.model {
     ceylonModel,
-    nativeFolderProperties,
-    JDTModelLoader
+    nativeFolderProperties
+}
+import com.redhat.ceylon.eclipse.util {
+    eclipsePlatformUtils
 }
 import com.redhat.ceylon.ide.common.model {
     CeylonProject,
@@ -43,18 +51,6 @@ import org.eclipse.core.resources {
 import org.eclipse.core.runtime {
     IPath,
     CoreException
-}
-import com.redhat.ceylon.eclipse.core.external {
-    ExternalSourceArchiveManager
-}
-import com.redhat.ceylon.eclipse.util {
-    eclipsePlatformUtils
-}
-import com.redhat.ceylon.eclipse.core.builder {
-    CeylonBuilder
-}
-import ceylon.interop.java {
-    CeylonIterable
 }
 
 shared class IFolderVirtualFile
