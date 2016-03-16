@@ -145,7 +145,7 @@ public final class ExtractValueLinkedMode
     
     @Override
     protected String getKind() {
-        return refactoring.getIsFunction() ? "function" : "value";
+        return refactoring.getExtractsFunction() ? "function" : "value";
     }
 
     public static void selectExpressionAndStart(

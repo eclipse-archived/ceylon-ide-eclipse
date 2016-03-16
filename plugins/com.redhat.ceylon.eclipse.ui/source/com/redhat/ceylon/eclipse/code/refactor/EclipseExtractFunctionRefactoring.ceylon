@@ -98,8 +98,8 @@ class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null)
         body = node;
         value statementsList = ArrayList<Tree.Statement>();
         for (s in node.statements) {
-            if (s.startIndex.longValue() >= selection.offset, 
-                s.endIndex.longValue() <= selection.offset+selection.length) {
+            if (s.startIndex.intValue() >= selection.offset, 
+                s.endIndex.intValue() <= selection.offset+selection.length) {
                 statementsList.add(s);
             }
         }
