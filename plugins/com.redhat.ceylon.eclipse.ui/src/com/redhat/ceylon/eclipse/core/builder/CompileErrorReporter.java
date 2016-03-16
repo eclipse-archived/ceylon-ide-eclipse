@@ -9,6 +9,9 @@ import static org.eclipse.jdt.core.IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER;
 import java.util.List;
 import java.util.Locale;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import com.redhat.ceylon.javax.tools.Diagnostic;
 import com.redhat.ceylon.javax.tools.DiagnosticListener;
 import com.redhat.ceylon.javax.tools.JavaFileObject;
@@ -89,16 +92,22 @@ final class CompileErrorReporter implements
                             (exitState.ceylonCodegenExceptionCount > 0 ? "\n  with " + exitState.ceylonCodegenExceptionCount + " code generation exceptions" : "") +
                             (exitState.ceylonCodegenErroneousCount > 0 ? "\n  with " + exitState.ceylonCodegenErroneousCount + " erroneous code generations" : "") +
                             (exitState.ceylonCodegenGarbageCount > 0 ? "\n  with " + exitState.ceylonCodegenGarbageCount + " malformed Javac tree cases" : "") +
-                            (exitState.abortingException != null ? "\n  with a throwable : " + exitState.abortingException.toString() : "")
+                            (exitState.abortingException != null ? "\n  with a throwable : " + exceptionToString(exitState.abortingException) : "")
                             :
                             "The Ceylon Java backend compilation was aborted" +
-                            (exitState.abortingException != null ? "\n  due to the following event : " + exitState.abortingException.toString() : ".");
+                            (exitState.abortingException != null ? "\n  due to the following event : " + exceptionToString(exitState.abortingException) : ".");
                 }
             };
         }
         if (!errorReported || diagnostic != null) {
             setupMarker(project, diagnostic);
         }
+    }
+
+    private String exceptionToString(Throwable x){
+        StringWriter w = new StringWriter();
+        x.printStackTrace(new PrintWriter(w));
+        return w.toString();
     }
 
     @Override
