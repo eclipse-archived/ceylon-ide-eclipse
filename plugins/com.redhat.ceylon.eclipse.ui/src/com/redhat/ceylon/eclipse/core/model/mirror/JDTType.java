@@ -25,8 +25,6 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 
-import javax.lang.model.type.TypeKind;
-
 import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
@@ -47,6 +45,7 @@ import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.*;
 import com.redhat.ceylon.model.loader.mirror.ClassMirror;
 import com.redhat.ceylon.model.loader.mirror.TypeMirror;
+import com.redhat.ceylon.model.loader.mirror.TypeKind;
 import com.redhat.ceylon.model.loader.mirror.TypeParameterMirror;
 
 class UnknownTypeMirror implements TypeMirror {
