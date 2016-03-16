@@ -81,11 +81,9 @@ shared object eclipseModuleImportUtils
     
     ProjectPhasedUnit<IProject, IResource, IFolder, IFile>? getDescriptorPhasedUnit(IProject project, Module mod) {
         value unit = mod.unit;
-        
-        if (is ProjectSourceFile<out Anything, out Anything, out Anything, out Anything> unit,
-            is ProjectPhasedUnit<IProject, IResource, IFolder, IFile> pu = unit.phasedUnit) {
-            
-            return pu;
+        if (is ProjectSourceFile<IProject, IResource, IFolder, IFile> unit) {
+            value ceylonUnit = unit;
+            return ceylonUnit.phasedUnit;
         }
         
         return null;
