@@ -10,7 +10,6 @@
     <remove module="org.eclipse.team.core"/>
     <remove module="com.ibm.icu"/>
     <remove module="org.eclipse.core.variables"/>
-    <remove module="org.eclipse.jdt.core.manipulation"/>
     <remove module="org.eclipse.compare.core"/>
     <remove module="org.eclipse.core.databinding.observable"/>
     <remove module="org.eclipse.core.databinding.property"/>
@@ -58,7 +57,7 @@
         <share module="org.eclipse.ui.workbench"/>
     </module>
     <module module="org.eclipse.ui.editors">
-        <add module="org.eclipse.jface" version="current" shared="true"/>
+        <add module="org.eclipse.jface" version="${org.eclipse.jface.version.override}" shared="true"/>
         <add module="org.eclipse.ui.workbench.texteditor" version="${org.eclipse.ui.workbench.texteditor.version.override}" shared="true"/>
     </module>
     <module module="org.eclipse.text">
@@ -72,7 +71,7 @@
         <share module="org.eclipse.core.runtime"/>
     </module>
     <module module="org.eclipse.jdt.core">
-        <add module="org.eclipse.core.contenttype" version="${org.eclipse.ui.workbench.texteditor.version.override}"/>
+        <add module="org.eclipse.core.contenttype" version="${org.eclipse.core.contenttype.version.override}"/>
     </module>
 
     <module module="org.eclipse.swt">
@@ -82,6 +81,9 @@
         <share module="org.eclipse.jface"/>
     </module>
     <module module="org.eclipse.jface">
-        <add module="org.eclipse.core.runtime" version="current" shared="true"/>
+        <add module="org.eclipse.core.runtime" version="${org.eclipse.core.runtime.version.override}" shared="true"/>
+    </module>
+    <module module="org.eclipse.jdt.ui">
+        <share module="org.eclipse.jdt.core.manipulation"/>
     </module>
 </overrides>
