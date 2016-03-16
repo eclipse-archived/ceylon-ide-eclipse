@@ -79,7 +79,7 @@ class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null)
     shared actual variable Type? returnType = null;
     shared actual variable List<Tree.Return> returns = empty;
     shared actual variable List<Tree.Statement> statements = empty;
-    shared variable Tree.Body? body = null;
+    shared actual variable Tree.Body? body = null;
     
     if (!is CeylonEditor editorPart) {
         return;
