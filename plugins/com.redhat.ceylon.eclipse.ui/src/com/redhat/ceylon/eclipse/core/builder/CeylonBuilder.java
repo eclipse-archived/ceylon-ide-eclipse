@@ -373,9 +373,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 if (shortname.endsWith(".class")) {
                     shortname = shortname.substring(0, shortname.length() - 6);
                 }
-                expectedClasses.remove(shortname);
-                if (expectedClasses.isEmpty()) {
-                    inputFilesToGenerate.remove(sourceFile);
+                if (expectedClasses != null) {
+                    expectedClasses.remove(shortname);
+                    if (expectedClasses.isEmpty()) {
+                        inputFilesToGenerate.remove(sourceFile);
+                    }
+                } else {
+                    System.out.println("WARNING : com.redhat.ceylon.eclipse.core.builder.CeylonBuilder$BuildFileManager.getFileForOutput().expectedClasses is null for source file "
+                            + sourceFile
+                            + "\n Is it normal ? it seems getFileForOutput was called several times on the same file during binary generation.");
                 }
             }
             JavaFileObject javaFileObject = super.getFileForOutput(location, fileName, sibling);
