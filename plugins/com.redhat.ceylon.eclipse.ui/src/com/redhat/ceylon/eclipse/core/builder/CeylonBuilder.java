@@ -168,6 +168,7 @@ import com.redhat.ceylon.ide.common.util.ProgressMonitor$impl;
 import com.redhat.ceylon.ide.common.util.ProgressMonitor$impl.Progress;
 import com.redhat.ceylon.ide.common.util.ProgressMonitorChild;
 import com.redhat.ceylon.ide.common.util.toCeylonString_;
+import com.redhat.ceylon.ide.common.util.toJavaIterable_;
 import com.redhat.ceylon.ide.common.util.toJavaList_;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
@@ -1522,7 +1523,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 allRootFolders.addAll(getResourceFolders(project));
                 ceylonProject.getRootFolders();
                 
-                final Iterable<FolderVirtualFile<IProject, IResource, IFolder, IFile>> iter = iterable(FolderVirtualFile.class, ceylonProject.getRootFolders());
+                final Iterable<FolderVirtualFile<IProject, IResource, IFolder, IFile>> iter = 
+                        (Iterable<FolderVirtualFile<IProject, IResource, IFolder, IFile>>) toJavaIterable_.toJavaIterable(
+                                td(FolderVirtualFile.class), 
+                                (ceylon.language.Iterable<? extends FolderVirtualFile<IProject, IResource, IFolder, IFile>, ? extends Object>) ceylonProject.getRootFolders());
                 for (final FolderVirtualFile<IProject, IResource, IFolder, IFile> rootVirtualFolder : iter) {
                     IFolder rootFolder = rootVirtualFolder.getNativeResource();
                     IResourceDelta affectedRoot = projectDelta.findMember(rootFolder.getProjectRelativePath());
