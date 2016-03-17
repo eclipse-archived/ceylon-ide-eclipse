@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCommandBinding;
-import static org.eclipse.jface.text.link.ILinkedModeListener.NONE;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
 import org.eclipse.jface.action.Action;
@@ -10,6 +9,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.ISourceViewer;
 
+import com.redhat.ceylon.eclipse.code.correct.LinkedModeImporter;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 public abstract class RefactorLinkedMode extends AbstractLinkedMode {
@@ -96,8 +96,8 @@ public abstract class RefactorLinkedMode extends AbstractLinkedMode {
     
     public final void enterDialogMode() {
         setName(getNewNameFromNamePosition());
+        linkedModeModel.exit(LinkedModeImporter.CANCEL);
         revertChanges();
-        linkedModeModel.exit(NONE);
     }
     
 }

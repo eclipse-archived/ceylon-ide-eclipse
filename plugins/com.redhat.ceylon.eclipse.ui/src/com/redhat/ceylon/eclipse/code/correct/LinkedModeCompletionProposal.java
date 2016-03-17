@@ -311,7 +311,7 @@ public class LinkedModeCompletionProposal
                 @Override
                 public void apply(IDocument document) {
                     super.apply(document);
-                    importer.setImportedType(null);
+                    importer.selected(null);
                 }
             };
         }
@@ -323,7 +323,7 @@ public class LinkedModeCompletionProposal
                 @Override
                 public void apply(IDocument document) {
                     super.apply(document);
-                    importer.setImportedType(type);
+                    importer.selected(type);
                 }
             };
         }
@@ -349,7 +349,7 @@ public class LinkedModeCompletionProposal
                 @Override
                 public void apply(IDocument document) {
                     super.apply(document);
-                    importer.setImportedType(supertype);
+                    importer.selected(supertype);
                 }
             };
         }

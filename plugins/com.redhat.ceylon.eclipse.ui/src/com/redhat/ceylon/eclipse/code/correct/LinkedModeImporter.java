@@ -20,6 +20,8 @@ import com.redhat.ceylon.model.typechecker.model.Type;
 
 public class LinkedModeImporter implements ILinkedModeListener {
     
+    public static final int CANCEL = 1 << 10;
+    
     private Type type;
     private IDocument document;
     private CeylonEditor editor;
@@ -32,8 +34,9 @@ public class LinkedModeImporter implements ILinkedModeListener {
 
     @Override
     public void left(LinkedModeModel model, int flags) {
-        if (type!=null) {
-            Display.getCurrent().asyncExec(new Runnable() {
+        if (type!=null && (flags&CANCEL)==0) {
+            Display.getCurrent()
+                    .syncExec(new Runnable() {
                 @Override
                 public void run() {
                     Set<Declaration> imports = 
@@ -43,7 +46,6 @@ public class LinkedModeImporter implements ILinkedModeListener {
                     Tree.CompilationUnit rootNode = 
                             editor.getParseController()
                                 .getLastCompilationUnit();
-                    imported(type);
                     importProposals()
                         .importType(imports, type, rootNode);
                     if (!imports.isEmpty()) {
@@ -61,15 +63,13 @@ public class LinkedModeImporter implements ILinkedModeListener {
         }
     }
     
-    protected void imported(Type type) {}
-
     @Override
     public void suspend(LinkedModeModel model) {}
 
     @Override
     public void resume(LinkedModeModel model, int flags) {}
 
-    public void setImportedType(Type type) {
+    public void selected(Type type) {
         this.type = type;
     }
 

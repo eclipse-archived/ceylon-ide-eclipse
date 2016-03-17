@@ -94,7 +94,8 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
         LinkedModeImporter importer = 
                 new LinkedModeImporter(document, editor) {
             @Override
-            protected void imported(Type type) {
+            public void selected(Type type) {
+                super.selected(type);
                 setReturnType(type);
             }
         };
