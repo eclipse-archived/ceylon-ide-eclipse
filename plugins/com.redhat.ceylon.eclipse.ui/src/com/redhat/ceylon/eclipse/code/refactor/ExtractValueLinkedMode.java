@@ -103,7 +103,7 @@ public final class ExtractValueLinkedMode
     
     @Override
     protected boolean forceWizardMode() {
-        return refactoring.forceWizardMode();
+        return refactoring.getForceWizardMode();
     }
     
     @Override
