@@ -1,7 +1,3 @@
-import ceylon.collection {
-    ArrayList
-}
-
 import com.redhat.ceylon.compiler.typechecker.tree {
     Node,
     Tree,
@@ -46,7 +42,9 @@ import org.eclipse.jface.text.contentassist {
     ICompletionProposal
 }
 import org.eclipse.ltk.core.refactoring {
-    RefactoringStatus { ... },
+    RefactoringStatus {
+        ...
+    },
     TextChange
 }
 import org.eclipse.text.edits {
@@ -125,21 +123,20 @@ class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null)
     }
     body = bodyNode;
     
-    value resultsList = ArrayList<Node->TypedDeclaration>();
+    value resultsVisitor = FindResultVisitor {
+        scope = bodyNode;
+        statements = statements;
+    };
     for (s in statements) {
-        s.visit(FindResultVisitor {
-            scope = bodyNode;
-            statements = statements;
-            results = resultsList;
-        });
+        s.visit(resultsVisitor);
     }
-    results = resultsList;
+    results = resultsVisitor.results;
     
-    value returnsList = ArrayList<Tree.Return>();
+    value returnsVisitor = FindReturnsVisitor();
     for (s in statements) {
-        s.visit(FindReturnsVisitor(returnsList));
+        s.visit(returnsVisitor);
     }
-    returns = returnsList;
+    returns = returnsVisitor.returns;
     
     checkFinalConditions(IProgressMonitor? monitor)
             => if (exists node = editorData?.node,
