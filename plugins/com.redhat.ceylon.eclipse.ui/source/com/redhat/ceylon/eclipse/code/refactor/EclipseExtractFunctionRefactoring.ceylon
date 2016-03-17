@@ -146,9 +146,9 @@ class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null)
             else RefactoringStatus();
     
     shared actual RefactoringStatus checkInitialConditions(IProgressMonitor pm) {
-        if (exists node = editorData?.node, 
-            exists body = this.body) {
-            if (is Tree.Body|Tree.Statement node) {
+        if (exists node = editorData?.node) {
+            if (is Tree.Body|Tree.Statement node, 
+                exists body = this.body) {
                 for (s in statements) {
                     value v = CheckStatementsVisitor(body, statements);
                     s.visit(v);
