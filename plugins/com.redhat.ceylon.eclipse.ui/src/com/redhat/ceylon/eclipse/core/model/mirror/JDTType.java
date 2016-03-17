@@ -20,6 +20,8 @@
 
 package com.redhat.ceylon.eclipse.core.model.mirror;
 
+import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.toType;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -42,67 +44,11 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 import org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 
-import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.*;
+import com.redhat.ceylon.ide.common.model.UnknownTypeMirror;
 import com.redhat.ceylon.model.loader.mirror.ClassMirror;
-import com.redhat.ceylon.model.loader.mirror.TypeMirror;
 import com.redhat.ceylon.model.loader.mirror.TypeKind;
+import com.redhat.ceylon.model.loader.mirror.TypeMirror;
 import com.redhat.ceylon.model.loader.mirror.TypeParameterMirror;
-
-class UnknownTypeMirror implements TypeMirror {
-    String qualifiedName = UnknownClassMirror.unknown;
-	
-    public UnknownTypeMirror() {
-	}
-
-    public UnknownTypeMirror(String qualifiedName) {
-    	this.qualifiedName = qualifiedName;
-	}
-    
-    @Override
-    public String getQualifiedName() {
-        return UnknownClassMirror.unknown;
-    }
-    @Override
-    public List<TypeMirror> getTypeArguments() {
-        return Collections.emptyList();
-    }
-    @Override
-    public TypeKind getKind() {
-        return TypeKind.DECLARED;
-    }
-    @Override
-    public TypeMirror getComponentType() {
-        return null;
-    }
-    @Override
-    public boolean isPrimitive() {
-        return false;
-    }
-    @Override
-    public boolean isRaw() {
-        return false;
-    }
-    @Override
-    public TypeMirror getUpperBound() {
-        return null;
-    }
-    @Override
-    public TypeMirror getLowerBound() {
-        return null;
-    }
-    @Override
-    public ClassMirror getDeclaredClass() {
-        return JDTClass.UNKNOWN_CLASS;
-    }
-    @Override
-    public TypeParameterMirror getTypeParameter() {
-        return null;
-    }
-    @Override
-    public TypeMirror getQualifyingType() {
-        return null;
-    }
-}
 
 public class JDTType implements TypeMirror {
     public static final TypeMirror UNKNOWN_TYPE = new UnknownTypeMirror();
