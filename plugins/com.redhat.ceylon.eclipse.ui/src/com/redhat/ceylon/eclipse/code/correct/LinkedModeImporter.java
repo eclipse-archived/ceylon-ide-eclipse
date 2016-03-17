@@ -35,17 +35,23 @@ public class LinkedModeImporter implements ILinkedModeListener {
             Display.getCurrent().asyncExec(new Runnable() {
                 @Override
                 public void run() {
-                    Set<Declaration> imports = new HashSet<Declaration>();
+                    Set<Declaration> imports = 
+                            new HashSet<Declaration>();
                     //note: we want the very latest tree here, so 
                     //get it direct from the editor!
                     Tree.CompilationUnit rootNode = 
-                            editor.getParseController().getLastCompilationUnit();
-                    importProposals().importType(imports, type, rootNode);
+                            editor.getParseController()
+                                .getLastCompilationUnit();
+                    importProposals()
+                        .importType(imports, type, rootNode);
                     if (!imports.isEmpty()) {
                         DocumentChange change = 
-                                new DocumentChange("Import Type", document);
+                                new DocumentChange("Import Type", 
+                                        document);
                         change.setEdit(new MultiTextEdit());
-                        importProposals().applyImports(change, imports, rootNode, document);
+                        importProposals()
+                            .applyImports(change, imports, 
+                                    rootNode, document);
                         EditorUtil.performChange(change);
                     }
                 }
