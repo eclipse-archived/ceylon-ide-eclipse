@@ -23,8 +23,9 @@ public class LinkedModeImporter implements ILinkedModeListener {
     private Type type;
     private IDocument document;
     private CeylonEditor editor;
-
-    public LinkedModeImporter(IDocument document, CeylonEditor editor) {
+    
+    public LinkedModeImporter(IDocument document, 
+            CeylonEditor editor) {
         this.document = document;
         this.editor = editor;
     }
@@ -42,6 +43,7 @@ public class LinkedModeImporter implements ILinkedModeListener {
                     Tree.CompilationUnit rootNode = 
                             editor.getParseController()
                                 .getLastCompilationUnit();
+                    imported(type);
                     importProposals()
                         .importType(imports, type, rootNode);
                     if (!imports.isEmpty()) {
@@ -58,6 +60,8 @@ public class LinkedModeImporter implements ILinkedModeListener {
             });
         }
     }
+    
+    protected void imported(Type type) {}
 
     @Override
     public void suspend(LinkedModeModel model) {}

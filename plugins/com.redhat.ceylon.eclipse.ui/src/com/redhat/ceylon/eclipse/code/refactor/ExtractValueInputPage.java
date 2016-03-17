@@ -49,6 +49,7 @@ public class ExtractValueInputPage extends UserInputWizardPage {
         });
         final Button et = new Button(result, SWT.CHECK);
         et.setText("Use explicit type declaration");
+        et.setSelection(getExtractValueRefactoring().getExplicitType());
         et.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent event) {

@@ -92,7 +92,12 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
         Unit unit = rootNode.getUnit();
         
         LinkedModeImporter importer = 
-                new LinkedModeImporter(document, editor);
+                new LinkedModeImporter(document, editor) {
+            @Override
+            protected void imported(Type type) {
+                setReturnType(type);
+            }
+        };
         linkedModeModel.addLinkingListener(importer);
         
         ProposalPosition linkedPosition = 
@@ -112,6 +117,8 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
         }
     }
     
+    protected abstract void setReturnType(Type type);
+
     protected abstract void addLinkedPositions(
             IDocument document, 
             Tree.CompilationUnit rootNode, 

@@ -144,4 +144,9 @@ public final class ExtractParameterLinkedMode
         }
     }
     
+    @Override
+    protected void setReturnType(Type type) {
+        this.refactoring.setType(type);
+    }
+
 }

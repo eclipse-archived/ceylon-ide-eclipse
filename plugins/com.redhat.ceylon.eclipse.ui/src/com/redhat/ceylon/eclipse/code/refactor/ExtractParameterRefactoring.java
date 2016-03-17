@@ -199,12 +199,16 @@ public class ExtractParameterRefactoring extends AbstractRefactoring implements 
     public void setRefRegion(IRegion region) {
         refRegion=region;
     }
-
+    
+    public void setType(Type type) {
+        this.type = type;
+    }
     
     private boolean isParameterOfMethodOrClass(Declaration d) {
         return d.isParameter() &&
                 d.getContainer().equals(methodOrClass.getDeclarationModel());
     }
+    
     public void extractInFile(TextChange tfc) {
         tfc.setEdit(new MultiTextEdit());
         IDocument doc = EditorUtil.getDocument(tfc);
@@ -247,13 +251,19 @@ public class ExtractParameterRefactoring extends AbstractRefactoring implements 
         String text;
         int il = 0;
         if (anonfun) {
-            Tree.FunctionArgument fa = (Tree.FunctionArgument) unparened;
-            type = fa.getType().getTypeModel();
+            Tree.FunctionArgument fa = 
+                    (Tree.FunctionArgument) 
+                        unparened;
+            if (type==null) {
+                type = fa.getType().getTypeModel();
+            }
             text = Nodes.text(fa.getExpression(), tokens);
         }
         else {
-            type = node.getUnit()
-                    .denotableType(term.getTypeModel());
+            if (type==null) {
+                type = node.getUnit()
+                        .denotableType(term.getTypeModel());
+            }
             text = Nodes.text(unparened, tokens);
         }
         

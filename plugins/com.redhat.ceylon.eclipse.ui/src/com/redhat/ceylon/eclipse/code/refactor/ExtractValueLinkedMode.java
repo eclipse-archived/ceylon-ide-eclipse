@@ -165,4 +165,10 @@ public final class ExtractValueLinkedMode
         }
     }
     
+    @Override
+    protected void setReturnType(Type type) {
+        this.refactoring.setType(type);
+        this.refactoring.setExplicitType(type!=null);
+    }
+
 }
