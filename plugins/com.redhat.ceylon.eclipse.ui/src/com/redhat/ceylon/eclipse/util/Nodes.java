@@ -21,7 +21,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.ide.common.refactoring.DefaultRegion;
-import com.redhat.ceylon.ide.common.util.NodePrinter;
 import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
 import com.redhat.ceylon.ide.common.util.nodes_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -422,13 +421,7 @@ public class Nodes {
     public static void appendParameters(StringBuilder result,
             Tree.FunctionArgument fa, Unit unit, 
             final List<CommonToken> tokens) {
-
-        delegate.appendParameters(result, fa, unit, new NodePrinter() {
-            @Override
-            public String $toString(Node node) {
-                return Nodes.text(node, tokens);
-            }
-        });
+        delegate.appendParameters(result, fa, unit, tokens);
     }
 
     public static OccurrenceLocation getOccurrenceLocation(Tree.CompilationUnit cu, 

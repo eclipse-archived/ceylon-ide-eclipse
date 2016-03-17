@@ -67,16 +67,15 @@ class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null)
     
     importProposals => eclipseImportProposals;
     
-    shared actual variable String? internalNewName=null;
-    shared actual variable Boolean canBeInferred=false;
-    shared actual variable Boolean explicitType=false;
-    shared actual variable Type? type=null;
-    shared actual variable IRegion? typeRegion=null;
-    shared actual variable IRegion? decRegion=null;
-    shared actual variable IRegion? refRegion=null;
+    shared actual variable String? internalNewName = null;
+    shared actual variable Boolean canBeInferred = false;
+    shared actual variable Boolean explicitType = false;
+    shared actual variable Type? type = null;
+    shared actual variable IRegion? typeRegion = null;
+    shared actual variable IRegion? decRegion = null;
+    shared actual variable IRegion? refRegion = null;
     shared actual variable Node? result = null;
     shared actual variable TypedDeclaration? resultDeclaration = null;
-    shared actual variable Type? returnType = null;
     shared actual variable List<Tree.Return> returns = empty;
     shared actual variable List<Tree.Statement> statements = empty;
     shared actual variable Tree.Body? body = null;

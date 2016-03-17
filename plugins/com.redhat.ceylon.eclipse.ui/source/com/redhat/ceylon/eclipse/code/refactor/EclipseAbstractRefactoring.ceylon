@@ -1,9 +1,6 @@
 import com.redhat.ceylon.compiler.typechecker.context {
     PhasedUnit
 }
-import com.redhat.ceylon.compiler.typechecker.tree {
-    Node
-}
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
 }
@@ -14,15 +11,12 @@ import com.redhat.ceylon.eclipse.core.vfs {
     IFileVirtualFile
 }
 import com.redhat.ceylon.eclipse.util {
-    EditorUtil,
-    Nodes
+    EditorUtil
 }
 import com.redhat.ceylon.ide.common.model {
     CrossProjectSourceFile,
     CrossProjectBinaryUnit,
-    IResourceAware,
-    EditedSourceFile,
-    ProjectSourceFile
+    IResourceAware
 }
 import com.redhat.ceylon.ide.common.refactoring {
     AbstractRefactoring
@@ -111,17 +105,7 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
             return false;
         }
     }
-
-    shared Boolean isEditable()
-            => let (unit = rootNode?.unit) 
-               unit is EditedSourceFile<IProject,IResource,IFolder,IFile> ||
-               unit is ProjectSourceFile<IProject,IResource,IFolder,IFile>;
-
-    shared actual String toString(Node term) {
-        assert (editorData exists);
-        return Nodes.text(term, editorData?.tokens);
-    }
-
+    
     shared DocumentChange? newDocumentChange() {
         assert (editorData exists);
         value dc = DocumentChange(
@@ -169,7 +153,7 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
     shared actual List<PhasedUnit> getAllUnits() {
         assert (editorData exists);
         assert (exists project = editorData?.project);
-        List<PhasedUnit> units = ArrayList<PhasedUnit>();
+        value units = ArrayList<PhasedUnit>();
         units.addAll(CeylonBuilder.getUnits(project));
         for (p in project.referencingProjects.iterable) {
             units.addAll(CeylonBuilder.getUnits(p));
