@@ -56,6 +56,9 @@ import org.eclipse.text.edits {
 import org.eclipse.ui {
     IEditorPart
 }
+import org.eclipse.ui.texteditor {
+    ITextEditor
+}
 
 class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null) 
         extends EclipseAbstractRefactoring<TextChange>(editorPart)
@@ -74,62 +77,44 @@ class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null)
     shared actual variable IRegion? typeRegion = null;
     shared actual variable IRegion? decRegion = null;
     shared actual variable IRegion? refRegion = null;
-    shared actual variable Node? result = null;
-    shared actual variable TypedDeclaration? resultDeclaration = null;
-    shared actual variable List<Tree.Return> returns = empty;
-    shared actual variable List<Tree.Statement> statements = empty;
+    shared actual variable List<Node->TypedDeclaration> results = [];
+    shared actual variable List<Tree.Return> returns = [];
+    shared actual variable List<Tree.Statement> statements = [];
     shared actual variable Tree.Body? body = null;
     
-    if (!is CeylonEditor editorPart) {
-        return;
-    }
+    assert (is ITextEditor editorPart);
     
     value selection = EditorUtil.getSelection(editorPart);
-    value rootNode = editorPart.parseController.typecheckedRootNode;
-    value node = nodes.findNode(rootNode, editorPart.parseController.tokens, 
-        selection.offset,
-        selection.offset+selection.length);
+    function selected(Node node)
+            => node.startIndex.intValue() >= selection.offset && 
+            node.endIndex.intValue()   <= selection.offset + selection.length;
+    
+    assert (is CeylonEditor editorPart);
+    
+    value rootNode 
+            = editorPart.parseController.typecheckedRootNode;
+    value node = nodes.findNode {
+        node = rootNode;
+        tokens = editorPart.parseController.tokens;
+        startOffset = selection.offset;
+        endOffset = selection.offset+selection.length;
+    };
     
     //additional initialization for extraction of statements
     //as opposed to extraction of an expression
     
+    Tree.Body bodyNode;
     if (is Tree.Body node) {
-        body = node;
-        value statementsList = ArrayList<Tree.Statement>();
-        for (s in node.statements) {
-            if (s.startIndex.intValue() >= selection.offset, 
-                s.endIndex.intValue() <= selection.offset+selection.length) {
-                statementsList.add(s);
-            }
-        }
-        statements = statementsList;
-        for (s in statements) {
-            value v = FindResultVisitor(node, statements);
-            s.visit(v);
-            if (v.result exists) {
-                result = v.result;
-                resultDeclaration = v.resultDeclaration;
-                break;
-            }
-        }
+        statements = [ for (s in node.statements) if (selected(s)) s ];
+        bodyNode = node;
     }
     else if (is Tree.Statement node) {
         value fbv = FindBodyVisitor(node);
         fbv.visit(rootNode);
-        if (exists bodyNode = fbv.body) {
-            body = bodyNode;
-            statements = Singleton(node);
+        if (exists found = fbv.body) {
+            statements = [node];
+            bodyNode = found;
             //node = body;
-            //TODO: DUPE CODE!
-            for (s in statements) {
-                value v = FindResultVisitor(bodyNode, statements);
-                s.visit(v);
-                if (v.result exists) {
-                    result = v.result;
-                    resultDeclaration = v.resultDeclaration;
-                    break;
-                }
-            }
         }
         else {
             return;
@@ -138,14 +123,23 @@ class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null)
     else {
         return;
     }
-        
+    body = bodyNode;
+    
+    value resultsList = ArrayList<Node->TypedDeclaration>();
+    for (s in statements) {
+        s.visit(FindResultVisitor {
+            scope = bodyNode;
+            statements = statements;
+            results = resultsList;
+        });
+    }
+    results = resultsList;
+    
     value returnsList = ArrayList<Tree.Return>();
     for (s in statements) {
-        value v = FindReturnsVisitor(returnsList);
-        s.visit(v);
+        s.visit(FindReturnsVisitor(returnsList));
     }
     returns = returnsList;
-
     
     checkFinalConditions(IProgressMonitor? monitor)
             => if (exists node = editorData?.node,
