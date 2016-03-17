@@ -104,14 +104,15 @@ abstract class SelectContainerPopup extends PopupDialog {
                 IRegion selection = editor.getSelection();
                 @Override
                 public void visit(Tree.Declaration that) {
-                    if (//!(that instanceof Tree.AttributeDeclaration) &&
-                        that.getStartIndex() 
+                    if (that.getStartIndex() 
                             <= selection.getOffset() &&
                         that.getEndIndex()
                             >= selection.getOffset()+
                                selection.getLength()) {
                         super.visit(that);
-                        declarations.add(that);
+                        if (!(that instanceof Tree.AttributeDeclaration)) { //not 100% sure about this 
+                            declarations.add(that);
+                        }
                     }
                 }
             }.visit(rootNode);
