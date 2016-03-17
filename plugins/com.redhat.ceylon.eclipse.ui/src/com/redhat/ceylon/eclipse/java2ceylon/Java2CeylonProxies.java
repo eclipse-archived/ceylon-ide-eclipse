@@ -10,6 +10,7 @@ public class Java2CeylonProxies {
     static ModelJ2C model;
     static VfsJ2C vfs;
     static UtilJ2C util;
+    static PlatformJ2C platform;
 
     static {
         completion = new com.redhat.ceylon.eclipse.code.complete.completionJ2C();
@@ -21,6 +22,7 @@ public class Java2CeylonProxies {
         model = new com.redhat.ceylon.eclipse.core.model.modelJ2C();
         vfs = new com.redhat.ceylon.eclipse.core.vfs.vfsJ2C();
         util = new com.redhat.ceylon.eclipse.util.utilJ2C();
+        platform = new com.redhat.ceylon.eclipse.platform.platformJ2C();
     }
     
     public static CompletionJ2C completionJ2C() { return completion; }
@@ -32,4 +34,5 @@ public class Java2CeylonProxies {
     public static ModelJ2C modelJ2C() { return model; }
     public static VfsJ2C vfsJ2C() { return vfs; }
     public static UtilJ2C utilJ2C() { return util; }
+    public static PlatformJ2C platformJ2C() { return platform; }
 }

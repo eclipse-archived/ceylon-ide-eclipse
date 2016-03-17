@@ -1,7 +1,3 @@
-import com.redhat.ceylon.ide.common.util {
-    IdePlatformUtils,
-    Status
-}
 import org.eclipse.core.runtime {
     Plugin,
     EclipseStatus=Status,
@@ -14,8 +10,12 @@ import com.redhat.ceylon.eclipse.ui {
 import java.lang {
     RuntimeException
 }
+import com.redhat.ceylon.ide.common.platform {
+    IdePlatformUtils,
+    Status
+}
 
-shared object eclipsePlatformUtils satisfies IdePlatformUtils {
+object eclipsePlatformUtils satisfies IdePlatformUtils {
     function toEcliseStatus(Status status) => 
             switch(status)
             case(Status._OK) IStatus.\iOK

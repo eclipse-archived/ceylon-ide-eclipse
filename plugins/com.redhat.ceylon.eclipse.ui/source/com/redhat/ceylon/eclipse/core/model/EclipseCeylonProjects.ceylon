@@ -1,6 +1,9 @@
 import com.redhat.ceylon.ide.common.model {
     CeylonProjects,
-    CeylonProject
+    CeylonProject,
+    EditedSourceFile,
+    ProjectSourceFile,
+    CrossProjectSourceFile
 }
 import org.eclipse.core.resources {
     IProject,
@@ -24,6 +27,14 @@ import ceylon.interop.java {
 import com.redhat.ceylon.ide.common.vfs {
     FileVirtualFile,
     FolderVirtualFile
+}
+import com.redhat.ceylon.compiler.typechecker.context {
+    PhasedUnit
+}
+import com.redhat.ceylon.ide.common.typechecker {
+    CrossProjectPhasedUnit,
+    EditedPhasedUnit,
+    ProjectPhasedUnit
 }
 
 shared object ceylonModel extends CeylonProjects<IProject,IResource,IFolder,IFile>() {
@@ -79,7 +90,6 @@ shared object ceylonModel extends CeylonProjects<IProject,IResource,IFolder,IFil
         }
     }
     
-    shared actual CeylonProject<IProject,IResource,IFolder,IFile> newNativeProject(IProject nativeProject)
-            => EclipseCeylonProject(nativeProject);
-    
+    shared actual CeylonProject<IProject,IResource,IFolder,IFile> newNativeProject(IProject nativeProject) =>
+            EclipseCeylonProject(nativeProject);
 }

@@ -17,8 +17,10 @@ import com.redhat.ceylon.eclipse.core.model {
     ceylonModel,
     JDTModule
 }
+import com.redhat.ceylon.ide.common.platform {
+    platformUtils
+}
 import com.redhat.ceylon.ide.common.util {
-    platformUtils,
     toJavaStringList
 }
 import com.redhat.ceylon.model.cmr {

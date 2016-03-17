@@ -6,17 +6,16 @@ import com.redhat.ceylon.ide.common.model {
     IdeModuleSourceMapper,
     BaseIdeModule
 }
-import com.redhat.ceylon.ide.common.util {
-    platformUtils,
-    Status
-}
-
 import org.eclipse.core.resources {
     IProject,
     ResourcesPlugin,
     IResource,
     IFolder,
     IFile
+}
+import com.redhat.ceylon.ide.common.platform {
+    platformUtils,
+    Status
 }
 
 shared class JDTModuleSourceMapper(

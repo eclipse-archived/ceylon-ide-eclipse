@@ -8,16 +8,16 @@ import com.redhat.ceylon.eclipse.core.model {
     ceylonModel,
     nativeFolderProperties
 }
-import com.redhat.ceylon.eclipse.util {
-    eclipsePlatformUtils
-}
 import com.redhat.ceylon.ide.common.model {
     CeylonProject,
     CeylonProjects
 }
+import com.redhat.ceylon.ide.common.platform {
+    Status,
+    platformUtils
+}
 import com.redhat.ceylon.ide.common.util {
-    unsafeCast,
-    Status
+    unsafeCast
 }
 import com.redhat.ceylon.ide.common.vfs {
     FolderVirtualFile,
@@ -113,7 +113,7 @@ shared class IFolderVirtualFile
             return unsafeCast<WeakReference<FolderVirtualFile<IProject,IResource,IFolder,IFile>>?>(
                 nativeResource.getSessionProperty(nativeFolderProperties.root))?.get();
         } catch (CoreException e) {
-            eclipsePlatformUtils.log(Status._WARNING, "Unexpected exception", e);
+            platformUtils.log(Status._WARNING, "Unexpected exception", e);
         }
         return null;
     }
@@ -136,7 +136,7 @@ shared class IFolderVirtualFile
                 nativeResource.getSessionProperty(
                     nativeFolderProperties.packageModel))?.get();
         } catch (CoreException e) {
-            eclipsePlatformUtils.log(Status._WARNING, "Unexpected exception", e);
+            platformUtils.log(Status._WARNING, "Unexpected exception", e);
         }
         return null;
     }
