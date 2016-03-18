@@ -79,7 +79,7 @@ class ConvertFunctionToGetterProposal extends CorrectionProposal {
                 Tree.AnyMethod am = (Tree.AnyMethod) node;
                 Tree.Type type = am.getType();
                 if (type instanceof Tree.FunctionModifier) {
-                    tfc.setEdit(new ReplaceEdit(
+                    tfc.addEdit(new ReplaceEdit(
                             type.getStartIndex(), 
                             type.getDistance(), 
                             "value"));

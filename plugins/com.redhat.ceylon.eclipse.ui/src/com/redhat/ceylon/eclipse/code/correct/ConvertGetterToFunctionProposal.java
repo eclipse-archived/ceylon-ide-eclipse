@@ -62,11 +62,11 @@ class ConvertGetterToFunctionProposal extends CorrectionProposal {
         
         @Override
         protected void renameNode(TextChange tfc, Node node, CompilationUnit root) {
-            if (node instanceof Tree.AnyMethod) {
-                Tree.AnyMethod am = (Tree.AnyMethod) node;
+            if (node instanceof Tree.AnyAttribute) {
+                Tree.AnyAttribute am = (Tree.AnyAttribute) node;
                 Tree.Type type = am.getType();
                 if (type instanceof Tree.ValueModifier) {
-                    tfc.setEdit(new ReplaceEdit(
+                    tfc.addEdit(new ReplaceEdit(
                             type.getStartIndex(), 
                             type.getDistance(), 
                             "function"));
