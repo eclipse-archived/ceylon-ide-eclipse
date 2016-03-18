@@ -14,6 +14,7 @@ import com.redhat.ceylon.eclipse.java2ceylon.RefactorJ2C;
 import com.redhat.ceylon.ide.common.refactoring.ExtractLinkedModeEnabled;
 import com.redhat.ceylon.ide.common.refactoring.ExtractValueRefactoring;
 import com.redhat.ceylon.ide.common.refactoring.ExtractFunctionRefactoring;
+import com.redhat.ceylon.ide.common.refactoring.ExtractParameterRefactoring;
 
 public class refactorJ2C implements RefactorJ2C {
     @Override
@@ -24,6 +25,16 @@ public class refactorJ2C implements RefactorJ2C {
     @Override
     public ExtractLinkedModeEnabled<IRegion> 
     toExtractLinkedModeEnabled(ExtractValueRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> refactoring) {
+        return refactoring;
+    }
+    @Override
+    public ExtractParameterRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> 
+    newExtractParameterRefactoring(IEditorPart editorPart) {
+        return new EclipseExtractParameterRefactoring(editorPart);
+    }
+    @Override
+    public ExtractLinkedModeEnabled<IRegion>
+    toExtractLinkedModeEnabled(ExtractParameterRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> refactoring) {
         return refactoring;
     }
     @Override

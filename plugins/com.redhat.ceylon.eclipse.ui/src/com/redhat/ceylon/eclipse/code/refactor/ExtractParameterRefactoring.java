@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
+/*import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
@@ -377,4 +377,4 @@ public class ExtractParameterRefactoring extends AbstractRefactoring implements 
     public IRegion newRegion(long start, long length) {
         return new Region((int) start, (int) length);
     }
-}
+}*/

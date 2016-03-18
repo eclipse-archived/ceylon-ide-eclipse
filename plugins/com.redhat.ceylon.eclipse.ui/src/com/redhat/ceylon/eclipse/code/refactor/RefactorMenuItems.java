@@ -93,7 +93,7 @@ public class RefactorMenuItems extends CompoundContributionItem {
                         CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.extractParameter", 
                         "Extract &Parameter...",
-                        editor!=null && new ExtractParameterRefactoring(editor).getEnabled(),
+                        editor!=null && refactorJ2C().newExtractParameterRefactoring(editor).getEnabled(),
                         CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.collectParameters", 
                         "&Collect Parameters...",

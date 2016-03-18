@@ -89,8 +89,13 @@ class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null)
     
     assert (is CeylonEditor editorPart);
     
-    value rootNode 
-            = editorPart.parseController.typecheckedRootNode;
+    Tree.CompilationUnit? rootNode 
+            = editorPart.parseController
+                .typecheckedRootNode;
+    if (!exists rootNode) {
+        return;
+    }
+    
     value node = nodes.findNode {
         node = rootNode;
         tokens = editorPart.parseController.tokens;
