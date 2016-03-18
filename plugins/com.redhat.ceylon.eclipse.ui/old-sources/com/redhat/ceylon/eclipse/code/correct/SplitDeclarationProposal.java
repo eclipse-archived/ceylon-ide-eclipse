@@ -238,7 +238,7 @@ class SplitDeclarationProposal extends CorrectionProposal {
 	                    (Tree.MethodDeclaration) decNode;
 	            Tree.SpecifierExpression sie = 
 	                    methDecNode.getSpecifierExpression();
-	            if (sie!=null || dec.isParameter()) {
+	            if (sie==null ? dec.isParameter() : !dec.isParameter()) {
 	                addSplitDeclarationProposal(doc, 
 	                        methDecNode, cu, file, proposals);
 	            }
