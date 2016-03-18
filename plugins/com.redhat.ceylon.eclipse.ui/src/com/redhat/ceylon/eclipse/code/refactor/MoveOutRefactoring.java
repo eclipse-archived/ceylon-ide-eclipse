@@ -43,10 +43,12 @@ import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class MoveOutRefactoring extends AbstractRefactoring {
     
@@ -197,14 +199,26 @@ public class MoveOutRefactoring extends AbstractRefactoring {
 
     private String renderText(Tree.TypeDeclaration owner,
             String indent, String originalIndent, String delim) {
+        Unit unit = declaration.getUnit();
         String qtype =
                 owner.getDeclarationModel().getType()
-                    .asSourceCodeString(declaration.getUnit());
+                    .asSourceCodeString(unit);
         StringBuilder sb = new StringBuilder();
         if (declaration instanceof Tree.AnyMethod) {
             Tree.AnyMethod md = (Tree.AnyMethod) declaration;
             appendAnnotations(sb, md, owner.getDeclarationModel());
-            sb.append(text(md.getType(), tokens)).append(" ")
+            String typeDec;
+            Tree.Type mdt = md.getType();
+            if (mdt instanceof Tree.FunctionModifier &&
+                    !ModelUtil.isTypeUnknown(mdt.getTypeModel())) {
+                typeDec = 
+                        mdt.getTypeModel()
+                            .asSourceCodeString(unit);
+            }
+            else {
+                typeDec = text(mdt, tokens);
+            }
+            sb.append(typeDec).append(" ")
                 .append(text(md.getIdentifier(), tokens));
             if (md.getTypeParameterList()!=null)
             	sb.append(text(md.getTypeParameterList(), tokens));
