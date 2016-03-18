@@ -162,7 +162,8 @@ class CreateParameterProposal extends InitializerProposal {
                 TypecheckerUnit u = 
                         dg.getRootNode().getUnit();
                 if (u instanceof ModifiableSourceFile) {
-                    ModifiableSourceFile<IProject,IResource,IFolder,IFile> cu = (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) u;
+                    ModifiableSourceFile<IProject,IResource,IFolder,IFile> cu = 
+                            (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) u;
                     addCreateParameterProposal(
                             proposals, paramDef, paramDesc,
                             ADD_CORR,
