@@ -3,6 +3,10 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import static com.redhat.ceylon.eclipse.code.correct.LinkedModeCompletionProposal.getSupertypeProposals;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.link.LinkedPosition;
@@ -61,6 +65,12 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
     
     protected void addNamePosition(IDocument document, 
             int offset2, int length) {
+        addNamePosition(document, offset2, length, 
+                Collections.<IRegion>emptyList());
+    }
+    
+    protected void addNamePosition(IDocument document, 
+            int offset, int length, List<IRegion> regions) {
     	linkedPositionGroup = new LinkedPositionGroup();
     	namePosition =
     			new ProposalPosition(document, 
@@ -74,7 +84,15 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
             linkedPositionGroup.addPosition(namePosition);
             linkedPositionGroup.addPosition(
                     new LinkedPosition(document, 
-                            offset2, length, 2));
+                            offset, length, 2));
+            int i = 3;
+            for (IRegion region: regions) {
+                linkedPositionGroup.addPosition(
+                        new LinkedPosition(document, 
+                            region.getOffset(), 
+                            region.getLength(), 
+                            i++));
+            }
             linkedModeModel.addGroup(linkedPositionGroup);
         }
         catch (BadLocationException e) {

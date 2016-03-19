@@ -80,7 +80,8 @@ public final class ExtractValueLinkedMode
         
         addNamePosition(document, 
                 elme.getRefRegion().getOffset(),
-                elme.getRefRegion().getLength());
+                elme.getRefRegion().getLength(),
+                refactoring.getDupeRegions());
         
         Type type = refactoring.getType();
         if (!isTypeUnknown(type)) {

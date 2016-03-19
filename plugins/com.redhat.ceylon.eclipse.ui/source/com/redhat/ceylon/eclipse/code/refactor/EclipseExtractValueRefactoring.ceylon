@@ -34,6 +34,9 @@ import org.eclipse.text.edits {
 import org.eclipse.ui {
     IEditorPart
 }
+import java.util {
+    List, ArrayList
+}
 
 class EclipseExtractValueRefactoring(IEditorPart editorPart) 
         extends EclipseAbstractRefactoring<TextChange>(editorPart)
@@ -51,6 +54,7 @@ class EclipseExtractValueRefactoring(IEditorPart editorPart)
     shared actual variable IRegion? decRegion=null;
     shared actual variable IRegion? refRegion=null;
     shared actual variable Boolean getter=false;
+    shared actual List<IRegion> dupeRegions = ArrayList<IRegion>();
     
     checkFinalConditions(IProgressMonitor? monitor)
             => if (exists node=editorData?.node,
@@ -73,4 +77,5 @@ class EclipseExtractValueRefactoring(IEditorPart editorPart)
     extractInFile(TextChange tfc) => build(tfc);
     
     shared actual String name => (super of ExtractValueRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion>).name;
+    
 }
