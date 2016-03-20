@@ -9,6 +9,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
@@ -25,12 +26,13 @@ class ChangeDeclarationProposal extends CorrectionProposal {
             Collection<ICompletionProposal> proposals, Node node) {
         Tree.Declaration decNode = (Tree.Declaration) node;
         CommonToken token = (CommonToken) decNode.getMainToken();
+        if (token==null) return;
         String keyword;
-        if (decNode instanceof Tree.AnyClass){
+        if (decNode instanceof Tree.AnyClass) {
             keyword = "interface";
         }
         else if (decNode instanceof Tree.AnyMethod) {
-            if (token.getText().equals("void")) return;
+            if (token.getType()==CeylonLexer.VOID_MODIFIER) return;
             keyword = "value";
         }
         else {
