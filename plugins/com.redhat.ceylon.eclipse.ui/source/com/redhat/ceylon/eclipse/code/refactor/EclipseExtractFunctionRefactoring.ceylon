@@ -57,6 +57,10 @@ import org.eclipse.ui {
 import org.eclipse.ui.texteditor {
     ITextEditor
 }
+import java.util {
+    JList=List,
+    JArrayList=ArrayList
+}
 
 class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null) 
         extends EclipseAbstractRefactoring<TextChange>(editorPart)
@@ -79,6 +83,7 @@ class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null)
     shared actual variable List<Tree.Return> returns = [];
     shared actual variable List<Tree.Statement> statements = [];
     shared actual variable Tree.Body? body = null;
+    shared actual JList<IRegion> dupeRegions = JArrayList<IRegion>();
     
     assert (is ITextEditor editorPart);
     
