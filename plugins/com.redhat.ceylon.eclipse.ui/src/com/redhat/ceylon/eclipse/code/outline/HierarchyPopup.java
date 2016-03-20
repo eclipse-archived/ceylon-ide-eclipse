@@ -10,7 +10,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUP;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.imageRegistry;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.triggersBinding;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 
