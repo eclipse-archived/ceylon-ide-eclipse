@@ -1,14 +1,14 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.correct.LinkedModeCompletionProposal.getSupertypeProposals;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME;
+import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_EXTRACT;
 
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.link.LinkedPosition;
 import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.text.link.ProposalPosition;
@@ -166,7 +166,7 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
 
     public static boolean useLinkedMode() {
         return CeylonPlugin.getPreferences()
-                .getBoolean(LINKED_MODE_RENAME);
+                .getBoolean(LINKED_MODE_EXTRACT);
     }
     
     @Override
