@@ -26,8 +26,8 @@ import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-
 
 public class CeylonHyperlinkDetector implements IHyperlinkDetector {
     private CeylonEditor editor;
@@ -107,6 +107,15 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                         Declaration dec = 
                                 (Declaration) 
                                     referenceable;
+                        if (dec instanceof TypedDeclaration) {
+                            Declaration od = dec;
+                            while (od!=null) {
+                                referenceable = dec = od;
+                                TypedDeclaration td = 
+                                        (TypedDeclaration) od;
+                                od = td.getOriginalDeclaration();
+                            }
+                        }
                         if (dec.isNative()) {
                             if (supportedBackends.none()) {
                                 return null;
