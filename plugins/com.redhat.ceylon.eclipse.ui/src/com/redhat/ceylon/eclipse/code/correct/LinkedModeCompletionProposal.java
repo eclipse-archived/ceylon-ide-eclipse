@@ -115,7 +115,7 @@ public class LinkedModeCompletionProposal
             int offset, int position) {
         this(name, offset, name, position, null);
         breakChars = "(<";
-        regionChars = "\\";
+        regionChars = "<>[](){}*+.,|&?\\";
     }
     
     LinkedModeCompletionProposal(Type type,
@@ -170,15 +170,7 @@ public class LinkedModeCompletionProposal
                 i<document.getLength(); 
                 i++) {
             char ch = document.getChar(i);
-            if (Character.isJavaIdentifierPart(ch) 
-                    || regionChars.indexOf(ch)>=0 ||
-                    depth > 0) {
-                lastWasWs = false;
-                length++;
-                if (ch=='('||ch=='<'||ch=='['||ch=='{') depth++;
-                if (ch==')'||ch=='>'||ch==']'||ch=='}') depth--;
-            }
-            else if (Character.isWhitespace(ch) 
+            if (Character.isWhitespace(ch) 
                     || count==position 
                     && breakChars.indexOf(ch)>=0) {
                 if (!lastWasWs) {
@@ -189,6 +181,14 @@ public class LinkedModeCompletionProposal
                 }
                 start = i+1;
                 length = 0;
+            }
+            else if (Character.isJavaIdentifierPart(ch) 
+                    || regionChars.indexOf(ch)>=0 ||
+                    depth > 0) {
+                lastWasWs = false;
+                length++;
+                if (ch=='('||ch=='<'||ch=='['||ch=='{') depth++;
+                if (ch==')'||ch=='>'||ch==']'||ch=='}') depth--;
             }
         }
         return new Region(start, length);
