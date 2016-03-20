@@ -1,7 +1,3 @@
-import ceylon.interop.java {
-    CeylonList
-}
-
 import com.redhat.ceylon.compiler.typechecker.context {
     PhasedUnit
 }
@@ -12,8 +8,11 @@ import com.redhat.ceylon.eclipse.code.complete {
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
 }
-import com.redhat.ceylon.eclipse.core.builder {
-    CeylonBuilder
+import com.redhat.ceylon.eclipse.code.refactor {
+    AbstractLinkedMode
+}
+import com.redhat.ceylon.eclipse.ui {
+    CeylonResources
 }
 import com.redhat.ceylon.eclipse.util {
     eclipseIndents,
@@ -23,14 +22,21 @@ import com.redhat.ceylon.eclipse.util {
 import com.redhat.ceylon.ide.common.completion {
     IdeCompletionManager
 }
-import com.redhat.ceylon.ide.common.typechecker {
-    ModifiablePhasedUnit
-}
 import com.redhat.ceylon.ide.common.correct {
     AbstractQuickFix,
     ImportProposals,
     GenericQuickFix,
     AbstractLocalProposal
+}
+import com.redhat.ceylon.ide.common.model {
+    ModifiableSourceFile,
+    IResourceAware
+}
+import com.redhat.ceylon.ide.common.refactoring {
+    DefaultRegion
+}
+import com.redhat.ceylon.ide.common.typechecker {
+    ModifiablePhasedUnit
 }
 import com.redhat.ceylon.ide.common.util {
     Indents
@@ -55,37 +61,24 @@ import org.eclipse.jface.text.contentassist {
     ICompletionProposalExtension6,
     IContextInformation
 }
+import org.eclipse.jface.text.link {
+    LinkedModeModel,
+    LinkedPosition
+}
+import org.eclipse.jface.viewers {
+    StyledString
+}
 import org.eclipse.ltk.core.refactoring {
     TextChange,
     TextFileChange,
     DocumentChange
 }
-import org.eclipse.text.edits {
-    InsertEdit,
-    TextEdit
-}
-import com.redhat.ceylon.ide.common.model {
-    ModifiableSourceFile,
-    IResourceAware
-}
-import com.redhat.ceylon.ide.common.refactoring {
-    DefaultRegion
-}
-import org.eclipse.jface.text.link {
-    LinkedModeModel,
-    LinkedPosition
-}
-import com.redhat.ceylon.eclipse.code.refactor {
-    AbstractLinkedMode
-}
 import org.eclipse.swt.graphics {
     Point
 }
-import com.redhat.ceylon.eclipse.ui {
-    CeylonResources
-}
-import org.eclipse.jface.viewers {
-    StyledString
+import org.eclipse.text.edits {
+    InsertEdit,
+    TextEdit
 }
 
 shared interface EclipseAbstractQuickFix
@@ -96,7 +89,7 @@ shared interface EclipseAbstractQuickFix
     
     shared actual Integer getTextEditOffset(TextEdit change) => change.offset;
     
-    shared actual List<PhasedUnit> getUnits(IProject p) => CeylonList(CeylonBuilder.getUnits(p));
+    //shared actual List<PhasedUnit> getUnits(IProject p) => CeylonList(CeylonBuilder.getUnits(p));
     
     shared actual ImportProposals<out Anything,out Anything,IDocument,InsertEdit,TextEdit,TextChange> importProposals
             => eclipseImportProposals;
