@@ -12,6 +12,7 @@ import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 
 //TODO: fix all the copy/paste from FindReferenceVisitor
 public class FindAssignmentsVisitor extends Visitor {
@@ -44,7 +45,10 @@ public class FindAssignmentsVisitor extends Visitor {
     }
     
     protected boolean isReference(Declaration ref) {
-        return ref!=null && declaration.refines(ref);
+        return ref!=null && declaration.refines(ref) 
+                || ref instanceof FunctionOrValue 
+                && ((FunctionOrValue)ref).isShortcutRefinement()
+                && ref.getRefinedDeclaration().equals(declaration);
     }
 
     private boolean isReference(Tree.Term lhs) {

@@ -29,7 +29,7 @@ import com.redhat.ceylon.model.typechecker.model.Value;
  */
 public class FindReferencesVisitor extends Visitor {
     
-    private Referenceable declaration;
+    protected Referenceable declaration;
     protected final Set<Node> nodes = new HashSet<Node>();
     
     public FindReferencesVisitor(Referenceable declaration) {
@@ -98,7 +98,7 @@ public class FindReferencesVisitor extends Visitor {
         }
     }
     
-    private boolean isRefinedDeclarationReference(Declaration ref) {
+    protected boolean isRefinedDeclarationReference(Declaration ref) {
         if (declaration instanceof Declaration) {
             Declaration dec = (Declaration) declaration;
             return dec.refines(ref);

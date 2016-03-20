@@ -12,6 +12,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -56,7 +57,15 @@ public class FindReferencesAction extends AbstractFindAction {
         protected Set<Node> getNodes(Tree.CompilationUnit cu,
                 Referenceable referencedDeclaration) {
             FindReferencesVisitor frv = 
-                    new FindReferencesVisitor(referencedDeclaration);
+                    new FindReferencesVisitor(referencedDeclaration) {
+                @Override
+                protected boolean isRefinedDeclarationReference(Declaration ref) {
+                    return super.isRefinedDeclarationReference(ref) ||
+                            ref instanceof FunctionOrValue 
+                            && ((FunctionOrValue)ref).isShortcutRefinement()
+                            && ref.getRefinedDeclaration().equals(declaration);
+                }
+            };
             cu.visit(frv);
             FindDocLinkReferencesVisitor fdlrv =
                     new FindDocLinkReferencesVisitor(referencedDeclaration);
