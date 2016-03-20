@@ -106,7 +106,7 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
         }
     }
     
-    shared DocumentChange? newDocumentChange() {
+    shared DocumentChange newDocumentChange() {
         assert (editorData exists);
         value dc = DocumentChange(
             editorPart.editorInput.name 

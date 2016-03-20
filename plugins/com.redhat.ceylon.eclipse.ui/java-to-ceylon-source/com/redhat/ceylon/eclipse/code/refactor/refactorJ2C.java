@@ -4,6 +4,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.TextEdit;
@@ -38,18 +39,18 @@ public class refactorJ2C implements RefactorJ2C {
         return refactoring;
     }
     @Override
-    public ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> 
+    public ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> 
     newExtractFunctionRefactoring(IEditorPart editorPart) {
         return new EclipseExtractFunctionRefactoring(editorPart);
     }
     @Override
-    public ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> 
+    public ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> 
     newExtractFunctionRefactoring(IEditorPart editorPart, Tree.Declaration target) {
         return new EclipseExtractFunctionRefactoring(editorPart, target);
     }
     @Override
     public ExtractLinkedModeEnabled<IRegion> 
-    toExtractLinkedModeEnabled(ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> refactoring) {
+    toExtractLinkedModeEnabled(ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> refactoring) {
         return refactoring;
     }
 }

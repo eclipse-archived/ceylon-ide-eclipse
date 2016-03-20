@@ -8,6 +8,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
@@ -26,7 +27,7 @@ import com.redhat.ceylon.model.typechecker.model.Type;
 public final class ExtractFunctionLinkedMode 
         extends ExtractLinkedMode {
         
-    private final ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> refactoring;
+    private final ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> refactoring;
     
     public ExtractFunctionLinkedMode(CeylonEditor editor) {
         super(editor);

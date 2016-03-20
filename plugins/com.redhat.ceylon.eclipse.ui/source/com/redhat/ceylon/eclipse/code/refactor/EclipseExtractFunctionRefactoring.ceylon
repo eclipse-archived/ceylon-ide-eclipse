@@ -1,3 +1,6 @@
+import com.redhat.ceylon.compiler.typechecker.context {
+    PhasedUnit
+}
 import com.redhat.ceylon.compiler.typechecker.tree {
     Node,
     Tree,
@@ -17,7 +20,11 @@ import com.redhat.ceylon.ide.common.refactoring {
     ExtractFunctionRefactoring,
     FindReturnsVisitor,
     FindResultVisitor,
-    FindBodyVisitor
+    FindBodyVisitor,
+    getTargetNode
+}
+import com.redhat.ceylon.ide.common.typechecker {
+    ProjectPhasedUnit
 }
 import com.redhat.ceylon.ide.common.util {
     nodes
@@ -27,8 +34,16 @@ import com.redhat.ceylon.model.typechecker.model {
     TypedDeclaration
 }
 
+import java.util {
+    JList=List,
+    JArrayList=ArrayList
+}
+
 import org.eclipse.core.resources {
-    IFile
+    IFile,
+    IProject,
+    IResource,
+    IFolder
 }
 import org.eclipse.core.runtime {
     IProgressMonitor
@@ -45,7 +60,9 @@ import org.eclipse.ltk.core.refactoring {
     RefactoringStatus {
         ...
     },
-    TextChange
+    TextChange,
+    Change,
+    CompositeChange
 }
 import org.eclipse.text.edits {
     InsertEdit,
@@ -57,14 +74,10 @@ import org.eclipse.ui {
 import org.eclipse.ui.texteditor {
     ITextEditor
 }
-import java.util {
-    JList=List,
-    JArrayList=ArrayList
-}
 
 class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null) 
         extends EclipseAbstractRefactoring<TextChange>(editorPart)
-        satisfies ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion>
+        satisfies ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion>
         & EclipseDocumentChanges
         & EclipseExtractLinkedModeEnabled {
     
@@ -191,15 +204,36 @@ class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null)
         return RefactoringStatus();
     }
     
-    shared actual TextChange createChange(IProgressMonitor? monitor) {
-        TextChange tc = newLocalChange();
-        extractInFile(tc);
-        return tc;
+    shared actual TextChange newFileChange(PhasedUnit pu) {
+        assert (is ProjectPhasedUnit<IProject,IResource,IFolder,IFile> pu);
+        return newTextFileChange(pu);
+    }
+    
+    addChangeToChange(CompositeChange change, TextChange tc) => change.add(tc);
+    
+    shared actual Change createChange(IProgressMonitor? monitor) {
+        if (is Tree.Term term = editorData?.node,
+            exists rootNode = editorData?.rootNode,
+            exists tn = getTargetNode(term, target, rootNode), 
+            tn.declarationModel.toplevel) {
+            //if we're extracting a toplevel function, look for
+            //replacements in other files in the same package
+            value change = CompositeChange(name);
+            TextChange tc = newLocalChange();
+            extractExpression(tc, term, change);
+            addChangeToChange(change, tc);
+            return change;
+        }
+        else {
+            TextChange tc = newLocalChange();
+            extractInFile(tc);
+            return tc;
+        }
     }
     
     newRegion(Integer start, Integer length) => Region(start, length);
     
     extractInFile(TextChange tfc) => build(tfc);
     
-    shared actual String name => (super of ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion>).name;
+    shared actual String name => (super of ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion>).name;
 }
