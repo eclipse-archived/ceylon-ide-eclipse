@@ -221,8 +221,13 @@ class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null)
             value change = CompositeChange(name);
             TextChange tc = newLocalChange();
             extractExpression(tc, term, change);
-            addChangeToChange(change, tc);
-            return change;
+            if (change.children.size==0) {
+                return tc;
+            }
+            else {
+                addChangeToChange(change, tc);
+                return change;
+            }
         }
         else {
             TextChange tc = newLocalChange();

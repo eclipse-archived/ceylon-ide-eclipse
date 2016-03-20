@@ -20,8 +20,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.ide.common.refactoring.ExtractLinkedModeEnabled;
 import com.redhat.ceylon.ide.common.refactoring.ExtractFunctionRefactoring;
+import com.redhat.ceylon.ide.common.refactoring.ExtractLinkedModeEnabled;
 import com.redhat.ceylon.model.typechecker.model.Type;
 
 public final class ExtractFunctionLinkedMode 
@@ -110,7 +110,15 @@ public final class ExtractFunctionLinkedMode
     
     @Override
     protected boolean forceWizardMode() {
-        return refactoring.getForceWizardMode();
+        try {
+            return refactoring.getForceWizardMode() ||
+                    //yew, truly terrible hack!!
+                    ((Refactoring) refactoring)
+                        .createChange(null) 
+                            instanceof CompositeChange;
+        } catch (Exception e) {
+            return false;
+        }
     }
     
     @Override
