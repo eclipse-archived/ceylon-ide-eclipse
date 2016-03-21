@@ -13,6 +13,8 @@ import com.redhat.ceylon.ide.common.util.toJavaIterable_;
 import com.redhat.ceylon.ide.common.util.toJavaList_;
 import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
 
+import ceylon.language.Sequence;
+
 public class CeylonHelper {
     public static TypeDescriptor td(Class<?> klass) {
         TypeDescriptor[] typeArguments = new TypeDescriptor[0];
@@ -35,5 +37,15 @@ public class CeylonHelper {
 
     public static <Type> Iterable<Type> iterable(Class<Type> klass,  ceylon.language.Iterable<? extends Type, ? extends Object> ceylonIterable) {
         return toJavaIterable_.toJavaIterable(td(klass), (ceylon.language.Iterable<? extends Type, ? extends Object>) ceylonIterable);
+    }
+    
+    public static String[] toJavaStringArray(Sequence<? extends ceylon.language.String> sequence) {
+        long length = sequence.getSize();
+        String[] result = new String[(int) length];
+        for (int i=0; i<length; i++) {
+            ceylon.language.String str = sequence.getFromFirst(i);
+            result[i] = str==null ? null : str.value;
+        }
+        return result;
     }
 }

@@ -35,8 +35,6 @@ import com.redhat.ceylon.ide.common.util.messages_;
 import com.redhat.ceylon.ide.common.util.messages_.bootstrap_;
 import com.redhat.ceylon.ide.common.util.toJavaStringList_;
 
-import ceylon.interop.java.toJavaStringArray_;
-
 public class CreateBootstrapFilesHandler implements IWorkbenchWindowActionDelegate {
     public static bootstrap_ bootstrapMessages = messages_.get_().getBootstrap();
     

@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.util;
 
+import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringArray;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.EOF;
@@ -343,7 +344,7 @@ public class Nodes {
         return nameProposals(node, false);
     }
     public static String[] nameProposals(Node node, boolean unplural) {
-    	return delegate.nameProposals(node, unplural);
+    	return toJavaStringArray(delegate.nameProposals(node, null, unplural));
     }
 
     public static void addNameProposals(Set<String> names, 

@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringArray;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.refactorJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
@@ -74,8 +75,8 @@ public final class ExtractFunctionLinkedMode
     
     @Override
     protected String[] getNameProposals() {
-    	return refactorJ2C().toExtractLinkedModeEnabled(refactoring)
-    	        .getNameProposals();
+    	return toJavaStringArray(refactorJ2C().toExtractLinkedModeEnabled(refactoring)
+    	        .getNameProposals());
     }
     
     @Override
