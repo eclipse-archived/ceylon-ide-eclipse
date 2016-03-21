@@ -60,9 +60,11 @@ public class AliasRefactoring extends AbstractRefactoring {
         @Override
         public void visit(Tree.Type that) {
             super.visit(that);
-            Type t = that.getTypeModel();
-            if (t!=null && type.isExactly(t)) {
-                nodes.add(that);
+            if (!(that instanceof Tree.SyntheticVariable)) {
+                Type t = that.getTypeModel();
+                if (t!=null && type.isExactly(t)) {
+                    nodes.add(that);
+                }
             }
         }
         @Override
