@@ -99,7 +99,7 @@ abstract class AbstractRefactoring extends Refactoring {
                 return false;
             }
             else {
-                return project.equals(project);
+                return project.equals(this.project);
             }
         }
         return false;
