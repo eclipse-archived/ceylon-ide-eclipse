@@ -50,45 +50,38 @@ public final class ExtractValueLinkedMode
     
     @Override
     protected int getNameOffset() {
-        return refactorJ2C().toExtractLinkedModeEnabled(refactoring)
-                .getDecRegion().getOffset();
+        return refactoring.getDecRegion().getOffset();
     }
     
     @Override
     protected int getTypeOffset() {
-        return refactorJ2C().toExtractLinkedModeEnabled(refactoring)
-                .getTypeRegion().getOffset();
+        return refactoring.getTypeRegion().getOffset();
     }
     
     @Override
     protected int getExitPosition(int selectionOffset, int adjust) {
-        return refactorJ2C().toExtractLinkedModeEnabled(refactoring)
-                .getRefRegion().getOffset();
+        return refactoring.getRefRegion().getOffset();
     }
     
     @Override
     protected String[] getNameProposals() {
-    	return toJavaStringArray(refactorJ2C().toExtractLinkedModeEnabled(refactoring)
-    	        .getNameProposals());
+    	return toJavaStringArray(refactoring.getNameProposals());
     }
     
     @Override
     protected void addLinkedPositions(IDocument document,
             CompilationUnit rootNode, int adjust) {
         
-        ExtractLinkedModeEnabled<IRegion> elme = 
-                refactorJ2C().toExtractLinkedModeEnabled(refactoring);
-        
         addNamePosition(document, 
-                elme.getRefRegion().getOffset(),
-                elme.getRefRegion().getLength(),
+                refactoring.getRefRegion().getOffset(),
+                refactoring.getRefRegion().getLength(),
                 refactoring.getDupeRegions());
         
         Type type = refactoring.getType();
         if (!isTypeUnknown(type)) {
             addTypePosition(document, type, 
-            elme.getTypeRegion().getOffset(), 
-            elme.getTypeRegion().getLength());
+                    refactoring.getTypeRegion().getOffset(), 
+                    refactoring.getTypeRegion().getLength());
         }
         
     }

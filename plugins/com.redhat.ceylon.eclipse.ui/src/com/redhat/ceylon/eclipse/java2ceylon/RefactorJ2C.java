@@ -12,7 +12,6 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.ide.common.refactoring.ExtractFunctionRefactoring;
-import com.redhat.ceylon.ide.common.refactoring.ExtractLinkedModeEnabled;
 import com.redhat.ceylon.ide.common.refactoring.ExtractParameterRefactoring;
 import com.redhat.ceylon.ide.common.refactoring.ExtractValueRefactoring;
 
@@ -21,22 +20,13 @@ public interface RefactorJ2C {
     ExtractValueRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> newExtractValueRefactoring(
             IEditorPart editorPart);
 
-    ExtractLinkedModeEnabled<IRegion> toExtractLinkedModeEnabled(
-            ExtractValueRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> refactoring);
-
     ExtractParameterRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> newExtractParameterRefactoring(
             IEditorPart editorPart);
-
-    ExtractLinkedModeEnabled<IRegion> toExtractLinkedModeEnabled(
-            ExtractParameterRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> refactoring);
 
     ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> newExtractFunctionRefactoring(
             IEditorPart editorPart);
 
     ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> newExtractFunctionRefactoring(
             IEditorPart editorPart, Tree.Declaration target);
-
-    ExtractLinkedModeEnabled<IRegion> toExtractLinkedModeEnabled(
-            ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> refactoring);
 
 }
