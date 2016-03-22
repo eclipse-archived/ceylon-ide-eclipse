@@ -74,7 +74,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
                     PropertyChangeEvent event) {
                 StructuredViewer viewer = getViewer();
                 viewer.getControl()
-                    .setFont(CeylonPlugin.getOutlineFont());
+                    .setFont(getOutlineFont());
                 viewer.refresh();
             }
         };
