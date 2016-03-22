@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.core.vfs;
 
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.platformJ2C;
 import static com.redhat.ceylon.eclipse.util.CeylonHelper.td;
 
 import org.eclipse.core.resources.IFile;
@@ -14,7 +15,6 @@ import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.eclipse.java2ceylon.VfsJ2C;
 import com.redhat.ceylon.ide.common.model.CeylonProjects;
 import com.redhat.ceylon.ide.common.platform.VfsServices;
-import com.redhat.ceylon.ide.common.platform.platformServices_;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
@@ -22,7 +22,7 @@ import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
 public class vfsJ2C implements VfsJ2C {
     @Override
     public VfsServices<IProject, IResource, IFolder, IFile> services() {
-        return platformServices_.get_().vfs(td(IProject.class), td(IResource.class), td(IFolder.class), td(IFile.class));
+        return platformJ2C().platformServices().vfs(td(IProject.class), td(IResource.class), td(IFolder.class), td(IFile.class));
     }
 
     @Override

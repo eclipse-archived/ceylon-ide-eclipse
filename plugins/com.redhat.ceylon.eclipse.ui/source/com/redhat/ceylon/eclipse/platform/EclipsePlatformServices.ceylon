@@ -20,11 +20,12 @@ object eclipsePlatformServices satisfies PlatformServices {
         model<NativeProject, NativeResource, NativeFolder, NativeFile>() => 
             unsafeCast<ModelServices<NativeProject,NativeResource,NativeFolder,NativeFile>>(eclipseModelServices);
     
+    shared actual VfsServices<NativeProject,NativeResource,NativeFolder,NativeFile> vfs<NativeProject, NativeResource, NativeFolder, NativeFile>() => 
+            unsafeCast<VfsServices<NativeProject,NativeResource,NativeFolder,NativeFile>>(eclipseVfsServices);
+
     shared actual IdeUtils utils() => eclipsePlatformUtils;
     
     shared actual ImportProposals<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange>
         importProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange>() =>
             unsafeCast<ImportProposals<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange>>(eclipseImportProposals);
-
-    shared actual VfsServices<NativeProject,NativeResource,NativeFolder,NativeFile> vfs<NativeProject, NativeResource, NativeFolder, NativeFile>() => nothing;
 }
