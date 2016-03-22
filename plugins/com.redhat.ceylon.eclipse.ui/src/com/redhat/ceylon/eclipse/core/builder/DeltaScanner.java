@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInSourceFol
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isResourceFile;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isSourceFile;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 
 import java.io.File;
@@ -126,7 +127,9 @@ final class DeltaScanner implements IResourceDeltaVisitor {
                     }
                 }
             } else {
-                if (folder.exists() && folder.getProject().equals(project)) {
+                if (folder.exists() 
+                        && folder.getProject().equals(project)
+                        && vfsJ2C().createVirtualFolder(folder, project).isDescendantOfAny(ceylonProject.getRootFolders())) {
                     if (getPackage(folder) == null || getRootFolder(folder) == null) {
                         IContainer parent = folder.getParent();
                         if (parent instanceof IFolder) {
