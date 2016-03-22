@@ -134,17 +134,14 @@ class CeylonSearchResultTreeContentProvider implements
             }
 
             viewer.remove(toRemove.toArray());
-            for (Iterator<Object> iter = 
-                    toAdd.keySet().iterator(); 
-                    iter.hasNext();) {
-                Object parent = iter.next();
+            for (Map.Entry<Object, Set<Object>> entry: 
+                    toAdd.entrySet()) {
+                Object parent = entry.getKey();
                 Set<Object> children = toAdd.get(parent);
                 viewer.add(parent, children.toArray());
             }
-            for (Iterator<Object> elementsToUpdate = 
-                    toUpdate.iterator(); 
-                    elementsToUpdate.hasNext();) {
-                viewer.refresh(elementsToUpdate.next());
+            for (Object element: toUpdate) {
+                viewer.refresh(element);
             }
         }
     }
