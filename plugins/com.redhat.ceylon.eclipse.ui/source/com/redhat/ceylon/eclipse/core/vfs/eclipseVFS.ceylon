@@ -1,23 +1,11 @@
-import com.redhat.ceylon.eclipse.core.builder {
-    CeylonBuilder
-}
 import com.redhat.ceylon.eclipse.core.external {
     ExternalSourceArchiveManager
 }
 import com.redhat.ceylon.eclipse.core.model {
-    ceylonModel,
-    nativeFolderProperties
+    ceylonModel
 }
 import com.redhat.ceylon.ide.common.model {
-    CeylonProject,
-    CeylonProjects
-}
-import com.redhat.ceylon.ide.common.platform {
-    Status,
-    platformUtils
-}
-import com.redhat.ceylon.ide.common.util {
-    unsafeCast
+    CeylonProject
 }
 import com.redhat.ceylon.ide.common.vfs {
     FolderVirtualFile,
@@ -33,9 +21,6 @@ import java.io {
 }
 import java.lang {
     RuntimeException
-}
-import java.lang.ref {
-    WeakReference
 }
 import java.util {
     JList=List,
@@ -75,47 +60,27 @@ shared class IFolderVirtualFile
         try {
             for (childResource in nativeResource.members().iterable) {
                 assert (exists childResource);
-                children.add(ceylonModel.vfs.createVirtualResource(childResource, nativeProject));
+                children.add(vfsServices.createVirtualResource(childResource, nativeProject));
             }
         } catch (CoreException e) {
             e.printStackTrace();
         }
         return children;
     }
-    shared actual String name => nativeResource.name;
-    shared actual String path => nativeResource.projectRelativePath.string;
+    
     shared actual Boolean equals(Object that)
             => (super of FolderVirtualFile<IProject,IResource, IFolder, IFile>).equals(that);
     shared actual Integer hash
             => (super of FolderVirtualFile<IProject,IResource, IFolder, IFile>).hash;
 
-    shared actual Boolean? isSource => 
-            let (root = rootFolder) 
-            if (exists root)
-            then
-                if (root == this)
-                then unsafeCast<Boolean>(nativeResource.getSessionProperty(nativeFolderProperties.rootIsSource))
-                else root.isSource
-            else null;
-    
     shared actual FolderVirtualFile<IProject,IResource,IFolder,IFile>? rootFolder {
         value folder = nativeResource;
         if (folder.isLinked(IResource.\iCHECK_ANCESTORS) 
             && ExternalSourceArchiveManager.isInSourceArchive(folder)) {
             return null;
         }
-        if (! folder.\iexists()) {
-            value searchedFullPath = folder.fullPath;
-            return ceylonProject?.rootFolders?.find((rootFolder) => folder.fullPath.isPrefixOf(searchedFullPath));
-        }
         
-        try {
-            return unsafeCast<WeakReference<FolderVirtualFile<IProject,IResource,IFolder,IFile>>?>(
-                nativeResource.getSessionProperty(nativeFolderProperties.root))?.get();
-        } catch (CoreException e) {
-            platformUtils.log(Status._WARNING, "Unexpected exception", e);
-        }
-        return null;
+        return super.rootFolder;
     }
     
     shared actual Package? ceylonPackage { 
@@ -123,25 +88,8 @@ shared class IFolderVirtualFile
             && ExternalSourceArchiveManager.isInSourceArchive(nativeResource)) {
             return null;
         }
-        if (! nativeResource.\iexists()) {
-            if (exists theRootFolder = rootFolder) {
-                IPath rootRelativePath = nativeResource.fullPath.makeRelativeTo(theRootFolder.nativeResource.fullPath);
-                return CeylonBuilder.getProjectModelLoader(nativeResource.project)
-                        ?.findPackage(".".join(rootRelativePath.segments().array.coalesced));
-            }
-            return null;
-        }
-        try {
-            return unsafeCast<WeakReference<Package>?>(
-                nativeResource.getSessionProperty(
-                    nativeFolderProperties.packageModel))?.get();
-        } catch (CoreException e) {
-            platformUtils.log(Status._WARNING, "Unexpected exception", e);
-        }
-        return null;
+        return super.ceylonPackage;
     }
-    
-    shared actual CeylonProjects<IProject,IResource,IFolder,IFile>.VirtualFileSystem vfs => ceylonModel.vfs;
 }
 
 shared class IFileVirtualFile
@@ -173,8 +121,7 @@ shared class IFileVirtualFile
             throw RuntimeException(e);
         }
     }
-    shared actual String name => nativeResource.name;
-    shared actual String path => nativeResource.projectRelativePath.string;
+
     shared actual String charset {
         try {
             return nativeResource.project.defaultCharset; // in the future, we could return the charset of the file
@@ -184,7 +131,5 @@ shared class IFileVirtualFile
         }
 
     }
-    
-    shared actual CeylonProjects<IProject,IResource,IFolder,IFile>.VirtualFileSystem vfs => ceylonModel.vfs;
 }
 

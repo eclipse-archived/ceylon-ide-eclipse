@@ -1553,11 +1553,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                             if (projectDelta == currentDelta) {
                                                 if (delta.getKind() == IResourceDelta.REMOVED) {
                                                     filesToRemove.add(file);
-                                                    ceylonProject.removeFile(file);
+                                                    ceylonProject.removeFileFromModel(file);
                                                 }
                                                 if (delta.getKind() == IResourceDelta.ADDED) {
                                                     IFile addedFile = (IFile) resource;
-                                                    ceylonProject.addFile(addedFile);
+                                                    ceylonProject.addFileToModel(addedFile);
                                                 }
                                             }
                                         }
@@ -1570,7 +1570,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                                 if (getPackage(folder) == null || getRootFolder(folder) == null) {
                                                     IContainer parent = folder.getParent();
                                                     if (parent instanceof IFolder) {
-                                                        ceylonProject.addFolder(folder, (IFolder)parent);
+                                                        ceylonProject.addFolderToModel(folder, (IFolder)parent);
                                                     }
                                                 }
                                             }
@@ -3456,7 +3456,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     public static IFolder getRootFolder(IFolder folder) {
         FolderVirtualFile<IProject, IResource, IFolder, IFile> rootVirtualFile = 
-                vfsJ2C().eclipseVFS().createVirtualFolder(folder, folder.getProject()).getRootFolder();
+                vfsJ2C().createVirtualFolder(folder, folder.getProject()).getRootFolder();
         if (rootVirtualFile == null) {
             return null;
         }
@@ -3513,7 +3513,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     public static RootFolderType getRootFolderType(IFolder folder) {
         ceylon.language.Boolean isSourceFolder = 
-                vfsJ2C().eclipseVFS().createVirtualFolder(folder, folder.getProject()).getIsSource();
+                vfsJ2C().createVirtualFolder(folder, folder.getProject()).getIsSource();
         if (isSourceFolder == null) {
             return null;
         }
@@ -3522,7 +3522,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
     public static RootFolderType getRootFolderType(IFile file) {
         ceylon.language.Boolean isSourceFolder = 
-                vfsJ2C().eclipseVFS().createVirtualFile(file, file.getProject()).getIsSource();
+                vfsJ2C().createVirtualFile(file, file.getProject()).getIsSource();
         if (isSourceFolder == null) {
             return null;
         }
@@ -3546,13 +3546,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
     public static Package getPackage(IFolder resource) {
         ResourceVirtualFile<IProject, IResource, IFolder, IFile> resourceVirtualFile = 
-                vfsJ2C().eclipseVFS().createVirtualResource(resource, resource.getProject());
+                vfsJ2C().createVirtualResource(resource, resource.getProject());
         return resourceVirtualFile.getCeylonPackage();
     }
     
     public static Package getPackage(IFile file) {
         ResourceVirtualFile<IProject, IResource, IFolder, IFile> resourceVirtualFile = 
-                vfsJ2C().eclipseVFS().createVirtualResource(file, file.getProject());
+                vfsJ2C().createVirtualResource(file, file.getProject());
         return resourceVirtualFile.getCeylonPackage();
     }    
 

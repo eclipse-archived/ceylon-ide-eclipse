@@ -18,6 +18,7 @@ import org.eclipse.core.resources {
     IFolder,
     IFile
 }
+
 object eclipseModelServices 
         satisfies ModelServices<IProject, IResource, IFolder,IFile> {
 

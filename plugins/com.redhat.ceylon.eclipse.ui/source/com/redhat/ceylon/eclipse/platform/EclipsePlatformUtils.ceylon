@@ -11,11 +11,11 @@ import java.lang {
     RuntimeException
 }
 import com.redhat.ceylon.ide.common.platform {
-    IdePlatformUtils,
+    IdeUtils,
     Status
 }
 
-object eclipsePlatformUtils satisfies IdePlatformUtils {
+object eclipsePlatformUtils satisfies IdeUtils {
     function toEcliseStatus(Status status) => 
             switch(status)
             case(Status._OK) IStatus.\iOK

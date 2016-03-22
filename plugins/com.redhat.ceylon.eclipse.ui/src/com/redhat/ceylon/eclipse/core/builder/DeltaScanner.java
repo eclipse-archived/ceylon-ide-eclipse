@@ -130,7 +130,7 @@ final class DeltaScanner implements IResourceDeltaVisitor {
                     if (getPackage(folder) == null || getRootFolder(folder) == null) {
                         IContainer parent = folder.getParent();
                         if (parent instanceof IFolder) {
-                            ceylonProject.addFolder(folder, (IFolder)parent);
+                            ceylonProject.addFolderToModel(folder, (IFolder)parent);
                         }
                     }
                 }

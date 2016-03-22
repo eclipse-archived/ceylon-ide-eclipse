@@ -314,18 +314,6 @@ shared class EclipseCeylonProject(ideArtifact)
     shared actual Boolean compileToJs => CeylonBuilder.compileToJs(ideArtifact);
     shared actual Boolean compileToJava => CeylonBuilder.compileToJava(ideArtifact);
     
-    shared actual void setPackageForNativeFolder(IFolder folder, WeakReference<Package> p) {
-        folder.setSessionProperty(nativeFolderProperties.packageModel, p);
-    }
-    
-    shared actual void setRootForNativeFolder(IFolder folder, WeakReference<FolderVirtualFile<IProject,IResource,IFolder,IFile>> root) {
-        folder.setSessionProperty(nativeFolderProperties.root, root);
-    }
-    
-    shared actual void setRootIsForSource(IFolder rootFolder, Boolean isSource) { 
-        rootFolder.setSessionProperty(nativeFolderProperties.rootIsSource, isSource);
-    }
-
     shared actual void createOverridesProblemMarker(Exception theOverridesException, File absoluteFile, Integer overridesLine, Integer overridesColumn) =>
             CeylonBuilder.createOverridesProblemMarker(ideArtifact, theOverridesException, absoluteFile, overridesLine, overridesColumn);
     
