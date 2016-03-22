@@ -2,11 +2,19 @@ import com.redhat.ceylon.eclipse.code.correct {
     eclipseImportProposals,
     EclipseDocumentChanges
 }
+import com.redhat.ceylon.eclipse.code.editor {
+    CeylonEditor
+}
 import com.redhat.ceylon.ide.common.refactoring {
     ExtractValueRefactoring
 }
 import com.redhat.ceylon.model.typechecker.model {
     Type
+}
+
+import java.util {
+    List,
+    ArrayList
 }
 
 import org.eclipse.core.resources {
@@ -31,14 +39,8 @@ import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
 }
-import org.eclipse.ui {
-    IEditorPart
-}
-import java.util {
-    List, ArrayList
-}
 
-class EclipseExtractValueRefactoring(IEditorPart editorPart) 
+class EclipseExtractValueRefactoring(CeylonEditor editorPart) 
         extends EclipseAbstractRefactoring<TextChange>(editorPart)
         satisfies ExtractValueRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion>
         & EclipseDocumentChanges
@@ -57,8 +59,8 @@ class EclipseExtractValueRefactoring(IEditorPart editorPart)
     shared actual List<IRegion> dupeRegions = ArrayList<IRegion>();
     
     checkFinalConditions(IProgressMonitor? monitor)
-            => if (exists node=editorData?.node,
-                   exists mop=node.scope.getMemberOrParameter(node.unit, newName, null, false))
+            => let(node=editorData.node) 
+            if (exists mop=node.scope.getMemberOrParameter(node.unit, newName, null, false))
             then RefactoringStatus.createWarningStatus(
                     "An existing declaration named '``newName``' is already visible this scope")
             else RefactoringStatus();

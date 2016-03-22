@@ -3,6 +3,8 @@ package com.redhat.ceylon.eclipse.code.refactor;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ui.IEditorPart;
 
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+
 public class InlineRefactoringAction extends AbstractRefactoringAction {
     
     public InlineRefactoringAction(IEditorPart editor) {
@@ -11,12 +13,12 @@ public class InlineRefactoringAction extends AbstractRefactoringAction {
     
     @Override
     public Refactoring createRefactoring() {
-        return new InlineRefactoring(editor);
+        return new EclipseInlineRefactoring((CeylonEditor) editor).init();
     }
     
     @Override
     public RefactoringWizard createWizard(Refactoring refactoring) {
-        return new InlineWizard((InlineRefactoring) refactoring);
+        return new InlineWizard((EclipseInlineRefactoring) refactoring);
     }
     
     @Override
@@ -25,7 +27,7 @@ public class InlineRefactoringAction extends AbstractRefactoringAction {
     }
 
     public String currentName() {
-        return ((InlineRefactoring) refactoring).getDeclaration().getName();
+        return ((EclipseInlineRefactoring) refactoring).getDeclaration().getName();
     }
 
     public boolean isEnabled() {

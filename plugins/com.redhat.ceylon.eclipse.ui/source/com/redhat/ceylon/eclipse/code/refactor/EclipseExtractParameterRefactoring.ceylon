@@ -1,10 +1,22 @@
+import com.redhat.ceylon.compiler.typechecker.tree {
+    Tree
+}
 import com.redhat.ceylon.eclipse.code.correct {
     eclipseImportProposals,
     EclipseDocumentChanges
 }
+import com.redhat.ceylon.eclipse.code.editor {
+    CeylonEditor
+}
+import com.redhat.ceylon.eclipse.util {
+    EditorUtil
+}
 import com.redhat.ceylon.ide.common.refactoring {
     ExtractParameterRefactoring,
     FindFunctionVisitor
+}
+import com.redhat.ceylon.ide.common.util {
+    nodes
 }
 import com.redhat.ceylon.model.typechecker.model {
     Type
@@ -32,26 +44,8 @@ import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
 }
-import org.eclipse.ui {
-    IEditorPart
-}
-import com.redhat.ceylon.compiler.typechecker.tree {
-    Tree
-}
-import com.redhat.ceylon.eclipse.code.editor {
-    CeylonEditor
-}
-import com.redhat.ceylon.ide.common.util {
-    nodes
-}
-import org.eclipse.ui.texteditor {
-    ITextEditor
-}
-import com.redhat.ceylon.eclipse.util {
-    EditorUtil
-}
 
-class EclipseExtractParameterRefactoring(IEditorPart editorPart) 
+class EclipseExtractParameterRefactoring(CeylonEditor editorPart) 
         extends EclipseAbstractRefactoring<TextChange>(editorPart)
         satisfies ExtractParameterRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion>
         & EclipseDocumentChanges
@@ -68,11 +62,7 @@ class EclipseExtractParameterRefactoring(IEditorPart editorPart)
     shared actual variable IRegion? refRegion = null;
     shared actual variable Tree.Declaration? methodOrClass = null;
     
-    assert (is ITextEditor editorPart);
-    
     value selection = EditorUtil.getSelection(editorPart);
-    
-    assert (is CeylonEditor editorPart);
     
     Tree.CompilationUnit? rootNode 
             = editorPart.parseController
@@ -95,8 +85,8 @@ class EclipseExtractParameterRefactoring(IEditorPart editorPart)
     }
     
     checkFinalConditions(IProgressMonitor? monitor)
-            => if (exists node=editorData?.node,
-                   exists mop=node.scope.getMemberOrParameter(node.unit, newName, null, false))
+            => let(node = editorData.node) 
+            if (exists mop=node.scope.getMemberOrParameter(node.unit, newName, null, false))
             then RefactoringStatus.createWarningStatus(
                     "An existing declaration named '``newName``' is already visible this scope")
             else RefactoringStatus();

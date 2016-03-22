@@ -68,14 +68,8 @@ import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
 }
-import org.eclipse.ui {
-    IEditorPart
-}
-import org.eclipse.ui.texteditor {
-    ITextEditor
-}
 
-class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null) 
+class EclipseExtractFunctionRefactoring(CeylonEditor editorPart, target = null) 
         extends EclipseAbstractRefactoring<TextChange>(editorPart)
         satisfies ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion>
         & EclipseDocumentChanges
@@ -98,14 +92,10 @@ class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null)
     shared actual variable Tree.Body? body = null;
     shared actual JList<IRegion> dupeRegions = JArrayList<IRegion>();
     
-    assert (is ITextEditor editorPart);
-    
     value selection = EditorUtil.getSelection(editorPart);
     function selected(Node node)
             => node.startIndex.intValue() >= selection.offset && 
             node.endIndex.intValue()   <= selection.offset + selection.length;
-    
-    assert (is CeylonEditor editorPart);
     
     Tree.CompilationUnit? rootNode 
             = editorPart.parseController
@@ -162,39 +152,35 @@ class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null)
     returns = returnsVisitor.returns;
     
     checkFinalConditions(IProgressMonitor? monitor)
-            => if (exists node = editorData?.node,
-                   exists mop = node.scope.getMemberOrParameter(node.unit, newName, null, false))
+            => let(node = editorData.node) 
+            if (exists mop = node.scope.getMemberOrParameter(node.unit, newName, null, false))
             then createWarningStatus(
                     "An existing declaration named '``newName``' is already visible this scope")
             else RefactoringStatus();
     
     shared actual RefactoringStatus checkInitialConditions(IProgressMonitor pm) {
-        if (exists node = editorData?.node) {
-            if (is Tree.Body|Tree.Statement node, 
-                exists body = this.body) {
-                for (s in statements) {
-                    value v = CheckStatementsVisitor(body, statements);
-                    s.visit(v);
-                    if (exists msg = v.problem) {
-                        return createWarningStatus("Selected statements contain " + msg + " at  " + s.location);
-                    }
+        value node = editorData.node;
+        if (is Tree.Body|Tree.Statement node, 
+            exists body = this.body) {
+            for (s in statements) {
+                value v = CheckStatementsVisitor(body, statements);
+                s.visit(v);
+                if (exists msg = v.problem) {
+                    return createWarningStatus("Selected statements contain " + msg + " at  " + s.location);
                 }
             }
-            else if (is Tree.Term node) {
-                variable String? problem = null;
-                node.visit(object extends Visitor() {
-                    shared actual void visit(Tree.Body that) {}
-                    shared actual void visit(Tree.AssignmentOp that) {
-                        problem = "an assignment";
-                        super.visit(that);
-                    }
-                });
-                if (exists msg = problem) {
-                    return createWarningStatus("Selected expression contains " + msg);
+        }
+        else if (is Tree.Term node) {
+            variable String? problem = null;
+            node.visit(object extends Visitor() {
+                shared actual void visit(Tree.Body that) {}
+                shared actual void visit(Tree.AssignmentOp that) {
+                    problem = "an assignment";
+                    super.visit(that);
                 }
-            }
-            else {
-                return createErrorStatus("No selected statements or expression");
+            });
+            if (exists msg = problem) {
+                return createWarningStatus("Selected expression contains " + msg);
             }
         }
         else {
@@ -212,9 +198,8 @@ class EclipseExtractFunctionRefactoring(IEditorPart editorPart, target = null)
     addChangeToChange(CompositeChange change, TextChange tc) => change.add(tc);
     
     shared actual Change createChange(IProgressMonitor? monitor) {
-        if (is Tree.Term term = editorData?.node,
-            exists rootNode = editorData?.rootNode,
-            exists tn = getTargetNode(term, target, rootNode), 
+        if (is Tree.Term term = editorData.node,
+            exists tn = getTargetNode(term, target, editorData.rootNode), 
             tn.declarationModel.toplevel) {
             //if we're extracting a toplevel function, look for
             //replacements in other files in the same package

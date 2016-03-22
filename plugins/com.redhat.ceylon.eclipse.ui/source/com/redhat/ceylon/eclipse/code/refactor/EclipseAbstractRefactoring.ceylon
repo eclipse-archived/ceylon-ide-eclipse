@@ -1,6 +1,9 @@
 import com.redhat.ceylon.compiler.typechecker.context {
     PhasedUnit
 }
+import com.redhat.ceylon.compiler.typechecker.tree {
+    Node
+}
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
 }
@@ -51,19 +54,18 @@ import org.eclipse.ltk.core.refactoring {
     TextChange
 }
 import org.eclipse.ui {
-    IFileEditorInput,
-    IEditorPart
+    IFileEditorInput
 }
 
 abstract class EclipseAbstractRefactoring<RefactoringData>
-        (IEditorPart editorPart)
+        (CeylonEditor editorPart)
         extends Refactoring()
         satisfies AbstractRefactoring<RefactoringData> {
     
     shared class EclipseEditorData(shared CeylonEditor editor) 
             satisfies EditorData {
         
-        shared IDocument? document
+        shared default IDocument? document
                 = editor.documentProvider
                     .getDocument(editor.editorInput);
         
@@ -74,9 +76,15 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
         rootNode = editor.parseController.typecheckedRootNode;
         
         value selection = EditorUtil.getSelection(editor);
-        node = nodes.findNode(rootNode, tokens, 
+        value _node = nodes.findNode(
+            rootNode, tokens, 
             selection.offset,
-            selection.offset+selection.length);
+            selection.offset+selection.length
+        );
+        if (!exists _node) {
+            throw Exception("Can't refactor if node is null (selection = ``selection``).");
+        }
+        shared actual default Node node = _node;
         
         shared actual IFileVirtualFile? sourceVirtualFile = 
                 if (is IFileEditorInput input = editor.editorInput, 
@@ -84,13 +92,10 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
                     then IFileVirtualFile(file) else null;
     }
 
-    shared actual EclipseEditorData? editorData 
-            = if (is CeylonEditor editorPart) 
-              then EclipseEditorData(editorPart) else null;
+    shared actual default EclipseEditorData editorData 
+            = EclipseEditorData(editorPart);
 
-    rootNode => editorData?.rootNode;
-
-    shared Boolean inSameProject(Declaration declaration) {
+    shared actual Boolean inSameProject(Declaration declaration) {
         value unit = declaration.unit;
         if (unit is CrossProjectSourceFile<IProject,IResource,IFolder,IFile> || 
             unit is CrossProjectBinaryUnit<IProject,IResource,IFolder,IFile, out Anything, out Anything>) {
@@ -98,7 +103,7 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
         }
         else if (is IResourceAware<out Anything, out Anything, out Anything> unit, 
             exists p = unit.resourceProject,
-            exists editorProject = editorData?.project) {
+            exists editorProject = editorData.project) {
             return p==editorProject;
         }
         else {
@@ -107,11 +112,10 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
     }
     
     shared DocumentChange newDocumentChange() {
-        assert (editorData exists);
         value dc = DocumentChange(
             editorPart.editorInput.name 
                     + " \{#2014} current editor", 
-            editorData?.document);
+            editorData.document);
         dc.textType = "ceylon";
         return dc;
     }
@@ -124,19 +128,14 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
     }
 
     searchInEditor()
-            => if (exists ceylonEditor=editorData?.editor)
-            then ceylonEditor.dirty
-            else false;
+            => let(ceylonEditor=editorData.editor)
+               ceylonEditor.dirty;
 
     searchInFile(PhasedUnit pu)
-            => if (exists ceylonEditor=editorData?.editor,
-                    exists typecheckedRootNode=rootNode)
-            then !ceylonEditor.dirty
-            || pu.unit != typecheckedRootNode.unit
-            else true;
+            => let(ceylonEditor=editorData.editor)
+               !ceylonEditor.dirty || pu.unit != rootNode.unit;
 
     shared TextChange newLocalChange() {
-        assert (exists editorData);
         TextChange tc;
         if (searchInEditor()) {
             assert (exists doc = editorData.document);
@@ -151,8 +150,7 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
     }
 
     shared actual List<PhasedUnit> getAllUnits() {
-        assert (editorData exists);
-        assert (exists project = editorData?.project);
+        assert (exists project = editorData.project);
         value units = ArrayList<PhasedUnit>();
         units.addAll(CeylonBuilder.getUnits(project));
         for (p in project.referencingProjects.iterable) {

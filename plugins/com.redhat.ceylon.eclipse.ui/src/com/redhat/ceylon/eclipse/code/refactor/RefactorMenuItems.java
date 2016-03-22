@@ -77,7 +77,7 @@ public class RefactorMenuItems extends CompoundContributionItem {
                 new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".action.inline", 
                         "&Inline...",
-                        editor!=null && new InlineRefactoring(editor).getEnabled(),
+                        editor!=null && new EclipseInlineRefactoring((CeylonEditor) editor).init().getEnabled(),
                         COMP_CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.extractValue", 
                         "Extract &Value...",

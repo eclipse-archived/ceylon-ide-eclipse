@@ -22,7 +22,7 @@ public class InlineInputPage extends UserInputWizardPage {
         layout.numColumns = 1;
         result.setLayout(layout);
         Label title = new Label(result, SWT.LEFT);  
-        title.setText("Inline " + getInlineRefactoring().getCount() + 
+        title.setText("Inline " + getInlineRefactoring().countDeclarationOccurrences() + 
                 " occurrences of declaration '" + 
                 getInlineRefactoring().getDeclaration().getName() + "'.");
         GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
@@ -31,7 +31,7 @@ public class InlineInputPage extends UserInputWizardPage {
         GridData gd = new GridData();
         gd.horizontalSpan=2;
         title.setLayoutData(gd);
-        boolean ref = getInlineRefactoring().isReference();
+        boolean ref = getInlineRefactoring().getIsReference();
         Button radioOne = new Button(result, SWT.RADIO);
         radioOne.setText("Inline just this reference");
         radioOne.setSelection(false);
@@ -43,8 +43,8 @@ public class InlineInputPage extends UserInputWizardPage {
         SelectionListener listener = new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-                getInlineRefactoring().setDelete();
-                getInlineRefactoring().setJustOne();
+                getInlineRefactoring().toggleDelete();
+                getInlineRefactoring().toggleJustOne();
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent event) {}
@@ -52,7 +52,7 @@ public class InlineInputPage extends UserInputWizardPage {
         radioOne.addSelectionListener(listener);
     }
 
-    private InlineRefactoring getInlineRefactoring() {
-        return (InlineRefactoring) getRefactoring();
+    private EclipseInlineRefactoring getInlineRefactoring() {
+        return (EclipseInlineRefactoring) getRefactoring();
     }
 }
