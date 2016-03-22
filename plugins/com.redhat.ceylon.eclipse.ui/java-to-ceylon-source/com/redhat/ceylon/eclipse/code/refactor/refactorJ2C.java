@@ -13,9 +13,10 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.java2ceylon.RefactorJ2C;
-import com.redhat.ceylon.ide.common.refactoring.ExtractValueRefactoring;
 import com.redhat.ceylon.ide.common.refactoring.ExtractFunctionRefactoring;
 import com.redhat.ceylon.ide.common.refactoring.ExtractParameterRefactoring;
+import com.redhat.ceylon.ide.common.refactoring.ExtractValueRefactoring;
+import com.redhat.ceylon.ide.common.refactoring.InlineRefactoring;
 
 public class refactorJ2C implements RefactorJ2C {
     @Override
@@ -37,5 +38,10 @@ public class refactorJ2C implements RefactorJ2C {
     public ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> 
     newExtractFunctionRefactoring(IEditorPart editorPart, Tree.Declaration target) {
         return new EclipseExtractFunctionRefactoring((CeylonEditor) editorPart, target);
+    }
+    @Override
+    public InlineRefactoring<ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange> 
+    newInlineRefactoring(IEditorPart editorPart) {
+        return new EclipseInlineRefactoring((CeylonEditor) editorPart);
     }
 }

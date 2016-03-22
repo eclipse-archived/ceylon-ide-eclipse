@@ -1,9 +1,9 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.refactorJ2C;
+
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ui.IEditorPart;
-
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 
 public class InlineRefactoringAction extends AbstractRefactoringAction {
     
@@ -13,7 +13,7 @@ public class InlineRefactoringAction extends AbstractRefactoringAction {
     
     @Override
     public Refactoring createRefactoring() {
-        return new EclipseInlineRefactoring((CeylonEditor) editor).init();
+        return (Refactoring) refactorJ2C().newInlineRefactoring(editor);
     }
     
     @Override
