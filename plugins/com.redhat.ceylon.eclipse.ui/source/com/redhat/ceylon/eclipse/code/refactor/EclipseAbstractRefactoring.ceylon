@@ -57,6 +57,22 @@ import org.eclipse.ui {
     IFileEditorInput
 }
 
+Boolean inSameProject(Declaration declaration, CeylonEditor editor) {
+    value unit = declaration.unit;
+    if (unit is CrossProjectSourceFile<IProject,IResource,IFolder,IFile> || 
+        unit is CrossProjectBinaryUnit<IProject,IResource,IFolder,IFile, out Anything, out Anything>) {
+        return false;
+    }
+    else if (is IResourceAware<out Anything, out Anything, out Anything> unit, 
+        exists p = unit.resourceProject,
+        exists editorProject = EditorUtil.getProject(editor)) {
+        return p==editorProject;
+    }
+    else {
+        return false;
+    }
+}
+
 abstract class EclipseAbstractRefactoring<RefactoringData>
         (CeylonEditor editorPart)
         extends Refactoring()
@@ -95,21 +111,8 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
     shared actual default EclipseEditorData editorData 
             = EclipseEditorData(editorPart);
 
-    shared actual Boolean inSameProject(Declaration declaration) {
-        value unit = declaration.unit;
-        if (unit is CrossProjectSourceFile<IProject,IResource,IFolder,IFile> || 
-            unit is CrossProjectBinaryUnit<IProject,IResource,IFolder,IFile, out Anything, out Anything>) {
-            return false;
-        }
-        else if (is IResourceAware<out Anything, out Anything, out Anything> unit, 
-            exists p = unit.resourceProject,
-            exists editorProject = editorData.project) {
-            return p==editorProject;
-        }
-        else {
-            return false;
-        }
-    }
+    shared actual Boolean inSameProject(Declaration declaration)
+            => package.inSameProject(declaration, editorPart);
     
     shared DocumentChange newDocumentChange() {
         value dc = DocumentChange(

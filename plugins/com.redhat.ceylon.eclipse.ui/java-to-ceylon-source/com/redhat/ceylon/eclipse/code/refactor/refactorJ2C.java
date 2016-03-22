@@ -42,6 +42,6 @@ public class refactorJ2C implements RefactorJ2C {
     @Override
     public InlineRefactoring<ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange> 
     newInlineRefactoring(IEditorPart editorPart) {
-        return new EclipseInlineRefactoring((CeylonEditor) editorPart);
+        return newEclipseInlineRefactoring_.newEclipseInlineRefactoring((CeylonEditor) editorPart);
     }
 }

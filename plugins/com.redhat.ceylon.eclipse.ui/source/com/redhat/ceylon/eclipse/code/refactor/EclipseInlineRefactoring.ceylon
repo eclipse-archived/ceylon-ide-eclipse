@@ -7,8 +7,12 @@ import com.redhat.ceylon.eclipse.code.correct {
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
 }
+import com.redhat.ceylon.eclipse.util {
+    EditorUtil
+}
 import com.redhat.ceylon.ide.common.refactoring {
-    InlineRefactoring
+    InlineRefactoring,
+    isInlineRefactoringAvailable
 }
 import com.redhat.ceylon.ide.common.util {
     nodes
@@ -36,8 +40,35 @@ import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
 }
+import org.eclipse.ui {
+    IEditorPart
+}
 
-class EclipseInlineRefactoring(CeylonEditor editorPart)
+EclipseInlineRefactoring? newEclipseInlineRefactoring(IEditorPart editor) {
+    if (!is CeylonEditor editor) {
+        return null;
+    }
+    value tokens = editor.parseController.tokens;
+    value rootNode = editor.parseController.typecheckedRootNode;
+    value selection = EditorUtil.getSelection(editor);
+    value node = nodes.findNode(
+            rootNode, tokens, 
+            selection.offset,
+            selection.offset+selection.length
+    );
+    value ref = nodes.getReferencedDeclaration(node);
+    
+    if (is Declaration decl = ref) {
+        value sameProject = inSameProject(decl, editor);
+    
+        if (isInlineRefactoringAvailable(ref, rootNode, sameProject)) {
+            return EclipseInlineRefactoring(editor, decl).init();
+        }
+    }
+    return null;
+}
+
+class EclipseInlineRefactoring(CeylonEditor editorPart, shared Declaration declaration)
         extends EclipseAbstractRefactoring<CompositeChange>(editorPart)
         satisfies InlineRefactoring<ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange,CompositeChange>
                 & EclipseDocumentChanges {
@@ -51,12 +82,7 @@ class EclipseInlineRefactoring(CeylonEditor editorPart)
     shared class EclipseInlineData(CeylonEditor editor)
             extends EclipseEditorData(editor) satisfies InlineData {
         
-        shared actual Declaration declaration {
-            if (is Declaration decl = nodes.getReferencedDeclaration(node)) {
-                return decl;
-            }
-            throw Exception("Can't find referenced declaration");
-        }
+        shared actual Declaration declaration => outer.declaration;
         
         shared actual Boolean delete => outer.delete;
         
@@ -108,6 +134,4 @@ class EclipseInlineRefactoring(CeylonEditor editorPart)
             => newDocumentChange();
     
     shared actual String name => (super of InlineRefactoring<ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange,CompositeChange>).name;
-    
-    shared Declaration declaration => editorData.declaration;
 }
