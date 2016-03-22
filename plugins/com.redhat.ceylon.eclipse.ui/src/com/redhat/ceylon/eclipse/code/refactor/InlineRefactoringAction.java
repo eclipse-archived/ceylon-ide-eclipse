@@ -18,7 +18,7 @@ public class InlineRefactoringAction extends AbstractRefactoringAction {
     
     @Override
     public RefactoringWizard createWizard(Refactoring refactoring) {
-        return new InlineWizard((EclipseInlineRefactoring) refactoring);
+        return new InlineWizard(refactoring);
     }
     
     @Override
