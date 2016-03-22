@@ -23,6 +23,7 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -174,8 +175,7 @@ class CeylonSearchResultTreeContentProvider implements
         }
     }
 
-    private boolean insertChild(
-            Object parent, Object child) {
+    private boolean insertChild(Object parent, Object child) {
         return insertInto(parent, child, childrenMap);
     }
 
@@ -347,12 +347,16 @@ class CeylonSearchResultTreeContentProvider implements
             child instanceof IField ||
             child instanceof IImportDeclaration) {
             IJavaElement javaElement = (IJavaElement) child;
-            IJavaModelAware unit = CeylonBuilder.getUnit(javaElement);
-            if (unit instanceof CeylonBinaryUnit || unit instanceof JavaClassFile) {
+            IJavaModelAware<IProject,ITypeRoot,IJavaElement> unit = 
+                    CeylonBuilder.getUnit(javaElement);
+            if (unit instanceof CeylonBinaryUnit || 
+                unit instanceof JavaClassFile) {
                 IdeUnit ideUnit = (IdeUnit) unit;
-                Module module = ideUnit.getPackage().getModule();
+                Module module = 
+                        ideUnit.getPackage().getModule();
                 if (module instanceof BaseIdeModule) {
-                    BaseIdeModule jdtModule = (BaseIdeModule) module;
+                    BaseIdeModule jdtModule = 
+                            (BaseIdeModule) module;
                     if (jdtModule.getIsCeylonBinaryArchive()) {
                         return new WithSourceFolder(unit, null);
                     }
@@ -394,7 +398,8 @@ class CeylonSearchResultTreeContentProvider implements
                         (IPackageFragmentRoot) 
                         javaElement.getAncestor(
                                 PACKAGE_FRAGMENT_ROOT);
-                IResourceAware<IProject, IFolder, IFile> unit = getUnit(file);
+                IResourceAware<IProject,IFolder,IFile> unit = 
+                        getUnit(file);
                 if (unit instanceof Unit) {
                     return new WithSourceFolder(unit, 
                             sourceFolder);
