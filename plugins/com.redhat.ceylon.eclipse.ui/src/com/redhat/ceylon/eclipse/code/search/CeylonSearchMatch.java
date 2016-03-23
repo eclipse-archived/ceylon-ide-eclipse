@@ -13,9 +13,42 @@ import com.redhat.ceylon.ide.common.search.FindContainerVisitor;
 public class CeylonSearchMatch extends Match {
     
     public static enum Type {
-        DECLARATION, ASSIGNMENT, 
-        TYPE_USAGE, EXPRESSION_USAGE,
-        IMPORT, DOC_LINK
+        DECLARATION {
+            @Override
+            public String toString() {
+                return "Declarations";
+            }
+        },
+        ASSIGNMENT {
+            @Override
+            public String toString() {
+                return "Assignments";
+            }
+        }, 
+        TYPE_USAGE {
+            @Override
+            public String toString() {
+                return "Uses in type expressions";
+            }
+        },
+        EXPRESSION_USAGE {
+            @Override
+            public String toString() {
+                return "Uses in value expressions";
+            }
+        },
+        IMPORT {
+            @Override
+            public String toString() {
+                return "Imports";
+            }
+        }, 
+        DOC_LINK  {
+            @Override
+            public String toString() {
+                return "References in documentation annotations";
+            }
+        }
     }
     
     private Type type;

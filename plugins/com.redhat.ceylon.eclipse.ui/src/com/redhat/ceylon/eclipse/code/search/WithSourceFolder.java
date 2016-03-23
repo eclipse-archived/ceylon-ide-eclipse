@@ -7,7 +7,6 @@ class WithSourceFolder {
     Object element;
     IPackageFragmentRoot sourceFolder;
     WithSourceFolder(Object element, IPackageFragmentRoot sourceFolder) {
-        super();
         this.element = element;
         this.sourceFolder = sourceFolder;
     }

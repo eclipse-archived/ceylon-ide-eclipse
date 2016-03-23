@@ -102,10 +102,18 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
     
     @Override
     public StyledString getStyledText(Object element) {
+        if (element instanceof WithCategory) {
+            WithCategory wc = 
+                    (WithCategory) element;
+            element = wc.getItem();
+        }
         if (element instanceof WithSourceFolder) {
             WithSourceFolder wsf = 
                     (WithSourceFolder) element;
             element = wsf.element;
+        }
+        if (element instanceof CeylonSearchMatch.Type) {
+            return new StyledString(element.toString());
         }
         if (element instanceof ArchiveMatches) {
             return new StyledString("Source Archive Matches");

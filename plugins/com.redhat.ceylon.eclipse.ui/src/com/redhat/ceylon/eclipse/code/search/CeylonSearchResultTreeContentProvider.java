@@ -235,8 +235,28 @@ class CeylonSearchResultTreeContentProvider implements
             return false;
         }
     }
-
+    
     public Object getParent(Object child) {
+        CeylonSearchMatch.Type category;
+        if (child instanceof CeylonSearchMatch) {
+            CeylonSearchMatch match = 
+                    (CeylonSearchMatch) child;
+            category = match.getType();
+        }
+        else if (child instanceof WithCategory) {
+            WithCategory wc = (WithCategory) child;
+            category = wc.getCategory();
+            child = wc.getItem();
+        }
+        else {
+            category = null;
+        }
+        Object parent = getParentInternal(child);
+        return parent == null ? category : 
+            new WithCategory(parent, category);
+    }
+
+    public Object getParentInternal(Object child) {
         if (child instanceof IProject) {
             return null;
         }
