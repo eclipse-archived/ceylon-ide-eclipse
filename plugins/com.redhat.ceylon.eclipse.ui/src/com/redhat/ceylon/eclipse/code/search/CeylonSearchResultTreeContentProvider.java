@@ -101,7 +101,7 @@ class CeylonSearchResultTreeContentProvider implements
         }
         int limit = page.getElementLimit().intValue();
         if (limit!=-1 && limit<children.size()) {
-            Object[] limitedArray= new Object[limit];
+            Object[] limitedArray = new Object[limit];
             Iterator<Object> iterator = children.iterator();
             for (int i=0; i<limit; i++) {
                 limitedArray[i] = iterator.next();
@@ -120,27 +120,27 @@ class CeylonSearchResultTreeContentProvider implements
     public synchronized void elementsChanged(
             Object[] updatedElements) {
         if (result!=null) {
-            Set<Object> toRemove = new HashSet<Object>();
-            Set<Object> toUpdate = new HashSet<Object>();
-            Map<Object, Set<Object>> toAdd = 
-                    new HashMap<Object, Set<Object>>();
+            Set<Object> removed = new HashSet<Object>();
+            Set<Object> updated = new HashSet<Object>();
+            Map<Object,Set<Object>> added = 
+                    new HashMap<Object,Set<Object>>();
             for (int i= 0; i<updatedElements.length; i++) {
                 Object element = updatedElements[i];
                 if (page.getDisplayedMatchCount(element) > 0) {
-                    insert(toAdd, toUpdate, element);
+                    insert(added, updated, element);
                 } else {
-                    remove(toRemove, toUpdate, element);
+                    remove(removed, updated, element);
                 }
             }
 
-            viewer.remove(toRemove.toArray());
+            viewer.remove(removed.toArray());
             for (Map.Entry<Object, Set<Object>> entry: 
-                    toAdd.entrySet()) {
+                    added.entrySet()) {
                 Object parent = entry.getKey();
-                Set<Object> children = toAdd.get(parent);
+                Set<Object> children = added.get(parent);
                 viewer.add(parent, children.toArray());
             }
-            for (Object element: toUpdate) {
+            for (Object element: updated) {
                 viewer.refresh(element);
             }
         }
