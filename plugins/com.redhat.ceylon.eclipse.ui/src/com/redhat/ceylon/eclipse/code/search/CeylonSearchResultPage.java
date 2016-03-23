@@ -291,7 +291,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         fCategoriesAction = 
                 new Action("Categories") {
             {
-                setToolTipText("Show Match Categories");
+                setToolTipText("Group by Match Category");
                 ImageDescriptor desc = 
                         CeylonPlugin.imageRegistry()
                             .getDescriptor(CEYLON_SEARCH);
