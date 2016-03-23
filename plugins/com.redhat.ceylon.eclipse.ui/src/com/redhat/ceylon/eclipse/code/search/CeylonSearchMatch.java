@@ -12,7 +12,17 @@ import com.redhat.ceylon.ide.common.search.FindContainerVisitor;
 
 public class CeylonSearchMatch extends Match {
     
-    private boolean inImport;
+    public static enum Type {
+        DECLARATION, ASSIGNMENT, 
+        TYPE_USAGE, EXPRESSION_USAGE,
+        IMPORT, DOC_LINK
+    }
+    
+    private Type type;
+    
+    public Type getType() {
+        return type;
+    }
     
     public static CeylonSearchMatch create(
             Node match, 
@@ -55,9 +65,38 @@ public class CeylonSearchMatch extends Match {
                 //the exact location of the match:
                 getIdentifyingNode(match).getStartIndex(), 
                 getIdentifyingNode(match).getDistance());
-        inImport = 
-                node instanceof Tree.Import || 
-                node instanceof Tree.ImportModule;
+        if (node instanceof Tree.Import || 
+            node instanceof Tree.ImportMemberOrType ||
+            node instanceof Tree.ImportModule) {
+            type = Type.IMPORT;
+        }
+        else if (node instanceof Tree.DocLink) {
+            type = Type.DOC_LINK;
+        }
+        else if (node instanceof Tree.Type) {
+            type = Type.TYPE_USAGE;
+        }
+        else if (node instanceof Tree.StaticMemberOrTypeExpression) {
+            if (((Tree.StaticMemberOrTypeExpression) node).getAssigned()) {
+                type = Type.ASSIGNMENT;
+            }
+            else {
+                type = Type.EXPRESSION_USAGE;
+            }
+        }
+        else if (node instanceof Tree.SpecifierStatement ||
+                 node instanceof Tree.SpecifiedArgument) {
+            type = Type.ASSIGNMENT;
+        }
+        else if (node instanceof Tree.TypeConstraint ||
+                node instanceof Tree.InitializerParameter ||
+                node instanceof Tree.Declaration ||
+                node instanceof Tree.TypedArgument) {
+            type = Type.DECLARATION;
+        }
+        else {
+            type = Type.EXPRESSION_USAGE;
+        }
     }
     
     @Override
@@ -66,7 +105,7 @@ public class CeylonSearchMatch extends Match {
     }
     
     public boolean isInImport() {
-        return inImport;
+        return type==Type.IMPORT;
     }
     
 }
