@@ -94,7 +94,7 @@ public interface CeylonResources {
     public static final String CEYLON_OUTLINE = "outline";
     public static final String CEYLON_HIERARCHY = "hierarchy";
     
-    public static final String ELE32="ceylon_ele32";
+    public static final String ELE32 ="ceylon_ele32";
     
     public static final String SHIFT_LEFT = "shift_l";
     public static final String SHIFT_RIGHT = "shift_r";
@@ -135,6 +135,8 @@ public interface CeylonResources {
     public static final String LAST_EDIT = "last_edit";
     public static final String NEXT_ANN = "next_ann";
     public static final String PREV_ANN = "prev_ann";
+    
+    public static final String CEYLON_SEARCH = "ceylon_search";
     
     public static final String HISTORY = "history";
     

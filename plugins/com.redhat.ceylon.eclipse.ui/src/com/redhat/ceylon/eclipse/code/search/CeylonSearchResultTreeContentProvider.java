@@ -45,11 +45,11 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 class CeylonSearchResultTreeContentProvider implements
     CeylonStructuredContentProvider, ITreeContentProvider {
     
-    static final int LEVEL_FILE=0;
-    static final int LEVEL_PACKAGE=1;
-    static final int LEVEL_MODULE=2;
-    static final int LEVEL_FOLDER=3;
-    static final int LEVEL_PROJECT=4;
+    static final int LEVEL_FILE = 0;
+    static final int LEVEL_PACKAGE = 1;
+    static final int LEVEL_MODULE = 2;
+    static final int LEVEL_FOLDER = 3;
+    static final int LEVEL_PROJECT = 4;
     
     private static final Object[] EMPTY_ARR = new Object[0];
     
@@ -58,6 +58,7 @@ class CeylonSearchResultTreeContentProvider implements
     private CeylonSearchResultPage page;
     private Map<Object, Set<Object>> childrenMap;
     private int level;
+    private boolean showCategories;
 
     CeylonSearchResultTreeContentProvider(TreeViewer viewer, 
             CeylonSearchResultPage page) {
@@ -92,7 +93,7 @@ class CeylonSearchResultTreeContentProvider implements
             }
         }
     }
-
+    
     public Object[] getChildren(Object parentElement) {
         Set<Object> children = 
                 childrenMap.get(parentElement);
@@ -237,6 +238,9 @@ class CeylonSearchResultTreeContentProvider implements
     }
     
     public Object getParent(Object child) {
+        if (!showCategories) {
+            return getParentInternal(child);
+        }
         CeylonSearchMatch.Type category;
         if (child instanceof CeylonSearchMatch.Type) {
             return null;
@@ -448,6 +452,13 @@ class CeylonSearchResultTreeContentProvider implements
     @Override
     public void setLevel(int grouping) {
         this.level = grouping;
+        initialize(result);
+        viewer.refresh();
+    }
+    
+    @Override
+    public void setShowCategories(boolean showCategories) {
+        this.showCategories = showCategories;
         initialize(result);
         viewer.refresh();
     }

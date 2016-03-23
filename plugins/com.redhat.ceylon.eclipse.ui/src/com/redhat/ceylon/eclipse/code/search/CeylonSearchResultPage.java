@@ -9,6 +9,7 @@ import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeConten
 import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_PROJECT;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getOutlineFont;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SEARCH;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FLAT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FOLDER_MODE;
@@ -231,12 +232,16 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         }
     }
     
+    private static final String GROUP_CATEGORIES = 
+            PLUGIN_ID + ".search.CeylonSearchResultPage.categories";
     private static final String GROUP_LAYOUT = 
             PLUGIN_ID + ".search.CeylonSearchResultPage.layout";
     private static final String GROUP_GROUPING = 
             PLUGIN_ID + ".search.CeylonSearchResultPage.grouping";
     private static final String KEY_GROUPING = 
             PLUGIN_ID + ".search.CeylonSearchResultPage.grouping";
+    private static final String KEY_CATEGORIES = 
+            PLUGIN_ID + ".search.CeylonSearchResultPage.categories";
     
     private GroupAction fGroupFileAction;
     private GroupAction fGroupPackageAction;
@@ -247,7 +252,10 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     private LayoutAction fLayoutFlatAction;
     private LayoutAction fLayoutTreeAction;
     
+    private Action fCategoriesAction;
+    
     private int fCurrentGrouping;
+    private boolean fShowCategories;
     
     private void initGroupingActions() {
         fGroupProjectAction = 
@@ -279,6 +287,23 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
                 new LayoutAction("Flat", 
                         "Show as List", 
                         FLAT_MODE, FLAG_LAYOUT_FLAT);
+        
+        fCategoriesAction = 
+                new Action("Categories") {
+            {
+                setToolTipText("Show Match Categories");
+                ImageDescriptor desc = 
+                        CeylonPlugin.imageRegistry()
+                            .getDescriptor(CEYLON_SEARCH);
+                setImageDescriptor(desc);
+                setChecked(fShowCategories);
+            }
+            @Override
+            public void run() {
+                setShowCategories();
+                setChecked(fShowCategories);
+            }
+        };
     }
     
     private void updateGroupingActions() {
@@ -309,6 +334,9 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
                 new Separator(GROUP_LAYOUT));
         tbm.appendToGroup(GROUP_LAYOUT, fLayoutFlatAction);
         tbm.appendToGroup(GROUP_LAYOUT, fLayoutTreeAction);
+        tbm.appendToGroup(GROUP_VIEWER_SETUP, 
+                new Separator(GROUP_CATEGORIES));
+        tbm.appendToGroup(GROUP_CATEGORIES, fCategoriesAction);
         updateLayoutActions();
         if (getLayout() != FLAG_LAYOUT_FLAT) {
             tbm.appendToGroup(GROUP_VIEWER_SETUP, 
@@ -325,7 +353,8 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
                     fGroupFileAction);
             try {
                 fCurrentGrouping = 
-                        getSettings().getInt(KEY_GROUPING);
+                        getSettings()
+                            .getInt(KEY_GROUPING);
             }
             catch (NumberFormatException nfe) {
                 //missing key
@@ -333,6 +362,10 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             }
             contentProvider.setLevel(fCurrentGrouping);
             updateGroupingActions();
+            fShowCategories = 
+                    getSettings()
+                        .getBoolean(KEY_CATEGORIES);
+            contentProvider.setShowCategories(fShowCategories);
         }
         getSite()
             .getActionBars()
@@ -458,4 +491,9 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         getViewPart().updateLabel();
     }
     
+    void setShowCategories() {
+        fShowCategories = !fShowCategories;
+        contentProvider.setShowCategories(fShowCategories);
+        getSettings().put(KEY_CATEGORIES, fShowCategories);
+    }
 }

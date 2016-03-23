@@ -115,4 +115,9 @@ class CeylonSearchResultContentProvider implements
         //ignore
     }
     
+    @Override
+    public void setShowCategories(boolean showCategories) {
+        //ignore
+    }
+    
 }

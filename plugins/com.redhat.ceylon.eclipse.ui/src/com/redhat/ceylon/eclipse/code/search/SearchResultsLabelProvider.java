@@ -65,9 +65,9 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
         String key;
         int decorations;
         if (element instanceof CeylonSearchMatch.Type) {
-//            key = EXPAND_ALL;
-//            decorations = 0;
-            return null;
+            key = CEYLON_SEARCH;
+            decorations = 0;
+//            return null;
         }
         else if (element instanceof ArchiveMatches) {
             key = RUNTIME_OBJ;
