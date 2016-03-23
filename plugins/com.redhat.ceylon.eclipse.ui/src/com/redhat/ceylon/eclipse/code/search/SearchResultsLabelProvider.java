@@ -39,6 +39,7 @@ import org.eclipse.swt.graphics.Image;
 import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.IJavaModelAware;
@@ -51,6 +52,11 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
     
     @Override
     public Image getImage(Object element) {
+        if (element instanceof WithCategory) {
+            WithCategory wsf = 
+                    (WithCategory) element;
+            element = wsf.getItem();
+        }
         if (element instanceof WithSourceFolder) {
             WithSourceFolder wsf = 
                     (WithSourceFolder) element;
@@ -58,7 +64,12 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
         }
         String key;
         int decorations;
-        if (element instanceof ArchiveMatches) {
+        if (element instanceof CeylonSearchMatch.Type) {
+//            key = EXPAND_ALL;
+//            decorations = 0;
+            return null;
+        }
+        else if (element instanceof ArchiveMatches) {
             key = RUNTIME_OBJ;
             decorations = 0;
         }
@@ -113,7 +124,8 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             element = wsf.element;
         }
         if (element instanceof CeylonSearchMatch.Type) {
-            return new StyledString(element.toString());
+            return new StyledString(element.toString(), 
+                    Highlights.ARROW_STYLER);
         }
         if (element instanceof ArchiveMatches) {
             return new StyledString("Source Archive Matches");
@@ -205,7 +217,8 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             IJavaElement je) {
         StyledString styledString = new StyledString();
         String name = je.getElementName();
-        IPreferenceStore prefs = CeylonPlugin.getPreferences();
+        IPreferenceStore prefs = 
+                CeylonPlugin.getPreferences();
         if (je instanceof IMethod) {
             IMethod m = (IMethod) je;
             try {

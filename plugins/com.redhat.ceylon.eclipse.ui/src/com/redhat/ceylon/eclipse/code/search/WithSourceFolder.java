@@ -38,4 +38,8 @@ class WithSourceFolder {
         return element.hashCode();
     }
     
+    @Override
+    public String toString() {
+        return element.toString();
+    }
 }

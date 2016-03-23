@@ -41,12 +41,19 @@ public class CeylonElement {
     private int startOffset;
     private int endOffset;
     private final ModelProxy proxy;
+    private final CeylonSearchMatch.Type type;
     
-    public CeylonElement(Node node, VirtualFile file, int line) {
+    public CeylonSearchMatch.Type getType() {
+        return type;
+    }
+    
+    public CeylonElement(Node node, VirtualFile file, int line,
+            CeylonSearchMatch.Type type) {
         //the file and line number, which get 
         //displayed in the search results page
         this.file = file;
         this.line = line;
+        this.type = type;
         
         //store enough information to be able to
         //locate the model again if we run a search

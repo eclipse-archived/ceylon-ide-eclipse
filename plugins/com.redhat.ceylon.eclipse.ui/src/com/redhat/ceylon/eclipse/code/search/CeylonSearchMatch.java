@@ -48,13 +48,13 @@ public class CeylonSearchMatch extends Match {
             public String toString() {
                 return "References in documentation annotations";
             }
+        },
+        JAVA {
+            @Override
+            public String toString() {
+                return "References in Java code";
+            }
         }
-    }
-    
-    private Type type;
-    
-    public Type getType() {
-        return type;
     }
     
     public static CeylonSearchMatch create(
@@ -94,10 +94,15 @@ public class CeylonSearchMatch extends Match {
             //the file in which the match occurs
             VirtualFile file) {
         super(new CeylonElement(node, file, 
-                match.getToken().getLine()),
+                match.getToken().getLine(),
+                getType(match)),
                 //the exact location of the match:
                 getIdentifyingNode(match).getStartIndex(), 
                 getIdentifyingNode(match).getDistance());
+    }
+
+    private static Type getType(Node node) {
+        Type type;        
         if (node instanceof Tree.Import || 
             node instanceof Tree.ImportMemberOrType ||
             node instanceof Tree.ImportModule) {
@@ -130,6 +135,7 @@ public class CeylonSearchMatch extends Match {
         else {
             type = Type.EXPRESSION_USAGE;
         }
+        return type;
     }
     
     @Override
@@ -138,7 +144,7 @@ public class CeylonSearchMatch extends Match {
     }
     
     public boolean isInImport() {
-        return type==Type.IMPORT;
+        return getElement().getType()==Type.IMPORT;
     }
     
 }

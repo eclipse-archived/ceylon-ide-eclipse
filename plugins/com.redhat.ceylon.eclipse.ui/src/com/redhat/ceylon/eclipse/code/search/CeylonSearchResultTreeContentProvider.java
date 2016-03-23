@@ -238,9 +238,12 @@ class CeylonSearchResultTreeContentProvider implements
     
     public Object getParent(Object child) {
         CeylonSearchMatch.Type category;
-        if (child instanceof CeylonSearchMatch) {
-            CeylonSearchMatch match = 
-                    (CeylonSearchMatch) child;
+        if (child instanceof CeylonSearchMatch.Type) {
+            return null;
+        }
+        else if (child instanceof CeylonElement) {
+            CeylonElement match = 
+                    (CeylonElement) child;
             category = match.getType();
         }
         else if (child instanceof WithCategory) {
@@ -249,7 +252,7 @@ class CeylonSearchResultTreeContentProvider implements
             child = wc.getItem();
         }
         else {
-            category = null;
+            category = CeylonSearchMatch.Type.JAVA;
         }
         Object parent = getParentInternal(child);
         return parent == null ? category : 
