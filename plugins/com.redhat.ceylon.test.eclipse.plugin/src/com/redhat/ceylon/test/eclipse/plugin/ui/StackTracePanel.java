@@ -50,6 +50,7 @@ import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
 import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
 import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
+import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
 
 @SuppressWarnings("restriction")
 public class StackTracePanel extends Composite {
@@ -62,6 +63,7 @@ public class StackTracePanel extends Composite {
         "sun.reflect.*",
     };
 
+    private TestRun testRun;
     private TestElement selectedTestElement;
     private Label panelIcon;
     private Label panelLabel;
@@ -71,6 +73,7 @@ public class StackTracePanel extends Composite {
     private StackTraceFilterAction stackTraceFilterAction;
     private StackTraceCopyAction stackTraceCopyAction;
     private CompareValuesAction compareValuesAction;
+
 
     public StackTracePanel(Composite parent) {
         super(parent, SWT.NONE);
@@ -87,7 +90,8 @@ public class StackTracePanel extends Composite {
         createStackTraceTable();
     }
 
-    public void setSelectedTestElement(TestElement selectedTestElement) {
+    public void setSelectedTestElement(TestRun currentTestRun, TestElement selectedTestElement) {
+    	this.testRun = currentTestRun;
         this.selectedTestElement = selectedTestElement;
         updateView();
     }
@@ -135,12 +139,16 @@ public class StackTracePanel extends Composite {
                 compareValuesAction.run();
             } else {
                 String text = selectedLines[0].getText();
-                gotoStackTraceLine(text);
+                gotoStackTraceLine(testRun, text);
             }
         }
     }
 
-    public static void gotoStackTraceLine(String stackTraceLine) {
+    public static void gotoStackTraceLine(TestRun testRun, String stackTraceLine) {
+    	if( testRun.isJs() ) {
+    		return;
+    	}
+    	
         int i = stackTraceLine.indexOf("(");
         int j = stackTraceLine.indexOf(":");
         int k = stackTraceLine.indexOf("at ");

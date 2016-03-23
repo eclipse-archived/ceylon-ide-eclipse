@@ -1,5 +1,8 @@
 package com.redhat.ceylon.test.eclipse.plugin.model;
 
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -7,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 
@@ -56,6 +60,22 @@ public class TestRun {
     public Map<String, List<TestElement>> getTestsByPackages() {
         return testsByPackages;
     }
+    
+	public boolean isJvm() {
+		try {
+			return LAUNCH_CONFIG_TYPE.equals(launch.getLaunchConfiguration().getType().getIdentifier());
+		} catch (CoreException e) {
+			return false;
+		}
+	}
+    
+	public boolean isJs() {
+		try {
+			return LAUNCH_CONFIG_TYPE_JS.equals(launch.getLaunchConfiguration().getType().getIdentifier());
+		} catch (CoreException e) {
+			return false;
+		}
+	}
 
     public boolean isRunning() {
         return isRunning;

@@ -185,7 +185,7 @@ public class TestRunViewPart extends ViewPart {
                         selectedTestElement = (TestElement) selectedItem;
                     }
                 }
-                stackTracePanel.setSelectedTestElement(selectedTestElement);
+                stackTracePanel.setSelectedTestElement(currentTestRun, selectedTestElement);
             }
         });
     }

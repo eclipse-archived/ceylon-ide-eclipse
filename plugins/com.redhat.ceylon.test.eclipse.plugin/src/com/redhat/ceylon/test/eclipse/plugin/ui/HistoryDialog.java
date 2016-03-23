@@ -9,9 +9,9 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compare;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnErrors;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnFailures;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnSkipped;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnName;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnPlatform;
+import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnSkipped;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnStartDate;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnSuccess;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnTotal;
@@ -27,12 +27,10 @@ import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.platformJ
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.platformJvm;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.remove;
 import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.removeAll;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
 import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getDisplay;
 
 import java.text.DateFormat;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -211,17 +209,7 @@ public class HistoryDialog extends TitleAreaDialog {
         colType.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
-                String platform = "";
-                try {
-                    if (LAUNCH_CONFIG_TYPE_JS.equals(((TestRun) element).getLaunch().getLaunchConfiguration().getType().getIdentifier())) {
-                        platform = platformJs;
-                    } else {
-                        platform = platformJvm;
-                    }
-                } catch (CoreException e) {
-                    // noop
-                }
-                return platform;
+                return ((TestRun) element).isJs() ? platformJs : platformJvm;
             }
         });
     }

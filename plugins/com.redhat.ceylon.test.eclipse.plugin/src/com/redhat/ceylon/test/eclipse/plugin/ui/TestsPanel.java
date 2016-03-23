@@ -406,7 +406,7 @@ public class TestsPanel extends Composite {
 
             if( fileName.equals(testFileName) ) {
                 if( lineNumber >= testStartLine && lineNumber <= testEndLine ) {
-                    StackTracePanel.gotoStackTraceLine(line);
+                    StackTracePanel.gotoStackTraceLine(currentTestRun, line);
                     return true;
                 }
             }
