@@ -145,10 +145,10 @@ public class StackTracePanel extends Composite {
     }
 
     public static void gotoStackTraceLine(TestRun testRun, String stackTraceLine) {
-    	if( testRun.isJs() ) {
-    		return;
-    	}
-    	
+        if( testRun.isJs() ) {
+            return;
+        }
+
         int i = stackTraceLine.indexOf("(");
         int j = stackTraceLine.indexOf(":");
         int k = stackTraceLine.indexOf("at ");

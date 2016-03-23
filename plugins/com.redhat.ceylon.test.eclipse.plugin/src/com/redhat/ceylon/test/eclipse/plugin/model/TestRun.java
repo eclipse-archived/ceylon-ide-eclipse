@@ -61,21 +61,21 @@ public class TestRun {
         return testsByPackages;
     }
     
-	public boolean isJvm() {
-		try {
-			return LAUNCH_CONFIG_TYPE.equals(launch.getLaunchConfiguration().getType().getIdentifier());
-		} catch (CoreException e) {
-			return false;
-		}
-	}
-    
-	public boolean isJs() {
-		try {
-			return LAUNCH_CONFIG_TYPE_JS.equals(launch.getLaunchConfiguration().getType().getIdentifier());
-		} catch (CoreException e) {
-			return false;
-		}
-	}
+    public boolean isJvm() {
+        try {
+            return LAUNCH_CONFIG_TYPE.equals(launch.getLaunchConfiguration().getType().getIdentifier());
+        } catch (CoreException e) {
+            return false;
+        }
+    }
+
+    public boolean isJs() {
+        try {
+            return LAUNCH_CONFIG_TYPE_JS.equals(launch.getLaunchConfiguration().getType().getIdentifier());
+        } catch (CoreException e) {
+            return false;
+        }
+    }
 
     public boolean isRunning() {
         return isRunning;
