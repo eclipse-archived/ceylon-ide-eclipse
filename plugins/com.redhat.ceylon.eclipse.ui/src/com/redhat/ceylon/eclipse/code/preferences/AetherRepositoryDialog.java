@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
-import static com.redhat.ceylon.cmr.maven.AetherUtils.getDefaultMavenSettings;
+import static com.redhat.ceylon.cmr.maven.MavenUtils.getDefaultMavenSettings;
 import static org.eclipse.jface.layout.GridDataFactory.swtDefaults;
 
 import java.io.File;
