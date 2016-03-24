@@ -111,7 +111,7 @@ public class CeylonStyle {
             CeylonConfig options) {
         if (project != null) {
             try {
-                ConfigWriter.write(options, new File(project.getLocation()
+                ConfigWriter.instance().write(options, new File(project.getLocation()
                         .toFile(), ".ceylon/config"));
                 return true;
             } catch (IOException e) {
