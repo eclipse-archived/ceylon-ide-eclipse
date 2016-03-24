@@ -163,7 +163,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
             return createJavaObjectArray<IContextInformation>(computeParameterContextInformation(offset, controller.lastCompilationUnit, viewer));
         }
         else {
-            return ObjectArray(0);
+            return ObjectArray<IContextInformation>(0);
         }
     }
     
