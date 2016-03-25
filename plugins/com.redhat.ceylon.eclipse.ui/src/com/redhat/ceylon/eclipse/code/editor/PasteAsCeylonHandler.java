@@ -114,7 +114,7 @@ public class PasteAsCeylonHandler extends AbstractHandler {
             return null;
         }
 
-		ceylonCode = format(ceylonCode, editor);
+            ceylonCode = format(ceylonCode, editor);
 		insertTextInEditor(ceylonCode, editor);
 
 		return null;
@@ -253,7 +253,7 @@ public class PasteAsCeylonHandler extends AbstractHandler {
         } catch (Exception e) {
             CeylonPlugin.log(IStatus.ERROR, "Error during converted code formatting", e);
             return ceylonCode;
-        } catch (AssertionError e) {
+        } catch (ceylon.language.AssertionError e) {
             CeylonPlugin.log(IStatus.ERROR, "Error during converted code formatting", e);
             return ceylonCode;
         }
