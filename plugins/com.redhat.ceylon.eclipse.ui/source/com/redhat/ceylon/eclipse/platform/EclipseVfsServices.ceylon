@@ -98,6 +98,12 @@ object eclipseVfsServices
         folder.setSessionProperty(nativeFolderProperties.packageModel, p);
     }
     
+    shared actual void removePackagePropertyForNativeFolder(CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject, IFolder folder) {
+        if (folder.\iexists()) {
+            folder.setSessionProperty(nativeFolderProperties.packageModel, null);
+        }
+    }
+
     shared actual WeakReference<Package>? getPackagePropertyForNativeFolder(CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject, IFolder folder) {
         try {
             return unsafeCast<WeakReference<Package>?>(folder.getSessionProperty(nativeFolderProperties.packageModel));
@@ -111,6 +117,12 @@ object eclipseVfsServices
         folder.setSessionProperty(nativeFolderProperties.root, root);
     }
     
+    shared actual void removeRootPropertyForNativeFolder(CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject, IFolder folder) {
+        if (folder.\iexists()) {
+            folder.setSessionProperty(nativeFolderProperties.root, null);
+        }
+    }
+
     shared actual WeakReference<FolderVirtualFile<IProject,IResource,IFolder,IFile>>? getRootPropertyForNativeFolder(CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject, IFolder folder) { 
         try {
             return unsafeCast<WeakReference<FolderVirtualFile<IProject,IResource,IFolder,IFile>>?>(folder.getSessionProperty(nativeFolderProperties.root));
@@ -120,8 +132,14 @@ object eclipseVfsServices
         }
     }
     
-    shared actual void setRootIsSourceProperty(CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject, IFolder rootFolder, Boolean isSource) { 
+    shared actual void setRootIsSourceProperty(CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject, IFolder rootFolder, Boolean isSource) {
         rootFolder.setSessionProperty(nativeFolderProperties.rootIsSource, isSource);
+    }
+
+    shared actual void removeRootIsSourceProperty(CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject, IFolder rootFolder) { 
+        if (rootFolder.\iexists()) {
+            rootFolder.setSessionProperty(nativeFolderProperties.rootIsSource, null);
+        }            
     }
 
     shared actual Boolean? getRootIsSourceProperty(CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject, IFolder rootFolder) { 
