@@ -31,7 +31,7 @@ public abstract class AbstractRefactoringAction {
                 return false;
             }
         }
-        if (refactoring.getEnabled()) {
+        if (refactoring!=null && refactoring.getEnabled()) {
             return new RefactoringStarter()
                     .activate(createWizard(refactoring),
                             editor.getSite().getShell(),
