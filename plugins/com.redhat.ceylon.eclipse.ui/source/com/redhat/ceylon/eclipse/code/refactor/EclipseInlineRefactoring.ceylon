@@ -45,23 +45,18 @@ import org.eclipse.ui {
 }
 
 EclipseInlineRefactoring? newEclipseInlineRefactoring(IEditorPart editor) {
-    if (!is CeylonEditor editor) {
-        return null;
-    }
-    value tokens = editor.parseController.tokens;
-    value rootNode = editor.parseController.typecheckedRootNode;
-    value selection = EditorUtil.getSelection(editor);
-    value node = nodes.findNode(
-            rootNode, tokens, 
-            selection.offset,
-            selection.offset+selection.length
-    );
-    value ref = nodes.getReferencedDeclaration(node);
-    
-    if (is Declaration decl = ref) {
-        value sameProject = inSameProject(decl, editor);
-    
-        if (isInlineRefactoringAvailable(ref, rootNode, sameProject)) {
+    if (is CeylonEditor editor,
+        exists rootNode 
+            = editor.parseController.typecheckedRootNode) {
+        value selection = EditorUtil.getSelection(editor);
+        value node = nodes.findNode {
+            node = rootNode;
+            tokens = editor.parseController.tokens;
+            startOffset = selection.offset;
+            endOffset = selection.offset+selection.length;
+        };
+        if (is Declaration decl = nodes.getReferencedDeclaration(node), 
+            isInlineRefactoringAvailable(decl, rootNode, inSameProject(decl, editor))) {
             return EclipseInlineRefactoring(editor, decl).init();
         }
     }
