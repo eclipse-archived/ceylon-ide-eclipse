@@ -267,7 +267,7 @@ public class CeylonTestUtil {
     private static boolean isTestableMethod(Function method, TypeDeclaration container) {
         boolean isTestableMethod = false;
         if (method.isToplevel() || (container instanceof Class && isTestableClass((Class) container))) {
-            if (method.isDeclaredVoid() && !method.isFormal() && containsTestAnnotation(method) ) {
+            if (!method.isFormal() && containsTestAnnotation(method)) {
                 isTestableMethod = true;
             }
         }
