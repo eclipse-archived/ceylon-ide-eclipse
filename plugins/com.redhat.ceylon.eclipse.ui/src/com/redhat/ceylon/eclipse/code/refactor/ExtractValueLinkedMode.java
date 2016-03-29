@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringArray;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.refactorJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringArray;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import org.eclipse.core.resources.IFile;
@@ -19,7 +19,6 @@ import org.eclipse.text.edits.TextEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.ide.common.refactoring.ExtractLinkedModeEnabled;
 import com.redhat.ceylon.ide.common.refactoring.ExtractValueRefactoring;
 import com.redhat.ceylon.model.typechecker.model.Type;
 
@@ -60,7 +59,9 @@ public final class ExtractValueLinkedMode
     
     @Override
     protected int getExitPosition(int selectionOffset, int adjust) {
-        return refactoring.getRefRegion().getOffset();
+        return refactoring.getRefRegion() != null
+                ? refactoring.getRefRegion().getOffset()
+                : -1;
     }
     
     @Override
@@ -72,10 +73,17 @@ public final class ExtractValueLinkedMode
     protected void addLinkedPositions(IDocument document,
             CompilationUnit rootNode, int adjust) {
         
-        addNamePosition(document, 
-                refactoring.getRefRegion().getOffset(),
-                refactoring.getRefRegion().getLength(),
-                refactoring.getDupeRegions());
+        if (refactoring.getRefRegion() != null) {
+            addNamePosition(document, 
+                    refactoring.getRefRegion().getOffset(),
+                    refactoring.getRefRegion().getLength(),
+                    refactoring.getDupeRegions());
+        } else {
+            addNamePosition(document, 
+                    refactoring.getDecRegion().getOffset(),
+                    refactoring.getDecRegion().getLength(),
+                    refactoring.getDupeRegions());
+        }
         
         Type type = refactoring.getType();
         if (!isTypeUnknown(type)) {
