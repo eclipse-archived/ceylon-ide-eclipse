@@ -124,6 +124,12 @@ shared JDTModelLoader? projectModelLoader(IProject project) {
     return modelLoader;
 }
 
+shared Boolean isCeylonSourceEntry(IClasspathEntry entry) => 
+        every {
+    entry.entryKind == IClasspathEntry.\iCPE_SOURCE,
+    entry.exclusionPatterns.iterable.coalesced.filter((path) => path.string.endsWith(".ceylon")).empty
+};
+
 shared JDTModelLoader? javaProjectModelLoader(IJavaProject javaProject) =>
         projectModelLoader(javaProject.project);
 

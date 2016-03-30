@@ -73,12 +73,6 @@ import org.eclipse.swt.widgets {
     Display
 }
 
-Boolean isCeylonSourceEntry(IClasspathEntry entry) => 
-        every {
-    entry.entryKind == IClasspathEntry.\iCPE_SOURCE,
-    entry.exclusionPatterns.iterable.coalesced.filter((path) => path.string.endsWith(".ceylon")).empty
-};
-
 shared object nativeFolderProperties {
     shared QualifiedName packageModel = QualifiedName(CeylonPlugin.\iPLUGIN_ID, "nativeFolder_packageModel");
     shared QualifiedName root = QualifiedName(CeylonPlugin.\iPLUGIN_ID, "nativeFolder_root");
@@ -217,91 +211,9 @@ shared class EclipseCeylonProject(ideArtifact)
     
     shared actual CeylonProjects<IProject,IResource,IFolder,IFile> model => ceylonModel;
     
-    shared actual {IFolder*} sourceNativeFolders =>
-            let(javaProject = JavaCore.create(ideArtifact))
-            if (! javaProject.\iexists())
-            then {}
-            else (withJavaModel {
-                do() =>
-                    javaProject.rawClasspath.iterable.coalesced
-                        .filter((entry) => isCeylonSourceEntry(entry))
-                        .map { 
-                            IResource? collecting(IClasspathEntry entry) => 
-                                    ideArtifact.findMember(entry.path.makeRelativeTo(ideArtifact.fullPath));
-                        }.narrow<IFolder>()
-                        .filter((resource) => resource.\iexists());
-            } else {});
-
-    shared actual {IFolder*} resourceNativeFolders =>
-        if (! ideArtifact.\iexists())
-        then {}
-        else configuration.resourceDirectories
-                .map((resourceInConfig) {
-                        value path = Path.fromOSString(resourceInConfig);
-                        if (! path.absolute) {
-                            return ideArtifact.getFolder(path);
-                        } else {
-                            object result {
-                                shared variable IFolder? resourceFolder = null;
-                            }
-                            try {
-                                ideArtifact.accept(object satisfies IResourceVisitor {
-                                    shared actual Boolean visit(IResource resource) {
-                                        if (is IProject resource) {
-                                            return true;
-                                        }
-                                        if (is IFolder resource) {
-                                            if (! resource.linked) {
-                                                return false;
-                                            }
-                                            IPath? resourceLocation=resource.location;
-                                            if (! exists resourceLocation) {
-                                                return false;
-                                            }
-                                            if (! resourceLocation.isPrefixOf(path)) {
-                                                return false;
-                                            }
-                                            if (resourceLocation == path) {
-                                                result.resourceFolder = resource;
-                                                return false;
-                                            }
-                                            return true;
-                                        }
-                                        return false;
-                                    }
-                                });
-                            }
-                            catch (CoreException e) {
-                                e.printStackTrace();
-                            }
-                            return result.resourceFolder;
-                        }
-                }).coalesced.filter((resourceFolder) => resourceFolder.\iexists());
-
-    
-    shared actual Boolean nativeProjectIsAccessible => ideArtifact.accessible;
-
-    shared actual {IProject*} referencedNativeProjects(IProject nativeProject) { 
-        try {
-            return nativeProject.referencedProjects.array.coalesced; 
-        } catch(CoreException e) {
-            e.printStackTrace();
-            return [];
-        }
-    }
-
     shared actual Boolean isJavaLikeFileName(String fileName) =>
             JavaCore.isJavaLikeFileName(fileName);
     
-    shared actual {IProject*} referencingNativeProjects(IProject nativeProject) { 
-        try {
-            return nativeProject.referencingProjects.array.coalesced; 
-        } catch(CoreException e) {
-            e.printStackTrace();
-            return [];
-        }
-    }
-
     shared actual Boolean compileToJs => CeylonBuilder.compileToJs(ideArtifact);
     shared actual Boolean compileToJava => CeylonBuilder.compileToJava(ideArtifact);
     
@@ -313,14 +225,6 @@ shared class EclipseCeylonProject(ideArtifact)
     
     shared actual String systemRepository => 
             CeylonBuilder.getInterpolatedCeylonSystemRepo(ideArtifact);
-    
-    shared actual void scanRootFolder(RootFolderScanner<IProject, IResource, IFolder, IFile> scanner) {
-        scanner.nativeRootDir.accept(object satisfies IResourceVisitor {
-            shared actual Boolean visit(IResource resource) {
-                return scanner.visitNativeResource(resource);
-            }
-        });
-    }
     
     shared actual ModuleManagerFactory moduleManagerFactory =>
             object satisfies ModuleManagerFactory {
