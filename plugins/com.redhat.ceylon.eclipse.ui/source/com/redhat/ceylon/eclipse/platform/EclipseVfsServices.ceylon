@@ -45,6 +45,9 @@ import org.eclipse.core.resources {
 import org.eclipse.core.runtime {
     CoreException
 }
+import java.io {
+    File
+}
 
 object eclipseVfsServices 
         satisfies VfsServices<IProject, IResource, IFolder,IFile> {
@@ -93,6 +96,8 @@ object eclipseVfsServices
     shared actual String getPathString(IResource resource) => 
             resource.projectRelativePath.string;
 
+    shared actual File? getJavaFile(IResource resource) =>
+           resource.location?.toFile();
 
     shared actual void setPackagePropertyForNativeFolder(CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject, IFolder folder, WeakReference<Package> p) {
         folder.setSessionProperty(nativeFolderProperties.packageModel, p);

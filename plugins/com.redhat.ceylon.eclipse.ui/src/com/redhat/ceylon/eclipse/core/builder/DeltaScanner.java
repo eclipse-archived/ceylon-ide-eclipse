@@ -131,10 +131,7 @@ final class DeltaScanner implements IResourceDeltaVisitor {
                         && folder.getProject().equals(project)
                         && vfsJ2C().createVirtualFolder(folder, project).isDescendantOfAny(ceylonProject.getRootFolders())) {
                     if (getPackage(folder) == null || getRootFolder(folder) == null) {
-                        IContainer parent = folder.getParent();
-                        if (parent instanceof IFolder) {
-                            ceylonProject.addFolderToModel(folder, (IFolder)parent);
-                        }
+                        ceylonProject.addFolderToModel(folder);
                     }
                 }
             }

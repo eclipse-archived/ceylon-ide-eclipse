@@ -1568,10 +1568,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                         if (projectDelta == currentDelta) {
                                             if (folder.exists() && delta.getKind() != IResourceDelta.REMOVED) {
                                                 if (getPackage(folder) == null || getRootFolder(folder) == null) {
-                                                    IContainer parent = folder.getParent();
-                                                    if (parent instanceof IFolder) {
-                                                        ceylonProject.addFolderToModel(folder, (IFolder)parent);
-                                                    }
+                                                    ceylonProject.addFolderToModel(folder);
                                                 }
                                             }
                                         }

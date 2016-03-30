@@ -1,7 +1,8 @@
 import com.redhat.ceylon.ide.common.model {
     EditedSourceFile,
     ProjectSourceFile,
-    CrossProjectSourceFile
+    CrossProjectSourceFile,
+    CeylonProject
 }
 import com.redhat.ceylon.ide.common.platform {
     ModelServices
@@ -33,4 +34,7 @@ object eclipseModelServices
     shared actual ProjectSourceFile<IProject,IResource,IFolder,IFile> newProjectSourceFile(
         ProjectPhasedUnit<IProject,IResource,IFolder,IFile> phasedUnit) => 
             ProjectSourceFile<IProject, IResource, IFolder, IFile>(phasedUnit);
+    
+    shared actual Boolean isResourceContainedInProject(IResource resource, CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject) =>
+            resource.project == ceylonProject.ideArtifact;
 }
