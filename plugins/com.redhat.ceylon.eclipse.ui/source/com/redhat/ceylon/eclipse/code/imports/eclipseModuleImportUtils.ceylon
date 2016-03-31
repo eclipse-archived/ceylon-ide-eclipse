@@ -52,7 +52,7 @@ shared object eclipseModuleImportUtils
         extends AbstractModuleImportUtil<IFile,IProject,IDocument,InsertEdit,TextEdit,TextChange>()
         satisfies EclipseDocumentChanges {
     
-    shared actual Character getChar(IDocument doc, Integer offset)
+    getChar(IDocument doc, Integer offset)
             => doc.getChar(offset);
     
     shared actual Integer getEditOffset(TextChange change)

@@ -89,8 +89,6 @@ class EclipseTerminateStatementAction(CeylonEditor editor)
         return [cpc.parsedRootNode, cpc.tokens];
     }
     
-    shared actual Character getChar(IDocument doc, Integer offset)
+    getChar(IDocument doc, Integer offset)
             => doc.getChar(offset);
-    
-    
 }

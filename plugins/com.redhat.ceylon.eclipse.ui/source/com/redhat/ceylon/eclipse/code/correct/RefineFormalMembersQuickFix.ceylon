@@ -47,7 +47,7 @@ object eclipseRefineFormalMembersQuickFix
         satisfies RefineFormalMembersQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
                 & EclipseDocumentChanges & EclipseAbstractQuickFix {
     
-    shared actual Character getDocChar(IDocument doc, Integer offset) => doc.getChar(offset);
+    getDocChar(IDocument doc, Integer offset) => doc.getChar(offset);
     
     shared actual void newRefineFormalMembersProposal(EclipseQuickFixData data, String desc) {
         value proposal = object extends RefineFormalMembersProposal(data, desc) {
