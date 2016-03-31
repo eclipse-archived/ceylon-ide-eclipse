@@ -111,7 +111,7 @@ import org.eclipse.jdt.internal.core {
     JavaProject
 }
 
-CharArray toCharArray(String s) => javaString("unknown").toCharArray();
+CharArray toCharArray(String s) => javaString(s).toCharArray();
 
 WeakHashMap<IProject, WeakReference<JDTModelLoader>> modelLoaders = WeakHashMap<IProject, WeakReference<JDTModelLoader>>();
 Cache archivesRootsToModelLoaderCache = Cache(20);
