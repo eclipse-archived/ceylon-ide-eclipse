@@ -21,17 +21,12 @@ import com.redhat.ceylon.eclipse.ui {
     CeylonEncodingSynchronizer,
     CeylonPlugin
 }
-import com.redhat.ceylon.eclipse.util {
-    withJavaModel
-}
 import com.redhat.ceylon.ide.common.model {
     CeylonProject,
     CeylonProjectConfig,
     CeylonProjects,
-    IdeModuleManager
-}
-import com.redhat.ceylon.ide.common.model.parsing {
-    RootFolderScanner
+    IdeModuleManager,
+    BuildHook
 }
 import com.redhat.ceylon.ide.common.util {
     unsafeCast,
@@ -51,20 +46,17 @@ import org.eclipse.core.resources {
     IResource,
     IFolder,
     IContainer,
-    IFile,
-    IResourceVisitor
+    IFile
 }
 import org.eclipse.core.runtime {
     NullProgressMonitor,
     CoreException,
     IProgressMonitor,
     Path,
-    QualifiedName,
-    IPath
+    QualifiedName
 }
 import org.eclipse.jdt.core {
-    JavaCore,
-    IClasspathEntry
+    JavaCore
 }
 import org.eclipse.jface.dialogs {
     MessageDialog
@@ -78,6 +70,8 @@ shared object nativeFolderProperties {
     shared QualifiedName root = QualifiedName(CeylonPlugin.\iPLUGIN_ID, "nativeFolder_root");
     shared QualifiedName rootIsSource = QualifiedName(CeylonPlugin.\iPLUGIN_ID, "nativeFolder_rootIsSource");
 }
+
+// TODO : add the EclipseBuildHook (that manages the .exploded and the .classpath cases + the Android Stuff
 
 shared class EclipseCeylonProject(ideArtifact) 
         extends CeylonProject<IProject, IResource, IFolder, IFile>() {
@@ -240,5 +234,7 @@ shared class EclipseCeylonProject(ideArtifact)
         ExternalSourceArchiveManager externalArchiveManager = ExternalSourceArchiveManager.externalSourceArchiveManager;
         externalArchiveManager.updateProjectSourceArchives(ideArtifact, unsafeCast<ProgressMonitorChild<IProgressMonitor>>(monitor).wrapped);
     }
-    
+
+    shared actual {BuildHook<IProject, IResource, IFolder, IFile>*} buildHooks => {
+    };
  }
