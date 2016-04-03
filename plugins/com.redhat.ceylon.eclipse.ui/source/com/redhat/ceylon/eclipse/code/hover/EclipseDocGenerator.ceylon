@@ -11,9 +11,6 @@ import com.redhat.ceylon.eclipse.code.html {
 import com.redhat.ceylon.eclipse.code.imports {
     eclipseModuleImportUtils
 }
-import com.redhat.ceylon.eclipse.code.parse {
-    CeylonParseController
-}
 import com.redhat.ceylon.eclipse.util {
     Nodes,
     Highlights
@@ -32,6 +29,9 @@ import com.redhat.ceylon.ide.common.model {
 import com.redhat.ceylon.ide.common.typechecker {
     LocalAnalysisResult
 }
+import com.redhat.ceylon.ide.common.util {
+    nodes
+}
 import com.redhat.ceylon.model.typechecker.model {
     Declaration,
     Unit,
@@ -45,9 +45,6 @@ import java.lang {
     JStringBuilder=StringBuilder
 }
 
-import org.eclipse.core.resources {
-    IProject
-}
 import org.eclipse.core.runtime {
     NullProgressMonitor
 }
@@ -101,36 +98,35 @@ class EclipseDocGenerator(CeylonEditor? editor)
             => CeylonInformationControlCreator(editor, "F2 for focus");
     
     String? getExpressionHoverText(CeylonEditor editor, IRegion hoverRegion) {
-        CeylonParseController? parseController = editor.parseController;
-        if (!exists parseController) {
-            return null;
-        }
-        
-        if (exists rootNode = parseController.typecheckedRootNode) {
+        if (exists parseController = editor.parseController,
+            exists rootNode = parseController.typecheckedRootNode, 
+            exists selection = editor.selectionFromThread) {
             value hoffset = hoverRegion.offset;
             value hlength = hoverRegion.length;
-            
-            if (exists selection = editor.selectionFromThread) {
-                value offset = selection.offset;
-                value length = selection.length;
-                if (offset <= hoffset, offset+length >= hoffset+hlength,
-                    exists node = Nodes.findNode(rootNode, parseController.tokens, selection)) {
-                    value document = editor.ceylonSourceViewer.document;
-                    if (is Tree.Type node) {
-                        IProject? project = editor.parseController.project;
-                        return DocumentationHover.getTypeHoverText(node, 
-                            selection.text, document, project);
-                    }
-                    else if (is Tree.Expression node) {
-                        return getTermTypeText(node.term, selection.text);
-                    }
-                    else if (is Tree.Term node) {
-                        return getTermTypeText(node, selection.text);
-                    }
+            value offset = selection.offset;
+            value length = selection.length;
+            if (offset <= hoffset && 
+                offset+length >= hoffset+hlength,
+                exists node = nodes.findNode {
+                    node = rootNode;
+                    tokens = parseController.tokens;
+                    startOffset = offset;
+                    endOffset = offset + length;
+                }) {
+                if (is Tree.Type node) {
+                    return DocumentationHover.getTypeHoverText(node, 
+                        selection.text, 
+                        editor.ceylonSourceViewer.document, 
+                        parseController.project);
+                }
+                else if (is Tree.Expression node) {
+                    return getTermTypeText(node.term, selection.text);
+                }
+                else if (is Tree.Term node) {
+                    return getTermTypeText(node, selection.text);
                 }
             }
         }
-        
         return null;
     }
     
