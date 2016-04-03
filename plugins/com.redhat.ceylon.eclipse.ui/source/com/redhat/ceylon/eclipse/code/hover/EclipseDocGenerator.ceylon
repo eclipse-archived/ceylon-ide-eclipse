@@ -113,21 +113,19 @@ class EclipseDocGenerator(CeylonEditor? editor)
             if (exists selection = editor.selectionFromThread) {
                 value offset = selection.offset;
                 value length = selection.length;
-                if (offset <= hoffset, offset+length >= hoffset+hlength) {
-                    variable value node = Nodes.findNode(rootNode, parseController.tokens, selection);
+                if (offset <= hoffset, offset+length >= hoffset+hlength,
+                    exists node = Nodes.findNode(rootNode, parseController.tokens, selection)) {
                     value document = editor.ceylonSourceViewer.document;
-                    IProject? project = editor.parseController.project;
-                    if (is Tree.Type n = node) {
-                        return DocumentationHover.getTypeHoverText(n, 
+                    if (is Tree.Type node) {
+                        IProject? project = editor.parseController.project;
+                        return DocumentationHover.getTypeHoverText(node, 
                             selection.text, document, project);
                     }
-                    
-                    if (is Tree.Expression n = node) {
-                        node = n.term;
+                    else if (is Tree.Expression node) {
+                        return getTermTypeText(node.term, selection.text);
                     }
-                    
-                    if (is Tree.Term n = node) {
-                        return getTermTypeText(n, selection.text);
+                    else if (is Tree.Term node) {
+                        return getTermTypeText(node, selection.text);
                     }
                 }
             }
