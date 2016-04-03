@@ -85,7 +85,7 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
                 = editor.documentProvider
                     .getDocument(editor.editorInput);
         
-        shared IProject? project= EditorUtil.getProject(editor);
+        shared IProject? project = EditorUtil.getProject(editor);
         
         tokens = editor.parseController.tokens;
         
@@ -130,13 +130,11 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
         return tfc;
     }
 
-    searchInEditor()
-            => let(ceylonEditor=editorData.editor)
-               ceylonEditor.dirty;
+    searchInEditor() => editorData.editor.dirty;
 
     searchInFile(PhasedUnit pu)
-            => let(ceylonEditor=editorData.editor)
-               !ceylonEditor.dirty || pu.unit != rootNode.unit;
+            => !editorData.editor.dirty 
+            || pu.unit != rootNode.unit;
 
     shared TextChange newLocalChange() {
         TextChange tc;
