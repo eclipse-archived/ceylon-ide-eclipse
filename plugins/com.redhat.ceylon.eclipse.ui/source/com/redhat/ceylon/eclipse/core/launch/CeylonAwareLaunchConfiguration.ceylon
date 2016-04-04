@@ -151,7 +151,7 @@ shared interface ClassPathEnricher {
                         shared {ArtifactResult*} modules => CeylonIterable(super.loadedModules.values());
                         createRepositoryManagerBuilderNoOut(Boolean forInput) => repoManagerBuilder;
                     }
-                    tool.setModule(m.nameAsString+"/"+m.version);
+                    tool.setModules(toJavaStringList{m.nameAsString+"/"+m.version});
                     tool.run();
                     return tool.modules;
                 }
