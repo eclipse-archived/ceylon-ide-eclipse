@@ -45,8 +45,11 @@ shared interface EclipseDocumentChanges
         }
     }
 
-    shared actual String getInsertedText(InsertEdit edit)
-            => edit.text;
+    shared actual String getInsertedText(TextEdit edit)
+            => switch(edit)
+               case (is InsertEdit) edit.text
+               case (is ReplaceEdit) edit.text
+               else "";
     
     shared actual Boolean hasChildren(TextChange change)
             => change.edit.hasChildren();

@@ -5,13 +5,17 @@ import com.redhat.ceylon.ide.common.platform {
     VfsServices
 }
 import com.redhat.ceylon.ide.common.util {
-    unsafeCast
+    unsafeCast,
+    Indents
 }
 import com.redhat.ceylon.ide.common.correct {
     ImportProposals
 }
 import com.redhat.ceylon.eclipse.code.correct {
     eclipseImportProposals
+}
+import com.redhat.ceylon.eclipse.util {
+    eclipseIndents
 }
 
 object eclipsePlatformServices satisfies PlatformServices {
@@ -28,4 +32,8 @@ object eclipsePlatformServices satisfies PlatformServices {
     shared actual ImportProposals<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange>
         importProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange>() =>
             unsafeCast<ImportProposals<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange>>(eclipseImportProposals);
+    
+    shared actual Indents<IDocument> indents<IDocument>() 
+            => unsafeCast<Indents<IDocument>>(eclipseIndents);
+    
 }

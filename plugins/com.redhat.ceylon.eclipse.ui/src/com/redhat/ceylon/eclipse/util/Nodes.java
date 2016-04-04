@@ -354,22 +354,23 @@ public class Nodes {
 
     public static Tree.SpecifierOrInitializerExpression getDefaultArgSpecifier(
             Tree.Parameter p) {
-        if (p instanceof Tree.ValueParameterDeclaration) {
-            Tree.AttributeDeclaration pd = (Tree.AttributeDeclaration)
-                    ((Tree.ValueParameterDeclaration) p).getTypedDeclaration();
-            return pd.getSpecifierOrInitializerExpression();
-        }
-        else if (p instanceof Tree.FunctionalParameterDeclaration) {
-            Tree.MethodDeclaration pd = (Tree.MethodDeclaration)
-                    ((Tree.FunctionalParameterDeclaration) p).getTypedDeclaration();
-            return pd.getSpecifierExpression();
-        }
-        else if (p instanceof Tree.InitializerParameter) {
-            return ((Tree.InitializerParameter) p).getSpecifierExpression();
-        }
-        else {
-            return null;
-        }
+//        if (p instanceof Tree.ValueParameterDeclaration) {
+//            Tree.AttributeDeclaration pd = (Tree.AttributeDeclaration)
+//                    ((Tree.ValueParameterDeclaration) p).getTypedDeclaration();
+//            return pd.getSpecifierOrInitializerExpression();
+//        }
+//        else if (p instanceof Tree.FunctionalParameterDeclaration) {
+//            Tree.MethodDeclaration pd = (Tree.MethodDeclaration)
+//                    ((Tree.FunctionalParameterDeclaration) p).getTypedDeclaration();
+//            return pd.getSpecifierExpression();
+//        }
+//        else if (p instanceof Tree.InitializerParameter) {
+//            return ((Tree.InitializerParameter) p).getSpecifierExpression();
+//        }
+//        else {
+//            return null;
+//        }
+        return delegate.getDefaultArgSpecifier(p);
     }
 
     public static CommonToken getTokenStrictlyContainingOffset(int offset,
