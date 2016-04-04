@@ -332,7 +332,7 @@ public class Nodes {
 //            exp.append(text);
 //        }
 //        return exp.toString();
-        return delegate.text(term, tokens);
+        return delegate.text(tokens, term);
     }
 
     public static int getTokenLength(CommonToken token) {
