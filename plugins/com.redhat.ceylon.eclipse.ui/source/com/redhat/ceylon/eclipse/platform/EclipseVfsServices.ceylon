@@ -10,7 +10,8 @@ import com.redhat.ceylon.eclipse.core.vfs {
     IFileVirtualFile
 }
 import com.redhat.ceylon.eclipse.util {
-    toEclipsePath
+    toEclipsePath,
+    fromEclipsePath
 }
 import com.redhat.ceylon.ide.common.model {
     CeylonProject
@@ -22,7 +23,8 @@ import com.redhat.ceylon.ide.common.platform {
 }
 import com.redhat.ceylon.ide.common.util {
     unsafeCast,
-    Path
+    Path,
+    ifExists
 }
 import com.redhat.ceylon.ide.common.vfs {
     FolderVirtualFile,
@@ -72,6 +74,12 @@ object eclipseVfsServices
         nativeFile.accessible)
     then nativeFile
     else null;
+
+    shared actual IResource? findChild(IFolder parent, Path path) =>
+            if (exists nativeResource = parent.findMember(path.string),
+        nativeResource.accessible)
+    then nativeResource
+    else null;
     
     shared actual IFolder? getParent(IResource resource) => 
             if (is IFolder p=resource.parent)
@@ -89,16 +97,38 @@ object eclipseVfsServices
     shared actual String getShortName(IResource resource) => 
             resource.name;
 
-    shared actual Path getPath(IResource resource) => 
-            Path(getPathString(resource));
+    // TODO: Check if it's really necessary to only have the project-relative path"
+    shared actual Path getVirtualFilePath(IResource resource) => 
+            getProjectRelativePath(resource);
 
     // TODO: Check if it's really necessary to only have the project-relative path"
-    shared actual String getPathString(IResource resource) => 
+    shared actual String getVirtualFilePathString(IResource resource) => 
+            getProjectRelativePathString(resource);
+    
+    shared actual Path getProjectRelativePath(IResource resource) =>
+            Path(getProjectRelativePathString(resource));
+    
+    shared actual String getProjectRelativePathString(IResource resource) =>
             resource.projectRelativePath.string;
 
     shared actual File? getJavaFile(IResource resource) =>
            resource.location?.toFile();
 
+    shared actual IResource? fromJavaFile(File javaFile, IProject project) {
+        value projectLocation = fromEclipsePath(project.location);
+        value absolutePath = Path(javaFile.absolutePath);
+        
+        if (projectLocation.isPrefixOf(absolutePath)) {
+            value projectRelativePath = absolutePath.removeFirstSegments(projectLocation.segmentCount);
+            IResource? resource = project.findMember(projectRelativePath.string);
+            if (exists resource,
+                resource.accessible) {
+                return resource;
+            }
+        }
+        return null;
+    }
+    
     shared actual void setPackagePropertyForNativeFolder(CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject, IFolder folder, WeakReference<Package> p) {
         folder.setSessionProperty(nativeFolderProperties.packageModel, p);
     }

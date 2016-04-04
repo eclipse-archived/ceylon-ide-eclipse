@@ -26,7 +26,10 @@ import com.redhat.ceylon.ide.common.model {
     CeylonProjectConfig,
     CeylonProjects,
     IdeModuleManager,
-    BuildHook
+    BuildHook,
+    CeylonProjectBuild,
+    ResourceChange,
+    ModelAliases
 }
 import com.redhat.ceylon.ide.common.util {
     unsafeCast,
@@ -53,7 +56,8 @@ import org.eclipse.core.runtime {
     CoreException,
     IProgressMonitor,
     Path,
-    QualifiedName
+    QualifiedName,
+    IPath
 }
 import org.eclipse.jdt.core {
     JavaCore
@@ -64,6 +68,14 @@ import org.eclipse.jface.dialogs {
 import org.eclipse.swt.widgets {
     Display
 }
+import com.redhat.ceylon.ide.common.vfs {
+    FolderVirtualFile,
+    FileVirtualFile,
+    ResourceVirtualFile
+}
+import com.redhat.ceylon.ide.common.platform {
+    VfsServicesConsumer
+}
 
 shared object nativeFolderProperties {
     shared QualifiedName packageModel = QualifiedName(CeylonPlugin.\iPLUGIN_ID, "nativeFolder_packageModel");
@@ -71,7 +83,44 @@ shared object nativeFolderProperties {
     shared QualifiedName rootIsSource = QualifiedName(CeylonPlugin.\iPLUGIN_ID, "nativeFolder_rootIsSource");
 }
 
-// TODO : add the EclipseBuildHook (that manages the .exploded and the .classpath cases + the Android Stuff
+// TODO : add the EclipseBuildHook (that manages also the Android Stuff
+class EclipseBuildHook() 
+        satisfies BuildHook<IProject, IResource, IFolder, IFile>
+        & VfsServicesConsumer<IProject, IResource, IFolder, IFile> {
+    
+     
+    shared actual void analyzingChanges(
+        {ChangeToAnalyze*} changes,  
+        CeylonProjectBuildAlias build, 
+        CeylonProjectBuildAlias.State state) {
+        for (change in changes) {
+            switch(change)
+            case(is [NativeResourceChange, IProject]) {
+                // Change outside project sources or resources
+                value [nonModelChange, changeProject] = change;
+                switch(nonModelChange)
+                case(is NativeFolderRemoval) {
+                    if (exists fullPath = nonModelChange.resource.fullPath,
+                        exists explodedDirPath = CeylonBuilder.getCeylonClassesOutputFolder(changeProject)?.fullPath, 
+                        explodedDirPath.isPrefixOf(fullPath)) {
+                        state.fullBuildRequired = true;
+                        state.classpathResolutionRequired = true;
+                    }
+                }
+                case(is NativeFileChange) {
+                    if (vfsServices.getShortName(nonModelChange.resource) == ".classpath") {
+                        state.fullBuildRequired = true;
+                        state.classpathResolutionRequired = true;
+                    }
+                }
+                else {}
+                
+            }
+            else {}
+        }
+    }
+}
+
 
 shared class EclipseCeylonProject(ideArtifact) 
         extends CeylonProject<IProject, IResource, IFolder, IFile>() {
@@ -203,7 +252,7 @@ shared class EclipseCeylonProject(ideArtifact)
         };
     }
     
-    shared actual CeylonProjects<IProject,IResource,IFolder,IFile> model => ceylonModel;
+    shared actual CeylonProjectsAlias model => ceylonModel;
     
     shared actual Boolean isJavaLikeFileName(String fileName) =>
             JavaCore.isJavaLikeFileName(fileName);
@@ -227,7 +276,7 @@ shared class EclipseCeylonProject(ideArtifact)
                 
                 createModuleManagerUtil(Context c, ModuleManager mm) => 
                         JDTModuleSourceMapper(c, 
-                            unsafeCast<IdeModuleManager<IProject,IResource,IFolder,IFile>>(mm));
+                            unsafeCast<IdeModuleManagerAlias>(mm));
             };
             
     shared actual void completeCeylonModelParsing(BaseProgressMonitorChild monitor) {
