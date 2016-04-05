@@ -150,6 +150,7 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
         try {
             String text = typeText.getText();
             
+            // TODO replace with parseTypeExpression() in common
             CeylonLexer lexer = new CeylonLexer(new ANTLRStringStream(text));
             CommonTokenStream ts = new CommonTokenStream(lexer);
             ts.fill();

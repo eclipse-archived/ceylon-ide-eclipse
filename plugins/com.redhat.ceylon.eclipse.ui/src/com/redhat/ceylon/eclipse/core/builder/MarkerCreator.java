@@ -50,7 +50,7 @@ public class MarkerCreator extends ErrorVisitor {
                 startOffset, endOffset, 
                 message.getMessage(), 
                 IMarker.PRIORITY_HIGH, 
-                getSeverity(message, warnForErrors),
+                getSeverity(message, getWarnForErrors()),
                 message.getCode(),
                 CeylonBuilder.SOURCE
             };

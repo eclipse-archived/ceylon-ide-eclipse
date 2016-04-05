@@ -1,123 +1,28 @@
 package com.redhat.ceylon.eclipse.util;
 
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
 
-import org.antlr.runtime.CommonToken;
-import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.Token;
-
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
-import com.redhat.ceylon.compiler.typechecker.parser.LexError;
-import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
-import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.StatementOrArgument;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
-public abstract class ErrorVisitor extends Visitor {
-    
-    protected boolean warnForErrors = false;
+public abstract class ErrorVisitor 
+    extends com.redhat.ceylon.ide.common.util.ErrorVisitor {
     
     protected int getSeverity(Message error, boolean expected) {
         return expected || error instanceof UsageWarning ? 
             SEVERITY_WARNING : SEVERITY_ERROR;
     }
-    
-    @Override
-    public void visitAny(Node node) {
-        super.visitAny(node);
-        for (Message error: node.getErrors()) {
-            if (!include(error)) continue;
-            
-            int startOffset = 0;
-            int endOffset = 0;
-            int startCol = 0;
-            int startLine = 0;
 
-            if (error instanceof RecognitionError) {
-                RecognitionError recognitionError = 
-                        (RecognitionError) error;
-                RecognitionException re = recognitionError
-                        .getRecognitionException();
-                if (error instanceof LexError) {
-                    startLine = re.line;
-                    startCol = re.charPositionInLine;
-                    startOffset = re.index;
-                    endOffset = startOffset;
-                }
-                CommonToken token = (CommonToken) re.token;
-                if (token!=null) {
-                    startOffset = token.getStartIndex();
-                    endOffset = token.getStopIndex()+1;
-                    startCol = token.getCharPositionInLine();
-                    startLine = token.getLine();
-                    if (token.getType()==CeylonParser.EOF) {
-                        startOffset--;
-                        endOffset--;
-                    }
-                }
-            }
-            
-            if (error instanceof AnalysisMessage) {
-//                if (error instanceof UnsupportedError &&
-//                            node.getUnit().getPackage().getQualifiedNameString()
-//                                    .startsWith(Module.LANGUAGE_MODULE_NAME)) {
-//                    continue;
-//                }
-                AnalysisMessage analysisMessage = 
-                        (AnalysisMessage) error;
-                Node treeNode = 
-                        analysisMessage.getTreeNode();
-                Node errorNode = getIdentifyingNode(treeNode);
-                if (errorNode == null) {
-                    errorNode = treeNode;
-                }
-                Token token = errorNode.getToken();
-                if (token!=null) {
-                    startOffset = errorNode.getStartIndex();
-                    endOffset = errorNode.getEndIndex();
-                    startCol = token.getCharPositionInLine();
-                    startLine = token.getLine();
-                }
-            }
-            
-            handleMessage(startOffset, endOffset, startCol, startLine, error);
-        }
+    @Override
+    public Object handleMessage(long startOffset, long endOffset,
+            long startCol, long startLine, Message error) {
+        
+        handleMessage((int) startOffset, (int) endOffset, (int) startCol,
+                (int) startLine, error);
+        return null;
     }
     
     protected abstract void handleMessage(int startOffset, int endOffset, 
             int startCol, int startLine, Message error);
-
-    protected boolean include(Message msg) {
-        if (msg instanceof UsageWarning) {
-            UsageWarning warning = (UsageWarning) msg;
-            return !warning.isSuppressed();
-        }
-        else {
-            return true;
-        }
-    }
-    
-    protected int adjust(int stopIndex) {
-        return stopIndex;
-    }
-    
-    @Override
-    public void visit(StatementOrArgument that) {
-        boolean owe = warnForErrors;
-        warnForErrors = false;
-        for (Tree.CompilerAnnotation c: that.getCompilerAnnotations()) {
-            if (c.getIdentifier().getText().equals("error")) {
-                warnForErrors = true;
-            }
-        }
-        super.visit(that);
-        warnForErrors = owe;
-    }
-
 }

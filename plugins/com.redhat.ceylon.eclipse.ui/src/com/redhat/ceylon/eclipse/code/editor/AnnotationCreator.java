@@ -105,7 +105,7 @@ public class AnnotationCreator
             int startCol, int startLine, Message error) {
         messages.add(new PositionedMessage(error.getMessage(), 
                 new Position(startOffset, endOffset-startOffset), 
-                getSeverity(error, warnForErrors), 
+                getSeverity(error, getWarnForErrors()), 
                 error.getCode(), error instanceof RecognitionError,
                 error.getLine()));
     }
