@@ -20,6 +20,7 @@ object eclipsePlatformUtils satisfies IdeUtils {
             switch(status)
             case(Status._OK) IStatus.\iOK
             case(Status._INFO) IStatus.\iINFO
+            case(Status._DEBUG) IStatus.\iINFO
             case(Status._ERROR) IStatus.\iERROR
             case(Status._WARNING) IStatus.\iWARNING;
 
