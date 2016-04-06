@@ -115,24 +115,39 @@ class EclipseExtractFunctionRefactoring(CeylonEditor editorPart, target = null)
     //as opposed to extraction of an expression
     
     Tree.Body bodyNode;
-    if (is Tree.Body node) {
-        statements = [ for (s in node.statements) if (selected(s)) s ];
+    switch (node)
+    case (null) {
+        return;
+    }
+    case (is Tree.Term) {
+        //we're extracting a single expression
+        return;
+    }
+    case (is Tree.Body) {
+        //we're extracting multiple statements
+        statements 
+                = [ for (s in node.statements) 
+                    if (selected(s)) 
+                    s ];
         bodyNode = node;
     }
-    else if (is Tree.Statement node) {
-        value fbv = FindBodyVisitor(node);
+    else {
+        value statement 
+                = nodes.findStatement(rootNode, node);
+        if (!exists statement) {
+            return;
+        }
+        //we're extracting a single statement
+        value fbv = FindBodyVisitor(statement);
         fbv.visit(rootNode);
         if (exists found = fbv.body) {
-            statements = [node];
+            statements = [statement];
             bodyNode = found;
             //node = body;
         }
         else {
             return;
         }
-    }
-    else {
-        return;
     }
     body = bodyNode;
     
