@@ -38,21 +38,12 @@ import com.redhat.ceylon.ide.common.util {
     BaseProgressMonitorChild,
     ProgressMonitorChild
 }
-import com.redhat.ceylon.ide.common.vfs {
-    FolderVirtualFile
-}
-import com.redhat.ceylon.model.typechecker.model {
-    Package
-}
 import com.redhat.ceylon.model.typechecker.util {
     ModuleManager
 }
 
 import java.io {
     File
-}
-import java.lang.ref {
-    WeakReference
 }
 
 import org.eclipse.core.resources {
