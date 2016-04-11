@@ -2,9 +2,9 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.asIntersectionTypeString;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.ADD_CORR;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
@@ -28,7 +28,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -41,6 +40,7 @@ import com.redhat.ceylon.model.typechecker.model.Generic;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 class CreateTypeParameterProposal extends CorrectionProposal {
     
@@ -70,7 +70,9 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         HashSet<Declaration> decs = 
                 new HashSet<Declaration>();
         CompilationUnit cu = unit.getCompilationUnit();
-        int il = (int) importProposals().applyImports(change, decs, cu, doc);
+        int il = (int) 
+                importProposals()
+                    .applyImports(change, decs, cu, doc);
         change.addEdit(new InsertEdit(offset, def));
         if (constraints!=null) {
             int loc = getConstraintLoc(decNode);
@@ -152,7 +154,11 @@ class CreateTypeParameterProposal extends CorrectionProposal {
     static void addCreateTypeParameterProposal(
             Collection<ICompletionProposal> proposals, 
             IProject project, Tree.CompilationUnit rootNode,
-            final Tree.BaseType node, String brokenName) {
+            final Tree.BaseType type, String brokenName) {
+        
+        if (type.getTypeArgumentList()!=null) {
+            return;
+        }
         
         class FilterExtendsSatisfiesVisitor 
                 extends Visitor {
@@ -160,7 +166,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
             @Override
             public void visit(Tree.ExtendedType that) {
                 super.visit(that);
-                if (that.getType()==node) {
+                if (that.getType()==type) {
                     filter = true;
                 }
             }
@@ -168,7 +174,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
             public void visit(Tree.SatisfiedTypes that) {
                 super.visit(that);
                 for (Tree.Type t: that.getTypes()) {
-                    if (t==node) {
+                    if (t==type) {
                         filter = true;
                     }
                 }
@@ -177,7 +183,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
             public void visit(Tree.CaseTypes that) {
                 super.visit(that);
                 for (Tree.Type t: that.getTypes()) {
-                    if (t==node) {
+                    if (t==type) {
                         filter = true;
                     }
                 }
@@ -192,9 +198,9 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         }
         
         Tree.Declaration decl = 
-                findDeclarationWithBody(rootNode, node);
+                findDeclarationWithBody(rootNode, type);
         if (decl==null) {
-            decl = findDeclaration(rootNode, node);
+            decl = findDeclaration(rootNode, type);
             if (!(decl instanceof Tree.AnyMethod ||
                   decl instanceof Tree.ClassOrInterface)) {
                 decl = getContainer(rootNode,
@@ -240,7 +246,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
                     if (tal!=null) {
                         List<Tree.Type> tas = tal.getTypes();
                         for (int i=0; i<tas.size(); i++) {
-                            if (tas.get(i)==node) {
+                            if (tas.get(i)==type) {
                                 result = tps.get(i).getSatisfiedTypes();
                             }
                         }
@@ -263,7 +269,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
                         List<Tree.Type> ts = 
                                 tal.getTypes();
                         for (int i=0; i<ts.size(); i++) {
-                            if (ts.get(i)==node) {
+                            if (ts.get(i)==type) {
                                 result = tps.get(i)
                                         .getSatisfiedTypes();
                             }
@@ -291,7 +297,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
             }
         }
 
-        TypecheckerUnit u = rootNode.getUnit();
+        Unit u = rootNode.getUnit();
         if (u instanceof ModifiableSourceFile) {
             ModifiableSourceFile<IProject,IResource,IFolder,IFile> cu =
                     (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) u;
