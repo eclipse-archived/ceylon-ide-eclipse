@@ -156,15 +156,6 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
                 }
             }
         }
-        else if (term instanceof Tree.Exists ||
-                term instanceof Tree.Nonempty ||
-                term instanceof Tree.IdenticalOp ||
-                term instanceof Tree.InvocationExpression ||
-                term instanceof Tree.MemberOrTypeExpression ||
-                term instanceof Tree.TypeOperatorExpression ||
-                term instanceof Tree.InOp) {
-            change.addEdit(new InsertEdit(term.getStartIndex(), "!"));
-        }
         else if (term instanceof Tree.NotOp) {
             change.addEdit(new DeleteEdit(token.getStartIndex(), getTokenLength(token)));
         }
@@ -195,11 +186,38 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
         else if (term instanceof Tree.OrOp) {
             Tree.OrOp orOp = (Tree.OrOp) term;
             change.addEdit(new ReplaceEdit(token.getStartIndex(), getTokenLength(token), "&&"));
-            invertTerm(orOp.getLeftTerm(), change);
-            invertTerm(orOp.getRightTerm(), change);
+            //if either operand is an && then add parens
+            Tree.Term lt = orOp.getLeftTerm();
+            Tree.Term rt = orOp.getRightTerm();
+            if (lt instanceof Tree.AndOp) {
+                change.addEdit(new InsertEdit(lt.getStartIndex(), "("));
+            }
+            invertTerm(lt, change);
+            if (lt instanceof Tree.AndOp) {
+                change.addEdit(new InsertEdit(lt.getEndIndex(), ")"));
+            }
+            if (rt instanceof Tree.AndOp) {
+                change.addEdit(new InsertEdit(rt.getStartIndex(), "("));
+            }
+            invertTerm(rt, change);
+            if (rt instanceof Tree.AndOp) {
+                change.addEdit(new InsertEdit(rt.getEndIndex(), ")"));
+            }
         }
-        else if (term instanceof Tree.Expression) {
+        else if (term instanceof Tree.Expression && term.getToken()==null) {
             invertTerm(((Tree.Expression) term).getTerm(), change);
+        }
+        else if (term instanceof Tree.ThenOp
+               || term instanceof Tree.DefaultOp
+               || term instanceof Tree.LetExpression
+               || term instanceof Tree.SwitchExpression
+               || term instanceof Tree.IfExpression
+               || term instanceof Tree.AssignmentOp) {
+            change.addEdit(new InsertEdit(term.getStartIndex(), "!("));
+            change.addEdit(new InsertEdit(term.getEndIndex(), ")"));
+        }
+        else {
+            change.addEdit(new InsertEdit(term.getStartIndex(), "!"));
         }
     }
 
