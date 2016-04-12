@@ -18,8 +18,11 @@ public class RenameHandler extends AbstractHandler {
         if (useLinkedMode() && editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor)editor;
             if (ce.isInLinkedMode()) {
-                if (ce.getLinkedModeOwner() instanceof RenameLinkedMode) {
-                    RenameLinkedMode current = (RenameLinkedMode) ce.getLinkedModeOwner();
+                Object owner = ce.getLinkedModeOwner();
+                if (owner instanceof RenameLinkedMode) {
+                    RenameLinkedMode current = 
+                            (RenameLinkedMode) 
+                                owner;
                     current.enterDialogMode();
                     current.openDialog();
                 }
