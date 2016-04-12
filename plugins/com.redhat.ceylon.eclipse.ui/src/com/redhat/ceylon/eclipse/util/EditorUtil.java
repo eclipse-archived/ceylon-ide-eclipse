@@ -94,6 +94,7 @@ import org.eclipse.ui.themes.ITheme;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.Navigation;
 import com.redhat.ceylon.eclipse.code.editor.SourceArchiveEditorInput;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -384,7 +385,8 @@ public class EditorUtil {
             if (classFile != null) {
                 IJavaModelAware unit = CeylonBuilder.getUnit(classFile);
                 if (unit instanceof CeylonBinaryUnit) {                
-                    CeylonBinaryUnit<IProject, ITypeRoot, IJavaElement> ceylonUnit = (CeylonBinaryUnit<IProject, ITypeRoot, IJavaElement>) unit;
+                    CeylonBinaryUnit<IProject, ITypeRoot, IJavaElement> ceylonUnit = 
+                            (CeylonBinaryUnit<IProject, ITypeRoot, IJavaElement>) unit;
                     if (! isJavaLikeFileName(toJavaString(ceylonUnit.getSourceRelativePath()))) {
                         return getEditorInput(Path.fromOSString(toJavaString(ceylonUnit.getSourceFullPath())));
                     }
@@ -456,7 +458,8 @@ public class EditorUtil {
             return null;
         }
         if (unit instanceof IResourceAware) {
-            IResourceAware<IProject,IFolder,IFile> ra = (IResourceAware<IProject,IFolder,IFile>) unit;
+            IResourceAware<IProject,IFolder,IFile> ra = 
+                    (IResourceAware<IProject,IFolder,IFile>) unit;
             IFile file = ra.getResourceFile();
             if (file != null) {
                 return getEditorInput(file);
@@ -811,5 +814,16 @@ public class EditorUtil {
     		}
     	}	
     	return null;
+    }
+
+    public static CeylonEditor[] getDirtyCeylonEditors() {
+        IEditorPart currentEditor = getCurrentEditor();
+        List<CeylonEditor> editors = new ArrayList<CeylonEditor>();
+        for (IEditorPart ed: getActivePage().getDirtyEditors()) {
+            if (ed instanceof CeylonEditor && ed!=currentEditor) {
+                editors.add((CeylonEditor) ed);
+            }
+        }
+        return editors.toArray(new CeylonEditor[0]);
     }
 }

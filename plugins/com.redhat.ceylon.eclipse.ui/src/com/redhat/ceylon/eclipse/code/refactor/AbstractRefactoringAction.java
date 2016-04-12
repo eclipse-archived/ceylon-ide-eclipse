@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
+import static com.redhat.ceylon.eclipse.code.refactor.RefactoringSaveHelper.SAVE_CEYLON_REFACTORING;
+
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ui.IEditorPart;
@@ -16,24 +17,12 @@ public abstract class AbstractRefactoringAction {
     }
 
     public boolean run() {
-        /*for (IEditorPart ed: getActivePage().getDirtyEditors()) {
-            if (ed instanceof CeylonEditor && ed!=editor) {
-                String msg = "Please save other open Ceylon editors before refactoring";
-                if (editor!=null && editor.isDirty()) {
-                    msg += "\nYou don't need to save the current editor";
-                }
-                MessageDialog.openWarning(
-                        editor.getEditorSite().getShell(), 
-                        "Ceylon Refactoring Error", msg);
-                return false;
-            }
-        }*/
         if (refactoring!=null && refactoring.getEnabled()) {
             return new RefactoringStarter()
                     .activate(createWizard(refactoring),
                             editor.getSite().getShell(),
                             refactoring.getName(), 
-                            RefactoringSaveHelper.SAVE_ALL);
+                            getSaveMode());
         }
         else {
             MessageDialog.openWarning(
@@ -42,6 +31,10 @@ public abstract class AbstractRefactoringAction {
                     message());
             return false;
         }
+    }
+
+    int getSaveMode() {
+        return SAVE_CEYLON_REFACTORING;
     }
     
     public abstract Refactoring createRefactoring();

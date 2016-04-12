@@ -10,7 +10,6 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import java.util.List;
 
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
-import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
@@ -61,11 +60,8 @@ public final class RenameLinkedMode
     @Override
     protected boolean canStart() {
         return refactoring.getEnabled() &&
-                //TODO: we need our own CeylonRefactoringSaveHelper 
-                //      here and in RefactoringStarter
-                (!RefactoringStarter.dirtyCeylonEditorExists() ||
-                new RefactoringSaveHelper(RefactoringSaveHelper.SAVE_ALL)
-                    .saveEditors(editor.getSite().getShell()));
+                new RefactoringSaveHelper(RenameRefactoring.SAVE_MODE)
+                    .saveEditors(editor.getSite().getShell());
     }
         
     private boolean isEnabled() {

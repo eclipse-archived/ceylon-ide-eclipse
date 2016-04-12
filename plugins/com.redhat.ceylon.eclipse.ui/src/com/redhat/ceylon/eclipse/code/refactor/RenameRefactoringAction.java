@@ -24,4 +24,9 @@ public class RenameRefactoringAction extends AbstractRefactoringAction {
         return "No declaration name selected";
     }
     
+    @Override
+    int getSaveMode() {
+        return RenameRefactoring.SAVE_MODE;
+    }
+    
 }

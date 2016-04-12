@@ -12,16 +12,11 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation.INITIAL_CONDITION_CHECKING_FAILED;
 
-import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorPart;
-
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 
 /**
@@ -33,46 +28,32 @@ public class RefactoringStarter {
 
     public boolean activate(RefactoringWizard wizard, Shell parent, String dialogTitle, int saveMode) {
         
-        //TODO: we need our own CeylonRefactoringSaveHelper 
-        //      here and in RenameLinkedMode
         RefactoringSaveHelper saveHelper = 
                 new RefactoringSaveHelper(saveMode);
-        if (dirtyCeylonEditorExists()) {
-            if (saveHelper.saveEditors(parent)) {
-                saveHelper.triggerIncrementalBuild();
-            }
-            else {
-                return false;
-            }
+        if (saveHelper.saveEditors(parent)) {
+            saveHelper.triggerIncrementalBuild();
         }
-        
+        else {
+            return false;
+        }
+
         try {
             RefactoringWizardOpenOperation op = 
                     new RefactoringWizardOpenOperation(wizard);
             int result = op.run(parent, dialogTitle);
             fStatus = op.getInitialConditionCheckingStatus();
-            //TODO: is this really necessary here???
             if (result == IDialogConstants.CANCEL_ID || 
                 result == INITIAL_CONDITION_CHECKING_FAILED) {
-                saveHelper.triggerIncrementalBuild();
+//                saveHelper.triggerIncrementalBuild();
                 return false;
             }
             else {
                 return true;
             }
-        } catch (InterruptedException e) {
+        }
+        catch (InterruptedException e) {
             return false; // User action got cancelled
         }
-    }
-
-    static boolean dirtyCeylonEditorExists() {
-        IEditorPart currentEditor = EditorUtil.getCurrentEditor();
-        for (IEditorPart ed: EditorUtil.getActivePage().getDirtyEditors()) {
-            if (ed instanceof CeylonEditor && ed!=currentEditor) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public RefactoringStatus getInitialConditionCheckingStatus() {

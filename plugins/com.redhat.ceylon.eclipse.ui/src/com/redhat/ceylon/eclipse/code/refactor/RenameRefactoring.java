@@ -64,6 +64,8 @@ import com.redhat.ceylon.model.typechecker.model.Value;
 
 public class RenameRefactoring extends AbstractRefactoring {
     
+    static final int SAVE_MODE = RefactoringSaveHelper.SAVE_REFACTORING;
+    
     private static class FindRenamedReferencesVisitor 
             extends FindReferencesVisitor {
         
