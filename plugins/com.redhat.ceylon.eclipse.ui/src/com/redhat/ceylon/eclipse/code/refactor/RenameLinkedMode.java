@@ -60,7 +60,12 @@ public final class RenameLinkedMode
     
     @Override
     protected boolean canStart() {
-        return refactoring.getEnabled();
+        return refactoring.getEnabled() &&
+                //TODO: we need our own CeylonRefactoringSaveHelper 
+                //      here and in RefactoringStarter
+                (!RefactoringStarter.dirtyCeylonEditorExists() ||
+                new RefactoringSaveHelper(RefactoringSaveHelper.SAVE_ALL)
+                    .saveEditors(editor.getSite().getShell()));
     }
         
     private boolean isEnabled() {

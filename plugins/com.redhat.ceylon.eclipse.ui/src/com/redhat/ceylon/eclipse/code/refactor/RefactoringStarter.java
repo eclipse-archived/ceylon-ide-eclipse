@@ -12,12 +12,16 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation.INITIAL_CONDITION_CHECKING_FAILED;
 
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
-import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
+
+import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 
 /**
@@ -28,16 +32,28 @@ public class RefactoringStarter {
     private RefactoringStatus fStatus;
 
     public boolean activate(RefactoringWizard wizard, Shell parent, String dialogTitle, int saveMode) {
-        RefactoringSaveHelper saveHelper = new RefactoringSaveHelper(saveMode);
-        if (!canActivate(saveHelper, parent))
-            return false;
-
+        
+        //TODO: we need our own CeylonRefactoringSaveHelper 
+        //      here and in RenameLinkedMode
+        RefactoringSaveHelper saveHelper = 
+                new RefactoringSaveHelper(saveMode);
+        if (dirtyCeylonEditorExists()) {
+            if (saveHelper.saveEditors(parent)) {
+                saveHelper.triggerIncrementalBuild();
+            }
+            else {
+                return false;
+            }
+        }
+        
         try {
-            RefactoringWizardOpenOperation op= new RefactoringWizardOpenOperation(wizard);
-            int result= op.run(parent, dialogTitle);
+            RefactoringWizardOpenOperation op = 
+                    new RefactoringWizardOpenOperation(wizard);
+            int result = op.run(parent, dialogTitle);
             fStatus = op.getInitialConditionCheckingStatus();
+            //TODO: is this really necessary here???
             if (result == IDialogConstants.CANCEL_ID || 
-                    result == INITIAL_CONDITION_CHECKING_FAILED) {
+                result == INITIAL_CONDITION_CHECKING_FAILED) {
                 saveHelper.triggerIncrementalBuild();
                 return false;
             }
@@ -49,11 +65,17 @@ public class RefactoringStarter {
         }
     }
 
-    public RefactoringStatus getInitialConditionCheckingStatus() {
-        return fStatus;
+    static boolean dirtyCeylonEditorExists() {
+        IEditorPart currentEditor = EditorUtil.getCurrentEditor();
+        for (IEditorPart ed: EditorUtil.getActivePage().getDirtyEditors()) {
+            if (ed instanceof CeylonEditor && ed!=currentEditor) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    private boolean canActivate(RefactoringSaveHelper saveHelper, Shell shell) {
-        return saveHelper.saveEditors(shell);
+    public RefactoringStatus getInitialConditionCheckingStatus() {
+        return fStatus;
     }
 }
