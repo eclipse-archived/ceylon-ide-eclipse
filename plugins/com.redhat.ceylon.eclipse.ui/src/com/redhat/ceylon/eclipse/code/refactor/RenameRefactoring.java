@@ -50,9 +50,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -342,18 +342,20 @@ public class RenameRefactoring extends AbstractRefactoring {
         int i=0;
         for (PhasedUnit pu: units) {
             if (searchInFile(pu)) {
-                TextFileChange tfc = newTextFileChange((ProjectPhasedUnit<IProject, IResource, IFolder, IFile>) pu);
-                renameInFile(tfc, composite, 
+                ProjectPhasedUnit<IProject, IResource, IFolder, IFile> ppu = 
+                        (ProjectPhasedUnit<IProject, IResource, IFolder, IFile>) pu;
+                renameInFile(newTextFileChange(ppu), 
+                        composite, 
                         pu.getCompilationUnit());
                 pm.worked(i++);
             }
         }
         if (searchInEditor()) {
-            DocumentChange dc = newDocumentChange();
             CompilationUnit editorRootNode = 
                     editor.getParseController()
                         .getLastCompilationUnit();
-            renameInFile(dc, composite, editorRootNode);
+            renameInFile(newDocumentChange(), 
+                    composite, editorRootNode);
             pm.worked(i++);
         }
         if (project!=null && renameFile) {

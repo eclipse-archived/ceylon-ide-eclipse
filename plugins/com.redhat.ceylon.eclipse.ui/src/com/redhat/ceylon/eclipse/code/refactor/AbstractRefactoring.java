@@ -60,7 +60,9 @@ abstract class AbstractRefactoring extends Refactoring {
         if (editor instanceof CeylonEditor) {
             CeylonEditor ce = (CeylonEditor) editor;
             this.editor = ce;
-            document = ce.getDocumentProvider().getDocument(editor.getEditorInput());
+            document = 
+                    ce.getDocumentProvider()
+                        .getDocument(editor.getEditorInput());
             project = EditorUtil.getProject(editor);
             CeylonParseController cpc = ce.getParseController();
             tokens = cpc.getTokens();
@@ -93,8 +95,9 @@ abstract class AbstractRefactoring extends Refactoring {
             return false;
         }
         if (unit instanceof IResourceAware) {
-            IProject project = 
-                    ((IResourceAware<IProject,IFolder,IFile>) unit).getResourceProject();
+            IResourceAware<IProject, IFolder, IFile> ra = 
+                    (IResourceAware<IProject,IFolder,IFile>) unit;
+            IProject project = ra.getResourceProject();
             if (project==null) {
                 return false;
             }
@@ -121,13 +124,17 @@ abstract class AbstractRefactoring extends Refactoring {
     }
     
     DocumentChange newDocumentChange() {
-        DocumentChange dc = new DocumentChange(editor.getEditorInput().getName() + 
-                " \u2014 current editor", document);
+        DocumentChange dc = 
+                new DocumentChange(
+                        editor.getEditorInput().getName() + 
+                        " \u2014 current editor", 
+                        document);
         dc.setTextType("ceylon");
         return dc;
     }
     
-    TextFileChange newTextFileChange(ProjectPhasedUnit<IProject,IResource,IFolder,IFile> pu) {
+    TextFileChange newTextFileChange(
+            ProjectPhasedUnit<IProject,IResource,IFolder,IFile> pu) {
         TextFileChange tfc = 
                 new TextFileChange(getName(), 
                         pu.getResourceFile());
