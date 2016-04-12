@@ -12,7 +12,7 @@
   <properties>
     <platform-version-name>kepler</platform-version-name>
     <main-software-site>http://download.eclipse.org/releases/${platform-version-name}</main-software-site>
-    <tychoVersion>0.22.0</tychoVersion>
+    <tychoVersion>0.24.0</tychoVersion>
     <scmBranch>trunk</scmBranch>
     <BUILD_ALIAS>Final</BUILD_ALIAS>
     <memoryOptions1>-Xms512m -Xmx1024m -XX:PermSize=256m</memoryOptions1>
@@ -35,6 +35,12 @@
      <layout>p2</layout>
      <url>http://download.eclipse.org/technology/swtbot/releases/latest/</url>
    </repository>
+
+    <repository>
+      <id>optionalDeps</id>
+      <layout>p2</layout>
+      <url>file:site/optionalDependencies/repository</url>
+    </repository>
 
   </repositories>
 

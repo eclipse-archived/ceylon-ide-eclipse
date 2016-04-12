@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<?metadataRepository version='1.1.0'?>
+<repository name='Additional Repository for providing sun.misc' type='org.eclipse.equinox.internal.p2.metadata.repository.LocalMetadataRepository' version='1.0.0'>
+  <properties size='2'>
+    <property name='p2.timestamp' value='1459888484675'/>
+    <property name='p2.compressed' value='true'/>
+  </properties>
+  <units size='1'>
+    <unit id='com.redhat.ceylon.eclipse.fragment.sun.misc' version='1.0.0' singleton='false'>
+      <update id='com.redhat.ceylon.eclipse.fragment.sun.misc' range='[0.0.0,1.0.0)' severity='0'/>
+      <properties size='2'>
+        <property name='org.eclipse.equinox.p2.name' value='System Bundle Fragment exporting sun.misc'/>
+        <property name='org.eclipse.equinox.p2.description' value='This bundle extends the System Bundle export list with the sun.misc package such that OSGi bundles may refer to Sun&apos;s misc implementation without the OSGi framework itself to provide it in a non-portable way.'/>
+      </properties>
+      <provides size='5'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='com.redhat.ceylon.eclipse.fragment.sun.misc' version='1.0.0'/>
+        <provided namespace='osgi.bundle' name='com.redhat.ceylon.eclipse.fragment.sun.misc' version='1.0.0'/>
+        <provided namespace='java.package' name='sun.misc' version='0.0.0'/>
+        <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
+        <provided namespace='osgi.fragment' name='org.eclipse.osgi' version='1.0.0'/>
+      </provides>
+      <requires size='1'>
+        <required namespace='osgi.bundle' name='org.eclipse.osgi' range='0.0.0'/>
+      </requires>
+      <artifacts size='1'>
+        <artifact classifier='osgi.bundle' id='com.redhat.ceylon.eclipse.fragment.sun.misc' version='1.0.0'/>
+      </artifacts>
+      <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+      <touchpointData size='1'>
+        <instructions size='1'>
+          <instruction key='manifest'>
+            Bundle-SymbolicName: com.redhat.ceylon.eclipse.fragment.sun.misc&#xA;Bundle-Version: 1.0.0&#xA;Fragment-Host: system.bundle; extension:=framework
+          </instruction>
+        </instructions>
+      </touchpointData>
+    </unit>
+  </units>
+</repository>
