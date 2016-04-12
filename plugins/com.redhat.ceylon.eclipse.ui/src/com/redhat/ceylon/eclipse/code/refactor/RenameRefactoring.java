@@ -46,7 +46,6 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
@@ -350,7 +349,7 @@ public class RenameRefactoring extends AbstractRefactoring {
             }
         }
         if (searchInEditor()) {
-            CompilationUnit editorRootNode = 
+            Tree.CompilationUnit editorRootNode = 
                     editor.getParseController()
                         .getLastCompilationUnit();
             renameInFile(newDocumentChange(), 
