@@ -98,14 +98,33 @@ abstract class SelectExpressionPopup extends PopupDialog {
             new Visitor() {
                 IRegion selection = editor.getSelection();
                 private void option(Tree.Term that) {
-                    if (!(that instanceof Tree.Expression)) {
-                        if (that.getStartIndex() 
-                                <= selection.getOffset() &&
-                            that.getEndIndex()
-                                >= selection.getOffset()+
-                                   selection.getLength()) {
-                            expressions.add(that);
-                        }
+                    if (that.getStartIndex() 
+                            <= selection.getOffset() &&
+                        that.getEndIndex()
+                            >= selection.getOffset() +
+                                selection.getLength()) {
+                        expressions.add(that);
+                    }
+                }
+                @Override
+                public void visit(Tree.Expression that) {
+                    //don't propose parenthesized expressions
+                    if (that.getTerm()!=null) {
+                        that.getTerm().visit(this);
+                    }
+                }
+                @Override
+                public void visit(Tree.AssignmentOp that) {
+                    //don't visit LHS
+                    if (that.getRightTerm()!=null) {
+                        that.getRightTerm().visit(this);
+                    }
+                }
+                @Override
+                public void visit(Tree.SpecifierStatement that) {
+                    //don't visit LHS
+                    if (that.getSpecifierExpression()!=null) {
+                        that.getSpecifierExpression().visit(this);
                     }
                 }
                 @Override
