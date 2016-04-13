@@ -353,11 +353,11 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         List<PhasedUnit> units = getAllUnits();
         pm.beginTask(getName(), units.size());
         int i = 0;
-        if (visibleOutsideUnit()) {
+        if (isAffectingOtherFiles()) {
             for (PhasedUnit pu : units) {
                 if (searchInFile(pu)) {
-                    ProjectPhasedUnit<IProject,IResource,IFolder,IFile> ppu = 
-                            (ProjectPhasedUnit<IProject,IResource,IFolder,IFile>)pu;
+                    ProjectPhasedUnit ppu = 
+                            (ProjectPhasedUnit) pu;
                     TextFileChange tfc = 
                             newTextFileChange(ppu);
                     refactorInFile(tfc, cc, 
@@ -367,7 +367,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 }
             }
         }
-        if (searchInEditor()) {
+        if (!isAffectingOtherFiles() || searchInEditor()) {
             DocumentChange dc = newDocumentChange();
             CeylonParseController pc = 
                     editor.getParseController();
@@ -926,7 +926,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
     }
 
     @Override
-    protected boolean visibleOutsideUnit() {
+    protected boolean isAffectingOtherFiles() {
         if (declaration==null) {
             return false;
         }

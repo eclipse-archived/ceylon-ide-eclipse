@@ -136,8 +136,10 @@ public class ChangeVersionRefactoring extends AbstractRefactoring {
         int i=0;
         for (PhasedUnit pu: units) {
             if (searchInFile(pu)) {
+                ProjectPhasedUnit ppu = 
+                        (ProjectPhasedUnit) pu;
                 TextFileChange tfc = 
-                        newTextFileChange((ProjectPhasedUnit<IProject,IResource,IFolder,IFile>)pu);
+                        newTextFileChange(ppu);
                 renameInFile(tfc, cc, 
                         pu.getCompilationUnit());
                 pm.worked(i++);
@@ -198,7 +200,7 @@ public class ChangeVersionRefactoring extends AbstractRefactoring {
     }
     
     @Override
-    protected boolean visibleOutsideUnit() {
+    protected boolean isAffectingOtherFiles() {
         return true;
     }
 }

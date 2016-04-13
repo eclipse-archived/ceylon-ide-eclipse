@@ -71,7 +71,7 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
     }
 
     @Override
-    public boolean visibleOutsideUnit() {
+    public boolean isAffectingOtherFiles() {
         if (value==null) {
             return false;
         }
@@ -110,17 +110,17 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
         CompositeChange cc = new CompositeChange(getName());
         
       //TODO: progress reporting!
-        if (visibleOutsideUnit()) {
-            for (PhasedUnit unit : getAllUnits()) {
+        if (isAffectingOtherFiles()) {
+            for (PhasedUnit unit: getAllUnits()) {
                 if (searchInFile(unit)) {
-                    ProjectPhasedUnit<IProject,IResource,IFolder,IFile> ppu = 
-                            (ProjectPhasedUnit<IProject,IResource,IFolder,IFile>)unit;
+                    ProjectPhasedUnit ppu = 
+                            (ProjectPhasedUnit) unit;
                     TextFileChange tfc = newTextFileChange(ppu);
                     invertBoolean(unit.getCompilationUnit(), tfc, cc);
                 }
             }
         }
-        if (searchInEditor()) {
+        if (!isAffectingOtherFiles() || searchInEditor()) {
             DocumentChange dc = newDocumentChange();
             Tree.CompilationUnit rn = 
                     editor.getParseController()

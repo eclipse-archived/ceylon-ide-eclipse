@@ -68,7 +68,7 @@ public final class RenameLinkedMode
     
     @Override
     protected boolean forceSave() {
-        return refactoring.visibleOutsideUnit();
+        return refactoring.isAffectingOtherFiles();
     }
     
     private boolean isEnabled() {

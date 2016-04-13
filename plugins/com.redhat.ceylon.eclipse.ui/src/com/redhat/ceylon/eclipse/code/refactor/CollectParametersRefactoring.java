@@ -216,13 +216,13 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
         CompositeChange cc = new CompositeChange(getName());
         
         int i=0;
-        if (visibleOutsideUnit()) {
+        if (isAffectingOtherFiles()) {
             List<PhasedUnit> units = getAllUnits();
             pm.beginTask(getName(), units.size());
             for (PhasedUnit pu: units) {
                 if (searchInFile(pu)) {
-                    ProjectPhasedUnit<IProject,IResource,IFolder,IFile> ppu = 
-                            (ProjectPhasedUnit<IProject,IResource,IFolder,IFile>) pu;
+                    ProjectPhasedUnit ppu = 
+                            (ProjectPhasedUnit) pu;
                     TextFileChange tfc = 
                             newTextFileChange(ppu);
                     refactorInFile(tfc, cc, 
@@ -235,7 +235,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
         else {
             pm.beginTask(getName(), 1);
         }
-        if (searchInEditor()) {
+        if (!isAffectingOtherFiles() || searchInEditor()) {
             DocumentChange dc = newDocumentChange();
             CeylonParseController pc = 
                     editor.getParseController();
@@ -496,7 +496,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
     }
     
     @Override
-    protected boolean visibleOutsideUnit() {
+    protected boolean isAffectingOtherFiles() {
         if (declaration==null) {
             return false;
         }

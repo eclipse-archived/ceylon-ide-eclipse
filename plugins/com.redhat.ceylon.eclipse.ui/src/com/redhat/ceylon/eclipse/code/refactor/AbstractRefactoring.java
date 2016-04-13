@@ -168,18 +168,18 @@ abstract class AbstractRefactoring extends Refactoring {
         return units;
     }
     
-    protected abstract boolean visibleOutsideUnit();
+    protected abstract boolean isAffectingOtherFiles();
 
     protected int countDeclarationOccurrences() {
         int count = 0;
-        if (visibleOutsideUnit()) {
+        if (isAffectingOtherFiles()) {
             for (PhasedUnit pu: getAllUnits()) {
                 if (searchInFile(pu)) {
                     count += countReferences(pu.getCompilationUnit());
                 }
             }
         }
-        if (searchInEditor()) {
+        if (!isAffectingOtherFiles() || searchInEditor()) {
             count += countReferences(rootNode);
         }
         return count;
@@ -190,7 +190,7 @@ abstract class AbstractRefactoring extends Refactoring {
     }
     
     int getSaveMode() {
-        return visibleOutsideUnit() ? 
+        return isAffectingOtherFiles() ? 
                 RefactoringSaveHelper.SAVE_CEYLON_REFACTORING : 
                 RefactoringSaveHelper.SAVE_NOTHING;
     }

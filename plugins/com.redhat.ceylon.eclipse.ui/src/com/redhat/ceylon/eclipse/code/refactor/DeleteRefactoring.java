@@ -259,14 +259,14 @@ public class DeleteRefactoring extends AbstractRefactoring {
     
     int countRefinements() {
         int count = 0;
-        if (visibleOutsideUnit()) {
+        if (isAffectingOtherFiles()) {
             for (PhasedUnit pu: getAllUnits()) {
                 if (searchInFile(pu)) {
                     count += countRefinements(pu.getCompilationUnit());
                 }
             }
         }
-        if (searchInEditor()) {
+        if (!isAffectingOtherFiles() || searchInEditor()) {
             count += countRefinements(rootNode);
         }
         return count;
@@ -281,14 +281,14 @@ public class DeleteRefactoring extends AbstractRefactoring {
     
     int countUsages() {
         int count = 0;
-        if (visibleOutsideUnit()) {
+        if (isAffectingOtherFiles()) {
             for (PhasedUnit pu: getAllUnits()) {
                 if (searchInFile(pu)) {
                     count += countUsages(pu.getCompilationUnit());
                 }
             }
         }
-        if (searchInEditor()) {
+        if (!isAffectingOtherFiles() || searchInEditor()) {
             count += countUsages(rootNode);
         }
         return count;
@@ -346,14 +346,14 @@ public class DeleteRefactoring extends AbstractRefactoring {
             OperationCanceledException {
         CompositeChange change = 
                 new CompositeChange("Safe Delete");
-        if (searchInEditor()) {
+        if (!isAffectingOtherFiles() || searchInEditor()) {
             deleteInFile(change, newDocumentChange(), rootNode);
         }
-        if (visibleOutsideUnit()) {
+        if (isAffectingOtherFiles()) {
             for (PhasedUnit pu: getAllUnits()) {
                 if (searchInFile(pu)) {
-                    ProjectPhasedUnit<IProject,IResource,IFolder,IFile> ppu = 
-                            (ProjectPhasedUnit<IProject,IResource,IFolder,IFile>)pu;
+                    ProjectPhasedUnit ppu = 
+                            (ProjectPhasedUnit)pu;
                     deleteInFile(change, 
                             newTextFileChange(ppu), 
                             pu.getCompilationUnit());
@@ -534,14 +534,14 @@ public class DeleteRefactoring extends AbstractRefactoring {
     List<CeylonSearchMatch> getReferences() {
         List<CeylonSearchMatch> list = 
                 new ArrayList<CeylonSearchMatch>();
-        if (visibleOutsideUnit()) {
+        if (isAffectingOtherFiles()) {
             for (PhasedUnit pu: getAllUnits()) {
                 if (searchInFile(pu)) {
                     addReferences(pu.getCompilationUnit(), list, pu);
                 }
             }
         }
-        if (searchInEditor()) {
+        if (!isAffectingOtherFiles() || searchInEditor()) {
             String relpath = 
                     editor.getParseController()
                         .getLastPhasedUnit()
@@ -587,7 +587,7 @@ public class DeleteRefactoring extends AbstractRefactoring {
     }
 
     @Override
-    public boolean visibleOutsideUnit() {
+    public boolean isAffectingOtherFiles() {
         if (declarationToDelete==null) {
             return false;
         }

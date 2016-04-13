@@ -213,7 +213,7 @@ public class RenameRefactoring extends AbstractRefactoring {
     
     @Override
     int getSaveMode() {
-        return visibleOutsideUnit() ? 
+        return isAffectingOtherFiles() ? 
                 RefactoringSaveHelper.SAVE_REFACTORING : 
                 RefactoringSaveHelper.SAVE_NOTHING;
     }
@@ -344,13 +344,13 @@ public class RenameRefactoring extends AbstractRefactoring {
                 new CompositeChange(getName());
         
         int i=0;
-        if (visibleOutsideUnit()) {
+        if (isAffectingOtherFiles()) {
             List<PhasedUnit> units = getAllUnits();
             pm.beginTask(getName(), units.size());
             for (PhasedUnit pu: units) {
                 if (searchInFile(pu)) {
-                    ProjectPhasedUnit<IProject, IResource, IFolder, IFile> ppu = 
-                            (ProjectPhasedUnit<IProject, IResource, IFolder, IFile>) pu;
+                    ProjectPhasedUnit ppu = 
+                            (ProjectPhasedUnit) pu;
                     renameInFile(newTextFileChange(ppu), 
                             composite, 
                             pu.getCompilationUnit());
@@ -361,7 +361,8 @@ public class RenameRefactoring extends AbstractRefactoring {
         else {
             pm.beginTask(getName(), 1);
         }
-        if (searchInEditor()) {
+        
+        if (!isAffectingOtherFiles() || searchInEditor()) {
             Tree.CompilationUnit editorRootNode = 
                     editor.getParseController()
                         .getLastCompilationUnit();
@@ -643,7 +644,7 @@ public class RenameRefactoring extends AbstractRefactoring {
     }
     
     @Override
-    public boolean visibleOutsideUnit() {
+    public boolean isAffectingOtherFiles() {
         if (declaration==null) {
             return false;
         }

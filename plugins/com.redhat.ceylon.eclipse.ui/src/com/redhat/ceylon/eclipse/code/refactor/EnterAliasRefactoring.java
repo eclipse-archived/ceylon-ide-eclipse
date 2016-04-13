@@ -214,7 +214,7 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
     }
     
     @Override
-    protected boolean visibleOutsideUnit() {
+    protected boolean isAffectingOtherFiles() {
         return false;
     }
 }

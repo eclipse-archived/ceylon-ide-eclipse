@@ -161,7 +161,7 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
     }
     
     shared default small Integer saveMode 
-            => visibleOutsideUnit 
+            => affectsOtherFiles 
             then RefactoringSaveHelper.\iSAVE_CEYLON_REFACTORING 
             else RefactoringSaveHelper.\iSAVE_NOTHING;
 }

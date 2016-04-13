@@ -195,8 +195,8 @@ public class AliasRefactoring extends AbstractRefactoring {
                     pu.getPackage()
                         .equals(editorPackage);
             if (inSamePackage && searchInFile(pu)) {
-                ProjectPhasedUnit<IProject,IResource,IFolder,IFile> ppu = 
-                        (ProjectPhasedUnit<IProject,IResource,IFolder,IFile>) pu;
+                ProjectPhasedUnit ppu = 
+                        (ProjectPhasedUnit) pu;
                 TextFileChange tfc = newTextFileChange(ppu);
                 renameInFile(tfc, cc, 
                         pu.getCompilationUnit());
@@ -385,7 +385,7 @@ public class AliasRefactoring extends AbstractRefactoring {
     }
     
     @Override
-    protected boolean visibleOutsideUnit() {
+    protected boolean isAffectingOtherFiles() {
         return true;
     }
 

@@ -116,7 +116,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     }
     
     @Override
-    protected boolean visibleOutsideUnit() {
+    protected boolean isAffectingOtherFiles() {
         return true; //TODO!!!
     }
 
@@ -164,8 +164,8 @@ public class MoveOutRefactoring extends AbstractRefactoring {
       //TODO: progress reporting!
         for (PhasedUnit pu: getAllUnits()) {
             if (searchInFile(pu)) {
-                ProjectPhasedUnit<IProject, IResource, IFolder, IFile> ppu = 
-                        (ProjectPhasedUnit<IProject, IResource, IFolder, IFile>) pu;
+                ProjectPhasedUnit ppu = 
+                        (ProjectPhasedUnit) pu;
                 TextFileChange pufc = 
                         newTextFileChange(ppu);
                 pufc.setEdit(new MultiTextEdit());
