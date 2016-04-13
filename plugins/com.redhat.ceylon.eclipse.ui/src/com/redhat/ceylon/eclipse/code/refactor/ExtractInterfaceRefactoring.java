@@ -13,6 +13,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -135,6 +136,14 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
         return cc;
     }
 
+    @Override
+    void refactorInFile(TextChange textChange, 
+            CompositeChange compositChange, 
+            Tree.CompilationUnit rootNode,
+            List<CommonToken> tokens) {
+        throw new UnsupportedOperationException();
+    }
+    
     private Change createNewUnitChange(StringBuilder newUnitBuilder) {
         IPath path = 
                 sourceFile.getParent()

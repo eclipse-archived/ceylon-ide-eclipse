@@ -263,9 +263,9 @@ abstract class AbstractRefactoring extends Refactoring {
         return change;
     }
 
-    protected void refactorInFile(TextChange textChange, 
+    abstract void refactorInFile(TextChange textChange, 
             CompositeChange compositChange, 
             Tree.CompilationUnit rootNode,
-            List<CommonToken> tokens) {}
+            List<CommonToken> tokens);
 
 }

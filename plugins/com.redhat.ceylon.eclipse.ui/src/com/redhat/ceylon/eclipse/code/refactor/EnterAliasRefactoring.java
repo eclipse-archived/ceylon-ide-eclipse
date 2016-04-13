@@ -6,11 +6,15 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findImport;
 import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
+import java.util.List;
+
+import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
+import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.DeleteEdit;
@@ -161,6 +165,14 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
         TextChange tfc = newLocalChange();
         refactorInFile(tfc);
         return tfc;
+    }
+    
+    @Override
+    void refactorInFile(TextChange textChange, 
+            CompositeChange compositChange, 
+            Tree.CompilationUnit rootNode,
+            List<CommonToken> tokens) {
+        throw new UnsupportedOperationException();
     }
     
     int refactorInFile(final TextChange change) {
