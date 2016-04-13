@@ -340,14 +340,16 @@ public class RenameRefactoring extends AbstractRefactoring {
         CompositeChange composite = 
                 new CompositeChange(getName());
         int i=0;
-        for (PhasedUnit pu: units) {
-            if (searchInFile(pu)) {
-                ProjectPhasedUnit<IProject, IResource, IFolder, IFile> ppu = 
-                        (ProjectPhasedUnit<IProject, IResource, IFolder, IFile>) pu;
-                renameInFile(newTextFileChange(ppu), 
-                        composite, 
-                        pu.getCompilationUnit());
-                pm.worked(i++);
+        if (visibleOutsideUnit()) {
+            for (PhasedUnit pu: units) {
+                if (searchInFile(pu)) {
+                    ProjectPhasedUnit<IProject, IResource, IFolder, IFile> ppu = 
+                            (ProjectPhasedUnit<IProject, IResource, IFolder, IFile>) pu;
+                    renameInFile(newTextFileChange(ppu), 
+                            composite, 
+                            pu.getCompilationUnit());
+                    pm.worked(i++);
+                }
             }
         }
         if (searchInEditor()) {
@@ -628,6 +630,27 @@ public class RenameRefactoring extends AbstractRefactoring {
     
     public Declaration getDeclaration() {
         return declaration;
+    }
+    
+    public boolean visibleOutsideUnit() {
+        if (declaration==null) {
+            return false;
+        }
+        if (declaration.isToplevel() ||
+            declaration.isShared()) {
+            return true;
+        }
+        if (declaration.isParameter()) {
+            FunctionOrValue fov = 
+                    (FunctionOrValue) declaration;
+            Declaration container = 
+                    (Declaration) fov.getContainer();
+            if (container.isToplevel() || 
+                container.isShared()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String getNewName() {

@@ -4,8 +4,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_RENAME_SELECT;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
-import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
-import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.link.LinkedPosition;
@@ -57,6 +55,11 @@ public final class AliasLinkedMode
         return refactoring.getEnabled();
     }
         
+    @Override
+    protected boolean forceSave() {
+        return true;
+    }
+    
     private boolean isEnabled() {
         String newName = getNewNameFromNamePosition();
         return !getInitialName().equals(newName) &&
@@ -80,7 +83,7 @@ public final class AliasLinkedMode
                     new RefactoringExecutionHelper(
                             refactoring,
                             RefactoringStatus.WARNING,
-                            RefactoringSaveHelper.SAVE_ALL,
+                            RefactoringSaveHelper.SAVE_CEYLON_REFACTORING,
                             site.getShell(),
                             site.getWorkbenchWindow())
                         .perform(false, true);

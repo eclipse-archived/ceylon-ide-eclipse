@@ -16,8 +16,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.DocLinks.hasPackage;
 import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
 
-import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
-import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
@@ -226,8 +224,8 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
             try {
 //                hideEditorActivity();
                 setName(getNewNameFromNamePosition());
-                revertChanges();
                 if (isShowPreview()) {
+                    revertChanges();
                     openPreview();
                 }
                 else {
@@ -236,7 +234,7 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
                     new RefactoringExecutionHelper(
                             refactoring,
                             RefactoringStatus.WARNING,
-                            RefactoringSaveHelper.SAVE_ALL,
+                            RefactoringSaveHelper.SAVE_CEYLON_REFACTORING,
                             site.getShell(),
                             site.getWorkbenchWindow())
                         .perform(false, true);

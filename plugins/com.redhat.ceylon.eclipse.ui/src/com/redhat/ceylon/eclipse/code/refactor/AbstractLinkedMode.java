@@ -41,10 +41,12 @@ public abstract class AbstractLinkedMode {
     private boolean showPreview = false;
     private IUndoableOperation startingUndoOperation;
     private RefactorInformationPopup infoPopup;
+    private final boolean wasDirty;
 
     protected AbstractLinkedMode(CeylonEditor ceylonEditor) {
         editor = ceylonEditor;
         linkedModeModel = new LinkedModeModel();
+        wasDirty = ceylonEditor.isDirty();
     }
 
     synchronized Point getOriginalSelection() {
@@ -137,7 +139,13 @@ public abstract class AbstractLinkedMode {
     protected void cancel() {}
 
     protected void done() {
-        editor.saveWithoutActions();
+        if (!wasDirty || forceSave()) {
+            editor.saveWithoutActions();
+        }
+    }
+    
+    protected boolean forceSave() {
+        return false;
     }
 
     boolean isCaretInLinkedPosition() {

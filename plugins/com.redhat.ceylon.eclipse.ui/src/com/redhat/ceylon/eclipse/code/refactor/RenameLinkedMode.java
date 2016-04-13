@@ -9,7 +9,6 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 
 import java.util.List;
 
-import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
@@ -63,7 +62,12 @@ public final class RenameLinkedMode
                 new RefactoringSaveHelper(RenameRefactoring.SAVE_MODE)
                     .saveEditors(editor.getSite().getShell());
     }
-        
+    
+    @Override
+    protected boolean forceSave() {
+        return refactoring.visibleOutsideUnit();
+    }
+    
     private boolean isEnabled() {
         String newName = getNewNameFromNamePosition();
         return !getInitialName().equals(newName) &&
@@ -77,8 +81,8 @@ public final class RenameLinkedMode
             try {
                 hideEditorActivity();
                 setName(getNewNameFromNamePosition());
-                revertChanges();
                 if (isShowPreview()) {
+                    revertChanges();
                     openPreview();
                 }
                 else {
@@ -87,7 +91,7 @@ public final class RenameLinkedMode
                     new RefactoringExecutionHelper(
                             refactoring,
                             RefactoringStatus.WARNING,
-                            RefactoringSaveHelper.SAVE_ALL,
+                            RenameRefactoring.SAVE_MODE,
                             site.getShell(),
                             site.getWorkbenchWindow())
                         .perform(false, true);

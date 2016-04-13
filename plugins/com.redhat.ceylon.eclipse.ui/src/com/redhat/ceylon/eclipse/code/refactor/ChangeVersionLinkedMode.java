@@ -15,8 +15,6 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import java.util.List;
 
-import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper;
-import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.link.LinkedPosition;
@@ -141,18 +139,23 @@ public class ChangeVersionLinkedMode extends RefactorLinkedMode {
     }
     
     @Override
+    protected boolean forceSave() {
+        return true;
+    }
+    
+    @Override
     public void done() {
         if (isEnabled()) {
             try {
                 setName(getNewNameFromNamePosition());
-                revertChanges();
                 if (isShowPreview()) {
+                    revertChanges();
                     openPreview();
                 }
                 else {
                     new RefactoringExecutionHelper(refactoring,
                             RefactoringStatus.WARNING,
-                            RefactoringSaveHelper.SAVE_ALL,
+                            RefactoringSaveHelper.SAVE_CEYLON_REFACTORING,
                             editor.getSite().getShell(),
                             editor.getSite().getWorkbenchWindow())
                         .perform(false, true);
