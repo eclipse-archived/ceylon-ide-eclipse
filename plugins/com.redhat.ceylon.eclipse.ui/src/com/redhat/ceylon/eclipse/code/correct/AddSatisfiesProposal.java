@@ -101,8 +101,8 @@ public class AddSatisfiesProposal extends CorrectionProposal {
 
         Unit unit = typeDec.getUnit();
         if (unit instanceof ModifiableSourceFile) {
-            ModifiableSourceFile<IProject,IResource,IFolder,IFile> msf = 
-                    (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) unit;
+            ModifiableSourceFile msf = 
+                    (ModifiableSourceFile) unit;
             ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> phasedUnit = 
                     msf.getPhasedUnit();
             Tree.CompilationUnit decRootNode = 

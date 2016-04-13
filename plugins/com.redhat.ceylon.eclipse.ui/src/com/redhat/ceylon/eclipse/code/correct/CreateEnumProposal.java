@@ -131,7 +131,8 @@ class CreateEnumProposal extends CorrectionProposal {
             Tree.CompilationUnit rootNode, Tree.TypeDeclaration cd) {
             TypecheckerUnit u = rootNode.getUnit();
         if (u instanceof ModifiableSourceFile) {
-            ModifiableSourceFile<IProject,IResource,IFolder,IFile> cu = (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) u;
+            ModifiableSourceFile cu = 
+                    (ModifiableSourceFile) u;
                 addCreateEnumProposal(proposals, def, desc, image,
                         cu.getPhasedUnit(), cd);
         }

@@ -317,9 +317,9 @@ class InitializerProposal extends CorrectionProposal {
     public void apply(IDocument document) {
         CeylonEditor editor = null;
         if (unit instanceof ModifiableSourceFile) {
-            ModifiableSourceFile<IProject,IResource,IFolder,IFile> cu = 
+            ModifiableSourceFile<IProject,IResource,IFolder,IFile> msf = 
                     (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) unit;
-            IFile file = cu.getResourceFile();
+            IFile file = msf.getResourceFile();
             if (file!=null) {
                 editor = (CeylonEditor) gotoFile(file, 0, 0);
                 //NOTE: the document we're given is the one

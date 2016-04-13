@@ -299,11 +299,11 @@ class CreateTypeParameterProposal extends CorrectionProposal {
 
         Unit u = rootNode.getUnit();
         if (u instanceof ModifiableSourceFile) {
-            ModifiableSourceFile<IProject,IResource,IFolder,IFile> cu =
-                    (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) u;
+            ModifiableSourceFile msf =
+                    (ModifiableSourceFile) u;
             addProposal(proposals, paramList==null,
                     paramDef, brokenName, ADD_CORR, 
-                    d, cu.getPhasedUnit(), decl, offset,
+                    d, msf.getPhasedUnit(), decl, offset,
                     constraints);
         }
 

@@ -65,7 +65,8 @@ class CreateParameterProposal extends InitializerProposal {
     private static void addCreateParameterProposal(
             Collection<ICompletionProposal> proposals, 
             String def, String desc, Image image, 
-            Declaration dec, ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> unit,
+            Declaration dec, 
+            ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> unit,
             Tree.Declaration decNode, 
             Tree.ParameterList paramList, 
             Type returnType, 
@@ -162,13 +163,14 @@ class CreateParameterProposal extends InitializerProposal {
                 TypecheckerUnit u = 
                         dg.getRootNode().getUnit();
                 if (u instanceof ModifiableSourceFile) {
-                    ModifiableSourceFile<IProject,IResource,IFolder,IFile> cu = 
-                            (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) u;
+                    ModifiableSourceFile msf = 
+                            (ModifiableSourceFile) u;
                     addCreateParameterProposal(
                             proposals, paramDef, paramDesc,
                             ADD_CORR,
                             decl.getDeclarationModel(),
-                            cu.getPhasedUnit(), decl, paramList,
+                            msf.getPhasedUnit(), 
+                            decl, paramList,
                             dg.getReturnType(),
                             dg.getImports(),
                             dg.getNode());
@@ -293,7 +295,8 @@ class CreateParameterProposal extends InitializerProposal {
         if (typeDec!=null && typeDec instanceof Functional) {
             Unit u = typeDec.getUnit();
             if (u instanceof ModifiableSourceFile) {
-                ModifiableSourceFile cu = (ModifiableSourceFile) u;
+                ModifiableSourceFile cu = 
+                        (ModifiableSourceFile) u;
                 ModifiablePhasedUnit unit = cu.getPhasedUnit();
                 FindDeclarationNodeVisitor fdv =
                         new FindDeclarationNodeVisitor(typeDec);
@@ -329,7 +332,10 @@ class CreateParameterProposal extends InitializerProposal {
         if (typeDec instanceof ClassOrInterface) {
             Unit u = typeDec.getUnit();
             if (u instanceof ModifiableSourceFile) {
-                ModifiablePhasedUnit phasedUnit = ((ModifiableSourceFile) u).getPhasedUnit();
+                ModifiableSourceFile msu = 
+                        (ModifiableSourceFile) u;
+                ModifiablePhasedUnit phasedUnit = 
+                        msu.getPhasedUnit();
                 FindDeclarationNodeVisitor fdv =
                         new FindDeclarationNodeVisitor(typeDec);
                 phasedUnit.getCompilationUnit().visit(fdv);

@@ -235,8 +235,8 @@ class CreateProposal extends InitializerProposal {
                         && dg.isFormalSupported()))) {
             Unit u = typeDec.getUnit();
             if (u instanceof ModifiableSourceFile) {
-                ModifiableSourceFile<IProject,IResource,IFolder,IFile> msf =
-                        (ModifiableSourceFile<IProject,IResource,IFolder,IFile>) u;
+                ModifiableSourceFile msf =
+                        (ModifiableSourceFile) u;
                 ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> phasedUnit =
                         msf.getPhasedUnit();
                 //TODO: "object" declarations?
