@@ -30,10 +30,12 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.NORMALIZE_WS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.STRIP_TRAILING_WS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.SUB_WORD_NAVIGATION;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.editorJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.importsJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static java.util.ResourceBundle.getBundle;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
@@ -50,10 +52,6 @@ import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.SELECT_WO
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.SELECT_WORD_PREVIOUS;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.WORD_NEXT;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.WORD_PREVIOUS;
-
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.importsJ2C;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.editorJ2C;
-
 
 import java.lang.reflect.Method;
 import java.text.BreakIterator;
@@ -161,8 +159,6 @@ import com.redhat.ceylon.eclipse.code.preferences.CeylonRefactoringPreferencePag
 import com.redhat.ceylon.eclipse.code.preferences.CeylonSaveActionsPreferencePage;
 import com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems;
 import com.redhat.ceylon.eclipse.code.search.FindMenuItems;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.modelJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
