@@ -23,8 +23,7 @@ import com.redhat.ceylon.ide.common.platform {
 }
 import com.redhat.ceylon.ide.common.util {
     unsafeCast,
-    Path,
-    ifExists
+    Path
 }
 import com.redhat.ceylon.ide.common.vfs {
     FolderVirtualFile,
@@ -34,6 +33,9 @@ import com.redhat.ceylon.model.typechecker.model {
     Package
 }
 
+import java.io {
+    File
+}
 import java.lang.ref {
     WeakReference
 }
@@ -46,9 +48,6 @@ import org.eclipse.core.resources {
 }
 import org.eclipse.core.runtime {
     CoreException
-}
-import java.io {
-    File
 }
 
 object eclipseVfsServices 
@@ -99,16 +98,16 @@ object eclipseVfsServices
 
     // TODO: Check if it's really necessary to only have the project-relative path"
     shared actual Path getVirtualFilePath(IResource resource) => 
-            getProjectRelativePath(resource);
+            Path(getVirtualFilePathString(resource));
 
     // TODO: Check if it's really necessary to only have the project-relative path"
     shared actual String getVirtualFilePathString(IResource resource) => 
-            getProjectRelativePathString(resource);
+            resource.projectRelativePath.string;
     
-    shared actual Path getProjectRelativePath(IResource resource) =>
-            Path(getProjectRelativePathString(resource));
+    shared actual Path getProjectRelativePath(IResource resource, CeylonProject<IProject,IResource,IFolder,IFile> project) =>
+            Path(getProjectRelativePathString(resource, project));
     
-    shared actual String getProjectRelativePathString(IResource resource) =>
+    shared actual String getProjectRelativePathString(IResource resource, CeylonProject<IProject,IResource,IFolder,IFile> project) =>
             resource.projectRelativePath.string;
 
     shared actual File? getJavaFile(IResource resource) =>
