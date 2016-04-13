@@ -22,11 +22,6 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -34,6 +29,12 @@ import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
+import com.redhat.ceylon.model.typechecker.model.Parameter;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 
 public class DeleteRefactoring extends AbstractRefactoring {
     
@@ -58,13 +59,17 @@ public class DeleteRefactoring extends AbstractRefactoring {
                 }
                 else {
                     if (declaration instanceof TypedDeclaration &&
-                            refinedDeclaration instanceof TypedDeclaration) {
+                        refinedDeclaration instanceof TypedDeclaration) {
                         //if it's a reference to a refining method or value
                         //we can safely delete unless it refines the return type
+                        TypedDeclaration typedDeclaration = 
+                                (TypedDeclaration) declaration;
+                        TypedDeclaration refinedTypedDeclaration = 
+                                (TypedDeclaration) refinedDeclaration;
                         Type type = 
-                                ((TypedDeclaration) declaration).getType();
+                                typedDeclaration.getType();
                         Type refinedType = 
-                                ((TypedDeclaration) refinedDeclaration).getType();
+                                refinedTypedDeclaration.getType();
                         return type!=null && refinedType!=null && 
                                 !type.isExactly(refinedType);
                     }
@@ -80,7 +85,8 @@ public class DeleteRefactoring extends AbstractRefactoring {
         }
         @Override
         public void visit(Tree.InitializerParameter that) {
-        	Tree.SpecifierExpression sie = that.getSpecifierExpression();
+        	Tree.SpecifierExpression sie = 
+        	        that.getSpecifierExpression();
         	if (sie!=null) {
         		sie.visit(this);
         	}
@@ -133,16 +139,20 @@ public class DeleteRefactoring extends AbstractRefactoring {
             handleParameterRefinement(that);
         }
         private void handleParameterRefinement(Tree.Declaration that) {
-            Declaration declaration = (Declaration) getDeclaration();
+            Declaration declaration = 
+                    (Declaration) getDeclaration();
             if (declaration.isParameter()) {
                 Declaration parameterized = 
-                        (Declaration) declaration.getContainer();
+                        (Declaration) 
+                            declaration.getContainer();
                 Declaration current = that.getDeclarationModel();
                 if (!parameterized.equals(current)) {
-                    if (parameterized.getRefinedDeclaration().equals(current)) {
+                    if (parameterized.getRefinedDeclaration()
+                            .equals(current)) {
                         getNodes().add(that);
                     }
-                    if (current.getRefinedDeclaration().equals(parameterized)) {
+                    if (current.getRefinedDeclaration()
+                            .equals(parameterized)) {
                         getNodes().add(that);
                     }
                 }
@@ -249,9 +259,11 @@ public class DeleteRefactoring extends AbstractRefactoring {
     
     int countRefinements() {
         int count = 0;
-        for (PhasedUnit pu: getAllUnits()) {
-            if (searchInFile(pu)) {
-                count += countRefinements(pu.getCompilationUnit());
+        if (visibleOutsideUnit()) {
+            for (PhasedUnit pu: getAllUnits()) {
+                if (searchInFile(pu)) {
+                    count += countRefinements(pu.getCompilationUnit());
+                }
             }
         }
         if (searchInEditor()) {
@@ -269,9 +281,11 @@ public class DeleteRefactoring extends AbstractRefactoring {
     
     int countUsages() {
         int count = 0;
-        for (PhasedUnit pu: getAllUnits()) {
-            if (searchInFile(pu)) {
-                count += countUsages(pu.getCompilationUnit());
+        if (visibleOutsideUnit()) {
+            for (PhasedUnit pu: getAllUnits()) {
+                if (searchInFile(pu)) {
+                    count += countUsages(pu.getCompilationUnit());
+                }
             }
         }
         if (searchInEditor()) {
@@ -291,7 +305,8 @@ public class DeleteRefactoring extends AbstractRefactoring {
     int countReferences(Tree.CompilationUnit cu) {
         FindDeletedReferencesVisitor frv =
                 new FindDeletedReferencesVisitor(declarationToDelete);
-        Declaration declaration = (Declaration) frv.getDeclaration();
+        Declaration declaration = 
+                (Declaration) frv.getDeclaration();
         FindRefinementsVisitor fdv =
                 new FindDeletedRefinementsVisitor(declaration);
         FindDocLinkReferencesVisitor fdlrv =
@@ -329,15 +344,20 @@ public class DeleteRefactoring extends AbstractRefactoring {
     @Override
     public Change createChange(IProgressMonitor pm) throws CoreException,
             OperationCanceledException {
-        CompositeChange change = new CompositeChange("Safe Delete");
-        List<PhasedUnit> units = getAllUnits();
+        CompositeChange change = 
+                new CompositeChange("Safe Delete");
         if (searchInEditor()) {
             deleteInFile(change, newDocumentChange(), rootNode);
         }
-        for (PhasedUnit pu: units) {
-            if (searchInFile(pu)) {
-                deleteInFile(change, newTextFileChange((ProjectPhasedUnit<IProject,IResource,IFolder,IFile>)pu), 
-                        pu.getCompilationUnit());
+        if (visibleOutsideUnit()) {
+            for (PhasedUnit pu: getAllUnits()) {
+                if (searchInFile(pu)) {
+                    ProjectPhasedUnit<IProject,IResource,IFolder,IFile> ppu = 
+                            (ProjectPhasedUnit<IProject,IResource,IFolder,IFile>)pu;
+                    deleteInFile(change, 
+                            newTextFileChange(ppu), 
+                            pu.getCompilationUnit());
+                }
             }
         }
         return change;
@@ -376,7 +396,8 @@ public class DeleteRefactoring extends AbstractRefactoring {
             }
             @Override
             public void visit(Tree.PositionalArgumentList that) {
-                List<Tree.PositionalArgument> args = that.getPositionalArguments();
+                List<Tree.PositionalArgument> args = 
+                        that.getPositionalArguments();
                 for (int i=0; i<args.size(); i++) {
                     Tree.PositionalArgument arg = args.get(i);
                     Parameter parameter = arg.getParameter();
@@ -423,19 +444,24 @@ public class DeleteRefactoring extends AbstractRefactoring {
             }
             @Override
             public void visit(Tree.ParameterList that) {
-                List<Tree.Parameter> parameters = that.getParameters();
+                List<Tree.Parameter> parameters = 
+                        that.getParameters();
                 for (int i=0; i<parameters.size(); i++) {
                 	Tree.Parameter param = parameters.get(i);
-                	Declaration d = param.getParameterModel().getModel();
+                	Declaration d = 
+                	        param.getParameterModel()
+                	            .getModel();
                 	if (d.equals(declarationToDelete)) {
                 		int start, stop;
                 		if (i>0) {
-                			Tree.Parameter previous = parameters.get(i-1);
+                			Tree.Parameter previous = 
+                			        parameters.get(i-1);
                 			start = previous.getEndIndex();
                 			stop = param.getEndIndex();
                 		}
                 		else if (i<parameters.size()-1) {
-                			Tree.Parameter next = parameters.get(i+1);
+                			Tree.Parameter next = 
+                			        parameters.get(i+1);
                 			start = param.getStartIndex();
                 			stop = next.getStartIndex();
                 		}
@@ -451,9 +477,13 @@ public class DeleteRefactoring extends AbstractRefactoring {
             }
             @Override
             public void visit(Tree.Import that) {
-                Tree.ImportMemberOrTypeList list = that.getImportMemberOrTypeList();
-                if (list!=null && list.getImportMemberOrTypes().size()==1) {
-                    Tree.ImportMemberOrType imp = list.getImportMemberOrTypes().get(0);
+                Tree.ImportMemberOrTypeList list = 
+                        that.getImportMemberOrTypeList();
+                if (list!=null && 
+                        list.getImportMemberOrTypes().size()==1) {
+                    Tree.ImportMemberOrType imp = 
+                            list.getImportMemberOrTypes()
+                                .get(0);
                     Declaration d = imp.getDeclarationModel();
                     if (d.equals(declarationToDelete)) {
                         tfc.addEdit(new DeleteEdit(that.getStartIndex(), 
@@ -465,19 +495,23 @@ public class DeleteRefactoring extends AbstractRefactoring {
             }
             @Override
             public void visit(Tree.ImportMemberOrTypeList that) {
-                List<Tree.ImportMemberOrType> imports = that.getImportMemberOrTypes();
+                List<Tree.ImportMemberOrType> imports = 
+                        that.getImportMemberOrTypes();
                 for (int i=0; i<imports.size(); i++) {
-                    Tree.ImportMemberOrType imp = imports.get(i);
+                    Tree.ImportMemberOrType imp = 
+                            imports.get(i);
                     Declaration d = imp.getDeclarationModel();
                     if (d.equals(declarationToDelete)) {
                         int start, stop;
                         if (i>0) {
-                            Tree.ImportMemberOrType previous = imports.get(i-1);
+                            Tree.ImportMemberOrType previous = 
+                                    imports.get(i-1);
                             start = previous.getEndIndex();
                             stop = imp.getEndIndex();
                         }
                         else if (i<imports.size()-1) {
-                            Tree.ImportMemberOrType next = imports.get(i+1);
+                            Tree.ImportMemberOrType next = 
+                                    imports.get(i+1);
                             start = imp.getStartIndex();
                             stop = next.getStartIndex();
                         }
@@ -500,15 +534,21 @@ public class DeleteRefactoring extends AbstractRefactoring {
     List<CeylonSearchMatch> getReferences() {
         List<CeylonSearchMatch> list = 
                 new ArrayList<CeylonSearchMatch>();
-        for (PhasedUnit pu: getAllUnits()) {
-            if (searchInFile(pu)) {
-                addReferences(pu.getCompilationUnit(), list, pu);
+        if (visibleOutsideUnit()) {
+            for (PhasedUnit pu: getAllUnits()) {
+                if (searchInFile(pu)) {
+                    addReferences(pu.getCompilationUnit(), list, pu);
+                }
             }
         }
         if (searchInEditor()) {
-            String relpath = editor.getParseController().getLastPhasedUnit().getPathRelativeToSrcDir();
+            String relpath = 
+                    editor.getParseController()
+                        .getLastPhasedUnit()
+                        .getPathRelativeToSrcDir();
             addReferences(rootNode, list, 
-                    getProjectTypeChecker(project).getPhasedUnitFromRelativePath(relpath));
+                    getProjectTypeChecker(project)
+                        .getPhasedUnitFromRelativePath(relpath));
         }
         return list;
     }
@@ -517,7 +557,8 @@ public class DeleteRefactoring extends AbstractRefactoring {
             List<CeylonSearchMatch> list, PhasedUnit pu) {
         FindDeletedReferencesVisitor frv = 
                 new FindDeletedReferencesVisitor(declarationToDelete);
-        Declaration declaration = (Declaration) frv.getDeclaration();
+        Declaration declaration = 
+                (Declaration) frv.getDeclaration();
         FindDeletedRefinementsVisitor fdv = 
                 new FindDeletedRefinementsVisitor(declaration);
         FindDocLinkReferencesVisitor fdlrv = 
@@ -543,6 +584,28 @@ public class DeleteRefactoring extends AbstractRefactoring {
 
     public void setDeleteRefinements() {
         deleteRefinements = !deleteRefinements;
+    }
+
+    @Override
+    public boolean visibleOutsideUnit() {
+        if (declarationToDelete==null) {
+            return false;
+        }
+        if (declarationToDelete.isToplevel() ||
+                declarationToDelete.isShared()) {
+            return true;
+        }
+        if (declarationToDelete.isParameter()) {
+            FunctionOrValue fov = 
+                    (FunctionOrValue) declarationToDelete;
+            Declaration container = 
+                    (Declaration) fov.getContainer();
+            if (container.isToplevel() || 
+                container.isShared()) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

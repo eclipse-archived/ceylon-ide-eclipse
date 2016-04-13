@@ -1,12 +1,12 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Nodes.getDefaultArgSpecifier;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.text;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -348,19 +348,23 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
 
     public CompositeChange createChange(IProgressMonitor pm)
             throws CoreException, OperationCanceledException {
+        CompositeChange cc = new CompositeChange(getName());
+        
         List<PhasedUnit> units = getAllUnits();
         pm.beginTask(getName(), units.size());
-        CompositeChange cc = 
-                new CompositeChange(getName());
         int i = 0;
-        for (PhasedUnit pu : units) {
-            if (searchInFile(pu)) {
-                TextFileChange tfc = 
-                        newTextFileChange((ProjectPhasedUnit<IProject,IResource,IFolder,IFile>)pu);
-                refactorInFile(tfc, cc, 
-                        pu.getCompilationUnit(),
-                        pu.getTokens());
-                pm.worked(i++);
+        if (visibleOutsideUnit()) {
+            for (PhasedUnit pu : units) {
+                if (searchInFile(pu)) {
+                    ProjectPhasedUnit<IProject,IResource,IFolder,IFile> ppu = 
+                            (ProjectPhasedUnit<IProject,IResource,IFolder,IFile>)pu;
+                    TextFileChange tfc = 
+                            newTextFileChange(ppu);
+                    refactorInFile(tfc, cc, 
+                            pu.getCompilationUnit(),
+                            pu.getTokens());
+                    pm.worked(i++);
+                }
             }
         }
         if (searchInEditor()) {
@@ -921,4 +925,16 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
         return declaration;
     }
 
+    @Override
+    protected boolean visibleOutsideUnit() {
+        if (declaration==null) {
+            return false;
+        }
+        if (declaration.isToplevel() ||
+            declaration.isShared()) {
+            return true;
+        }
+        return false;
+    }
+    
 }

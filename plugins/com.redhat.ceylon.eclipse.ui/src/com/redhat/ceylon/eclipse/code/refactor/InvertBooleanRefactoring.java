@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getTokenLength;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,7 +35,9 @@ import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
 public class InvertBooleanRefactoring extends AbstractRefactoring {
@@ -70,47 +71,84 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
     }
 
     @Override
-    public RefactoringStatus checkInitialConditions(IProgressMonitor pm) throws CoreException, OperationCanceledException {
-        final RefactoringStatus result = new RefactoringStatus();
-        return result;
+    public boolean visibleOutsideUnit() {
+        if (value==null) {
+            return false;
+        }
+        if (value.isToplevel() ||
+                value.isShared()) {
+            return true;
+        }
+        if (value.isParameter()) {
+            FunctionOrValue fov = 
+                    (FunctionOrValue) value;
+            Declaration container = 
+                    (Declaration) fov.getContainer();
+            if (container.isToplevel() || 
+                container.isShared()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
-    public RefactoringStatus checkFinalConditions(IProgressMonitor pm) throws CoreException, OperationCanceledException {
+    public RefactoringStatus checkInitialConditions(IProgressMonitor pm) 
+            throws CoreException, OperationCanceledException {
         return new RefactoringStatus();
     }
 
     @Override
-    public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
+    public RefactoringStatus checkFinalConditions(IProgressMonitor pm) 
+            throws CoreException, OperationCanceledException {
+        return new RefactoringStatus();
+    }
+
+    @Override
+    public Change createChange(IProgressMonitor pm) 
+            throws CoreException, OperationCanceledException {
         CompositeChange cc = new CompositeChange(getName());
-
-        List<PhasedUnit> units = getAllUnits();
-        for (PhasedUnit unit : units) {
-            if (searchInFile(unit)) {
-                TextFileChange tfc = newTextFileChange((ProjectPhasedUnit<IProject,IResource,IFolder,IFile>)unit);
-                invertBoolean(unit.getCompilationUnit(), tfc, cc);
-
+        
+      //TODO: progress reporting!
+        if (visibleOutsideUnit()) {
+            for (PhasedUnit unit : getAllUnits()) {
+                if (searchInFile(unit)) {
+                    ProjectPhasedUnit<IProject,IResource,IFolder,IFile> ppu = 
+                            (ProjectPhasedUnit<IProject,IResource,IFolder,IFile>)unit;
+                    TextFileChange tfc = newTextFileChange(ppu);
+                    invertBoolean(unit.getCompilationUnit(), tfc, cc);
+                }
             }
         }
         if (searchInEditor()) {
             DocumentChange dc = newDocumentChange();
-            invertBoolean(editor.getParseController().getLastCompilationUnit(), dc, cc);
+            Tree.CompilationUnit rn = 
+                    editor.getParseController()
+                        .getLastCompilationUnit();
+            invertBoolean(rn, dc, cc);
         }
 
         return cc;
     }
 
-    private void invertBoolean(Tree.CompilationUnit unit, TextChange tc, CompositeChange cc) {
+    private void invertBoolean(Tree.CompilationUnit unit, 
+            TextChange tc, CompositeChange cc) {
         tc.setEdit(new MultiTextEdit());
 
         InternalVisitor visitor = new InternalVisitor(value);
         visitor.visit(unit);
 
-        for (Tree.AttributeDeclaration attributeDeclaration : visitor.attributeDeclarations) {
-            invertSpecifierExpression(attributeDeclaration.getSpecifierOrInitializerExpression(), tc);
+        for (Tree.AttributeDeclaration attributeDeclaration : 
+                visitor.attributeDeclarations) {
+            Tree.SpecifierOrInitializerExpression sie = 
+                    attributeDeclaration.getSpecifierOrInitializerExpression();
+            invertSpecifierExpression(sie, tc);
         }
-        for (Tree.SpecifierStatement specifierStatement : visitor.specifierStatements) {
-            invertSpecifierExpression(specifierStatement.getSpecifierExpression(), tc);
+        for (Tree.SpecifierStatement specifierStatement : 
+                visitor.specifierStatements) {
+            Tree.SpecifierExpression se = 
+                    specifierStatement.getSpecifierExpression();
+            invertSpecifierExpression(se, tc);
         }
         for (Tree.AssignOp assignOp : visitor.assignOps) {
             invertTerm(assignOp.getRightTerm(), tc);
@@ -129,27 +167,39 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
         }
     }
 
-    private void invertSpecifierExpression(Tree.SpecifierOrInitializerExpression specifierExpression, TextChange textChange) {
-        if (specifierExpression != null
-                && specifierExpression.getExpression() != null
-                && specifierExpression.getExpression().getTerm() != null) {
-            invertTerm(specifierExpression.getExpression().getTerm(), textChange);
+    private void invertSpecifierExpression(
+            Tree.SpecifierOrInitializerExpression specifierExpression, 
+            TextChange textChange) {
+        if (specifierExpression != null) {
+            Tree.Expression e = 
+                    specifierExpression.getExpression();
+            if (e != null && e.getTerm() != null) {
+                invertTerm(e.getTerm(), textChange);
+            }
         }
     }
 
     public static void invertTerm(Tree.Term term, TextChange change) {
         CommonToken token = (CommonToken) term.getMainToken();
         if (term instanceof Tree.BaseMemberExpression) {
-            Tree.BaseMemberExpression bme = (Tree.BaseMemberExpression) term;
+            Tree.BaseMemberExpression bme = 
+                    (Tree.BaseMemberExpression) term;
             if (bme.getDeclaration() instanceof Value) {
                 Value v = (Value) bme.getDeclaration();
-                Value trueDeclaration = term.getUnit().getTrueValueDeclaration();
-                Value falseDeclaration = term.getUnit().getFalseValueDeclaration();
+                Unit unit = term.getUnit();
+                Value trueDeclaration = 
+                        unit.getTrueValueDeclaration();
+                Value falseDeclaration = 
+                        unit.getFalseValueDeclaration();
                 if (v.equals(trueDeclaration)) {
-                    change.addEdit(new ReplaceEdit(bme.getStartIndex(), bme.getDistance(), falseDeclaration.getName(term.getUnit())));
+                    change.addEdit(new ReplaceEdit(bme.getStartIndex(), 
+                            bme.getDistance(), 
+                            falseDeclaration.getName(unit)));
                 }
                 else if (v.equals(falseDeclaration)) {
-                    change.addEdit(new ReplaceEdit(bme.getStartIndex(), bme.getDistance(), trueDeclaration.getName(term.getUnit())));
+                    change.addEdit(new ReplaceEdit(bme.getStartIndex(), 
+                            bme.getDistance(), 
+                            trueDeclaration.getName(unit)));
                 }
                 else {
                     change.addEdit(new InsertEdit(term.getStartIndex(), "!"));
@@ -157,35 +207,44 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
             }
         }
         else if (term instanceof Tree.NotOp) {
-            change.addEdit(new DeleteEdit(token.getStartIndex(), getTokenLength(token)));
+            change.addEdit(new DeleteEdit(token.getStartIndex(), 
+                    getTokenLength(token)));
         }
         else if (term instanceof Tree.EqualOp) {
-            change.addEdit(new ReplaceEdit(token.getStartIndex(), getTokenLength(token), "!="));
+            change.addEdit(new ReplaceEdit(token.getStartIndex(), 
+                    getTokenLength(token), "!="));
         }
         else if (term instanceof Tree.NotEqualOp) {
-            change.addEdit(new ReplaceEdit(token.getStartIndex(), getTokenLength(token), "=="));
+            change.addEdit(new ReplaceEdit(token.getStartIndex(), 
+                    getTokenLength(token), "=="));
         }
         else if (term instanceof Tree.LargerOp) {
-            change.addEdit(new ReplaceEdit(token.getStartIndex(), getTokenLength(token), "<="));
+            change.addEdit(new ReplaceEdit(token.getStartIndex(), 
+                    getTokenLength(token), "<="));
         }
         else if (term instanceof Tree.LargeAsOp) {
-            change.addEdit(new ReplaceEdit(token.getStartIndex(), getTokenLength(token), "<"));
+            change.addEdit(new ReplaceEdit(token.getStartIndex(), 
+                    getTokenLength(token), "<"));
         }
         else if (term instanceof Tree.SmallerOp) {
-            change.addEdit(new ReplaceEdit(token.getStartIndex(), getTokenLength(token), ">="));
+            change.addEdit(new ReplaceEdit(token.getStartIndex(), 
+                    getTokenLength(token), ">="));
         }
         else if (term instanceof Tree.SmallAsOp) {
-            change.addEdit(new ReplaceEdit(token.getStartIndex(), getTokenLength(token), ">"));
+            change.addEdit(new ReplaceEdit(token.getStartIndex(), 
+                    getTokenLength(token), ">"));
         }
         else if (term instanceof Tree.AndOp) {
             Tree.AndOp andOp = (Tree.AndOp) term;
-            change.addEdit(new ReplaceEdit(token.getStartIndex(), getTokenLength(token), "||"));
+            change.addEdit(new ReplaceEdit(token.getStartIndex(), 
+                    getTokenLength(token), "||"));
             invertTerm(andOp.getLeftTerm(), change);
             invertTerm(andOp.getRightTerm(), change);
         }
         else if (term instanceof Tree.OrOp) {
             Tree.OrOp orOp = (Tree.OrOp) term;
-            change.addEdit(new ReplaceEdit(token.getStartIndex(), getTokenLength(token), "&&"));
+            change.addEdit(new ReplaceEdit(token.getStartIndex(), 
+                    getTokenLength(token), "&&"));
             //if either operand is an && then add parens
             Tree.Term lt = orOp.getLeftTerm();
             Tree.Term rt = orOp.getRightTerm();
@@ -223,10 +282,14 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
 
     private static class InternalVisitor extends FindReferencesVisitor {
 
-        Set<Tree.AttributeDeclaration> attributeDeclarations = new HashSet<Tree.AttributeDeclaration>();
-        Set<Tree.SpecifierStatement> specifierStatements = new HashSet<Tree.SpecifierStatement>();
-        Set<Tree.AssignOp> assignOps = new HashSet<Tree.AssignOp>();
-        Map<Node, Tree.NotOp> notOpMap = new HashMap<Node, Tree.NotOp>();
+        Set<Tree.AttributeDeclaration> attributeDeclarations = 
+                new HashSet<Tree.AttributeDeclaration>();
+        Set<Tree.SpecifierStatement> specifierStatements = 
+                new HashSet<Tree.SpecifierStatement>();
+        Set<Tree.AssignOp> assignOps = 
+                new HashSet<Tree.AssignOp>();
+        Map<Node, Tree.NotOp> notOpMap = 
+                new HashMap<Node, Tree.NotOp>();
 
         public InternalVisitor(Declaration declaration) {
             super(declaration);
@@ -243,8 +306,11 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
 
         @Override
         public void visit(Tree.AssignOp that) {
-            if (that.getLeftTerm() instanceof Tree.MemberOrTypeExpression) {
-                Tree.MemberOrTypeExpression mote = (Tree.MemberOrTypeExpression) that.getLeftTerm();
+            if (that.getLeftTerm() 
+                    instanceof Tree.MemberOrTypeExpression) {
+                Tree.MemberOrTypeExpression mote = 
+                        (Tree.MemberOrTypeExpression) 
+                            that.getLeftTerm();
                 if (getDeclaration().equals(mote.getDeclaration())) {
                     assignOps.add(that);
                     return;
@@ -255,8 +321,11 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
 
         @Override
         public void visit(Tree.SpecifierStatement that) {
-            if (that.getBaseMemberExpression() instanceof Tree.MemberOrTypeExpression) {
-                Tree.MemberOrTypeExpression mote = (Tree.MemberOrTypeExpression) that.getBaseMemberExpression();
+            if (that.getBaseMemberExpression() 
+                    instanceof Tree.MemberOrTypeExpression) {
+                Tree.MemberOrTypeExpression mote = 
+                        (Tree.MemberOrTypeExpression) 
+                            that.getBaseMemberExpression();
                 if (getDeclaration().equals(mote.getDeclaration())) {
                     specifierStatements.add(that);
                     return;

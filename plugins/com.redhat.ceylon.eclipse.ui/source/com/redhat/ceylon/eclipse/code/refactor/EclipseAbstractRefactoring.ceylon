@@ -159,4 +159,9 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
         }
         return units;
     }
+    
+    shared default small Integer saveMode 
+            => visibleOutsideUnit 
+            then RefactoringSaveHelper.\iSAVE_CEYLON_REFACTORING 
+            else RefactoringSaveHelper.\iSAVE_NOTHING;
 }

@@ -340,7 +340,12 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
     public String getName() {
         return "Make Receiver";
     }
-
+    
+    @Override
+    protected boolean visibleOutsideUnit() {
+        return true; //TODO!!!
+    }
+    
     public RefactoringStatus checkInitialConditions
             (IProgressMonitor pm)
                     throws CoreException,
@@ -360,6 +365,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
             throws CoreException,
                    OperationCanceledException {
         CompositeChange cc = new CompositeChange(getName());
+        
         Tree.AttributeDeclaration decNode =
                 (Tree.AttributeDeclaration) node;
         Value param = decNode.getDeclarationModel();
@@ -372,6 +378,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
             defaultArg = sie.getExpression().getTerm();
         }
         
+        //TODO: progress reporting!
         for (PhasedUnit pu: getAllUnits()) {
             if (searchInFile(pu)) {
                 ProjectPhasedUnit<IProject, IResource, IFolder, IFile> ppu = 

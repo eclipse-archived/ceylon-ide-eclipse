@@ -114,6 +114,11 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     public boolean isMethod() {
         return declaration instanceof Tree.AnyMethod;
     }
+    
+    @Override
+    protected boolean visibleOutsideUnit() {
+        return true; //TODO!!!
+    }
 
     public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
             throws CoreException, OperationCanceledException {
@@ -155,7 +160,8 @@ public class MoveOutRefactoring extends AbstractRefactoring {
         Tree.TypeDeclaration owner = 
                 (Tree.TypeDeclaration) 
                     getContainer(rootNode, dec);
-
+        
+      //TODO: progress reporting!
         for (PhasedUnit pu: getAllUnits()) {
             if (searchInFile(pu)) {
                 ProjectPhasedUnit<IProject, IResource, IFolder, IFile> ppu = 

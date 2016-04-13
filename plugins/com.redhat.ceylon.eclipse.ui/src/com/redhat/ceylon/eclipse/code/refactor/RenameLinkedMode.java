@@ -58,9 +58,12 @@ public final class RenameLinkedMode
     
     @Override
     protected boolean canStart() {
-        return refactoring.getEnabled() &&
-                new RefactoringSaveHelper(refactoring.getSaveMode())
-                    .saveEditors(editor.getSite().getShell());
+        return refactoring.getEnabled();
+    }
+    
+    @Override
+    protected int getSaveMode() {
+        return refactoring.getSaveMode();
     }
     
     @Override

@@ -211,6 +211,7 @@ public class RenameRefactoring extends AbstractRefactoring {
     private boolean renameFile;
     private boolean renameValuesAndFunctions;
     
+    @Override
     int getSaveMode() {
         return visibleOutsideUnit() ? 
                 RefactoringSaveHelper.SAVE_REFACTORING : 
@@ -339,12 +340,13 @@ public class RenameRefactoring extends AbstractRefactoring {
     public CompositeChange createChange(IProgressMonitor pm) 
             throws CoreException, 
                    OperationCanceledException {
-        List<PhasedUnit> units = getAllUnits();
-        pm.beginTask(getName(), units.size());
         CompositeChange composite = 
                 new CompositeChange(getName());
+        
         int i=0;
         if (visibleOutsideUnit()) {
+            List<PhasedUnit> units = getAllUnits();
+            pm.beginTask(getName(), units.size());
             for (PhasedUnit pu: units) {
                 if (searchInFile(pu)) {
                     ProjectPhasedUnit<IProject, IResource, IFolder, IFile> ppu = 
@@ -356,6 +358,9 @@ public class RenameRefactoring extends AbstractRefactoring {
                 }
             }
         }
+        else {
+            pm.beginTask(getName(), 1);
+        }
         if (searchInEditor()) {
             Tree.CompilationUnit editorRootNode = 
                     editor.getParseController()
@@ -364,6 +369,7 @@ public class RenameRefactoring extends AbstractRefactoring {
                     composite, editorRootNode);
             pm.worked(i++);
         }
+        
         if (project!=null && renameFile) {
             String unitPath = 
                     declaration.getUnit()

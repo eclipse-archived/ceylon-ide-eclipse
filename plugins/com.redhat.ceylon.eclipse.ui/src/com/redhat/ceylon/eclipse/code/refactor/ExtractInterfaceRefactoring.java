@@ -51,16 +51,20 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     private Tree.ObjectDefinition containerAsObjectDef;
     private String packageName;
 
-    private LinkedHashSet<TypeParameter> extractedTypeParameters = new LinkedHashSet<TypeParameter>();
-    private HashMap<Declaration, String> extractedImports = new HashMap<Declaration, String>();
-    private HashSet<String> extractedImportsPackages = new HashSet<String>();
+    private LinkedHashSet<TypeParameter> extractedTypeParameters = 
+            new LinkedHashSet<TypeParameter>();
+    private HashMap<Declaration, String> extractedImports = 
+            new HashMap<Declaration, String>();
+    private HashSet<String> extractedImportsPackages = 
+            new HashSet<String>();
 
     public ExtractInterfaceRefactoring(IEditorPart editor) {
         super(editor);
 
         ClassOrInterface clazz = null;
         if (node != null) {
-            InternalFindContainerVisitor findContainerVisitor = new InternalFindContainerVisitor(node);
+            InternalFindContainerVisitor findContainerVisitor = 
+                    new InternalFindContainerVisitor(node);
             findContainerVisitor.visit(rootNode);
             container = findContainerVisitor.container;
 
@@ -81,26 +85,35 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
 
     @Override
     public boolean getEnabled() {
-        return extractableMembers != null && extractableMembers.length > 0;
+        return extractableMembers != null && 
+                extractableMembers.length > 0;
     }
 
     @Override
     public String getName() {
         return "Extract Interface";
     }
+    
+    @Override
+    protected boolean visibleOutsideUnit() {
+        return true; //TODO!!!!!
+    }
 
     @Override
-    public RefactoringStatus checkInitialConditions(IProgressMonitor pm) throws CoreException, OperationCanceledException {
+    public RefactoringStatus checkInitialConditions(IProgressMonitor pm) 
+            throws CoreException, OperationCanceledException {
         return new RefactoringStatus();
     }
 
     @Override
-    public RefactoringStatus checkFinalConditions(IProgressMonitor pm) throws CoreException, OperationCanceledException {
+    public RefactoringStatus checkFinalConditions(IProgressMonitor pm) 
+            throws CoreException, OperationCanceledException {
         return new RefactoringStatus();
     }
 
     @Override
-    public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
+    public Change createChange(IProgressMonitor pm) 
+            throws CoreException, OperationCanceledException {
         collectExtractedTypeParametersFromMembers();
         collectExtractedTypeParametersFromTheirConstrains();
         collectExtractedImports();
@@ -123,15 +136,25 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     }
 
     private Change createNewUnitChange(StringBuilder newUnitBuilder) {
-        IPath path = sourceFile.getParent().getProjectRelativePath().append(newInterfaceName + ".ceylon");
+        IPath path = 
+                sourceFile.getParent()
+                    .getProjectRelativePath()
+                    .append(newInterfaceName + ".ceylon");
         IFile file = project.getFile(path);
-        String desc = "Create source file '" + file.getProjectRelativePath() + "'";
-        CreateUnitChange newUnitChange = new CreateUnitChange(file, true, newUnitBuilder.toString(), project, desc);
+        String desc = 
+                "Create source file '" + 
+                file.getProjectRelativePath() + 
+                "'";
+        CreateUnitChange newUnitChange = 
+                new CreateUnitChange(file, true, 
+                        newUnitBuilder.toString(), 
+                        project, desc);
         return newUnitChange;
     }
 
     private Change createOriginalUnitChange() {
-        TextChange originalUnitChange = createEditorChange(editor, document);
+        TextChange originalUnitChange = 
+                createEditorChange(editor, document);
         originalUnitChange.setEdit(new MultiTextEdit());
         addSatisfies(originalUnitChange);
         addSharedAndActualAnnotations(originalUnitChange);
@@ -141,28 +164,38 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     private void collectExtractedTypeParametersFromMembers() {
         for (Tree.TypedDeclaration extractedMember : extractedMembers) {
 
-            TypedDeclaration d = extractedMember.getDeclarationModel();
+            TypedDeclaration d = 
+                    extractedMember.getDeclarationModel();
             if (d != null) {
                 collectExtractedTypeParameters(d.getType());
             }
 
             if (extractedMember instanceof Tree.AnyMethod) {
-                Tree.AnyMethod method = (Tree.AnyMethod) extractedMember;
+                Tree.AnyMethod method = 
+                        (Tree.AnyMethod) extractedMember;
                 if (method.getParameterLists() != null) {
-                    for (Tree.ParameterList parameterList : method.getParameterLists()) {
-                        for (Tree.Parameter parameter : parameterList.getParameters()) {
-                            Parameter parameterModel = parameter.getParameterModel();
+                    for (Tree.ParameterList parameterList : 
+                            method.getParameterLists()) {
+                        for (Tree.Parameter parameter : 
+                            parameterList.getParameters()) {
+                            Parameter parameterModel = 
+                                    parameter.getParameterModel();
                             if (parameterModel != null) {
-                                collectExtractedTypeParameters(parameterModel.getType());
+                                collectExtractedTypeParameters(
+                                        parameterModel.getType());
                             }
                         }
                     }
                 }
                 if (method.getTypeConstraintList() != null) {
-                    for (Tree.TypeConstraint typeConstraint : method.getTypeConstraintList().getTypeConstraints()) {
-                        TypeParameter typeConstraintModel = typeConstraint.getDeclarationModel();
+                    for (Tree.TypeConstraint typeConstraint : 
+                            method.getTypeConstraintList()
+                                .getTypeConstraints()) {
+                        TypeParameter typeConstraintModel = 
+                                typeConstraint.getDeclarationModel();
                         if (typeConstraintModel != null) {
-                            collectExtractedTypeParameters(typeConstraintModel.getType());
+                            collectExtractedTypeParameters(
+                                    typeConstraintModel.getType());
                         }
                     }
                 }
@@ -171,17 +204,24 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     }
 
     private void collectExtractedTypeParametersFromTheirConstrains() {
-        if (containerAsClassOrInter != null && !extractedTypeParameters.isEmpty()) {
-            Tree.TypeConstraintList typeConstraintList = typeConstraintList();
+        if (containerAsClassOrInter != null && 
+                !extractedTypeParameters.isEmpty()) {
+            Tree.TypeConstraintList typeConstraintList = 
+                    typeConstraintList();
             if (typeConstraintList != null) {
                 boolean repeat = true;
                 while (repeat) {
                     int size = extractedTypeParameters.size();
-                    for (Tree.TypeConstraint tc : typeConstraintList.getTypeConstraints()) {
-                        if (extractedTypeParameters.contains(tc.getDeclarationModel())) {
-                            if (tc.getSatisfiedTypes() != null && tc.getSatisfiedTypes().getTypes() != null) {
-                                for (Tree.StaticType t : tc.getSatisfiedTypes().getTypes()) {
-                                    collectExtractedTypeParameters(t.getTypeModel());
+                    for (Tree.TypeConstraint tc : 
+                            typeConstraintList.getTypeConstraints()) {
+                        if (extractedTypeParameters.contains(
+                                tc.getDeclarationModel())) {
+                            if (tc.getSatisfiedTypes() != null && 
+                                    tc.getSatisfiedTypes().getTypes() != null) {
+                                for (Tree.StaticType t : 
+                                        tc.getSatisfiedTypes().getTypes()) {
+                                    collectExtractedTypeParameters(
+                                            t.getTypeModel());
                                 }
                             }
                         }
@@ -220,19 +260,26 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     }
 
     private void collectExtractedImports() {
-        if (containerAsClassOrInter != null && !extractedTypeParameters.isEmpty()) {
-            Tree.TypeParameterList typeParameterList = containerAsClassOrInter.getTypeParameterList();
+        if (containerAsClassOrInter != null && 
+                !extractedTypeParameters.isEmpty()) {
+            Tree.TypeParameterList typeParameterList = 
+                    containerAsClassOrInter.getTypeParameterList();
             if (typeParameterList != null) {
-                for (Tree.TypeParameterDeclaration tp : typeParameterList.getTypeParameterDeclarations()) {
-                    if (extractedTypeParameters.contains(tp.getDeclarationModel())) {
+                for (Tree.TypeParameterDeclaration tp : 
+                        typeParameterList.getTypeParameterDeclarations()) {
+                    if (extractedTypeParameters.contains(
+                            tp.getDeclarationModel())) {
                         collectExtractedImports(tp);
                     }
                 }
             }
-            Tree.TypeConstraintList typeConstraintList = typeConstraintList();
+            Tree.TypeConstraintList typeConstraintList = 
+                    typeConstraintList();
             if (typeConstraintList != null) {
-                for (Tree.TypeConstraint tc : typeConstraintList.getTypeConstraints()) {
-                    if (extractedTypeParameters.contains(tc.getDeclarationModel())) {
+                for (Tree.TypeConstraint tc : 
+                        typeConstraintList.getTypeConstraints()) {
+                    if (extractedTypeParameters.contains(
+                            tc.getDeclarationModel())) {
                         collectExtractedImports(tc);
                     }
                 }
@@ -243,7 +290,8 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
             collectExtractedImports(member.getType());
             if (member instanceof Tree.AnyMethod) {
                 Tree.AnyMethod method = (Tree.AnyMethod) member;
-                for (Tree.ParameterList parameterList : method.getParameterLists()) {
+                for (Tree.ParameterList parameterList : 
+                        method.getParameterLists()) {
                     collectExtractedImports(parameterList);
                 }
                 collectExtractedImports(method.getTypeParameterList());
@@ -263,7 +311,9 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     }
 
     private void addImports(StringBuilder content) {
-        String delim = utilJ2C().indents().getDefaultLineDelimiter(document);
+        String delim = 
+                utilJ2C().indents()
+                    .getDefaultLineDelimiter(document);
         String importText = 
                 getImportText(extractedImportsPackages, 
                         extractedImports, delim);
@@ -279,12 +329,16 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     }
 
     private void addInterfaceTypeParameters(StringBuilder content) {
-        if (containerAsClassOrInter != null && !extractedTypeParameters.isEmpty()) {
-            Tree.TypeParameterList typeParameterList = containerAsClassOrInter.getTypeParameterList();
+        if (containerAsClassOrInter != null && 
+                !extractedTypeParameters.isEmpty()) {
+            Tree.TypeParameterList typeParameterList = 
+                    containerAsClassOrInter.getTypeParameterList();
             if (typeParameterList != null) {
                 boolean first = true;
-                for (Tree.TypeParameterDeclaration tp : typeParameterList.getTypeParameterDeclarations()) {
-                    if (extractedTypeParameters.contains(tp.getDeclarationModel())) {
+                for (Tree.TypeParameterDeclaration tp : 
+                        typeParameterList.getTypeParameterDeclarations()) {
+                    if (extractedTypeParameters.contains(
+                            tp.getDeclarationModel())) {
                         if (first) {
                             first = false;
                             content.append("<");
@@ -302,11 +356,15 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     }
 
     private void addInterfaceTypeConstraints(StringBuilder content) {
-        if (containerAsClassOrInter != null && !extractedTypeParameters.isEmpty()) {
-            Tree.TypeConstraintList typeConstraintList = typeConstraintList();
+        if (containerAsClassOrInter != null && 
+                !extractedTypeParameters.isEmpty()) {
+            Tree.TypeConstraintList typeConstraintList = 
+                    typeConstraintList();
             if (typeConstraintList != null) {
-                for (Tree.TypeConstraint tc : typeConstraintList.getTypeConstraints()) {
-                    if (extractedTypeParameters.contains(tc.getDeclarationModel())) {
+                for (Tree.TypeConstraint tc : 
+                        typeConstraintList.getTypeConstraints()) {
+                    if (extractedTypeParameters.contains(
+                            tc.getDeclarationModel())) {
                         content.append(" ");
                         content.append(text(tc, tokens));
                     }
@@ -318,19 +376,25 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     private Tree.TypeConstraintList typeConstraintList() {
         Tree.TypeConstraintList typeConstraintList = null;
         if (containerAsClassOrInter instanceof Tree.AnyClass) {
-            Tree.AnyClass cl = (Tree.AnyClass) containerAsClassOrInter;
+            Tree.AnyClass cl = 
+                    (Tree.AnyClass) containerAsClassOrInter;
             typeConstraintList = cl.getTypeConstraintList();
         }
         if (containerAsClassOrInter instanceof Tree.AnyInterface) {
-            Tree.AnyInterface in = (Tree.AnyInterface) containerAsClassOrInter;
+            Tree.AnyInterface in = 
+                    (Tree.AnyInterface) containerAsClassOrInter;
             typeConstraintList = in.getTypeConstraintList();
         }
         return typeConstraintList;
     }
 
     private void addInterfaceBody(StringBuilder content) {
-        String delim = utilJ2C().indents().getDefaultLineDelimiter(document);
-        String indent = utilJ2C().indents().getDefaultIndent();
+        String delim = 
+                utilJ2C().indents()
+                    .getDefaultLineDelimiter(document);
+        String indent = 
+                utilJ2C().indents()
+                    .getDefaultIndent();
 
         content.append(" {");
         content.append(delim);
@@ -339,16 +403,20 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
             content.append(delim);
             content.append(indent);
 
-            Tree.AnnotationList annotationList = member.getAnnotationList();
-            Tree.AnonymousAnnotation anonymousAnnotation = annotationList.getAnonymousAnnotation();
+            Tree.AnnotationList annotationList = 
+                    member.getAnnotationList();
+            Tree.AnonymousAnnotation anonymousAnnotation = 
+                    annotationList.getAnonymousAnnotation();
             if (anonymousAnnotation != null) {
-                content.append(text(anonymousAnnotation, tokens)).append(delim).append(indent);
+                content.append(text(anonymousAnnotation, tokens))
+                    .append(delim).append(indent);
             }
             content.append("shared formal ");
             if(member.getDeclarationModel().isVariable()){
                 content.append("variable ");
             }
-            for (Tree.Annotation annotation : annotationList.getAnnotations()) {
+            for (Tree.Annotation annotation : 
+                    annotationList.getAnnotations()) {
                 String annotationText = text(annotation, tokens);
                 if (annotationText.equals("shared") ||
                         annotationText.equals("variable") ||
@@ -371,7 +439,8 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
                 if (method.getTypeConstraintList() != null) {
                     content.append(text(method.getTypeParameterList(), tokens));
                 }
-                for (Tree.ParameterList parameterList : method.getParameterLists()) {
+                for (Tree.ParameterList parameterList : 
+                        method.getParameterLists()) {
                     content.append(text(parameterList, tokens));
                 }
                 if (method.getTypeConstraintList() != null) {
@@ -481,21 +550,25 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
         for (Tree.TypedDeclaration member : extractedMembers) {
             if (!member.getDeclarationModel().isShared()) {
                 InsertEdit createInsertAnnotationEdit = new correctJ2C()
-                        .addAnnotationsQuickFix().createInsertAnnotationEdit("shared", member, document);
+                        .addAnnotationsQuickFix()
+                        .createInsertAnnotationEdit("shared", member, document);
                 originalUnitChange.addEdit(createInsertAnnotationEdit);
             }
             if (!member.getDeclarationModel().isActual()) {
                 InsertEdit createInsertAnnotationEdit = new correctJ2C()
-                        .addAnnotationsQuickFix().createInsertAnnotationEdit("actual", member, document);
+                        .addAnnotationsQuickFix()
+                        .createInsertAnnotationEdit("actual", member, document);
                 originalUnitChange.addEdit(createInsertAnnotationEdit);
             }
         }
     }
 
     private Tree.TypedDeclaration[] findExtractableMembers(ClassOrInterface clazz) {
-        InternalFindExtractableVisitor findExtractableVisitor = new InternalFindExtractableVisitor(clazz);
+        InternalFindExtractableVisitor findExtractableVisitor = 
+                new InternalFindExtractableVisitor(clazz);
         findExtractableVisitor.visit(container);
-        return findExtractableVisitor.extractableMembers.toArray(new Tree.TypedDeclaration[] {});
+        return findExtractableVisitor.extractableMembers
+                .toArray(new Tree.TypedDeclaration[] {});
     }
 
     private String findPackageName(Scope scope) {
@@ -561,7 +634,8 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     private static class InternalFindExtractableVisitor extends Visitor {
 
         private Declaration container;
-        private List<Tree.TypedDeclaration> extractableMembers = new ArrayList<Tree.TypedDeclaration>();
+        private List<Tree.TypedDeclaration> extractableMembers = 
+                new ArrayList<Tree.TypedDeclaration>();
 
         private InternalFindExtractableVisitor(Declaration container) {
             this.container = container;
@@ -569,14 +643,16 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
 
         @Override
         public void visit(Tree.AnyAttribute that) {
-            if (that.getDeclarationModel().getContainer() == container) {
+            if (that.getDeclarationModel().getContainer() 
+                    == container) {
                 extractableMembers.add(that);
             }
         }
 
         @Override
         public void visit(Tree.AnyMethod that) {
-            if (that.getDeclarationModel().getContainer() == container) {
+            if (that.getDeclarationModel().getContainer() 
+                    == container) {
                 extractableMembers.add(that);
             }
         }

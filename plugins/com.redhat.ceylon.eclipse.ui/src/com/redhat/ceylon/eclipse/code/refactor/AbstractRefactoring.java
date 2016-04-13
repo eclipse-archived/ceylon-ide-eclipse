@@ -168,10 +168,7 @@ abstract class AbstractRefactoring extends Refactoring {
         return units;
     }
     
-    //TODO: make it abstract!
-    protected boolean visibleOutsideUnit() {
-        return true;
-    }
+    protected abstract boolean visibleOutsideUnit();
 
     protected int countDeclarationOccurrences() {
         int count = 0;
@@ -190,6 +187,12 @@ abstract class AbstractRefactoring extends Refactoring {
     
     int countReferences(Tree.CompilationUnit cu) {
         return 0;
+    }
+    
+    int getSaveMode() {
+        return visibleOutsideUnit() ? 
+                RefactoringSaveHelper.SAVE_CEYLON_REFACTORING : 
+                RefactoringSaveHelper.SAVE_NOTHING;
     }
 
 }

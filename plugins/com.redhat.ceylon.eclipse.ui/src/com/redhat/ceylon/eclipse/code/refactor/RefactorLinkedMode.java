@@ -48,8 +48,9 @@ public abstract class RefactorLinkedMode extends AbstractLinkedMode {
                     throws BadLocationException;
 
     public final void start() {
-        if (canStart()) {
-//            editor.saveWithoutActions();
+        if (canStart() &&
+                new RefactoringSaveHelper(getSaveMode())
+                    .saveEditors(editor.getSite().getShell())) {
             saveEditorState();
             ISourceViewer viewer = 
                     editor.getCeylonSourceViewer();
@@ -100,6 +101,10 @@ public abstract class RefactorLinkedMode extends AbstractLinkedMode {
         setName(getNewNameFromNamePosition());
         linkedModeModel.exit(LinkedModeImporter.CANCEL);
         revertChanges();
+    }
+
+    protected int getSaveMode() {
+        return RefactoringSaveHelper.SAVE_NOTHING;
     }
     
 }

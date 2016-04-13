@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.refactor.RefactoringSaveHelper.SAVE_CEYLON_REFACTORING;
-
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ui.IEditorPart;
@@ -34,7 +32,15 @@ public abstract class AbstractRefactoringAction {
     }
 
     int getSaveMode() {
-        return SAVE_CEYLON_REFACTORING;
+        if (refactoring instanceof EclipseAbstractRefactoring) {
+            return ((EclipseAbstractRefactoring) refactoring).getSaveMode();
+        }
+        else if (refactoring instanceof AbstractRefactoring) {
+            return ((AbstractRefactoring) refactoring).getSaveMode();
+        }
+        else {
+            return RefactoringSaveHelper.SAVE_NOTHING;
+        }
     }
     
     public abstract Refactoring createRefactoring();

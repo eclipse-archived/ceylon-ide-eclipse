@@ -213,21 +213,27 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
     public CompositeChange createChange(IProgressMonitor pm) 
             throws CoreException,
                    OperationCanceledException {
-        List<PhasedUnit> units = getAllUnits();
-        pm.beginTask(getName(), units.size());
         CompositeChange cc = new CompositeChange(getName());
+        
         int i=0;
-        for (PhasedUnit pu: units) {
-            if (searchInFile(pu)) {
-                ProjectPhasedUnit<IProject,IResource,IFolder,IFile> ppu = 
-                        (ProjectPhasedUnit<IProject,IResource,IFolder,IFile>) pu;
-                TextFileChange tfc = 
-                        newTextFileChange(ppu);
-                refactorInFile(tfc, cc, 
-                        pu.getCompilationUnit(), 
-                        pu.getTokens());
-                pm.worked(i++);
+        if (visibleOutsideUnit()) {
+            List<PhasedUnit> units = getAllUnits();
+            pm.beginTask(getName(), units.size());
+            for (PhasedUnit pu: units) {
+                if (searchInFile(pu)) {
+                    ProjectPhasedUnit<IProject,IResource,IFolder,IFile> ppu = 
+                            (ProjectPhasedUnit<IProject,IResource,IFolder,IFile>) pu;
+                    TextFileChange tfc = 
+                            newTextFileChange(ppu);
+                    refactorInFile(tfc, cc, 
+                            pu.getCompilationUnit(), 
+                            pu.getTokens());
+                    pm.worked(i++);
+                }
             }
+        }
+        else {
+            pm.beginTask(getName(), 1);
         }
         if (searchInEditor()) {
             DocumentChange dc = newDocumentChange();
@@ -352,7 +358,9 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
     private void createNewClassDeclaration(final TextChange tfc,
             Tree.CompilationUnit root) {
         if (declaration.getUnit().equals(root.getUnit())) {
-            String delim = utilJ2C().indents().getDefaultLineDelimiter(document);
+            String delim = 
+                    utilJ2C().indents()
+                        .getDefaultLineDelimiter(document);
             //TODO: for unshared declarations, we don't 
             //      need to make it toplevel, I guess
             int loc = findToplevelStatement(rootNode, node).getStartIndex();
@@ -485,6 +493,18 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                 }
             }
         });
+    }
+    
+    @Override
+    protected boolean visibleOutsideUnit() {
+        if (declaration==null) {
+            return false;
+        }
+        if (declaration.isToplevel() ||
+            declaration.isShared()) {
+            return true;
+        }
+        return false;
     }
     
 }

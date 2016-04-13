@@ -60,6 +60,11 @@ public final class AliasLinkedMode
         return true;
     }
     
+    @Override
+    protected int getSaveMode() {
+        return refactoring.getSaveMode();
+    }
+    
     private boolean isEnabled() {
         String newName = getNewNameFromNamePosition();
         return !getInitialName().equals(newName) &&

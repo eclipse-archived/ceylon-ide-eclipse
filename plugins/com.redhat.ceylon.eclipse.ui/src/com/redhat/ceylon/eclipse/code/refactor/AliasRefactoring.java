@@ -180,9 +180,10 @@ public class AliasRefactoring extends AbstractRefactoring {
             IProgressMonitor pm) 
                     throws CoreException, 
                            OperationCanceledException {
+        CompositeChange cc = new CompositeChange(getName());
+        
         List<PhasedUnit> units = getAllUnits();
         pm.beginTask(getName(), units.size());
-        CompositeChange cc = new CompositeChange(getName());
         int i=0;
         for (PhasedUnit pu: units) {
             Package editorPackage = 
@@ -194,7 +195,9 @@ public class AliasRefactoring extends AbstractRefactoring {
                     pu.getPackage()
                         .equals(editorPackage);
             if (inSamePackage && searchInFile(pu)) {
-                TextFileChange tfc = newTextFileChange((ProjectPhasedUnit<IProject,IResource,IFolder,IFile>)pu);
+                ProjectPhasedUnit<IProject,IResource,IFolder,IFile> ppu = 
+                        (ProjectPhasedUnit<IProject,IResource,IFolder,IFile>) pu;
+                TextFileChange tfc = newTextFileChange(ppu);
                 renameInFile(tfc, cc, 
                         pu.getCompilationUnit());
                 pm.worked(i++);
@@ -379,6 +382,11 @@ public class AliasRefactoring extends AbstractRefactoring {
 
     public String getNewName() {
         return newName;
+    }
+    
+    @Override
+    protected boolean visibleOutsideUnit() {
+        return true;
     }
 
 }

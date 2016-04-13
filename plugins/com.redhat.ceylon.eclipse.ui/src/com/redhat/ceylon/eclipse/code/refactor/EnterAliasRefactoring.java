@@ -213,4 +213,8 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
         return newName;
     }
     
+    @Override
+    protected boolean visibleOutsideUnit() {
+        return false;
+    }
 }

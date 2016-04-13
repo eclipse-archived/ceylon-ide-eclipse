@@ -129,10 +129,10 @@ public class ChangeVersionRefactoring extends AbstractRefactoring {
 
     public CompositeChange createChange(IProgressMonitor pm) 
             throws CoreException, OperationCanceledException {
+        CompositeChange cc = new CompositeChange(getName());
+        
         List<PhasedUnit> units = getAllUnits();
         pm.beginTask(getName(), units.size());
-        CompositeChange cc = 
-                new CompositeChange(getName());
         int i=0;
         for (PhasedUnit pu: units) {
             if (searchInFile(pu)) {
@@ -195,5 +195,10 @@ public class ChangeVersionRefactoring extends AbstractRefactoring {
 
     public Module getModule() {
         return module;
+    }
+    
+    @Override
+    protected boolean visibleOutsideUnit() {
+        return true;
     }
 }

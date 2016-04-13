@@ -144,6 +144,11 @@ public class ChangeVersionLinkedMode extends RefactorLinkedMode {
     }
     
     @Override
+    protected int getSaveMode() {
+        return refactoring.getSaveMode();
+    }
+    
+    @Override
     public void done() {
         if (isEnabled()) {
             try {

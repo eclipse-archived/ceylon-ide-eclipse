@@ -110,7 +110,6 @@ class EclipseInlineRefactoring(CeylonEditor editorPart, shared Declaration decla
             return RefactoringStatus.createFatalErrorStatus(res);
         } else {
             value status = RefactoringStatus();
-            
             for (warning in res) {
                 status.merge(RefactoringStatus.createWarningStatus(warning));
             }
