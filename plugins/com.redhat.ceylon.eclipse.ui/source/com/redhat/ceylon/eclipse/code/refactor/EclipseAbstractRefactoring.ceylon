@@ -111,7 +111,7 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
     shared actual default EclipseEditorData editorData 
             = EclipseEditorData(editorPart);
 
-    shared actual Boolean inSameProject(Declaration declaration)
+    inSameProject(Declaration declaration)
             => package.inSameProject(declaration, editorPart);
     
     shared DocumentChange newDocumentChange() {

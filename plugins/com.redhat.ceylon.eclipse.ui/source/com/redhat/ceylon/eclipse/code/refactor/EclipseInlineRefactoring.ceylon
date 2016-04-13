@@ -33,7 +33,6 @@ import org.eclipse.jface.text.contentassist {
 import org.eclipse.ltk.core.refactoring {
     TextChange,
     CompositeChange,
-    Change,
     RefactoringStatus
 }
 import org.eclipse.text.edits {
@@ -98,7 +97,7 @@ class EclipseInlineRefactoring(CeylonEditor editorPart, shared Declaration decla
         return this;
     }
 
-    shared actual void addChangeToChange(CompositeChange change, TextChange tc)
+    addChangeToChange(CompositeChange change, TextChange tc)
             => change.add(tc);
     
     shared actual RefactoringStatus checkFinalConditions(IProgressMonitor mon)
@@ -119,14 +118,12 @@ class EclipseInlineRefactoring(CeylonEditor editorPart, shared Declaration decla
         }
     }
 
-    shared actual Change createChange(IProgressMonitor? iProgressMonitor)
+    createChange(IProgressMonitor? iProgressMonitor)
             => build(CompositeChange(name));
 
-    shared actual TextChange newFileChange(PhasedUnit pu)
-            => newTextFileChange(pu);
+    newFileChange(PhasedUnit pu) => newTextFileChange(pu);
     
-    shared actual TextChange newDocChange(IDocument doc) 
-            => newDocumentChange();
+    newDocChange(IDocument doc) => newDocumentChange();
     
     shared actual String name => (super of InlineRefactoring<ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange,CompositeChange>).name;
 }
