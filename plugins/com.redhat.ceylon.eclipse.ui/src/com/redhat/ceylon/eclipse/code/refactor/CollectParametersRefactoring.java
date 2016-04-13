@@ -235,6 +235,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
         else {
             pm.beginTask(getName(), 1);
         }
+        
         if (!isAffectingOtherFiles() || searchInEditor()) {
             DocumentChange dc = newDocumentChange();
             CeylonParseController pc = 
@@ -244,6 +245,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                     pc.getTokens());
             pm.worked(i++);
         }
+        
         pm.done();
         return cc;
     }

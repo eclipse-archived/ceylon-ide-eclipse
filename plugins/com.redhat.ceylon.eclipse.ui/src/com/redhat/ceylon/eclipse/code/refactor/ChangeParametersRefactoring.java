@@ -16,10 +16,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -350,10 +346,10 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
             throws CoreException, OperationCanceledException {
         CompositeChange cc = new CompositeChange(getName());
         
-        List<PhasedUnit> units = getAllUnits();
-        pm.beginTask(getName(), units.size());
         int i = 0;
         if (isAffectingOtherFiles()) {
+            List<PhasedUnit> units = getAllUnits();
+            pm.beginTask(getName(), units.size());
             for (PhasedUnit pu : units) {
                 if (searchInFile(pu)) {
                     ProjectPhasedUnit ppu = 
@@ -367,6 +363,10 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                 }
             }
         }
+        else {
+            pm.beginTask(getName(), 1);
+        }
+        
         if (!isAffectingOtherFiles() || searchInEditor()) {
             DocumentChange dc = newDocumentChange();
             CeylonParseController pc = 
@@ -376,6 +376,7 @@ public class ChangeParametersRefactoring extends AbstractRefactoring {
                     pc.getTokens());
             pm.worked(i++);
         }
+        
         pm.done();
         return cc;
     }
