@@ -5,34 +5,26 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getTokenLength;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
-import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
@@ -103,40 +95,15 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
             throws CoreException, OperationCanceledException {
         return new RefactoringStatus();
     }
-
+    
     @Override
-    public Change createChange(IProgressMonitor pm) 
-            throws CoreException, OperationCanceledException {
-        CompositeChange cc = new CompositeChange(getName());
-        
-        //TODO: progress reporting!
-        if (isAffectingOtherFiles()) {
-            for (PhasedUnit unit: getAllUnits()) {
-                if (searchInFile(unit)) {
-                    ProjectPhasedUnit ppu = 
-                            (ProjectPhasedUnit) unit;
-                    TextFileChange tfc = newTextFileChange(ppu);
-                    invertBoolean(unit.getCompilationUnit(), tfc, cc);
-                }
-            }
-        }
-        if (!isAffectingOtherFiles() || searchInEditor()) {
-            DocumentChange dc = newDocumentChange();
-            Tree.CompilationUnit rn = 
-                    editor.getParseController()
-                        .getLastCompilationUnit();
-            invertBoolean(rn, dc, cc);
-        }
-
-        return cc;
-    }
-
-    private void invertBoolean(Tree.CompilationUnit unit, 
-            TextChange tc, CompositeChange cc) {
+    protected void refactorInFile(TextChange tc, 
+            CompositeChange cc, Tree.CompilationUnit root, 
+            List<CommonToken> tokens) {
         tc.setEdit(new MultiTextEdit());
 
         InternalVisitor visitor = new InternalVisitor(value);
-        visitor.visit(unit);
+        visitor.visit(root);
 
         for (Tree.AttributeDeclaration attributeDeclaration : 
                 visitor.attributeDeclarations) {

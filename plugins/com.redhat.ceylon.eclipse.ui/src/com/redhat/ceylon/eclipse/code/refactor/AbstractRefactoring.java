@@ -12,7 +12,12 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.ltk.core.refactoring.Change;
+import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
@@ -205,5 +210,50 @@ abstract class AbstractRefactoring extends Refactoring {
                 RefactoringSaveHelper.SAVE_CEYLON_REFACTORING : 
                 RefactoringSaveHelper.SAVE_NOTHING;
     }
+    
+    public Change createChange(IProgressMonitor pm) 
+            throws CoreException,
+                   OperationCanceledException {
+        CompositeChange change = 
+                new CompositeChange(getName());
+        
+        int i=0;
+        if (isAffectingOtherFiles()) {
+            List<PhasedUnit> units = getAllUnits();
+            pm.beginTask(getName(), units.size());
+            for (PhasedUnit pu: units) {
+                if (searchInFile(pu)) {
+                    ProjectPhasedUnit ppu = 
+                            (ProjectPhasedUnit) pu;
+                    refactorInFile(newTextFileChange(ppu), 
+                            change, 
+                            pu.getCompilationUnit(), 
+                            pu.getTokens());
+                    pm.worked(i++);
+                }
+            }
+        }
+        else {
+            pm.beginTask(getName(), 1);
+        }
+        
+        if (!isAffectingOtherFiles() || searchInEditor()) {
+            CeylonParseController pc = 
+                    editor.getParseController();
+            refactorInFile(newDocumentChange(), 
+                    change, 
+                    pc.getLastCompilationUnit(),
+                    pc.getTokens());
+            pm.worked(i++);
+        }
+        
+        pm.done();
+        return change;
+    }
+
+    protected void refactorInFile(TextChange textChange, 
+            CompositeChange compositChange, 
+            Tree.CompilationUnit rootNode,
+            List<CommonToken> tokens) {}
 
 }

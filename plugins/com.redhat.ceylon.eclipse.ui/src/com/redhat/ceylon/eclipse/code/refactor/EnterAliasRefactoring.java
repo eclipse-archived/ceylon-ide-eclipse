@@ -159,11 +159,11 @@ public class EnterAliasRefactoring extends AbstractRefactoring {
     public TextChange createChange(IProgressMonitor pm) 
             throws CoreException, OperationCanceledException {
         TextChange tfc = newLocalChange();
-        renameInFile(tfc);
+        refactorInFile(tfc);
         return tfc;
     }
     
-    int renameInFile(final TextChange change) {
+    int refactorInFile(final TextChange change) {
         change.setEdit(new MultiTextEdit());
         Tree.Alias alias = element.getAlias();
         Declaration dec = element.getDeclarationModel();

@@ -7,28 +7,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
+import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.model.typechecker.model.Module;
 
 public class ChangeVersionRefactoring extends AbstractRefactoring {
     
@@ -126,38 +119,12 @@ public class ChangeVersionRefactoring extends AbstractRefactoring {
             throws CoreException, OperationCanceledException {
         return new RefactoringStatus();
     }
-
-    public CompositeChange createChange(IProgressMonitor pm) 
-            throws CoreException, OperationCanceledException {
-        CompositeChange cc = new CompositeChange(getName());
-        
-        List<PhasedUnit> units = getAllUnits();
-        pm.beginTask(getName(), units.size());
-        int i=0;
-        for (PhasedUnit pu: units) {
-            if (searchInFile(pu)) {
-                ProjectPhasedUnit ppu = 
-                        (ProjectPhasedUnit) pu;
-                TextFileChange tfc = 
-                        newTextFileChange(ppu);
-                renameInFile(tfc, cc, 
-                        pu.getCompilationUnit());
-                pm.worked(i++);
-            }
-        }
-        if (searchInEditor()) {
-            DocumentChange dc = newDocumentChange();
-            Tree.CompilationUnit rn = 
-                    editor.getParseController().getLastCompilationUnit();
-            renameInFile(dc, cc, rn);
-            pm.worked(i++);
-        }
-        pm.done();
-        return cc;
-    }
-
-    private void renameInFile(TextChange tfc, CompositeChange cc, 
-            Tree.CompilationUnit root) {
+    
+    @Override
+    protected void refactorInFile(TextChange tfc, 
+            CompositeChange cc, 
+            Tree.CompilationUnit root, 
+            List<CommonToken> tokens) {
         tfc.setEdit(new MultiTextEdit());
         if (module!=null) {
             for (Node node: getNodesToRename(root)) {

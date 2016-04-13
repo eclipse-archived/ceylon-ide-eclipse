@@ -6,14 +6,10 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclarat
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
+import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
@@ -28,7 +24,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
-import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
@@ -340,31 +335,12 @@ public class DeleteRefactoring extends AbstractRefactoring {
     public Declaration getRefinedDeclaration() {
         return refinedDeclaration;
     }
-
+    
     @Override
-    public Change createChange(IProgressMonitor pm) throws CoreException,
-            OperationCanceledException {
-        CompositeChange change = 
-                new CompositeChange("Safe Delete");
-        if (!isAffectingOtherFiles() || searchInEditor()) {
-            deleteInFile(change, newDocumentChange(), rootNode);
-        }
-        if (isAffectingOtherFiles()) {
-            for (PhasedUnit pu: getAllUnits()) {
-                if (searchInFile(pu)) {
-                    ProjectPhasedUnit ppu = 
-                            (ProjectPhasedUnit)pu;
-                    deleteInFile(change, 
-                            newTextFileChange(ppu), 
-                            pu.getCompilationUnit());
-                }
-            }
-        }
-        return change;
-    }
-
-    private void deleteInFile(CompositeChange change, 
-            final TextChange tfc, Tree.CompilationUnit cu) {
+    protected void refactorInFile(final TextChange tfc, 
+            CompositeChange change, 
+            Tree.CompilationUnit cu,
+            List<CommonToken> tokens) {
         tfc.setEdit(new MultiTextEdit());
         new Visitor() {
             private void deleteArg(final TextChange tfc, Node that,

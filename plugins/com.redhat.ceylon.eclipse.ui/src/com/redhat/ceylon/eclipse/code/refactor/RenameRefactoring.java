@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -43,14 +42,12 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
-import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -340,59 +337,35 @@ public class RenameRefactoring extends AbstractRefactoring {
     public CompositeChange createChange(IProgressMonitor pm) 
             throws CoreException, 
                    OperationCanceledException {
-        CompositeChange composite = 
-                new CompositeChange(getName());
-        
-        int i=0;
-        if (isAffectingOtherFiles()) {
-            List<PhasedUnit> units = getAllUnits();
-            pm.beginTask(getName(), units.size());
-            for (PhasedUnit pu: units) {
-                if (searchInFile(pu)) {
-                    ProjectPhasedUnit ppu = 
-                            (ProjectPhasedUnit) pu;
-                    renameInFile(newTextFileChange(ppu), 
-                            composite, 
-                            pu.getCompilationUnit());
-                    pm.worked(i++);
-                }
-            }
-        }
-        else {
-            pm.beginTask(getName(), 1);
-        }
-        
-        if (!isAffectingOtherFiles() || searchInEditor()) {
-            Tree.CompilationUnit editorRootNode = 
-                    editor.getParseController()
-                        .getLastCompilationUnit();
-            renameInFile(newDocumentChange(), 
-                    composite, editorRootNode);
-            pm.worked(i++);
-        }
+        CompositeChange change = 
+                (CompositeChange) 
+                    super.createChange(pm);
         
         if (project!=null && renameFile) {
-            String unitPath = 
-                    declaration.getUnit()
-                        .getFullPath();
-            IPath oldPath = 
-                    project.getFullPath()
-                        .append(unitPath);
-            String newFileName = getNewName() + ".ceylon";
-            IPath newPath = 
-                    oldPath.removeFirstSegments(1)
-                        .removeLastSegments(1)
-                        .append(newFileName);
-            if (!project.getFile(newPath).exists()) {
-                composite.add(new RenameResourceChange(
-                        oldPath, newFileName));
-            }
+            renameSourceFile(change);
         }
         
-        refactorJavaReferences(pm, composite);
+        refactorJavaReferences(pm, change);
+        
+        return change;
+    }
 
-        pm.done();
-        return composite;
+    private void renameSourceFile(CompositeChange change) {
+        String unitPath = 
+                declaration.getUnit()
+                    .getFullPath();
+        IPath oldPath = 
+                project.getFullPath()
+                    .append(unitPath);
+        String newFileName = getNewName() + ".ceylon";
+        IPath newPath = 
+                oldPath.removeFirstSegments(1)
+                    .removeLastSegments(1)
+                    .append(newFileName);
+        if (!project.getFile(newPath).exists()) {
+            change.add(new RenameResourceChange(
+                    oldPath, newFileName));
+        }
     }
 
     protected void refactorJavaReferences(IProgressMonitor pm,

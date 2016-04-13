@@ -8,15 +8,14 @@ import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStat
 import java.util.ArrayList;
 import java.util.List;
 
+import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
@@ -27,11 +26,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.Nodes;
-import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Interface;
-import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -177,37 +174,7 @@ public class AliasRefactoring extends AbstractRefactoring {
         }*/
         return new RefactoringStatus();
     }
-
-    public CompositeChange createChange(
-            IProgressMonitor pm) 
-                    throws CoreException, 
-                           OperationCanceledException {
-        CompositeChange cc = new CompositeChange(getName());
-        
-        List<PhasedUnit> units = getAllUnits();
-        pm.beginTask(getName(), units.size());
-        int i=0;
-        for (PhasedUnit pu: units) {
-            if (searchInFile(pu)) {
-                ProjectPhasedUnit ppu = 
-                        (ProjectPhasedUnit) pu;
-                TextFileChange tfc = newTextFileChange(ppu);
-                renameInFile(tfc, cc, 
-                        pu.getCompilationUnit());
-                pm.worked(i++);
-            }
-        }
-        if (searchInEditor()) {
-            DocumentChange dc = newDocumentChange();
-            renameInFile(dc, cc, 
-                    editor.getParseController()
-                        .getLastCompilationUnit());
-            pm.worked(i++);
-        }
-        pm.done();
-        return cc;
-    }
-
+    
     private int aliasOffset;
     private int insertedLength;
     private int insertedLocation;
@@ -228,9 +195,11 @@ public class AliasRefactoring extends AbstractRefactoring {
         return insertedLocation;
     }
     
-    void renameInFile(TextChange tfc, 
+    @Override
+    protected void refactorInFile(TextChange tfc, 
             CompositeChange cc, 
-            Tree.CompilationUnit root) {
+            Tree.CompilationUnit root,
+            List<CommonToken> tokens) {
         tfc.setEdit(new MultiTextEdit());
         if (type!=null) {
             Unit editorUnit = 
@@ -242,7 +211,8 @@ public class AliasRefactoring extends AbstractRefactoring {
                     .equals(unit.getPackage())) {
                 IDocument doc = getDocument(tfc);
                 String delim = 
-                        utilJ2C().indents().getDefaultLineDelimiter(document);
+                        utilJ2C().indents()
+                            .getDefaultLineDelimiter(document);
                 if (newName!=null) {
                     for (Node node: getNodesToRename(root)) {
                         renameNode(tfc, node, root);
@@ -313,7 +283,8 @@ public class AliasRefactoring extends AbstractRefactoring {
                             .append(initialName);
                     }
                     String indent = 
-                            utilJ2C().indents().getDefaultIndent();
+                            utilJ2C().indents()
+                                .getDefaultIndent();
                     String text = 
                             header + delim + 
                             indent + indent +

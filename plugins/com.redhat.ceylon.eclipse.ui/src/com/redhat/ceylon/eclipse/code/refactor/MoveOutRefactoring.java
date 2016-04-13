@@ -12,32 +12,24 @@ import java.util.List;
 import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
@@ -150,57 +142,32 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                    OperationCanceledException {
         return new RefactoringStatus();
     }
-
-    public Change createChange(IProgressMonitor pm) 
-            throws CoreException,
-                   OperationCanceledException {
-        CompositeChange cc = new CompositeChange(getName());
+    
+    @Override
+    protected void refactorInFile(TextChange tc, 
+            CompositeChange cc,
+            Tree.CompilationUnit root, 
+            List<CommonToken> tokens) {
         
         Declaration dec = declaration.getDeclarationModel();
         Tree.TypeDeclaration owner = 
                 (Tree.TypeDeclaration) 
                     getContainer(rootNode, dec);
         
-        //TODO: progress reporting!
-        for (PhasedUnit pu: getAllUnits()) {
-            if (searchInFile(pu)) {
-                ProjectPhasedUnit ppu = 
-                        (ProjectPhasedUnit) pu;
-                TextFileChange pufc = 
-                        newTextFileChange(ppu);
-                pufc.setEdit(new MultiTextEdit());
-                if (declaration.getUnit().equals(pu.getUnit())) {
-                    move(owner, pufc);
-                    if (makeShared) {
-                        addSharedAnnotations(pufc, owner);
-                    }
-                }
-                if (!leaveDelegate) {
-                    fixInvocations(dec, 
-                            pu.getCompilationUnit(), 
-                            pu.getTokens(), 
-                            pufc);
-                }
-                if (pufc.getEdit().hasChildren()) {
-                    cc.add(pufc);
-                }
-            }
-        }
-        
-        if (searchInEditor()) {
-            TextChange tfc = newLocalChange();
-            tfc.setEdit(new MultiTextEdit());
-            move(owner, tfc);
-            if (!leaveDelegate) {
-                fixInvocations(dec, rootNode, tokens, tfc);
-            }
-            cc.add(tfc);
+        tc.setEdit(new MultiTextEdit());
+        if (declaration.getUnit()
+                .equals(root.getUnit())) {
+            move(owner, tc);
             if (makeShared) {
-                addSharedAnnotations(tfc, owner);
+                addSharedAnnotations(tc, owner);
             }
         }
-        
-        return cc;
+        if (!leaveDelegate) {
+            fixInvocations(dec, root, tokens, tc);
+        }
+        if (tc.getEdit().hasChildren()) {
+            cc.add(tc);
+        }
     }
 
     private String renderText(Tree.TypeDeclaration owner,
@@ -211,10 +178,10 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                     .asSourceCodeString(unit);
         StringBuilder sb = new StringBuilder();
         if (declaration instanceof Tree.AnyMethod) {
-            Tree.AnyMethod md = (Tree.AnyMethod) declaration;
-            appendAnnotations(sb, md, owner.getDeclarationModel());
+            Tree.AnyMethod am = (Tree.AnyMethod) declaration;
+            appendAnnotations(sb, am, owner.getDeclarationModel());
             String typeDec;
-            Tree.Type mdt = md.getType();
+            Tree.Type mdt = am.getType();
             if (mdt instanceof Tree.FunctionModifier &&
                     !ModelUtil.isTypeUnknown(mdt.getTypeModel())) {
                 typeDec = 
@@ -225,11 +192,11 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                 typeDec = text(mdt, tokens);
             }
             sb.append(typeDec).append(" ")
-                .append(text(md.getIdentifier(), tokens));
-            if (md.getTypeParameterList()!=null)
-            	sb.append(text(md.getTypeParameterList(), tokens));
+                .append(text(am.getIdentifier(), tokens));
+            if (am.getTypeParameterList()!=null)
+            	sb.append(text(am.getTypeParameterList(), tokens));
             List<Tree.ParameterList> parameterLists = 
-                    md.getParameterLists();
+                    am.getParameterLists();
             Tree.ParameterList first = parameterLists.get(0);
             sb.append(text(first, tokens));
             if (!first.getParameters().isEmpty()) {
@@ -239,25 +206,32 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             for (int i=1; i<parameterLists.size(); i++) {
                 sb.append(text(parameterLists.get(i), tokens));
             }
-            if (md.getTypeConstraintList()!=null) {
+            if (am.getTypeConstraintList()!=null) {
                 appendConstraints(indent, delim, sb, 
-                        md.getTypeConstraintList());
+                        am.getTypeConstraintList());
             }
             sb.append(" ");
-            if (md instanceof Tree.MethodDefinition &&
-                    ((Tree.MethodDefinition) md).getBlock()!=null) {
-                appendBody(owner.getDeclarationModel(), 
-                        indent, originalIndent, 
-                        delim, sb, 
-                        ((Tree.MethodDefinition) md).getBlock());
+            if (am instanceof Tree.MethodDefinition) {
+                Tree.MethodDefinition md = 
+                        (Tree.MethodDefinition) am;
+                Tree.Block block = md.getBlock();
+                if (block!=null) {
+                    appendBody(owner.getDeclarationModel(), 
+                            indent, originalIndent, 
+                            delim, sb, block);
+                }
             }
-            if (md instanceof Tree.MethodDeclaration &&
-                    ((Tree.MethodDeclaration) md).getSpecifierExpression()!=null) {
-                appendBody(owner.getDeclarationModel(), 
-                        indent, originalIndent, 
-                        delim, sb, 
-                        ((Tree.MethodDeclaration) md).getSpecifierExpression());
-                sb.append(";");
+            if (am instanceof Tree.MethodDeclaration) {
+                Tree.MethodDeclaration md = 
+                        (Tree.MethodDeclaration) am;
+                Tree.SpecifierExpression se = 
+                        md.getSpecifierExpression();
+                if (se!=null) {
+                    appendBody(owner.getDeclarationModel(), 
+                            indent, originalIndent, 
+                            delim, sb, se);
+                    sb.append(";");
+                }
             }
         }
         else if (declaration instanceof Tree.ClassDefinition) {
@@ -298,9 +272,15 @@ public class MoveOutRefactoring extends AbstractRefactoring {
     }
 
     private void move(Tree.TypeDeclaration owner, TextChange tfc) {
-        String indent = utilJ2C().indents().getIndent(owner, document);
-        String originalIndent = utilJ2C().indents().getIndent(declaration, document);
-        String delim = utilJ2C().indents().getDefaultLineDelimiter(document);
+        String indent = 
+                utilJ2C().indents()
+                    .getIndent(owner, document);
+        String originalIndent = 
+                utilJ2C().indents()
+                    .getIndent(declaration, document);
+        String delim = 
+                utilJ2C().indents()
+                    .getDefaultLineDelimiter(document);
         String text = renderText(owner, indent, originalIndent, delim);
         tfc.addEdit(new InsertEdit(owner.getEndIndex(), 
                 delim+indent+delim+indent+text));

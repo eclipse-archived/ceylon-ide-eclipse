@@ -16,6 +16,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.ide.common.util.escaping_;
@@ -43,9 +44,11 @@ public final class AliasLinkedMode
                 new DocumentChange(
                         "Introduce Type Alias", 
                         document);
-        refactoring.renameInFile(change, null,
-                editor.getParseController()
-                .getLastCompilationUnit());
+        CeylonParseController parseController = 
+                editor.getParseController();
+        refactoring.refactorInFile(change, null,
+                parseController.getLastCompilationUnit(),
+                parseController.getTokens());
         EditorUtil.performChange(change);
         return 0;
     }

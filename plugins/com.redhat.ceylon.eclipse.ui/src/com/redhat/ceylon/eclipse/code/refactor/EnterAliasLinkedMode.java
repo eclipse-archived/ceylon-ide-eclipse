@@ -153,7 +153,7 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
     protected int performInitialChange(IDocument document) {
         DocumentChange change = 
                 new DocumentChange("Enter Alias", document);
-        int result = refactoring.renameInFile(change);
+        int result = refactoring.refactorInFile(change);
         EditorUtil.performChange(change);
         return result;
     }

@@ -10,32 +10,23 @@ import java.util.List;
 import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.TreeUtil;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
-import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
@@ -209,50 +200,11 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                    OperationCanceledException {
         return new RefactoringStatus();
     }
-
-    public CompositeChange createChange(IProgressMonitor pm) 
-            throws CoreException,
-                   OperationCanceledException {
-        CompositeChange cc = new CompositeChange(getName());
-        
-        int i=0;
-        if (isAffectingOtherFiles()) {
-            List<PhasedUnit> units = getAllUnits();
-            pm.beginTask(getName(), units.size());
-            for (PhasedUnit pu: units) {
-                if (searchInFile(pu)) {
-                    ProjectPhasedUnit ppu = 
-                            (ProjectPhasedUnit) pu;
-                    TextFileChange tfc = 
-                            newTextFileChange(ppu);
-                    refactorInFile(tfc, cc, 
-                            pu.getCompilationUnit(), 
-                            pu.getTokens());
-                    pm.worked(i++);
-                }
-            }
-        }
-        else {
-            pm.beginTask(getName(), 1);
-        }
-        
-        if (!isAffectingOtherFiles() || searchInEditor()) {
-            DocumentChange dc = newDocumentChange();
-            CeylonParseController pc = 
-                    editor.getParseController();
-            refactorInFile(dc, cc, 
-                    pc.getLastCompilationUnit(),
-                    pc.getTokens());
-            pm.worked(i++);
-        }
-        
-        pm.done();
-        return cc;
-    }
-
-    private void refactorInFile(final TextChange tfc, 
+    
+    @Override
+    protected void refactorInFile(TextChange tfc, 
             CompositeChange cc, Tree.CompilationUnit root, 
-            List<CommonToken> toks) {
+            List<CommonToken> tokens) {
         tfc.setEdit(new MultiTextEdit());
         if (declaration!=null) {
             String paramName = 
@@ -262,7 +214,7 @@ public class CollectParametersRefactoring extends AbstractRefactoring {
                     new FindInvocationsVisitor(declaration);
             root.visit(fiv);
             for (Tree.ArgumentList pal: fiv.getResults()) {
-                refactorInvocation(tfc, paramName, pal, toks);
+                refactorInvocation(tfc, paramName, pal, tokens);
             }
             FindRefinementsVisitor frv = 
                     new FindRefinementsVisitor(declaration);

@@ -1,36 +1,29 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Nodes.getContainer;
 import static com.redhat.ceylon.eclipse.util.Nodes.text;
 
 import java.util.List;
 
 import org.antlr.runtime.CommonToken;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
@@ -54,11 +47,11 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
         private List<CommonToken> localTokens;
 
         private MoveVisitor(TypeDeclaration newOwner,
-                IDocument doc, Declaration parameter,
+                Declaration parameter,
                 Tree.Declaration fun, Tree.Term defaultArg,
                 TextChange tfc, List<CommonToken> tokens) {
             this.newOwner = newOwner;
-            this.doc = doc;
+            this.doc = getDocument(tfc);
             this.parameter = parameter;
             this.fun = fun;
             this.defaultArg = defaultArg;
@@ -138,17 +131,24 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
 
         private void insert(Tree.Body body, Tree.Declaration that) {
             String delim = 
-                    utilJ2C().indents().getDefaultLineDelimiter(document);
+                    utilJ2C().indents()
+                        .getDefaultLineDelimiter(document);
             String originalIndent =
-                    delim+utilJ2C().indents().getIndent(fun, document);
+                    delim +
+                    utilJ2C().indents()
+                        .getIndent(fun, document);
             String text;
             List<Tree.Statement> sts = body.getStatements();
             int loc;
             if (sts.isEmpty()) {
                 String outerIndent =
-                        delim + utilJ2C().indents().getIndent(that, doc);
+                        delim + 
+                        utilJ2C().indents()
+                            .getIndent(that, doc);
                 String newIndent =
-                        outerIndent + utilJ2C().indents().getDefaultIndent();
+                        outerIndent + 
+                        utilJ2C().indents()
+                            .getDefaultIndent();
                 String def =
                         getDefinition()
                             .replaceAll(originalIndent,
@@ -159,7 +159,9 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
             else {
                 Tree.Statement st = sts.get(sts.size()-1);
                 String newIndent =
-                        delim + utilJ2C().indents().getIndent(st, doc);
+                        delim + 
+                        utilJ2C().indents()
+                            .getIndent(st, doc);
                 String def =
                         getDefinition()
                             .replaceAll(originalIndent,
@@ -350,8 +352,7 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
             (IProgressMonitor pm)
                     throws CoreException,
                            OperationCanceledException {
-        RefactoringStatus result = new RefactoringStatus();
-        return result;
+        return new RefactoringStatus();
     }
 
     public RefactoringStatus checkFinalConditions
@@ -360,11 +361,12 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
                            OperationCanceledException {
         return new RefactoringStatus();
     }
-
-    public Change createChange(IProgressMonitor pm)
-            throws CoreException,
-                   OperationCanceledException {
-        CompositeChange cc = new CompositeChange(getName());
+    
+    @Override
+    protected void refactorInFile(TextChange tc, 
+            CompositeChange cc,
+            Tree.CompilationUnit root, 
+            List<CommonToken> tokens) {
         
         Tree.AttributeDeclaration decNode =
                 (Tree.AttributeDeclaration) node;
@@ -378,48 +380,23 @@ public class MakeReceiverRefactoring extends AbstractRefactoring {
             defaultArg = sie.getExpression().getTerm();
         }
         
-        //TODO: progress reporting!
-        for (PhasedUnit pu: getAllUnits()) {
-            if (searchInFile(pu)) {
-                ProjectPhasedUnit ppu = 
-                        (ProjectPhasedUnit) pu;
-                TextFileChange pufc = newTextFileChange(ppu);
-                IDocument doc = pufc.getCurrentDocument(null);
-                pufc.setEdit(new MultiTextEdit());
-                if (fun.getUnit().equals(pu.getUnit())) {
-                    if (leaveDelegate) {
-                        leaveOriginal(pufc, fun, param);
-                    }
-                    else {
-                        deleteOld(pufc, fun);
-                    }
-                }
-                new MoveVisitor(target, doc, param, fun,
-                                defaultArg, pufc,
-                                pu.getTokens())
-                        .visit(pu.getCompilationUnit());
-                if (pufc.getEdit().hasChildren()) {
-                    cc.add(pufc);
-                }
-            }
-        }
-        if (searchInEditor()) {
-            final TextChange tfc = newLocalChange();
-            tfc.setEdit(new MultiTextEdit());
+        tc.setEdit(new MultiTextEdit());
+        if (fun.getUnit()
+                .equals(root.getUnit())) {
             if (leaveDelegate) {
-                leaveOriginal(tfc, fun, param);
+                leaveOriginal(tc, fun, param);
             }
             else {
-                deleteOld(tfc, fun);
+                deleteOld(tc, fun);
             }
-            new MoveVisitor(target, document, param, fun,
-                            defaultArg, tfc, tokens)
-                    .visit(rootNode);
-            cc.add(tfc);
         }
-        
-        
-        return cc;
+        new MoveVisitor(target, param, 
+                fun, defaultArg, 
+                tc, tokens)
+                    .visit(root);
+        if (tc.getEdit().hasChildren()) {
+            cc.add(tc);
+        }
     }
 
     private void leaveOriginal(TextChange tfc, 
