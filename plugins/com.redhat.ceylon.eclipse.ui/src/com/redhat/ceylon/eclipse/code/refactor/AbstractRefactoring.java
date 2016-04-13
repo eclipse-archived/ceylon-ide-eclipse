@@ -235,9 +235,21 @@ abstract class AbstractRefactoring extends Refactoring {
         }
         else {
             pm.beginTask(getName(), 1);
+            PhasedUnit pu =
+                    editor.getParseController()
+                        .getLastPhasedUnit();
+            if (searchInFile(pu)) {
+                ProjectPhasedUnit ppu = 
+                        (ProjectPhasedUnit) pu;
+                refactorInFile(newTextFileChange(ppu), 
+                        change, 
+                        ppu.getCompilationUnit(),
+                        ppu.getTokens());
+                pm.worked(i++);
+            }
         }
         
-        if (!isAffectingOtherFiles() || searchInEditor()) {
+        if (searchInEditor()) {
             CeylonParseController pc = 
                     editor.getParseController();
             refactorInFile(newDocumentChange(), 

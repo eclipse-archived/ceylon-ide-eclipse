@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -481,9 +482,11 @@ public class RenameRefactoring extends AbstractRefactoring {
         }
     }
     
-    private void renameInFile(
+    @Override
+    protected void refactorInFile(
             TextChange tfc, CompositeChange cc, 
-            Tree.CompilationUnit root) {
+            Tree.CompilationUnit root,
+            List<CommonToken> tokens) {
         tfc.setEdit(new MultiTextEdit());
         if (declaration!=null) {
             for (Node node: getNodesToRename(root)) {
