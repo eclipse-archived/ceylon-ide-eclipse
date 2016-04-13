@@ -109,7 +109,7 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
             throws CoreException, OperationCanceledException {
         CompositeChange cc = new CompositeChange(getName());
         
-      //TODO: progress reporting!
+        //TODO: progress reporting!
         if (isAffectingOtherFiles()) {
             for (PhasedUnit unit: getAllUnits()) {
                 if (searchInFile(unit)) {

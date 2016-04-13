@@ -1,17 +1,13 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findToplevelStatement;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStatus;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -30,9 +26,9 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.util.escaping_;
-import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -127,6 +123,12 @@ public class AliasRefactoring extends AbstractRefactoring {
     }
     
     @Override
+    protected boolean searchInFile(PhasedUnit pu) {
+        return inSamePackage(pu) && 
+                super.searchInFile(pu);
+    }
+    
+    @Override
     int countReferences(Tree.CompilationUnit cu) {
         FindAliasedTypeVisitor frv = 
                 new FindAliasedTypeVisitor(type);
@@ -186,15 +188,7 @@ public class AliasRefactoring extends AbstractRefactoring {
         pm.beginTask(getName(), units.size());
         int i=0;
         for (PhasedUnit pu: units) {
-            Package editorPackage = 
-                    editor.getParseController()
-                        .getLastCompilationUnit()
-                        .getUnit()
-                        .getPackage();
-            boolean inSamePackage = 
-                    pu.getPackage()
-                        .equals(editorPackage);
-            if (inSamePackage && searchInFile(pu)) {
+            if (searchInFile(pu)) {
                 ProjectPhasedUnit ppu = 
                         (ProjectPhasedUnit) pu;
                 TextFileChange tfc = newTextFileChange(ppu);
@@ -213,7 +207,7 @@ public class AliasRefactoring extends AbstractRefactoring {
         pm.done();
         return cc;
     }
-    
+
     private int aliasOffset;
     private int insertedLength;
     private int insertedLocation;

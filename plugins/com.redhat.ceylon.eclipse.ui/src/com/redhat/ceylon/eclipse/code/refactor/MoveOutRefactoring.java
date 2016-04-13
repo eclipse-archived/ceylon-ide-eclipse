@@ -161,7 +161,7 @@ public class MoveOutRefactoring extends AbstractRefactoring {
                 (Tree.TypeDeclaration) 
                     getContainer(rootNode, dec);
         
-      //TODO: progress reporting!
+        //TODO: progress reporting!
         for (PhasedUnit pu: getAllUnits()) {
             if (searchInFile(pu)) {
                 ProjectPhasedUnit ppu = 

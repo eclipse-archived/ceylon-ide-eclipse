@@ -34,6 +34,7 @@ import com.redhat.ceylon.ide.common.model.IResourceAware;
 import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
 abstract class AbstractRefactoring extends Refactoring {
@@ -146,9 +147,19 @@ abstract class AbstractRefactoring extends Refactoring {
         return editor!=null && editor.isDirty();
     }
 
-    boolean searchInFile(PhasedUnit pu) {
+    protected boolean searchInFile(PhasedUnit pu) {
         return editor==null || !editor.isDirty() || rootNode == null ||
                 !pu.getUnit().equals(rootNode.getUnit());
+    }
+    
+    protected boolean inSamePackage(PhasedUnit pu) {
+        Package editorPackage = 
+                editor.getParseController()
+                    .getLastCompilationUnit()
+                    .getUnit()
+                    .getPackage();
+        return pu.getPackage()
+                    .equals(editorPackage);
     }
     
     TextChange newLocalChange() {
