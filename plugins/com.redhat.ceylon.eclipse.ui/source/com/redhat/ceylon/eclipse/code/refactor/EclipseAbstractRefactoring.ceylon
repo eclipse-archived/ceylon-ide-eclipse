@@ -24,9 +24,6 @@ import com.redhat.ceylon.ide.common.model {
 import com.redhat.ceylon.ide.common.refactoring {
     AbstractRefactoring
 }
-import com.redhat.ceylon.ide.common.typechecker {
-    ProjectPhasedUnit
-}
 import com.redhat.ceylon.ide.common.util {
     nodes
 }
@@ -104,7 +101,7 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
         
         shared actual IFileVirtualFile? sourceVirtualFile = 
                 if (is IFileEditorInput input = editor.editorInput, 
-                    exists file=EditorUtil.getFile(input)) 
+                    exists file=  EditorUtil.getFile(input)) 
                     then IFileVirtualFile(file) else null;
     }
 
@@ -124,11 +121,14 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
     }
 
     shared TextFileChange newTextFileChange(PhasedUnit pu) {
-        assert (is ProjectPhasedUnit<IProject,IResource,IFolder,IFile> pu);
+        assert (is IResourceAware<IProject,IFolder,IFile> pu);
         value tfc = TextFileChange(name, pu.resourceFile);
         tfc.textType = "ceylon";
         return tfc;
     }
+    
+    shared actual PhasedUnit editorPhasedUnit 
+            => editorData.editor.parseController.lastPhasedUnit;
 
     searchInEditor() => editorData.editor.dirty;
 
