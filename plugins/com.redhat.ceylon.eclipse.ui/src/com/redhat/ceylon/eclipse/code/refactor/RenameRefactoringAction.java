@@ -26,7 +26,7 @@ public class RenameRefactoringAction extends AbstractRefactoringAction {
     
     @Override
     int getSaveMode() {
-        return RenameRefactoring.SAVE_MODE;
+        return ((RenameRefactoring) refactoring).getSaveMode();
     }
     
 }
