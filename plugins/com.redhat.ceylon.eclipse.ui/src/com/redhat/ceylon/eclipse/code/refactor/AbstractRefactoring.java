@@ -167,12 +167,19 @@ abstract class AbstractRefactoring extends Refactoring {
         }
         return units;
     }
+    
+    //TODO: make it abstract!
+    protected boolean visibleOutsideUnit() {
+        return true;
+    }
 
     protected int countDeclarationOccurrences() {
         int count = 0;
-        for (PhasedUnit pu: getAllUnits()) {
-            if (searchInFile(pu)) {
-                count += countReferences(pu.getCompilationUnit());
+        if (visibleOutsideUnit()) {
+            for (PhasedUnit pu: getAllUnits()) {
+                if (searchInFile(pu)) {
+                    count += countReferences(pu.getCompilationUnit());
+                }
             }
         }
         if (searchInEditor()) {

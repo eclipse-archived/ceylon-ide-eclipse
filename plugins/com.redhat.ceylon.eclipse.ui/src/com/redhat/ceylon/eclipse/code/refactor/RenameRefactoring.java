@@ -632,6 +632,7 @@ public class RenameRefactoring extends AbstractRefactoring {
         return declaration;
     }
     
+    @Override
     public boolean visibleOutsideUnit() {
         if (declaration==null) {
             return false;
