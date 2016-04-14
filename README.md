@@ -22,6 +22,12 @@ instructions found here:
 
 <http://ceylon-lang.org/documentation/1.2/ide/install>
 
+### Installing nightly builds from Jenkins
+
+Nightly builds are available in this update site: https://ci-ceylon.rhcloud.com/job/ceylon-ide-eclipse/ws/site/target/repository/
+
+Note that this is the current `master`, which may contain bugs.
+
 ### Installing from a local snapshot site built with Tycho/Maven 3
 
 If you want to have an up-to-date version of the Ceylon IDE based on the latest code of 
