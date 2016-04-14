@@ -22,6 +22,8 @@
 
 	<property name="eclipseUpdateSite" value="http://download.eclipse.org/releases/kepler/"/>
 
+    <property name="ceylon.repo.dir" location="${user.home}/.ceylon/repo" />
+
     <property name="eclipseBinariesRepo" value="${basedir}/target/repo"/>
     <property name="eclipseSourcesRepo" value="${basedir}/eclipse-sources-repo"/>
 
@@ -54,6 +56,7 @@
         <repo url="${basedir}/../../../ceylon/dist/osgi/embeddedRepository/repo"/>
     	<repo url="${basedir}/../../../ceylon.tool.converter.java2ceylon/repo/"/>
         <repo url="${basedir}/../../../ceylon-ide-common/repo/"/>
+        <repo url="${ceylon.repo.dir}" />
     </reposet>
 
 	<target name="compile">
