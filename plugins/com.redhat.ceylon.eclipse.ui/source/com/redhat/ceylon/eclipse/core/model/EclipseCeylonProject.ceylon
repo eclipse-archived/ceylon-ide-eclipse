@@ -89,10 +89,11 @@ class EclipseBuildHook()
         & VfsServicesConsumer<IProject, IResource, IFolder, IFile> {
     
      
-    shared actual void analyzingChanges(
+    shared actual Boolean analyzingChanges(
         {ChangeToAnalyze*} changes,  
         CeylonProjectBuildAlias build, 
         CeylonProjectBuildAlias.State state) {
+        // Add the preBuildChecks
         for (change in changes) {
             switch(change)
             case(is [NativeResourceChange, IProject]) {
@@ -103,14 +104,14 @@ class EclipseBuildHook()
                     if (exists fullPath = nonModelChange.resource.fullPath,
                         exists explodedDirPath = CeylonBuilder.getCeylonClassesOutputFolder(changeProject)?.fullPath, 
                         explodedDirPath.isPrefixOf(fullPath)) {
-                        state.fullBuildRequired = true;
-                        state.classpathResolutionRequired = true;
+                        state.buildType.requireFullBuild();
+                        state.buildType.requireClasspathResolution();
                     }
                 }
                 case(is NativeFileChange) {
                     if (vfsServices.getShortName(nonModelChange.resource) == ".classpath") {
-                        state.fullBuildRequired = true;
-                        state.classpathResolutionRequired = true;
+                        state.buildType.requireFullBuild();
+                        state.buildType.requireClasspathResolution();
                     }
                 }
                 else {}
@@ -118,6 +119,7 @@ class EclipseBuildHook()
             }
             else {}
         }
+        return true;
     }
 }
 
