@@ -64,21 +64,14 @@ class EclipseExtractParameterRefactoring(CeylonEditor editorPart)
     
     value selection = EditorUtil.getSelection(editorPart);
     
-    Tree.CompilationUnit? rootNode 
-            = editorPart.parseController
-                .typecheckedRootNode;
-    if (!exists rootNode) {
-        return;
-    }
-    
-    value node = nodes.findNode {
-        node = rootNode;
-        tokens = editorPart.parseController.tokens;
-        startOffset = selection.offset;
-        endOffset = selection.offset+selection.length;
-    };
-    
-    if (exists node) {
+    if (exists rootNode = editorPart.parseController.typecheckedRootNode,
+        exists node = nodes.findNode {
+            node = rootNode;
+            tokens = editorPart.parseController.tokens;
+            startOffset = selection.offset;
+            endOffset = selection.offset+selection.length;
+        }) {
+
         value ffv = FindFunctionVisitor(node);
         ffv.visit(rootNode);
         methodOrClass = ffv.definitionNode;
