@@ -154,22 +154,18 @@ shared LookupEnvironmentUtilities.Provider? typeModelLoader(IType? type) {
                     }
                     if (modelLoader is Null) {
                         for (loaderRef in modelLoaders.values()) {
-                            JDTModelLoader? loader = loaderRef.get();
-                            if (!exists loader) {
-                                continue;
-                            }
-                            value javaProject = loader.moduleManager.javaProject;
-                            if (! exists javaProject) {
-                                continue;
-                            }
-                            try {
-                                if (javaProject.findPackageFragmentRoot(pfr.path) exists){
-                                    modelLoader = loader;
-                                    archivesRootsToModelLoaderCache.addEntry(pfr.path, WeakReference<JDTModelLoader>(modelLoader));
-                                    break;
+                            if (exists loader = loaderRef.get(),
+                                exists javaProject = loader.moduleManager.javaProject) {
+                                
+                                try {
+                                    if (javaProject.findPackageFragmentRoot(pfr.path) exists){
+                                        modelLoader = loader;
+                                        archivesRootsToModelLoaderCache.addEntry(pfr.path, WeakReference<JDTModelLoader>(modelLoader));
+                                        break;
+                                    }
+                                } catch (JavaModelException e) {
+                                    e.printStackTrace();
                                 }
-                            } catch (JavaModelException e) {
-                                e.printStackTrace();
                             }
                         }
                     }
