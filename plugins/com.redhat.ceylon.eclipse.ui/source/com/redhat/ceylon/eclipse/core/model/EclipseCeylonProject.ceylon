@@ -24,12 +24,10 @@ import com.redhat.ceylon.eclipse.ui {
 import com.redhat.ceylon.ide.common.model {
     CeylonProject,
     CeylonProjectConfig,
-    CeylonProjects,
-    IdeModuleManager,
-    BuildHook,
-    CeylonProjectBuild,
-    ResourceChange,
-    ModelAliases
+    BuildHook
+}
+import com.redhat.ceylon.ide.common.platform {
+    VfsServicesConsumer
 }
 import com.redhat.ceylon.ide.common.util {
     unsafeCast,
@@ -56,8 +54,7 @@ import org.eclipse.core.runtime {
     CoreException,
     IProgressMonitor,
     Path,
-    QualifiedName,
-    IPath
+    QualifiedName
 }
 import org.eclipse.jdt.core {
     JavaCore
@@ -67,14 +64,6 @@ import org.eclipse.jface.dialogs {
 }
 import org.eclipse.swt.widgets {
     Display
-}
-import com.redhat.ceylon.ide.common.vfs {
-    FolderVirtualFile,
-    FileVirtualFile,
-    ResourceVirtualFile
-}
-import com.redhat.ceylon.ide.common.platform {
-    VfsServicesConsumer
 }
 
 shared object nativeFolderProperties {
