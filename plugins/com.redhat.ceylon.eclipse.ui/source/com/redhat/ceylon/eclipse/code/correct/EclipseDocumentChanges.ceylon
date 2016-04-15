@@ -12,7 +12,8 @@ import org.eclipse.ltk.core.refactoring {
     TextChange
 }
 import com.redhat.ceylon.ide.common.correct {
-    DocumentChanges
+    DocumentChanges,
+    CommonDocument
 }
 import com.redhat.ceylon.eclipse.util {
     EditorUtil
@@ -66,4 +67,21 @@ shared interface EclipseDocumentChanges
     shared actual String getLineContent(IDocument doc, Integer line)
             => let (info = doc.getLineInformation(line))
                doc.get(info.offset, info.length);
+}
+
+shared class EclipseDocument(shared IDocument doc) satisfies CommonDocument {
+    
+    getLineContent(Integer line)
+            => let(info = doc.getLineInformation(line))
+            doc.get(info.offset, info.length);
+
+    getLineStartOffset(Integer line)
+            => doc.getLineInformation(line).length;
+    
+    getLineEndOffset(Integer line)
+            => doc.getLineInformation(line).offset;
+    
+    getLineOfOffset(Integer offset) => doc.getLineOfOffset(offset);
+    
+    getText(Integer offset, Integer length) => doc.get(offset, length);
 }

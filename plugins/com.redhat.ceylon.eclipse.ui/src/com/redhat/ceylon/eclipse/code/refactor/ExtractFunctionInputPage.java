@@ -21,7 +21,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.TextEdit;
 
-import com.redhat.ceylon.ide.common.refactoring.ExtractFunctionRefactoring;
+import com.redhat.ceylon.ide.common.refactoring.DeprecatedExtractFunctionRefactoring;
 import com.redhat.ceylon.ide.common.util.escaping_;
 
 public class ExtractFunctionInputPage extends UserInputWizardPage {
@@ -66,8 +66,8 @@ public class ExtractFunctionInputPage extends UserInputWizardPage {
     }
 
     @SuppressWarnings("unchecked")
-    private ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> getExtractFunctionRefactoring() {
-        return (ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion>) getRefactoring();
+    private DeprecatedExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> getExtractFunctionRefactoring() {
+        return (DeprecatedExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion>) getRefactoring();
     }
 
 

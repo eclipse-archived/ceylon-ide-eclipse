@@ -1,21 +1,53 @@
+import com.redhat.ceylon.compiler.typechecker.context {
+    PhasedUnit
+}
+import com.redhat.ceylon.eclipse.code.correct {
+    eclipseImportProposals,
+    EclipseDocument
+}
+import com.redhat.ceylon.eclipse.util {
+    eclipseIndents,
+    EditorUtil
+}
+import com.redhat.ceylon.ide.common.correct {
+    ImportProposals,
+    CommonDocument
+}
 import com.redhat.ceylon.ide.common.platform {
     PlatformServices,
     ModelServices,
     IdeUtils,
-    VfsServices
+    VfsServices,
+    TextChange,
+    TextEdit,
+    InsertEdit,
+    ReplaceEdit
+}
+import com.redhat.ceylon.ide.common.typechecker {
+    ModifiablePhasedUnit
 }
 import com.redhat.ceylon.ide.common.util {
     unsafeCast,
     Indents
 }
-import com.redhat.ceylon.ide.common.correct {
-    ImportProposals
+
+import org.eclipse.core.resources {
+    IProject,
+    IFolder,
+    IResource,
+    IFile
 }
-import com.redhat.ceylon.eclipse.code.correct {
-    eclipseImportProposals
+import org.eclipse.ltk.core.refactoring {
+    TextFileChange,
+    ETextChange=TextChange,
+    DocumentChange
 }
-import com.redhat.ceylon.eclipse.util {
-    eclipseIndents
+import org.eclipse.text.edits {
+    MultiTextEdit,
+    ETextEdit=TextEdit,
+    EInsertEdit=InsertEdit,
+    EReplaceEdit=ReplaceEdit,
+    EDeleteEdit=DeleteEdit
 }
 
 object eclipsePlatformServices satisfies PlatformServices {
@@ -35,5 +67,46 @@ object eclipsePlatformServices satisfies PlatformServices {
     
     shared actual Indents<IDocument> indents<IDocument>() 
             => unsafeCast<Indents<IDocument>>(eclipseIndents);
+
+    createTextChange(String desc, CommonDocument|PhasedUnit input)
+            => EclipseTextChange(desc, input);
+}
+
+shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit input)
+        satisfies TextChange {
     
+    shared ETextChange change;
+    
+    if (is EclipseDocument input) {
+        change = DocumentChange(desc, input.doc);
+    } else if (is ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> input) {
+        change = TextFileChange(desc, input.resourceFile);
+    } else {
+        throw Exception("Unsupported input: ``input``");
+    }
+    
+    shared actual void addChangesFrom(TextChange other) {}
+    
+    ETextEdit toEclipseTextEdit(TextEdit edit) {
+        return switch (edit)
+        case (is InsertEdit) EInsertEdit(edit.position, edit.text)
+        case (is ReplaceEdit) EReplaceEdit(edit.start, edit.length, edit.text)
+        else EDeleteEdit(edit.start, edit.length);
+    }
+    
+    shared actual void addEdit(TextEdit edit) {
+        value eclipseEdit = toEclipseTextEdit(edit);
+        
+        if (is MultiTextEdit me = change.edit) {
+            change.addEdit(eclipseEdit);
+        } else {
+            change.edit = eclipseEdit;            
+        }
+    }
+    
+    document = EclipseDocument(EditorUtil.getDocument(change));
+    
+    hasEdits => change.edit.hasChildren();
+    
+    initMultiEdit() => change.edit = MultiTextEdit();
 }

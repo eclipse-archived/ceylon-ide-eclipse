@@ -1,8 +1,8 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringArray;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.refactorJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringArray;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import org.eclipse.core.resources.IFile;
@@ -21,13 +21,13 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.ide.common.refactoring.ExtractFunctionRefactoring;
+import com.redhat.ceylon.ide.common.refactoring.DeprecatedExtractFunctionRefactoring;
 import com.redhat.ceylon.model.typechecker.model.Type;
 
 public final class ExtractFunctionLinkedMode 
         extends ExtractLinkedMode {
         
-    private final ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> refactoring;
+    private final DeprecatedExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> refactoring;
     
     public ExtractFunctionLinkedMode(CeylonEditor editor) {
         super(editor);

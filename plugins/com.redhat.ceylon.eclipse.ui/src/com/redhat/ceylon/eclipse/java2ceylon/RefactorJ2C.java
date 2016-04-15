@@ -11,7 +11,7 @@ import org.eclipse.text.edits.TextEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.ide.common.refactoring.ExtractFunctionRefactoring;
+import com.redhat.ceylon.ide.common.refactoring.DeprecatedExtractFunctionRefactoring;
 import com.redhat.ceylon.ide.common.refactoring.ExtractParameterRefactoring;
 import com.redhat.ceylon.ide.common.refactoring.ExtractValueRefactoring;
 import com.redhat.ceylon.ide.common.refactoring.InlineRefactoring;
@@ -24,10 +24,10 @@ public interface RefactorJ2C {
     ExtractParameterRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> newExtractParameterRefactoring(
             IEditorPart editorPart);
 
-    ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> newExtractFunctionRefactoring(
+    DeprecatedExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> newExtractFunctionRefactoring(
             IEditorPart editorPart);
 
-    ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> newExtractFunctionRefactoring(
+    DeprecatedExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> newExtractFunctionRefactoring(
             IEditorPart editorPart, Tree.Declaration target);
 
     InlineRefactoring<ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange> newInlineRefactoring(

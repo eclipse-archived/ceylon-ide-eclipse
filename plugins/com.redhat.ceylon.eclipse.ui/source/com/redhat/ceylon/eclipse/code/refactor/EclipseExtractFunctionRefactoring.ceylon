@@ -16,9 +16,9 @@ import com.redhat.ceylon.eclipse.util {
     EditorUtil
 }
 import com.redhat.ceylon.ide.common.refactoring {
-    ExtractFunctionRefactoring,
     getTargetNode,
-    prepareExtractFunction
+    prepareExtractFunction,
+    DeprecatedExtractFunctionRefactoring
 }
 import com.redhat.ceylon.ide.common.typechecker {
     ProjectPhasedUnit
@@ -65,7 +65,7 @@ import org.eclipse.text.edits {
 
 class EclipseExtractFunctionRefactoring(CeylonEditor editorPart, target = null) 
         extends EclipseAbstractRefactoring<TextChange>(editorPart)
-        satisfies ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion>
+        satisfies DeprecatedExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion>
         & EclipseDocumentChanges
         & EclipseExtractLinkedModeEnabled {
     
@@ -183,5 +183,5 @@ class EclipseExtractFunctionRefactoring(CeylonEditor editorPart, target = null)
     
     extractInFile(TextChange tfc) => build(tfc);
     
-    shared actual String name => (super of ExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion>).name;
+    shared actual String name => (super of DeprecatedExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion>).name;
 }
