@@ -95,8 +95,10 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
             selection.offset+selection.length
         );
         if (!exists _node) {
-            throw Exception("Can't refactor if node is null (selection = ``selection``).");
+            throw Exception("Can't refactor if node is null " + 
+                "(selection = [``selection.offset``, ``selection.offset+selection.length``]).");
         }
+        
         shared actual default Node node = _node;
         
         shared actual IFileVirtualFile? sourceVirtualFile = 
