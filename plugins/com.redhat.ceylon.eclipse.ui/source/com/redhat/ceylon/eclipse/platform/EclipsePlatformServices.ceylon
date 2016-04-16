@@ -89,7 +89,7 @@ shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit input)
     
     ETextEdit toEclipseTextEdit(TextEdit edit) {
         return switch (edit)
-        case (is InsertEdit) EInsertEdit(edit.position, edit.text)
+        case (is InsertEdit) EInsertEdit(edit.start, edit.text)
         case (is ReplaceEdit) EReplaceEdit(edit.start, edit.length, edit.text)
         else EDeleteEdit(edit.start, edit.length);
     }

@@ -16,7 +16,8 @@ import com.redhat.ceylon.ide.common.correct {
     CommonDocument
 }
 import com.redhat.ceylon.eclipse.util {
-    EditorUtil
+    EditorUtil,
+    eclipseIndents
 }
 
 shared interface EclipseDocumentChanges
@@ -84,4 +85,7 @@ shared class EclipseDocument(shared IDocument doc) satisfies CommonDocument {
     getLineOfOffset(Integer offset) => doc.getLineOfOffset(offset);
     
     getText(Integer offset, Integer length) => doc.get(offset, length);
+    
+    getDefaultLineDelimiter() => eclipseIndents.getDefaultLineDelimiter(doc);
+    
 }
