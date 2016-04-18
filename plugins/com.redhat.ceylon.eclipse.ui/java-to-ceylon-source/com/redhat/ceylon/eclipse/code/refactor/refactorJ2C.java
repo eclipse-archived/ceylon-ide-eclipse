@@ -31,12 +31,12 @@ public class refactorJ2C implements RefactorJ2C {
         return new EclipseExtractParameterRefactoring((CeylonEditor) editorPart);
     }
     @Override
-    public DeprecatedExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> 
+    public EclipseExtractFunctionRefactoring 
     newExtractFunctionRefactoring(IEditorPart editorPart) {
         return new EclipseExtractFunctionRefactoring((CeylonEditor) editorPart);
     }
     @Override
-    public DeprecatedExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> 
+    public EclipseExtractFunctionRefactoring 
     newExtractFunctionRefactoring(IEditorPart editorPart, Tree.Declaration target) {
         return new EclipseExtractFunctionRefactoring((CeylonEditor) editorPart, target);
     }

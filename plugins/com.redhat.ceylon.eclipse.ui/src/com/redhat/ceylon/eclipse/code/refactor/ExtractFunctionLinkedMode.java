@@ -2,32 +2,24 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.refactorJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringArray;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
-import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
-import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.text.edits.InsertEdit;
-import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.ide.common.refactoring.DeprecatedExtractFunctionRefactoring;
 import com.redhat.ceylon.model.typechecker.model.Type;
 
 public final class ExtractFunctionLinkedMode 
         extends ExtractLinkedMode {
         
-    private final DeprecatedExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion> refactoring;
+    private final EclipseExtractFunctionRefactoring refactoring;
     
     public ExtractFunctionLinkedMode(CeylonEditor editor) {
         super(editor);
@@ -41,11 +33,13 @@ public final class ExtractFunctionLinkedMode
     
     @Override
     protected int performInitialChange(IDocument document) {
-        DocumentChange change = 
-                new DocumentChange("Extract Function", 
-                        document);
-        refactoring.build(change);
-        EditorUtil.performChange(change);
+        try {
+            NullProgressMonitor pm = new NullProgressMonitor();
+            Change change = refactoring.createChange(pm);
+            change.perform(pm);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return 0;
     }
     
@@ -71,7 +65,7 @@ public final class ExtractFunctionLinkedMode
     
     @Override
     protected String[] getNameProposals() {
-    	return toJavaStringArray(refactoring.getNameProposals());
+    	return refactoring.getNameProposals();
     }
     
     @Override
@@ -104,7 +98,7 @@ public final class ExtractFunctionLinkedMode
     @Override
     protected boolean forceWizardMode() {
         try {
-            return refactoring.getForceWizardMode() ||
+            return refactoring.forceWizardMode() ||
                     //yew, truly terrible hack!!
                     ((Refactoring) refactoring)
                         .createChange(null) 
@@ -148,7 +142,7 @@ public final class ExtractFunctionLinkedMode
     
     @Override
     public boolean canBeInferred() {
-        return refactoring.getCanBeInferred();
+        return refactoring.canBeInferred();
     }
     
     @Override
@@ -193,8 +187,8 @@ public final class ExtractFunctionLinkedMode
 
     @Override
     protected void setReturnType(Type type) {
-        this.refactoring.setType(type);
-        this.refactoring.setExplicitType(type!=null);
+        // TODO this.refactoring.setType(type);
+        this.refactoring.setExplicitType();
     }
 
 }

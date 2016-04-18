@@ -11,6 +11,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.link.LinkedModeModel;
+import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.TextEdit;
@@ -23,6 +24,7 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.java2ceylon.CorrectJ2C;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.ide.common.correct.AddAnnotationQuickFix;
+import com.redhat.ceylon.ide.common.correct.CommonDocument;
 import com.redhat.ceylon.ide.common.correct.IdeQuickFixManager;
 import com.redhat.ceylon.ide.common.correct.ImportProposals;
 import com.redhat.ceylon.ide.common.correct.QuickFixData;
@@ -133,5 +135,10 @@ public class correctJ2C implements CorrectJ2C {
                 new ProblemLocation(0, 0, 0),
                 rootNode, node, null, list, ce, ceylonProject
         );
+    }
+
+    @Override
+    public CommonDocument newDocument(IDocument nativeDoc) {
+        return new EclipseDocument(nativeDoc);
     }
 }

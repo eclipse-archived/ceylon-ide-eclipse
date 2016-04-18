@@ -21,7 +21,8 @@ import com.redhat.ceylon.ide.common.platform {
     TextChange,
     TextEdit,
     InsertEdit,
-    ReplaceEdit
+    ReplaceEdit,
+    CompositeChange
 }
 import com.redhat.ceylon.ide.common.typechecker {
     ModifiablePhasedUnit
@@ -40,6 +41,7 @@ import org.eclipse.core.resources {
 import org.eclipse.ltk.core.refactoring {
     TextFileChange,
     ETextChange=TextChange,
+    ECompositeChange=CompositeChange,
     DocumentChange
 }
 import org.eclipse.text.edits {
@@ -70,22 +72,23 @@ object eclipsePlatformServices satisfies PlatformServices {
 
     createTextChange(String desc, CommonDocument|PhasedUnit input)
             => EclipseTextChange(desc, input);
+    
+    createCompositeChange(String desc) => EclipseCompositeChange(desc);
+    
 }
 
 shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit input)
         satisfies TextChange {
     
-    shared ETextChange change;
+    shared ETextChange nativeChange;
     
     if (is EclipseDocument input) {
-        change = DocumentChange(desc, input.doc);
+        nativeChange = DocumentChange(desc, input.doc);
     } else if (is ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> input) {
-        change = TextFileChange(desc, input.resourceFile);
+        nativeChange = TextFileChange(desc, input.resourceFile);
     } else {
         throw Exception("Unsupported input: ``input``");
     }
-    
-    shared actual void addChangesFrom(TextChange other) {}
     
     ETextEdit toEclipseTextEdit(TextEdit edit) {
         return switch (edit)
@@ -97,16 +100,29 @@ shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit input)
     shared actual void addEdit(TextEdit edit) {
         value eclipseEdit = toEclipseTextEdit(edit);
         
-        if (is MultiTextEdit me = change.edit) {
-            change.addEdit(eclipseEdit);
+        if (is MultiTextEdit me = nativeChange.edit) {
+            nativeChange.addEdit(eclipseEdit);
         } else {
-            change.edit = eclipseEdit;            
+            nativeChange.edit = eclipseEdit;            
         }
     }
     
-    document = EclipseDocument(EditorUtil.getDocument(change));
+    document = EclipseDocument(EditorUtil.getDocument(nativeChange));
     
-    hasEdits => change.edit.hasChildren();
+    hasEdits => nativeChange.edit.hasChildren();
     
-    initMultiEdit() => change.edit = MultiTextEdit();
+    initMultiEdit() => nativeChange.edit = MultiTextEdit();
+}
+
+shared class EclipseCompositeChange(String desc) satisfies CompositeChange {
+    shared ECompositeChange nativeChange = ECompositeChange(desc);
+    
+    shared actual void addTextChange(TextChange change) {
+        if (is EclipseTextChange change) {
+            nativeChange.add(change.nativeChange);
+        }
+    }
+    
+    hasChildren => nativeChange.children.size > 0;
+    
 }

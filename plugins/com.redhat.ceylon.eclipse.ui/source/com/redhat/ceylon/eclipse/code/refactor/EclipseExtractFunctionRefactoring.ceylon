@@ -63,7 +63,7 @@ import org.eclipse.text.edits {
     TextEdit
 }
 
-class EclipseExtractFunctionRefactoring(CeylonEditor editorPart, target = null) 
+class OldEclipseExtractFunctionRefactoring(CeylonEditor editorPart, target = null) 
         extends EclipseAbstractRefactoring<TextChange>(editorPart)
         satisfies DeprecatedExtractFunctionRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, CompositeChange, IRegion>
         & EclipseDocumentChanges

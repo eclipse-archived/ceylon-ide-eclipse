@@ -1,5 +1,17 @@
+import com.redhat.ceylon.eclipse.util {
+    EditorUtil,
+    eclipseIndents
+}
+import com.redhat.ceylon.ide.common.correct {
+    DocumentChanges,
+    CommonDocument
+}
+
 import org.eclipse.jface.text {
     IDocument
+}
+import org.eclipse.ltk.core.refactoring {
+    TextChange
 }
 import org.eclipse.text.edits {
     TextEdit,
@@ -7,17 +19,6 @@ import org.eclipse.text.edits {
     DeleteEdit,
     ReplaceEdit,
     MultiTextEdit
-}
-import org.eclipse.ltk.core.refactoring {
-    TextChange
-}
-import com.redhat.ceylon.ide.common.correct {
-    DocumentChanges,
-    CommonDocument
-}
-import com.redhat.ceylon.eclipse.util {
-    EditorUtil,
-    eclipseIndents
 }
 
 shared interface EclipseDocumentChanges
