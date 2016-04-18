@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectPhasedUnits;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
@@ -80,20 +81,22 @@ public class EclipseExtractFunctionRefactoring extends AbstractRefactoring imple
         if (newName == null) {
             newName = "do";
         }
-        CeylonIterable<PhasedUnit> pus = new CeylonIterable<>(
-                TypeDescriptor.klass(PhasedUnit.class),
-                ce.getParseController().getTypeChecker().getPhasedUnits()
-                        .getPhasedUnits());
-
         refactoring = createExtractFunctionRefactoring_
                 .createExtractFunctionRefactoring(
-                        Java2CeylonProxies.correctJ2C().newDocument(document),
+                        Java2CeylonProxies.correctJ2C()
+                            .newDocument(document),
                         selection.getOffset(),
                         selection.getOffset() + selection.getLength(),
                         ce.getParseController().getTypecheckedRootNode(),
-                        ce.getParseController().getTokens(), target, pus,
-                        ce.getParseController().getLastPhasedUnit()
-                                .getUnitFile(),
+                        ce.getParseController().getTokens(), 
+                        target, 
+                        new CeylonIterable<PhasedUnit>(
+                                TypeDescriptor.klass(PhasedUnit.class),
+                                getProjectPhasedUnits(project)
+                                    .getPhasedUnits()),
+                        ce.getParseController()
+                            .getLastPhasedUnit()
+                            .getUnitFile(),
                         new ceylon.language.String(newName));
     }
 
@@ -215,9 +218,10 @@ public class EclipseExtractFunctionRefactoring extends AbstractRefactoring imple
     public List<IRegion> getDupeRegions() {
         if (refactoring != null) {
             List<IRegion> regions = new ArrayList<>();
-            
-            for (DefaultRegion reg : refactoring.getDupeRegions()) {
-                regions.add(toRegion(reg));
+            ceylon.language.List<? extends DefaultRegion> dupeRegions 
+                = refactoring.getDupeRegions();
+            for (int i=0; i<dupeRegions.getSize(); i++) {
+                regions.add(toRegion(dupeRegions.getFromFirst(i)));
             }
             return regions;
         }
