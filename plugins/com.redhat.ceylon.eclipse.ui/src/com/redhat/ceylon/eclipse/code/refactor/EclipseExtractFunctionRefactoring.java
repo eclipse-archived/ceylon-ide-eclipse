@@ -234,24 +234,5 @@ public class EclipseExtractFunctionRefactoring extends AbstractRefactoring imple
             CompilationUnit rootNode, List<CommonToken> tokens) {
         // not used
     }
-
-    @Override
-    public void extractInFile(TextChange tfc) {
-        // not used
-    }
-
-    @Override
-    public void setTypeRegion(IRegion region) {
-        // not used
-    }
-
-    @Override
-    public void setDecRegion(IRegion region) {
-        // not used
-    }
-
-    @Override
-    public void setRefRegion(IRegion region) {
-        // not used
-    }
+    
 }
