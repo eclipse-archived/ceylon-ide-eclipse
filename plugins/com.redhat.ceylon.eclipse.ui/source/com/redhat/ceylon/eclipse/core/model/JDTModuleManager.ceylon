@@ -74,9 +74,18 @@ shared class JDTModuleManager(Context context, CeylonProject<IProject,IResource,
             for (sourceFolder in javaProject.packageFragmentRoots.array.coalesced) {
                 if (!sourceFolder.archive, 
                     sourceFolder.\iexists(), 
-                    sourceFolder.kind == IPackageFragmentRoot.\iK_SOURCE, 
-                    sourceFolder.getPackageFragment(moduleName).\iexists()) {
-                    return true;
+                    sourceFolder.kind == IPackageFragmentRoot.\iK_SOURCE){
+                    value pkgFragment = sourceFolder.getPackageFragment(moduleName);
+                    // only treat this as containing a module if we do have a module descriptor for it
+                    if(pkgFragment.\iexists()){
+                        for(resource  in pkgFragment.nonJavaResources){
+                            print(className(resource));
+                            if(is IFile resource,
+                               resource.name == "module.ceylon"){
+                                return true;
+                            }
+                        }
+                    }
                 }
             }
         }
