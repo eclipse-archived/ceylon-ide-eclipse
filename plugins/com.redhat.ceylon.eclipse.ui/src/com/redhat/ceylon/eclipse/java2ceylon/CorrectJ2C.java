@@ -24,10 +24,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.OperatorExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.correct.ProblemLocation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.ide.common.correct.CommonDocument;
 import com.redhat.ceylon.ide.common.correct.IdeQuickFixManager;
 import com.redhat.ceylon.ide.common.correct.ImportProposals;
 import com.redhat.ceylon.ide.common.correct.QuickFixData;
+import com.redhat.ceylon.ide.common.platform.CommonDocument;
 
 public interface CorrectJ2C {
     ImportProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange> importProposals();

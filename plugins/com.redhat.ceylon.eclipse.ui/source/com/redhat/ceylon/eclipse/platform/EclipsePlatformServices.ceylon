@@ -10,8 +10,7 @@ import com.redhat.ceylon.eclipse.util {
     EditorUtil
 }
 import com.redhat.ceylon.ide.common.correct {
-    ImportProposals,
-    CommonDocument
+    ImportProposals
 }
 import com.redhat.ceylon.ide.common.platform {
     PlatformServices,
@@ -22,7 +21,8 @@ import com.redhat.ceylon.ide.common.platform {
     TextEdit,
     InsertEdit,
     ReplaceEdit,
-    CompositeChange
+    CompositeChange,
+    CommonDocument
 }
 import com.redhat.ceylon.ide.common.typechecker {
     ModifiablePhasedUnit

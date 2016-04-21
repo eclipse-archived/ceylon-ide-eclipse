@@ -1,10 +1,12 @@
+import com.redhat.ceylon.ide.common.platform {
+    CommonDocument
+}
 import com.redhat.ceylon.eclipse.util {
     EditorUtil,
     eclipseIndents
 }
 import com.redhat.ceylon.ide.common.correct {
-    DocumentChanges,
-    CommonDocument
+    DocumentChanges
 }
 
 import org.eclipse.jface.text {
