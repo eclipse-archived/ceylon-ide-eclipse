@@ -2209,7 +2209,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 options.add("-overrides");
                 options.add(overrides);
             }
-            
+
+            String jdkProvider = toJavaString(config.getJdkProvider());
+            if (jdkProvider != null) {
+                options.add("-jdk-provider");
+                options.add(jdkProvider);
+            }
+
             if (config.getFlatClasspath()) {
                 options.add("-flat-classpath");
             }

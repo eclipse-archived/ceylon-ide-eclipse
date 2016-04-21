@@ -56,7 +56,7 @@ shared class JDTModuleManager(Context context, CeylonProject<IProject,IResource,
     shared actual JDTModelLoader newModelLoader(BaseIdeModuleManager self, BaseIdeModuleSourceMapper sourceMapper, Modules modules) {
         assert (is JDTModuleSourceMapper sourceMapper);
         assert (is JDTModuleManager self);
-        value modelLoader = JDTModelLoader(self, sourceMapper, modules);
+        value modelLoader = JDTModelLoader(self, sourceMapper, modules, ceylonProject?.configuration?.jdkProvider);
         if (exists nativeProject = ceylonProject?.ideArtifact) {
             modelLoaders.put(nativeProject, WeakReference(modelLoader));
         }

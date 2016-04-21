@@ -15,6 +15,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
 import static org.eclipse.jdt.core.JavaCore.newContainerEntry;
 import static org.eclipse.jdt.core.JavaCore.newSourceEntry;
+import static org.eclipse.jface.layout.GridDataFactory.swtDefaults;
 import static org.eclipse.swt.layout.GridData.FILL_HORIZONTAL;
 import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
 
@@ -77,6 +78,8 @@ import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -91,6 +94,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.dialogs.PreferencesUtil;
@@ -1475,6 +1479,8 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
     }
 
     private boolean enableJdtClassesDir = true;
+
+    private Text jdkProviderText;
     
     public boolean isEnableJdtClassesDir() {
         return enableJdtClassesDir;
@@ -1503,7 +1509,11 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
     public String getBoostrapVersion() {
         return bootstrapVersion;
     }
-    
+
+    public String getJdkProvider() {
+        return jdkProviderText.getText().trim().isEmpty() ? null : jdkProviderText.getText();
+    }
+
     public boolean areAstAwareIncrementalBuildsEnabled() {
         return astAwareIncrementalBuildsEnabled;
     }
@@ -1565,6 +1575,8 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
 
+        initJdkProvider(composite);
+        
         Composite bootstrapComposite = new Composite(composite, NONE);
         GridData bcgdb = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         bcgdb.grabExcessHorizontalSpace=true;
@@ -1613,6 +1625,34 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
+    }
+
+    private void initJdkProvider(Composite parent) {
+        Composite composite = 
+                new Composite(parent, SWT.NONE);
+        composite.setLayout(new GridLayout(2, false));
+        composite.setLayoutData(swtDefaults()
+                .grab(true, true)
+                .align(SWT.FILL, SWT.FILL)
+                .create());
+
+        Label systemRepoLabel = 
+                new Label(composite, SWT.LEFT | SWT.WRAP);
+        systemRepoLabel.setText(
+                "Jdk Provider");
+        systemRepoLabel.setLayoutData(swtDefaults()
+                .align(SWT.FILL, SWT.CENTER)
+                .span(2, 1)
+                .grab(true, false)
+                .create());
+
+        jdkProviderText = 
+                new Text(composite, SWT.SINGLE | SWT.BORDER);
+        jdkProviderText.setLayoutData(swtDefaults()
+                .align(SWT.FILL, SWT.CENTER)
+                .grab(true, false)
+                .create());
+        jdkProviderText.setMessage("Jdk Provider");
     }
 
 }

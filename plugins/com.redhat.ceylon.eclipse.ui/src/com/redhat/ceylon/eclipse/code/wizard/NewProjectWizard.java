@@ -165,6 +165,10 @@ public class NewProjectWizard extends NewElementWizard
                 projectConfig.setProjectSuppressWarningsEnum(
                         EnumSet.allOf(Warning.class));
             }
+            String jdkProvider = firstPage.getJdkProvider();
+            if(jdkProvider != null){
+                projectConfig.setProjectJdkProvider(toCeylonString(jdkProvider));
+            }
             
             Boolean offlineOption = firstPage.getOfflineOption();
             if (offlineOption!=null) {

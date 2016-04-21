@@ -8,7 +8,9 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getVerbose;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.ide.common.util.toJavaBoolean_.toJavaBoolean;
+import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+import static org.eclipse.jface.layout.GridDataFactory.swtDefaults;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -31,6 +33,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 
@@ -56,6 +59,8 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
     private Button enableBuilderButton;
     
     private IResourceChangeListener encodingListener;
+    private Text jdkProviderText;
+    private String jdkProvider;
     
     @Override
     public boolean performOk() {
@@ -73,6 +78,8 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
         astAwareIncrementalBuidsButton.setSelection(true);
         offlineOption = null;
         verboseText = null;
+        jdkProvider = null;
+        jdkProviderText.setText("");
         super.performDefaults();
     }
     
@@ -88,6 +95,8 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
             if (offlineOption!=null) {
                 config.setProjectOffline(ceylon.language.Boolean.instance(offlineOption));
             }
+            String jdkProvider = jdkProviderText.getText().trim();
+            config.setProjectJdkProvider(jdkProvider.isEmpty() ? null : ceylon.language.String.instance(jdkProvider));
             config.save();
         }
     }
@@ -135,6 +144,8 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
                 }
             }
         });
+        
+        initJdkProvider(parent);
         
         final Group platformGroup = new Group(parent, SWT.NONE);
         platformGroup.setText("Target virtual machine");
@@ -346,6 +357,7 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
                 backendJava = compileToJava(project);
                 verbose = getVerbose(project);
                 offlineOption = toJavaBoolean(modelJ2C().ceylonModel().getProject(project).getConfiguration().getProjectOffline());
+                jdkProvider = toJavaString(modelJ2C().ceylonModel().getProject(project).getConfiguration().getProjectJdkProvider());
             }
         }
 
@@ -361,5 +373,35 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
         }
         super.dispose();
     }
-    
+
+    private void initJdkProvider(Composite parent) {
+        Composite composite = 
+                new Composite(parent, SWT.NONE);
+        composite.setLayout(new GridLayout(2, false));
+        composite.setLayoutData(swtDefaults()
+                .grab(true, true)
+                .align(SWT.FILL, SWT.FILL)
+                .create());
+
+        Label systemRepoLabel = 
+                new Label(composite, SWT.LEFT | SWT.WRAP);
+        systemRepoLabel.setText(
+                "Jdk Provider");
+        systemRepoLabel.setLayoutData(swtDefaults()
+                .align(SWT.FILL, SWT.CENTER)
+                .span(2, 1)
+                .grab(true, false)
+                .create());
+
+        jdkProviderText = 
+                new Text(composite, SWT.SINGLE | SWT.BORDER);
+        jdkProviderText.setLayoutData(swtDefaults()
+                .align(SWT.FILL, SWT.CENTER)
+                .grab(true, false)
+                .create());
+        jdkProviderText.setMessage("Jdk Provider");
+        if(jdkProvider != null)
+            jdkProviderText.setText(jdkProvider);
+    }
+   
 }

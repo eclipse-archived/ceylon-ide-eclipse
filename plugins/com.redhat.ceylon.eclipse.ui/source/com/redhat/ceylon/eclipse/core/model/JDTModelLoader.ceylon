@@ -232,13 +232,15 @@ shared class JDTModelLoader
         }
     }
     JavaProjectInfos? javaProjectInfos;
+    String? jdkProvider;
     
     shared actual Object lookupEnvironmentMutex = object extends Basic() {};
     
     shared new (
         JDTModuleManager moduleManager,
         JDTModuleSourceMapper moduleSourceMapper,
-        Modules modules
+        Modules modules,
+        String? jdkProvider
     ) extends IdeModelLoader<IProject, IResource, IFolder, IFile, ITypeRoot, IType>(
         moduleManager, moduleSourceMapper, modules){
         if (exists javaProject = moduleManager.javaProject) {
@@ -253,8 +255,11 @@ shared class JDTModelLoader
         } else {
             javaProjectInfos = null;
         }
+        this.jdkProvider = jdkProvider;
     }
     
+    shared actual String? alternateJdkModuleSpec => jdkProvider;
+        
     shared actual class PackageLoader(BaseIdeModule theIdeModule) extends super.PackageLoader(theIdeModule) {
         
         value javaProject = javaProjectInfos?.javaProject;
