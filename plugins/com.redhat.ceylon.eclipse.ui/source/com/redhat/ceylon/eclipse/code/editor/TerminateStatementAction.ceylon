@@ -2,7 +2,7 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     Tree
 }
 import com.redhat.ceylon.eclipse.code.correct {
-    EclipseDocumentChanges
+    EclipseDocument
 }
 import com.redhat.ceylon.eclipse.code.parse {
     CeylonParseController
@@ -12,9 +12,6 @@ import com.redhat.ceylon.eclipse.util {
 }
 import com.redhat.ceylon.ide.common.editor {
     AbstractTerminateStatementAction
-}
-import com.redhat.ceylon.ide.common.refactoring {
-    DefaultRegion
 }
 
 import java.util {
@@ -30,28 +27,21 @@ import org.eclipse.core.runtime {
 import org.eclipse.jface.action {
     Action
 }
-import org.eclipse.jface.text {
-    IDocument
+import com.redhat.ceylon.ide.common.platform {
+    TextChange
 }
-import org.eclipse.ltk.core.refactoring {
-    TextChange,
-    DocumentChange
-}
-import org.eclipse.text.edits {
-    InsertEdit,
-    TextEdit
+import com.redhat.ceylon.eclipse.platform {
+    EclipseTextChange
 }
 
 class EclipseTerminateStatementAction(CeylonEditor editor)
         extends Action(null)
-        satisfies AbstractTerminateStatementAction<IDocument,InsertEdit,TextEdit,TextChange>
-                & EclipseDocumentChanges {
-    
-    value doc => editor.ceylonSourceViewer.document;
+        satisfies AbstractTerminateStatementAction<EclipseDocument> {
     
     shared actual void run() {
         value ts = EditorUtil.getSelection(editor);
         String before = editor.selectionText;
+        value doc = EclipseDocument(editor.ceylonSourceViewer.document);
 
         terminateStatement(doc, ts.endLine);
         
@@ -68,27 +58,18 @@ class EclipseTerminateStatementAction(CeylonEditor editor)
     }
     
     shared actual void applyChange(TextChange change) {
-        EditorUtil.performChange(change);
+        if (is EclipseTextChange change) {
+            EditorUtil.performChange(change.nativeChange);
+        }
     }
     
-    shared actual [DefaultRegion, String] getLineInfo(IDocument doc, Integer line)
-            => let(li = doc.getLineInformation(line)) 
-                [DefaultRegion(li.offset, li.length),
-                    doc.get(li.offset, li.length)];
-    
-    shared actual TextChange newChange(String desc, IDocument doc)
-            => DocumentChange(desc, doc);
-    
-    shared actual [Tree.CompilationUnit, List<CommonToken>] parse(IDocument doc) {
+    shared actual [Tree.CompilationUnit, List<CommonToken>] parse(EclipseDocument doc) {
         value cpc = CeylonParseController();
         cpc.initialize(editor.parseController.path,
             editor.parseController.project, null);
-        cpc.parseAndTypecheck(doc,
+        cpc.parseAndTypecheck(doc.doc,
             0, // don't wait for the source model since we don't even need it.
             NullProgressMonitor(), null);
         return [cpc.parsedRootNode, cpc.tokens];
     }
-    
-    getChar(IDocument doc, Integer offset)
-            => doc.getChar(offset);
 }

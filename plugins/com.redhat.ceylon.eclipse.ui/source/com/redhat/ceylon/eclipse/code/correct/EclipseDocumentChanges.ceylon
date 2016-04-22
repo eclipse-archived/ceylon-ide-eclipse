@@ -1,12 +1,12 @@
-import com.redhat.ceylon.ide.common.platform {
-    CommonDocument
-}
 import com.redhat.ceylon.eclipse.util {
     EditorUtil,
     eclipseIndents
 }
 import com.redhat.ceylon.ide.common.correct {
     DocumentChanges
+}
+import com.redhat.ceylon.ide.common.platform {
+    CommonDocument
 }
 
 import org.eclipse.jface.text {
@@ -80,10 +80,11 @@ shared class EclipseDocument(shared IDocument doc) satisfies CommonDocument {
             doc.get(info.offset, info.length);
 
     getLineStartOffset(Integer line)
-            => doc.getLineInformation(line).length;
+            => doc.getLineInformation(line).offset;
     
     getLineEndOffset(Integer line)
-            => doc.getLineInformation(line).offset;
+            => doc.getLineInformation(line).offset
+             + doc.getLineInformation(line).length;
     
     getLineOfOffset(Integer offset) => doc.getLineOfOffset(offset);
     
