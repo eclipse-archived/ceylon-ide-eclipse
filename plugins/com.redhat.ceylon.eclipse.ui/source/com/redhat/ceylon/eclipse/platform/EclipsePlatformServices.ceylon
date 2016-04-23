@@ -112,6 +112,8 @@ shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit input)
     hasEdits => nativeChange.edit.hasChildren();
     
     initMultiEdit() => nativeChange.edit = MultiTextEdit();
+    
+    apply() => EditorUtil.performChange(nativeChange);
 }
 
 shared class EclipseCompositeChange(String desc) satisfies CompositeChange {

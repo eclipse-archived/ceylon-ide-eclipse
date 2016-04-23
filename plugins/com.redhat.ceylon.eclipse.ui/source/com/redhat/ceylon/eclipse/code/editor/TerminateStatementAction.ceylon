@@ -27,12 +27,6 @@ import org.eclipse.core.runtime {
 import org.eclipse.jface.action {
     Action
 }
-import com.redhat.ceylon.ide.common.platform {
-    TextChange
-}
-import com.redhat.ceylon.eclipse.platform {
-    EclipseTextChange
-}
 
 class EclipseTerminateStatementAction(CeylonEditor editor)
         extends Action(null)
@@ -55,12 +49,6 @@ class EclipseTerminateStatementAction(CeylonEditor editor)
         }
         
         editor.scheduleParsing();
-    }
-    
-    shared actual void applyChange(TextChange change) {
-        if (is EclipseTextChange change) {
-            EditorUtil.performChange(change.nativeChange);
-        }
     }
     
     shared actual [Tree.CompilationUnit, List<CommonToken>] parse(EclipseDocument doc) {
