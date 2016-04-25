@@ -84,8 +84,8 @@ public final class RenameLinkedMode
             try {
                 hideEditorActivity();
                 setName(getNewNameFromNamePosition());
+                revertChanges();
                 if (isShowPreview()) {
-                    revertChanges();
                     openPreview();
                 }
                 else {
@@ -94,7 +94,7 @@ public final class RenameLinkedMode
                     new RefactoringExecutionHelper(
                             refactoring,
                             RefactoringStatus.WARNING,
-                            refactoring.getSaveMode(),
+                            getSaveMode(),
                             site.getShell(),
                             site.getWorkbenchWindow())
                         .perform(false, true);

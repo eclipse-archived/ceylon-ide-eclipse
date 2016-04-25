@@ -153,8 +153,8 @@ public class ChangeVersionLinkedMode extends RefactorLinkedMode {
         if (isEnabled()) {
             try {
                 setName(getNewNameFromNamePosition());
+                revertChanges();
                 if (isShowPreview()) {
-                    revertChanges();
                     openPreview();
                 }
                 else {

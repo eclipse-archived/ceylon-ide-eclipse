@@ -8,6 +8,7 @@ import org.eclipse.core.commands.operations.IOperationHistory;
 import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -245,6 +246,13 @@ public abstract class AbstractLinkedMode {
         catch (Exception e) {
             e.printStackTrace();
         }
+        
+        //make sure the AST is up dated before running the refactoring
+        editor.getParseController()
+            .parseAndTypecheck(
+                    editor.getCeylonSourceViewer().getDocument(), 
+                    10, new NullProgressMonitor(), null);
+        
     }
     
     protected void updatePopupLocation() {}

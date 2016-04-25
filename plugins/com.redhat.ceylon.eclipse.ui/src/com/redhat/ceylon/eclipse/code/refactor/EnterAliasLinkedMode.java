@@ -224,8 +224,8 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
             try {
 //                hideEditorActivity();
                 setName(getNewNameFromNamePosition());
+                revertChanges();
                 if (isShowPreview()) {
-                    revertChanges();
                     openPreview();
                 }
                 else {
@@ -234,7 +234,7 @@ public class EnterAliasLinkedMode extends RefactorLinkedMode {
                     new RefactoringExecutionHelper(
                             refactoring,
                             RefactoringStatus.WARNING,
-                            RefactoringSaveHelper.SAVE_CEYLON_REFACTORING,
+                            getSaveMode(),
                             site.getShell(),
                             site.getWorkbenchWindow())
                         .perform(false, true);
