@@ -81,11 +81,14 @@ shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit input)
         satisfies TextChange {
     
     shared ETextChange nativeChange;
+    EclipseDocument doc;
     
     if (is EclipseDocument input) {
+        doc = input;
         nativeChange = DocumentChange(desc, input.doc);
     } else if (is ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> input) {
         nativeChange = TextFileChange(desc, input.resourceFile);
+        doc = EclipseDocument(EditorUtil.getDocument(nativeChange));
     } else {
         throw Exception("Unsupported input: ``input``");
     }
@@ -107,7 +110,7 @@ shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit input)
         }
     }
     
-    document = EclipseDocument(EditorUtil.getDocument(nativeChange));
+    document = doc;
     
     hasEdits => nativeChange.edit.hasChildren();
     
