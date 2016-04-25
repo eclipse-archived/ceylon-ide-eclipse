@@ -46,22 +46,19 @@ class EclipseTerminateStatementAction(CeylonEditor editor) extends Action(null) 
 
     shared actual void run() {
         value ts = EditorUtil.getSelection(editor);
-        //String before = editor.selectionText;
+        String before = editor.selectionText;
         value doc = EclipseDocument(editor.ceylonSourceViewer.document);
-        value handler = createHandler();
         
-        if (exists reg = handler.terminateStatement(doc, ts.endLine)) {
-            editor.ceylonSourceViewer.setSelectedRange(reg.start, reg.length);
-        }
+        createHandler().terminateStatement(doc, ts.endLine);
 
-        //if (editor.selectionText != before) {
-        //    //if the caret was at the end of the line, 
-        //    //and a semi was added, it winds up selected
-        //    //so move the caret after the semi
-        //    value selection = editor.selection;
-        //    Integer start = selection.offset + 1;
-        //    editor.ceylonSourceViewer.setSelectedRange(start, 0);
-        //}
+        if (editor.selectionText != before) {
+            //if the caret was at the end of the line, 
+            //and a semi was added, it winds up selected
+            //so move the caret after the semi
+            value selection = editor.selection;
+            Integer start = selection.offset + 1;
+            editor.ceylonSourceViewer.setSelectedRange(start, 0);
+        }
         
         editor.scheduleParsing();
     }
