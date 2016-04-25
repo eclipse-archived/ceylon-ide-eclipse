@@ -105,6 +105,7 @@ import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.jface.viewers.IPostSelectionProvider;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CaretEvent;
@@ -1288,7 +1289,7 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
         
         /*((IContextService) getSite().getService(IContextService.class))
                 .activateContext(PLUGIN_ID + ".context");*/
-        
+                
         IThemeManager themeManager = 
                 getWorkbench().getThemeManager();
         CeylonPlugin.log(Status.WARNING, 
@@ -1480,6 +1481,12 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
         if (isEditable()) {
             addModelListener(markerAnnotationUpdater);
         }
+        
+        IPostSelectionProvider psp = 
+                (IPostSelectionProvider) 
+                    getSelectionProvider();
+        psp.addPostSelectionChangedListener(
+                additionalAnnotationCreator);
         
         IDocument document = getSourceViewer().getDocument();
         if (document!=null) {

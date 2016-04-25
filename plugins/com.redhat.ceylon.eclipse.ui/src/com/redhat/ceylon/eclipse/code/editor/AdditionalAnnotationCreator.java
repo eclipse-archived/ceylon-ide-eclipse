@@ -17,7 +17,6 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
-import org.eclipse.jface.viewers.IPostSelectionProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.ui.IEditorInput;
@@ -38,21 +37,17 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
  *
  */
 public class AdditionalAnnotationCreator 
-        implements TreeLifecycleListener {
+        implements TreeLifecycleListener, 
+                   ISelectionChangedListener {
     
     public static final String TODO_ANNOTATION_TYPE = 
             PLUGIN_ID + ".todo";
 
     private CeylonEditor editor;
-    CeylonInitializerAnnotation initializerAnnotation;
+    private CeylonInitializerAnnotation initializerAnnotation;
     
     public AdditionalAnnotationCreator(CeylonEditor editor) {
         this.editor = editor;
-        IPostSelectionProvider psp = 
-                (IPostSelectionProvider) 
-                    editor.getSelectionProvider();
-        psp.addPostSelectionChangedListener(
-                new SelectionListener());
     }
 
     @Override
@@ -97,7 +92,7 @@ public class AdditionalAnnotationCreator
                     model.removeAnnotation(a);
                 }
             }
-            //model.addAnnotation(new DefaultRangeIndicator(), new Position(50, 100));
+            
             new Visitor() {
                 @Override
                 public void visit(Tree.Declaration that) {
@@ -166,52 +161,43 @@ public class AdditionalAnnotationCreator
                             identifyingNode.getDistance()));
         }
     }
-    
-    /**
-     * Updates the highlighted range in the vertical ruler
-     * (the blue bar indicating the current containing
-     * declaration).
-     */
-    class SelectionListener 
-            implements ISelectionChangedListener {
-        @Override
-        public void selectionChanged(
-                SelectionChangedEvent event) {
-            CeylonParseController cpc = 
-                    editor.getParseController();
-            Tree.CompilationUnit rootNode = 
-                    cpc.getLastCompilationUnit();
-            if (rootNode==null) {
-                return;
-            }
-            ITextSelection selection = 
-                    (ITextSelection) 
-                        event.getSelection();
-            Node node = findScope(rootNode, selection);
-            if (node!=null) {
-                editor.setHighlightRange(
-                        node.getStartIndex(), 
-                        node.getDistance(), 
-                        false);
-            }
-            else {
-                editor.resetHighlightRange();
-            }
-            IEditorInput editorInput = 
-                    editor.getEditorInput();
-            IAnnotationModel model = 
-                    editor.getDocumentProvider()
-                        .getAnnotationModel(editorInput);
-            if (model!=null) {
-                model.removeAnnotation(initializerAnnotation);
-            }
-            initializerAnnotation = null;
-            if (node!=null && model!=null) {
-                node.visit(new InitializerVisitor());
-                if (initializerAnnotation!=null) {
-                    model.addAnnotation(initializerAnnotation, 
-                            initializerAnnotation.getInitializerPosition());
-                }
+
+    @Override
+    public void selectionChanged(SelectionChangedEvent event) {
+        CeylonParseController cpc = 
+                editor.getParseController();
+        Tree.CompilationUnit rootNode = 
+                cpc.getLastCompilationUnit();
+        if (rootNode==null) {
+            return;
+        }
+        ITextSelection selection = 
+                (ITextSelection) 
+                event.getSelection();
+        Node node = findScope(rootNode, selection);
+        if (node!=null) {
+            editor.setHighlightRange(
+                    node.getStartIndex(), 
+                    node.getDistance(), 
+                    false);
+        }
+        else {
+            editor.resetHighlightRange();
+        }
+        IEditorInput editorInput = 
+                editor.getEditorInput();
+        IAnnotationModel model = 
+                editor.getDocumentProvider()
+                .getAnnotationModel(editorInput);
+        if (model!=null) {
+            model.removeAnnotation(initializerAnnotation);
+        }
+        initializerAnnotation = null;
+        if (node!=null && model!=null) {
+            node.visit(new InitializerVisitor());
+            if (initializerAnnotation!=null) {
+                model.addAnnotation(initializerAnnotation, 
+                        initializerAnnotation.getInitializerPosition());
             }
         }
     }
