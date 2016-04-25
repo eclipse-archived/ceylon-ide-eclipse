@@ -36,8 +36,13 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
-public class ProjectionAnnotationManager implements TreeLifecycleListener, IProjectionListener{
+public class ProjectionAnnotationManager 
+        implements TreeLifecycleListener, 
+                   IProjectionListener {
     
+    private static final Annotation[] NO_ANNOTATIONS = 
+            new Annotation[0];
+
     private CeylonEditor editor;
 
     private boolean firstTime = true;
@@ -55,8 +60,11 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
     public void projectionEnabled() {
         reset();
 //        editor.scheduleParsing();
-        CeylonParseController pc = editor.getParseController();
-        if (pc.getDocument()==editor.getCeylonSourceViewer().getDocument()) {
+        CeylonParseController pc = 
+                editor.getParseController();
+        if (pc.getDocument() 
+                == editor.getCeylonSourceViewer()
+                        .getDocument()) {
             update(pc, new NullProgressMonitor());
         }
     }
@@ -70,11 +78,14 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
 
     public void update(CeylonParseController parseController, 
             IProgressMonitor monitor) {
-        if (parseController.getStage().ordinal() >= getStage().ordinal()) {
-            Tree.CompilationUnit rn = parseController.getParsedRootNode();
+        if (parseController.getStage().ordinal() 
+                >= getStage().ordinal()) {
+            Tree.CompilationUnit rn = 
+                    parseController.getParsedRootNode();
             if (rn!=null) { // can be null if file is outside workspace
                 try {
-                    updateFoldingStructure(rn, parseController.getTokens());
+                    updateFoldingStructure(rn, 
+                            parseController.getTokens());
                 } 
                 catch (Exception e) {
                     e.printStackTrace();
@@ -118,14 +129,19 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
      * @param start        The starting offset of the text range
      * @param len        The length of the text range
      */
-    private ProjectionAnnotation makeAnnotation(int start, int len, int tokenType) {
-        ProjectionAnnotation annotation= new CeylonProjectionAnnotation(tokenType);
-        newAnnotations.put(annotation, new Position(start, len));
+    private ProjectionAnnotation makeAnnotation(
+            int start, int len, int tokenType) {
+        ProjectionAnnotation annotation = 
+                new CeylonProjectionAnnotation(tokenType);
+        newAnnotations.put(annotation, 
+                new Position(start, len));
         return annotation;
     }
     
     protected int advanceToEndOfLine(int offset, int len) {
-        IDocument doc = editor.getCeylonSourceViewer().getDocument();
+        IDocument doc = 
+                editor.getCeylonSourceViewer()
+                    .getDocument();
         try {
             int line = doc.getLineOfOffset(offset+len);
             while (offset+len<doc.getLength() && 
@@ -140,17 +156,6 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
         return len;
     }
     
-    /**
-     * Make a folding annotation that corresponds to the given range of text.
-     * 
-     * @param start        The starting offset of the text range
-     * @param len        The length of the text range
-     */
-//    public void makeAnnotation(int start, int len, boolean collapsed) {
-//        ProjectionAnnotation annotation = new ProjectionAnnotation(collapsed);
-//        newAnnotations.put(annotation, new Position(start, len));
-//    }
-
     /**
      * Update the folding structure for a source text, where the text and its
      * AST are represented by a given parse controller and the folding structure
@@ -172,12 +177,14 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
      *                                represent the foldable elements in the source
      *                                text
      */
-    public synchronized void updateFoldingStructure(Tree.CompilationUnit ast, 
+    public synchronized void updateFoldingStructure(
+            Tree.CompilationUnit ast, 
             List<CommonToken> tokens) {
         try {
             
-            ProjectionAnnotationModel annotationModel = editor.getCeylonSourceViewer()
-                    .getProjectionAnnotationModel(); 
+            ProjectionAnnotationModel annotationModel = 
+                    editor.getCeylonSourceViewer()
+                        .getProjectionAnnotationModel(); 
             if (ast==null||annotationModel==null) {
                 // We can't create annotations without an AST
                 return;
@@ -212,20 +219,28 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
             // which lead back here, which would lead to another call to modifyAnnotations()
             // (unless those were curtailed)
             if (updateNeeded) {*/
-                List<Annotation> deletions = new ArrayList<Annotation>(oldAnnotations.size());
-                for (Map.Entry<Annotation,Position> e: oldAnnotations.entrySet()) {
+                List<Annotation> deletions = 
+                        new ArrayList<Annotation>
+                            (oldAnnotations.size());
+                for (Map.Entry<Annotation,Position> e: 
+                        oldAnnotations.entrySet()) {
                     if (!newAnnotations.containsValue(e.getValue())) {
                         deletions.add(e.getKey());
                     }
                 }
-                Map<Annotation, Position> additions = new HashMap<Annotation, Position>(newAnnotations.size());
-                for (Map.Entry<Annotation,Position> e: newAnnotations.entrySet()) {
+                Map<Annotation, Position> additions = 
+                        new HashMap<Annotation,Position>
+                            (newAnnotations.size());
+                for (Map.Entry<Annotation,Position> e: 
+                        newAnnotations.entrySet()) {
                     if (!oldAnnotations.containsValue(e.getValue())) {
                         additions.put(e.getKey(), e.getValue());
                     }
                 }
                 if (!deletions.isEmpty() || !additions.isEmpty()) {
-                    annotationModel.modifyAnnotations(deletions.toArray(new Annotation[0]), additions, null);
+                    annotationModel.modifyAnnotations(
+                            deletions.toArray(NO_ANNOTATIONS), 
+                            additions, null);
                 }
                 // Capture the latest set of annotations in a form that can be used the next
                 // time that it is necessary to modify the annotations
@@ -241,40 +256,7 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
             e.printStackTrace();
         }
     }    
-
-
-    /**
-     * A method to test whether there has been a significant change in the folding
-     * annotations for a source text.  The method works by comparing two lists of
-     * annotations, nominally the "old" and "new" annotations.  It returns true iff
-     * there is considered to be a "significant" difference in the two lists, where
-     * the meaning of "significant" is defined by the implementation of this method.
-     * 
-     * The default implementation provided here is a simplistic test of the difference
-     * between two lists, considering only their size.  This may work well enough much
-     * of the time as the comparisons between lists should be made very frequently,
-     * actually more frequently than the rate at which the typical human user will
-     * edit the program text so as to affect the AST so as to affect the lists.  Thus
-     * most changes of lists will entail some change in the number of elements at some
-     * point that will be observed here.  This will not work for certain very rapid
-     * edits of source text (e.g., rapid replacement of elements).
-     * 
-     * This method should be overridden in language-specific implementations of the
-     * folding updater where a more sophisticated test is desired.    
-     *     
-     * @param list1        A list of annotations (nominally the "old" annotations)
-     * @param list2        A list of annotations (nominally the "new" annotations)
-     * @return            true iff there has been a "significant" difference in the
-     *                     two given lists of annotations
-     * 
-     */
-//    protected boolean differ(Map<Annotation,Position> old, Map<Annotation,Position> current) {
-//        if (old.size() != current.size()) {
-//            return true;
-//        }
-//        return false;
-//    }
-
+    
     /**
      * Send a visitor to an AST representing a program in order to construct the
      * folding annotations.  Both the visitor type and the AST node type are language-
@@ -285,13 +267,17 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
      *                             a listing of keys to the map of text positions
      * @param ast                An Object that will be taken to represent an AST node
      */
-    public void createAnnotations(Tree.CompilationUnit ast, List<CommonToken> tokens) {
+    public void createAnnotations(Tree.CompilationUnit ast, 
+            List<CommonToken> tokens) {
         final boolean autofoldImports;
         final boolean autofoldComments;
         if (firstTime) {
-            IPreferenceStore store = CeylonPlugin.getPreferences();
-            autofoldImports = store.getBoolean(AUTO_FOLD_IMPORTS);
-            autofoldComments = store.getBoolean(AUTO_FOLD_COMMENTS);
+            IPreferenceStore store = 
+                    CeylonPlugin.getPreferences();
+            autofoldImports = 
+                    store.getBoolean(AUTO_FOLD_IMPORTS);
+            autofoldComments = 
+                    store.getBoolean(AUTO_FOLD_COMMENTS);
             firstTime = false;
         }
         else {
@@ -307,8 +293,10 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
                 type==VERBATIM_STRING ||
                 type==AVERBATIM_STRING) {
                 if (isMultilineToken(token)) {
-                    ProjectionAnnotation ann = makeAnnotation(token, token);
-                    if (autofoldComments && ann!=null && type==MULTI_COMMENT) {
+                    ProjectionAnnotation ann = 
+                            makeAnnotation(token, token);
+                    if (autofoldComments && ann!=null 
+                            && type==MULTI_COMMENT) {
                         ann.markCollapsed();
                     }
                 }
@@ -325,19 +313,22 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
                     }
                     next = tokens.get(++j);
                 }
-                ProjectionAnnotation ann = foldIfNecessary(token, until);
+                ProjectionAnnotation ann = 
+                        foldIfNecessary(token, until);
                 if (ann!=null && autofoldComments) {
                     ann.markCollapsed();
                 }
             }
         }
-        Tree.CompilationUnit cu = (Tree.CompilationUnit) ast;
+        Tree.CompilationUnit cu = 
+                (Tree.CompilationUnit) ast;
         new Visitor() {
             @Override 
             public void visit(Tree.ImportList importList) {
                 super.visit(importList);
                 if (!importList.getImports().isEmpty()) {
-                    ProjectionAnnotation ann = foldIfNecessary(importList);
+                    ProjectionAnnotation ann = 
+                            foldIfNecessary(importList);
                     if (autofoldImports && ann!=null) {
                         ann.markCollapsed();
                     }
@@ -369,8 +360,10 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
     }
 
     private ProjectionAnnotation foldIfNecessary(Node node) {
-        CommonToken token = (CommonToken) node.getToken();
-        CommonToken endToken = (CommonToken) node.getEndToken();
+        CommonToken token = 
+                (CommonToken) node.getToken();
+        CommonToken endToken = 
+                (CommonToken) node.getEndToken();
         if (token!=null && endToken!=null &&
                 endToken.getLine()-token.getLine()>0) {
             return makeAnnotation(token, endToken);
@@ -380,7 +373,8 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
         }
     }
     
-    private ProjectionAnnotation foldIfNecessary(CommonToken start, CommonToken end) {
+    private ProjectionAnnotation foldIfNecessary(
+            CommonToken start, CommonToken end) {
         if (end.getLine()>start.getLine()) {
             return makeAnnotation(start, end);
         }
@@ -394,7 +388,8 @@ public class ProjectionAnnotationManager implements TreeLifecycleListener, IProj
                 token.getText().indexOf('\r')>0;
     }
 
-    private ProjectionAnnotation makeAnnotation(CommonToken start, CommonToken end) {
+    private ProjectionAnnotation makeAnnotation(
+            CommonToken start, CommonToken end) {
         int offset = start.getStartIndex();
         int len = end.getStopIndex()-start.getStartIndex()+1;
         if (end.getType()!=CeylonLexer.LINE_COMMENT) {
