@@ -205,8 +205,10 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
             new ProjectionAnnotationManager(this);
     private AnnotationCreator annotationCreator = 
             new AnnotationCreator(this);
-    private AdditionalAnnotationCreator additionalAnnotationCreator = 
-            new AdditionalAnnotationCreator(this);
+    private RefinementAnnotationCreator refinementAnnotationCreator = 
+            new RefinementAnnotationCreator(this);
+    private RangeAnnotationCreator rangeAnnotationCreator = 
+            new RangeAnnotationCreator(this);
     
     ToggleFoldingRunner fFoldingRunner;
     
@@ -1472,7 +1474,7 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
                 new CeylonParserScheduler(parseController, this);
         
         addModelListener(annotationCreator);        
-        addModelListener(additionalAnnotationCreator);
+        addModelListener(refinementAnnotationCreator);
         
         installProjectionSupport();
         
@@ -1482,11 +1484,8 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
             addModelListener(markerAnnotationUpdater);
         }
         
-        IPostSelectionProvider psp = 
-                (IPostSelectionProvider) 
-                    getSelectionProvider();
-        psp.addPostSelectionChangedListener(
-                additionalAnnotationCreator);
+        getSelectionProvider()
+            .addPostSelectionChangedListener(rangeAnnotationCreator);
         
         IDocument document = getSourceViewer().getDocument();
         if (document!=null) {
@@ -1503,6 +1502,12 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
         
         parserScheduler.schedule();
         
+    }
+    
+    @Override
+    public IPostSelectionProvider getSelectionProvider() {
+        return (IPostSelectionProvider) 
+                super.getSelectionProvider();
     }
     
     private void installProjectionSupport() {

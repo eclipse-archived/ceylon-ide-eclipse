@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.AdditionalAnnotationCreator.TODO_ANNOTATION_TYPE;
+import static com.redhat.ceylon.eclipse.code.editor.RefinementAnnotationCreator.TODO_ANNOTATION_TYPE;
 
 import java.util.ArrayList;
 import java.util.HashMap;
