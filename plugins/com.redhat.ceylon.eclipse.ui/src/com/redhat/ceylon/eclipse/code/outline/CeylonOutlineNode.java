@@ -145,7 +145,8 @@ public class CeylonOutlineNode implements IAdaptable {
             }
             Tree.Identifier identifier = 
                     treeDeclaration.getIdentifier();
-            name = identifier==null ? null : identifier.getText();
+            name = identifier==null ? 
+                    null : identifier.getText();
         }
         else if (treeNode instanceof Tree.SpecifierStatement) {
             Tree.SpecifierStatement treeSpecifier = 
@@ -162,8 +163,10 @@ public class CeylonOutlineNode implements IAdaptable {
         if (category==DEFAULT_CATEGORY) {
             //span of the "identifying" node
             Node identifyingNode = getIdentifyingNode(treeNode);
-            startOffset = identifyingNode.getStartIndex();
-            endOffset = identifyingNode.getEndIndex();
+            if (identifyingNode!=null) {
+                startOffset = identifyingNode.getStartIndex();
+                endOffset = identifyingNode.getEndIndex();
+            }
         }
         if (treeNode!=null && 
                 !(treeNode instanceof PackageNode) &&
@@ -388,15 +391,23 @@ public class CeylonOutlineNode implements IAdaptable {
                             (Tree.Declaration) treeNode;
                     Tree.Identifier id = 
                             dec.getIdentifier();
-                    Backends backends = TreeUtil.getNativeBackend(dec.getAnnotationList(), dec.getUnit());
+                    Backends backends = 
+                            TreeUtil.getNativeBackend(
+                                    dec.getAnnotationList(), 
+                                    dec.getUnit());
                     String name = id==null ? 
                             String.valueOf(identityHashCode(treeNode)) : 
                             id.getText();
                     if (backends != null && ! backends.none()) {
-                        name = new StringBuilder(name).append("(").append(backends.names()).append(")").toString();
+                        name = new StringBuilder(name)
+                                .append("(")
+                                .append(backends.names())
+                                .append(")")
+                                .toString();
                     }
                     if (parent!=null && parent.isDeclaration()) {
-                        return getParent().getIdentifier() + ":" + name;
+                        return getParent().getIdentifier() 
+                                + ":" + name;
                     }
                     else {
                         return "@declaration:" + name;
