@@ -385,8 +385,7 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         gd.grabExcessHorizontalSpace=true;
         jdkProviderGroup.setLayoutData(gd);
-        GridLayout layout = new GridLayout();
-        
+        GridLayout layout = new GridLayout();        
         layout.numColumns = 1;
         layout.marginBottom = 1;
         jdkProviderGroup.setLayout(layout);

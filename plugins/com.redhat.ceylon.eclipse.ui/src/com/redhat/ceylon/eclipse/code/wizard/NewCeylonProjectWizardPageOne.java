@@ -78,8 +78,6 @@ import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -101,8 +99,8 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.WorkingSetConfigurationBlock;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.ide.common.util.versionsAvailableForBoostrap_;
 import com.redhat.ceylon.ide.common.util.toJavaStringList_;
+import com.redhat.ceylon.ide.common.util.versionsAvailableForBoostrap_;
 
 /**
  * The first page of the New Java Project wizard. This page is typically used in combination with
@@ -1540,6 +1538,8 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         jsc.setText("Compile project to JavaScript");
         jsc.setSelection(compileJs);
 
+        initJdkProvider(parent);
+        
         composite = new Composite(parent, SWT.NONE);
         GridData gdb = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         gdb.grabExcessHorizontalSpace=true;
@@ -1575,8 +1575,6 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
 
-        initJdkProvider(composite);
-        
         Composite bootstrapComposite = new Composite(composite, NONE);
         GridData bcgdb = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         bcgdb.grabExcessHorizontalSpace=true;
@@ -1628,31 +1626,26 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
     }
 
     private void initJdkProvider(Composite parent) {
-        Composite composite = 
-                new Composite(parent, SWT.NONE);
-        composite.setLayout(new GridLayout(2, false));
-        composite.setLayoutData(swtDefaults()
-                .grab(true, true)
-                .align(SWT.FILL, SWT.FILL)
-                .create());
-
-        Label systemRepoLabel = 
-                new Label(composite, SWT.LEFT | SWT.WRAP);
-        systemRepoLabel.setText(
-                "Jdk Provider");
-        systemRepoLabel.setLayoutData(swtDefaults()
-                .align(SWT.FILL, SWT.CENTER)
-                .span(2, 1)
-                .grab(true, false)
-                .create());
+        Group jdkProviderGroup = 
+                new Group(parent, SWT.NONE);
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        gd.grabExcessHorizontalSpace=true;
+        jdkProviderGroup.setLayoutData(gd);
+        GridLayout layout = new GridLayout();        
+        layout.numColumns = 1;
+        layout.marginBottom = 1;
+        jdkProviderGroup.setLayout(layout);
+        
+        jdkProviderGroup.setText("JDK provider");
 
         jdkProviderText = 
-                new Text(composite, SWT.SINGLE | SWT.BORDER);
+                new Text(jdkProviderGroup, 
+                        SWT.SINGLE | SWT.BORDER);
         jdkProviderText.setLayoutData(swtDefaults()
                 .align(SWT.FILL, SWT.CENTER)
                 .grab(true, false)
                 .create());
-        jdkProviderText.setMessage("Jdk Provider");
+        jdkProviderText.setMessage("Default JDK provider");
     }
 
 }
