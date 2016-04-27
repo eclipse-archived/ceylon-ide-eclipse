@@ -41,6 +41,7 @@ import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
+
 public class CeylonProjectPropertiesPage extends PropertyPage {
     
     private boolean explodeModules = true;
@@ -91,12 +92,16 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
                     backendJava, backendJs, astAwareIncrementalBuids, verbose)
                     .addToProject(project);
 
-            CeylonProjectConfig config = modelJ2C().ceylonModel().getProject(project).getConfiguration();
+            CeylonProjectConfig config = 
+                    modelJ2C().ceylonModel()
+                        .getProject(project)
+                        .getConfiguration();
             if (offlineOption!=null) {
                 config.setProjectOffline(ceylon.language.Boolean.instance(offlineOption));
             }
             String jdkProvider = jdkProviderText.getText().trim();
-            config.setProjectJdkProvider(jdkProvider.isEmpty() ? null : ceylon.language.String.instance(jdkProvider));
+            config.setProjectJdkProvider(jdkProvider.isEmpty() ? 
+                    null : ceylon.language.String.instance(jdkProvider));
             config.save();
         }
     }
@@ -145,8 +150,6 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
             }
         });
         
-        initJdkProvider(parent);
-        
         final Group platformGroup = new Group(parent, SWT.NONE);
         platformGroup.setText("Target virtual machine");
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
@@ -167,6 +170,8 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
         compileToJs.setText("Compile project to JavaScript");
         compileToJs.setSelection(backendJs);
         compileToJs.setEnabled(builderEnabled);
+        
+        initJdkProvider(parent);
         
         Group troubleGroup = new Group(parent, SWT.NONE);
         troubleGroup.setText("Troubleshooting");
@@ -375,31 +380,27 @@ public class CeylonProjectPropertiesPage extends PropertyPage {
     }
 
     private void initJdkProvider(Composite parent) {
-        Composite composite = 
-                new Composite(parent, SWT.NONE);
-        composite.setLayout(new GridLayout(2, false));
-        composite.setLayoutData(swtDefaults()
-                .grab(true, true)
-                .align(SWT.FILL, SWT.FILL)
-                .create());
-
-        Label systemRepoLabel = 
-                new Label(composite, SWT.LEFT | SWT.WRAP);
-        systemRepoLabel.setText(
-                "Jdk Provider");
-        systemRepoLabel.setLayoutData(swtDefaults()
-                .align(SWT.FILL, SWT.CENTER)
-                .span(2, 1)
-                .grab(true, false)
-                .create());
-
+        Group jdkProviderGroup = 
+                new Group(parent, SWT.NONE);
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        gd.grabExcessHorizontalSpace=true;
+        jdkProviderGroup.setLayoutData(gd);
+        GridLayout layout = new GridLayout();
+        
+        layout.numColumns = 1;
+        layout.marginBottom = 1;
+        jdkProviderGroup.setLayout(layout);
+        
+        jdkProviderGroup.setText("JDK provider");
+        
         jdkProviderText = 
-                new Text(composite, SWT.SINGLE | SWT.BORDER);
+                new Text(jdkProviderGroup, 
+                        SWT.SINGLE | SWT.BORDER);
         jdkProviderText.setLayoutData(swtDefaults()
                 .align(SWT.FILL, SWT.CENTER)
                 .grab(true, false)
                 .create());
-        jdkProviderText.setMessage("Jdk Provider");
+        jdkProviderText.setMessage("Default JDK provider");
         if(jdkProvider != null)
             jdkProviderText.setText(jdkProvider);
     }
