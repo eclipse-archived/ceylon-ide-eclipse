@@ -55,6 +55,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -2759,7 +2760,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
     public static EnumSet<Warning> getSuppressedWarnings(IProject project) {
         if (project!=null) {
-            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
+            CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = 
+                    modelJ2C().ceylonModel().getProject(project);
             if (ceylonProject != null) {
                 return ceylonProject.getConfiguration().getSuppressWarningsEnum();
             }
@@ -2803,7 +2805,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static List<String> getCeylonRepositories(IProject project) {
-        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
+        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = 
+                modelJ2C().ceylonModel()
+                    .getProject(project);
         if (ceylonProject != null) {
             return toJavaStringList(ceylonProject.getCeylonRepositories());
         } else {
@@ -3311,16 +3315,20 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 //    }
     
     public static Collection<CeylonProject<IProject, IResource, IFolder, IFile>> getCeylonProjects() {
-        return toJavaList_.toJavaList(td(CeylonProject.class), modelJ2C().ceylonModel().getCeylonProjects());
+        return toJavaList_.toJavaList(td(CeylonProject.class), 
+                modelJ2C().ceylonModel().getCeylonProjects());
     }
 
     public static Collection<IProject> getProjects() {
-        return list(IProject.class, modelJ2C().ceylonModel().getNativeProjects());
+        return list(IProject.class, 
+                modelJ2C().ceylonModel().getNativeProjects());
     }
 
     public static Collection<TypeChecker> getTypeCheckers() {
-        Collection<CeylonProject<IProject, IResource, IFolder, IFile>> ceylonProjects = getCeylonProjects();
-        ArrayList<TypeChecker> typeCheckers = new ArrayList<>(ceylonProjects.size());
+        Collection<CeylonProject<IProject, IResource, IFolder, IFile>> ceylonProjects = 
+                getCeylonProjects();
+        ArrayList<TypeChecker> typeCheckers = 
+                new ArrayList<>(ceylonProjects.size());
         for (CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject : ceylonProjects) {
             TypeChecker tc = ceylonProject.getTypechecker();
             if (tc != null) {
@@ -3336,17 +3344,21 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
   public static List<IFolder> getSourceFolders(IProject project) {
-      CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
+      CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = 
+              modelJ2C().ceylonModel().getProject(project);
       if (ceylonProject != null) {
-          return list(IFolder.class, ceylonProject.getSourceNativeFolders());
+          return list(IFolder.class, 
+                  ceylonProject.getSourceNativeFolders());
       }
       return Collections.emptyList();
   }
 
   public static List<IFolder> getResourceFolders(IProject project) {
-      CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
+      CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = 
+              modelJ2C().ceylonModel().getProject(project);
       if (ceylonProject != null) {
-          return list(IFolder.class, ceylonProject.getResourceNativeFolders());
+          return list(IFolder.class, 
+                  ceylonProject.getResourceNativeFolders());
       }
       return Collections.emptyList();
   }
@@ -3513,20 +3525,24 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     public static RootFolderType getRootFolderType(IFolder folder) {
         ceylon.language.Boolean isSourceFolder = 
-                vfsJ2C().createVirtualFolder(folder, folder.getProject()).getIsSource();
+                vfsJ2C().createVirtualFolder(folder, folder.getProject())
+                    .getIsSource();
         if (isSourceFolder == null) {
             return null;
         }
-        return  isSourceFolder.booleanValue() ? RootFolderType.SOURCE : RootFolderType.RESOURCE;
+        return isSourceFolder.booleanValue() ? 
+                RootFolderType.SOURCE : RootFolderType.RESOURCE;
     }
     
     public static RootFolderType getRootFolderType(IFile file) {
         ceylon.language.Boolean isSourceFolder = 
-                vfsJ2C().createVirtualFile(file, file.getProject()).getIsSource();
+                vfsJ2C().createVirtualFile(file, file.getProject())
+                    .getIsSource();
         if (isSourceFolder == null) {
             return null;
         }
-        return  isSourceFolder.booleanValue() ? RootFolderType.SOURCE : RootFolderType.RESOURCE;
+        return isSourceFolder.booleanValue() ? 
+                RootFolderType.SOURCE : RootFolderType.RESOURCE;
     }
     
     public static boolean isInSourceFolder(IFile file) {
@@ -3556,12 +3572,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return resourceVirtualFile.getCeylonPackage();
     }    
 
+    @SuppressWarnings("unchecked")
     public static Package getPackage(VirtualFile virtualFile) {
         if (virtualFile instanceof FileVirtualFile) {
-            return ((FileVirtualFile<IProject, IResource, IFolder, IFile>)virtualFile).getCeylonPackage();
+            FileVirtualFile<IProject, IResource, IFolder, IFile> fvf = 
+                    (FileVirtualFile<IProject, IResource, IFolder, IFile>)
+                        virtualFile;
+            return fvf.getCeylonPackage();
         }
         if (virtualFile instanceof FolderVirtualFile) {
-            return ((FolderVirtualFile<IProject, IResource, IFolder, IFile>)virtualFile).getCeylonPackage();
+            FolderVirtualFile<IProject, IResource, IFolder, IFile> fvf = 
+                    (FolderVirtualFile<IProject, IResource, IFolder, IFile>)
+                        virtualFile;
+            return fvf.getCeylonPackage();
         }
         String virtualPath = virtualFile.getPath();
         if (virtualPath.contains("!/")) { // TODO : this test could be replaced by an instanceof if the ZipEntryVirtualFile was public
@@ -3580,7 +3603,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             Package p = getPackage(file);
             if (p != null) {
                 for (Unit u : p.getUnits()) {
-                    if (u instanceof SourceFile && u.getFilename().equals(file.getName())) {
+                    if (u instanceof SourceFile && 
+                            u.getFilename().equals(file.getName())) {
                         return (SourceFile) u;
                     }
                 }
@@ -3591,11 +3615,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         String virtualPath = virtualFile.getPath();
         if (virtualPath.contains("!/")) { // TODO : this test could be replaced by an instanceof if the ZipEntryVirtualFile was public
             for (IProject p : getProjects()) {
-                BaseIdeModuleManager moduleManager = getProjectModuleManager(p);
+                BaseIdeModuleManager moduleManager = 
+                        getProjectModuleManager(p);
                 if (moduleManager != null) {
-                    BaseIdeModule archiveModule = moduleManager.getArchiveModuleFromSourcePath(toCeylonString_.toCeylonString(virtualPath));
+                    BaseIdeModule archiveModule = 
+                            moduleManager.getArchiveModuleFromSourcePath(
+                                    toCeylonString_.toCeylonString(virtualPath));
                     if (archiveModule != null) {
-                        ExternalPhasedUnit pu = archiveModule.getPhasedUnit(virtualFile);
+                        ExternalPhasedUnit pu = 
+                                archiveModule.getPhasedUnit(virtualFile);
                         if (pu != null) {
                             return pu.getUnit();
                         }
@@ -3606,6 +3634,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return null;
     }    
 
+    @SuppressWarnings("unchecked")
     public static IResourceAware<IProject,IFolder,IFile> getUnit(IFile file) {
         Package p = getPackage(file);
         if (p != null) {
@@ -3622,25 +3651,37 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     public static Package getPackage(IPackageFragment packageFragment) {
         try {
-            IFolder srcPkgFolder = (IFolder) packageFragment.getCorrespondingResource();
+            IFolder srcPkgFolder = (IFolder) 
+                    packageFragment.getCorrespondingResource();
             if (srcPkgFolder != null) {
                 return getPackage(srcPkgFolder);
             }
         } catch (JavaModelException e) {
         }
 
-        IPackageFragmentRoot root = (IPackageFragmentRoot) packageFragment.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
-        Modules projectModules = getProjectModules(packageFragment.getJavaProject().getProject());
+        IPackageFragmentRoot root = 
+                (IPackageFragmentRoot) 
+                packageFragment.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+        IProject project = 
+                packageFragment.getJavaProject()
+                    .getProject();
+        Modules projectModules = 
+                getProjectModules(project);
         if (projectModules == null) {
             return null;
         }
         
         for (Module m : projectModules.getListOfModules()) {
-            if (m instanceof BaseIdeModule && ! m.getNameAsString().equals(Module.DEFAULT_MODULE_NAME)) {
+            if (m instanceof BaseIdeModule && 
+                    !m.getNameAsString()
+                        .equals(Module.DEFAULT_MODULE_NAME)) {
                 BaseIdeModule module = (BaseIdeModule) m;
-                for (IPackageFragmentRoot moduleRoot : modelJ2C().getModulePackageFragmentRoots(module)) {
+                for (IPackageFragmentRoot moduleRoot : 
+                        modelJ2C().getModulePackageFragmentRoots(module)) {
                     if (root.getPath().equals(moduleRoot.getPath())) {
-                        Package result = module.getDirectPackage(packageFragment.getElementName());
+                        Package result = 
+                                module.getDirectPackage(
+                                        packageFragment.getElementName());
                         if (result != null) {
                             return result;
                         }
@@ -3648,10 +3689,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 }
             }
         }
-        BaseIdeModule defaultModule = (BaseIdeModule) projectModules.getDefaultModule();
-        for (IPackageFragmentRoot moduleRoot : modelJ2C().getModulePackageFragmentRoots(defaultModule)) {
+        BaseIdeModule defaultModule = (BaseIdeModule) 
+                projectModules.getDefaultModule();
+        for (IPackageFragmentRoot moduleRoot : 
+            modelJ2C().getModulePackageFragmentRoots(defaultModule)) {
             if (root.getPath().equals(moduleRoot.getPath())) {
-                Package result = defaultModule.getDirectPackage(packageFragment.getElementName());
+                Package result = 
+                        defaultModule.getDirectPackage(
+                                packageFragment.getElementName());
                 if (result != null) {
                     return result;
                 }
@@ -3664,7 +3709,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         Package p = getPackage(moduleFolder);
         if (p != null) {
             Module m = p.getModule();
-            if (m instanceof BaseIdeModule && m.getNameAsString().equals(p.getNameAsString())) {
+            if (m instanceof BaseIdeModule && 
+                    m.getNameAsString()
+                        .equals(p.getNameAsString())) {
                 return (BaseIdeModule) m;
             }
         }
@@ -3674,7 +3721,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     public static BaseIdeModule asSourceModule(IPackageFragment sourceModuleFragment) {
         IFolder moduleFolder;
         try {
-            moduleFolder = (IFolder) sourceModuleFragment.getCorrespondingResource();
+            moduleFolder = (IFolder) 
+                    sourceModuleFragment.getCorrespondingResource();
             if (moduleFolder != null) {
                 return asSourceModule(moduleFolder);
             }
@@ -3716,31 +3764,48 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     public static IJavaModelAware<IProject,ITypeRoot,IJavaElement> getUnit(IJavaElement javaElement) {
         IOpenable openable = javaElement.getOpenable();
         if (openable instanceof ITypeRoot) {
-            Package p = getPackage((IPackageFragment)((ITypeRoot)openable).getParent());
+            ITypeRoot typeRoot = (ITypeRoot) openable;
+            IPackageFragment pf = 
+                    (IPackageFragment) 
+                        typeRoot.getParent();
+            Package p = getPackage(pf);
             if (p != null) {
-                String className = ((ITypeRoot)openable).getElementName();
+                String className = typeRoot.getElementName();
                 if (className.equals(Naming.PACKAGE_DESCRIPTOR_CLASS_NAME+".class") ||
-                		className.equals(Naming.PACKAGE_DESCRIPTOR_CLASS_NAME.substring(1)+".class")) {
+                    className.equals(Naming.PACKAGE_DESCRIPTOR_CLASS_NAME.substring(1)+".class")) {
                     Unit packageUnit = p.getUnit();
-                    if (packageUnit instanceof IJavaModelAware && ((IJavaModelAware<IProject, ITypeRoot, IJavaElement>) packageUnit).getTypeRoot().equals(openable)) {
-                        return (IJavaModelAware<IProject, ITypeRoot, IJavaElement>) packageUnit;
+                    if (packageUnit instanceof IJavaModelAware) {
+                        IJavaModelAware<IProject, ITypeRoot, IJavaElement> jma = 
+                                (IJavaModelAware<IProject, ITypeRoot, IJavaElement>) 
+                                    packageUnit;
+                        if (jma.getTypeRoot().equals(openable)) {
+                            return jma;
+                        }
                     }
                 }
                 if (className.equals(Naming.MODULE_DESCRIPTOR_CLASS_NAME+".class") ||
-                		className.equals(Naming.OLD_MODULE_DESCRIPTOR_CLASS_NAME+".class")) {
+                    className.equals(Naming.OLD_MODULE_DESCRIPTOR_CLASS_NAME+".class")) {
                     Unit moduleUnit = p.getModule().getUnit();
-                    if (moduleUnit instanceof IJavaModelAware && ((IJavaModelAware<IProject, ITypeRoot, IJavaElement>) moduleUnit).getTypeRoot().equals(openable)) {
-                        return (IJavaModelAware<IProject, ITypeRoot, IJavaElement>) moduleUnit;
+                    if (moduleUnit instanceof IJavaModelAware) {
+                        IJavaModelAware<IProject, ITypeRoot, IJavaElement> jma = 
+                                (IJavaModelAware<IProject, ITypeRoot, IJavaElement>) 
+                                    moduleUnit;
+                        if (jma.getTypeRoot().equals(openable)) {
+                            return jma;
+                        }
                     }
                 }
                 for (Declaration d : p.getMembers()) {
                     Unit u = d.getUnit();
                     if (u instanceof IJavaModelAware) {
-                        if (u.getFilename().equals(((ITypeRoot) openable).getElementName())) {
-                            return (IJavaModelAware<IProject, ITypeRoot, IJavaElement>) u;
+                        IJavaModelAware<IProject, ITypeRoot, IJavaElement> jma = 
+                                (IJavaModelAware<IProject, ITypeRoot, IJavaElement>) u;
+                        if (u.getFilename().equals(typeRoot.getElementName())) {
+                            return jma;
                         }
                     }
                 }
@@ -3749,7 +3814,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return null;
     }    
 
-    private void cleanRemovedFilesFromOutputs(Collection<IFile> filesToRemove, 
+    private void cleanRemovedFilesFromOutputs(
+            Collection<IFile> filesToRemove, 
             CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject) {
         if (filesToRemove.size() == 0) {
             return;
@@ -3763,18 +3829,26 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             if (rootFolder == null) {
                 return;
             }
-            String relativeFilePath = file.getProjectRelativePath().makeRelativeTo(rootFolder.getProjectRelativePath()).toString();
-            Package pkg = getPackage((IFolder)file.getParent());
+            IPath projectRelativePath = 
+                    rootFolder.getProjectRelativePath();
+            String relativeFilePath = 
+                    file.getProjectRelativePath()
+                        .makeRelativeTo(projectRelativePath)
+                        .toString();
+            IFolder folder = (IFolder) file.getParent();
+            Package pkg = getPackage(folder);
             if (pkg == null) {
                 return;
             }
             Module module = pkg.getModule();
-            TypeChecker typeChecker = ceylonProject.getTypechecker();
+            TypeChecker typeChecker = 
+                    ceylonProject.getTypechecker();
             if (typeChecker == null) {
                 return;
             }
             
-            final File modulesOutputDirectory = getCeylonModulesOutputDirectory(project);
+            final File modulesOutputDirectory = 
+                    getCeylonModulesOutputDirectory(project);
             boolean explodeModules = isExplodeModulesEnabled(project);
             final File ceylonOutputDirectory = explodeModules ? 
                     getCeylonClassesOutputDirectory(project) : null;
@@ -3784,14 +3858,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             
             //Remove the classes belonging to the source file from the
             //module archive and from the JDTClasses directory
-            File moduleJar = new File(moduleDir, getModuleArchiveName(module));
+            File moduleJar = 
+                    new File(moduleDir, 
+                            getModuleArchiveName(module));
             if(moduleJar.exists()){
                 moduleJars.add(moduleJar);
                 try {
-                    List<String> entriesToDelete = new ArrayList<String>();
+                    List<String> entriesToDelete = 
+                            new ArrayList<String>();
                     ZipFile zipFile = new ZipFile(moduleJar);
                     
-                    Properties mapping = CarUtils.retrieveMappingFile(zipFile);
+                    Properties mapping = 
+                            CarUtils.retrieveMappingFile(zipFile);
 
                     if (fileIsResource) {
                         entriesToDelete.add(relativeFilePath);
@@ -3812,7 +3890,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
                         if (explodeModules) {
                             new File(ceylonOutputDirectory, 
-                                    entryToDelete.replace('/', File.separatorChar))
+                                    entryToDelete.replace('/', 
+                                            File.separatorChar))
                                     .delete();
                         }
                     }
@@ -3823,12 +3902,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             
             if (!fileIsResource) {
                 //Remove the source file from the source archive
-                File moduleSrc = new File(moduleDir, getSourceArchiveName(module));
+                File moduleSrc = 
+                        new File(moduleDir, 
+                                getSourceArchiveName(module));
                 if(moduleSrc.exists()){
                     moduleJars.add(moduleSrc);
                     try {
                         ZipFile zipFile = new ZipFile(moduleSrc);
-                        FileHeader fileHeader = zipFile.getFileHeader(relativeFilePath);
+                        FileHeader fileHeader = 
+                                zipFile.getFileHeader(relativeFilePath);
                         if(fileHeader != null){
                             zipFile.removeFile(fileHeader);
                         }
@@ -3841,7 +3923,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             if (fileIsResource) {
                 File resourceFile = new File(
                         moduleDir, 
-                        "module-resources" + File.separator + relativeFilePath.replace('/', File.separatorChar));
+                        "module-resources" 
+                                + File.separator 
+                                + relativeFilePath.replace('/', 
+                                        File.separatorChar));
                 resourceFile.delete();
             }
         }
@@ -3877,7 +3962,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    private void cleanChangedFilesFromExplodedDirectory(Collection<IFile> changedFiles, 
+    private void cleanChangedFilesFromExplodedDirectory(
+            Collection<IFile> changedFiles, 
             CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject) {
         if (changedFiles.size() == 0) {
             return;
@@ -3899,7 +3985,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 return;
             }
             
-            String relativeFilePath = file.getProjectRelativePath().makeRelativeTo(rootFolder.getProjectRelativePath()).toString();
+            IPath projectRelativePath = 
+                    rootFolder.getProjectRelativePath();
+            String relativeFilePath = 
+                    file.getProjectRelativePath()
+                        .makeRelativeTo(projectRelativePath)
+                        .toString();
             Package pkg = getPackage((IFolder)file.getParent());
             if (pkg == null) {
                 return;
@@ -3910,19 +4001,25 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 return;
             }
             
-            final File modulesOutputDirectory = getCeylonModulesOutputDirectory(project);
-            final File ceylonOutputDirectory = getCeylonClassesOutputDirectory(project);
+            final File modulesOutputDirectory = 
+                    getCeylonModulesOutputDirectory(project);
+            final File ceylonOutputDirectory = 
+                    getCeylonClassesOutputDirectory(project);
             File moduleDir = getModulePath(modulesOutputDirectory, module);
             
             //Remove the classes belonging to the source file from the
             //from the .exploded directory
-            File moduleJar = new File(moduleDir, getModuleArchiveName(module));
-            if(moduleJar.exists()){
+            File moduleJar = 
+                    new File(moduleDir, 
+                            getModuleArchiveName(module));
+            if(moduleJar.exists()) {
                 try {
-                    List<String> entriesToDelete = new ArrayList<String>();
+                    List<String> entriesToDelete = 
+                            new ArrayList<String>();
                     ZipFile zipFile = new ZipFile(moduleJar);
                     
-                    Properties mapping = CarUtils.retrieveMappingFile(zipFile);
+                    Properties mapping = 
+                            CarUtils.retrieveMappingFile(zipFile);
 
                     for (String className : mapping.stringPropertyNames()) {
                         String sourceFile = mapping.getProperty(className);
@@ -3933,7 +4030,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
                     for (String entryToDelete : entriesToDelete) {
                         new File(ceylonOutputDirectory, 
-                                entryToDelete.replace('/', File.separatorChar))
+                                entryToDelete.replace('/', 
+                                        File.separatorChar))
                                 .delete();
                     }
                 } catch (ZipException e) {
@@ -3961,11 +4059,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     public static IFolder getCeylonModulesOutputFolder(IProject project) {
-        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
+        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = 
+                modelJ2C().ceylonModel().getProject(project);
         String outputRepoRelativePath;
         if (ceylonProject != null) {
-            CeylonProjectConfig config = modelJ2C().ceylonModel().getProject(project).getConfiguration();
-            outputRepoRelativePath = config.getOutputRepoProjectRelativePath();
+            CeylonProjectConfig config = 
+                    ceylonProject.getConfiguration();
+            outputRepoRelativePath = 
+                    config.getOutputRepoProjectRelativePath();
         } else {
             outputRepoRelativePath = "modules";
         }
@@ -4000,7 +4101,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
     public static String interpolateVariablesInRepositoryPath(String repoPath) {
         String userHomePath = System.getProperty("user.home");
-        String pluginRepoPath = CeylonPlugin.getInstance().getCeylonRepository().getAbsolutePath();
+        String pluginRepoPath = 
+                CeylonPlugin.getInstance()
+                    .getCeylonRepository()
+                    .getAbsolutePath();
         return repoPath.replace("${user.home}", userHomePath).
                 replace("${ceylon.repo}", pluginRepoPath);
     }
@@ -4023,7 +4127,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     public static boolean allClasspathContainersInitialized() {
-        for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+        for (IProject project : root.getProjects()) {
             if (project.isAccessible() && CeylonNature.isEnabled(project)
                     && ! containersInitialized.contains(project)) {
                 return false;
@@ -4034,7 +4139,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     public static ModuleDependencies getModuleDependenciesForProject(
             IProject project) {
-        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
+        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = 
+                modelJ2C().ceylonModel().getProject(project);
         if (ceylonProject != null) {
             return ceylonProject.getModuleDependencies();
         }
