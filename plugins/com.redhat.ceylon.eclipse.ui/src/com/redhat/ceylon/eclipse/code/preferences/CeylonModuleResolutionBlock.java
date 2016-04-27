@@ -206,6 +206,7 @@ public class CeylonModuleResolutionBlock {
                 .hint(250,  SWT.DEFAULT)
                 .grab(true, false)
                 .create());
+        overridesText.setMessage("No overrides.xml");
         overridesText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {

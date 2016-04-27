@@ -35,15 +35,19 @@ public class CeylonRepoPropertiesPage extends PropertyPage {
         }
 
         IProject project = getSelectedProject();
-        BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
+        BaseCeylonProject ceylonProject = 
+                modelJ2C().ceylonModel()
+                    .getProject(project);
         CeylonProjectConfig projectConfig = 
                 ceylonProject.getConfiguration();
         block.applyToConfiguration(projectConfig);
         projectConfig.setOutputRepo(block.getOutputRepo());
         projectConfig.setProjectSuppressWarningsEnum(
                 getSuppressedWarnings(project));
-        projectConfig.setProjectOverrides(toCeylonString(block.getOverrides()));
-        projectConfig.setProjectFlatClasspath(toCeylonBoolean(block.getFlatClasspath()));
+        projectConfig.setProjectOverrides(
+                toCeylonString(block.getOverrides()));
+        projectConfig.setProjectFlatClasspath(
+                toCeylonBoolean(block.getFlatClasspath()));
         projectConfig.setProjectAutoExportMavenDependencies(
                 toCeylonBoolean(block.getAutoExportMavenDependencies()));
         projectConfig.save();

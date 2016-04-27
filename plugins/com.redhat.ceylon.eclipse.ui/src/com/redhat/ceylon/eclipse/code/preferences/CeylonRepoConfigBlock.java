@@ -1,8 +1,11 @@
 package com.redhat.ceylon.eclipse.code.preferences;
 
 import static com.redhat.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE_VERSION;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonSystemRepo;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.interpolateVariablesInRepositoryPath;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static org.eclipse.jface.layout.GridDataFactory.swtDefaults;
+import static org.eclipse.ui.views.navigator.ResourceComparator.NAME;
 
 import java.io.File;
 import java.net.URI;
@@ -43,7 +46,6 @@ import org.eclipse.ui.views.navigator.ResourceComparator;
 import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.common.config.CeylonConfigFinder;
 import com.redhat.ceylon.common.config.Repositories;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.ide.common.configuration.CeylonRepositoryConfigurator;
@@ -75,8 +77,7 @@ public class CeylonRepoConfigBlock extends CeylonRepositoryConfigurator {
 
     public CeylonRepoConfigBlock(ValidationCallback validationCallback) {
         this.validationCallback = validationCallback;
-        moduleResolutionBlock = 
-                new CeylonModuleResolutionBlock();
+        moduleResolutionBlock = new CeylonModuleResolutionBlock();
     }
     
     public IProject getProject() {
@@ -120,8 +121,7 @@ public class CeylonRepoConfigBlock extends CeylonRepositoryConfigurator {
     public void initState(IProject project, 
             boolean isCeylonNatureEnabled) {
         this.project = project;
-        String systemRepo = 
-                CeylonBuilder.getCeylonSystemRepo(project);
+        String systemRepo = getCeylonSystemRepo(project);
         if( systemRepo == null || 
                 systemRepo.equals("${ceylon.repo}") ) {
         	systemRepoText.setText("");
@@ -139,7 +139,9 @@ public class CeylonRepoConfigBlock extends CeylonRepositoryConfigurator {
         
         if (isCeylonNatureEnabled) {
             CeylonProjectConfig config = 
-                    modelJ2C().ceylonModel().getProject(project).getConfiguration();
+                    modelJ2C().ceylonModel()
+                        .getProject(project)
+                        .getConfiguration();
 
             loadFromConfiguration(config);
             outputRepoText.setText(config.getOutputRepo());
@@ -212,7 +214,7 @@ public class CeylonRepoConfigBlock extends CeylonRepositoryConfigurator {
             @Override
             public void modifyText(ModifyEvent e) {
             	String systemRepoUrl = systemRepoText.getText();
-            	if( systemRepoUrl == null || systemRepoUrl.isEmpty() ) {
+            	if( systemRepoUrl==null || systemRepoUrl.isEmpty() ) {
             		String path = 
             		        CeylonPlugin.getInstance()
             		            .getCeylonRepository()
@@ -494,7 +496,7 @@ public class CeylonRepoConfigBlock extends CeylonRepositoryConfigurator {
         }
         
         systemRepoUrl = 
-                CeylonBuilder.interpolateVariablesInRepositoryPath(systemRepoUrl);
+                interpolateVariablesInRepositoryPath(systemRepoUrl);
 
         String ceylonLanguageSubdir = 
                 File.separator + "ceylon"+
@@ -505,7 +507,9 @@ public class CeylonRepoConfigBlock extends CeylonRepositoryConfigurator {
                         LANGUAGE_MODULE_VERSION + ".car";
         IPath systemRepoPath = new Path(systemRepoUrl);
         if (! systemRepoPath.isAbsolute()) {
-            systemRepoPath = project.getLocation().append(systemRepoPath);
+            systemRepoPath = 
+                    project.getLocation()
+                        .append(systemRepoPath);
         }
         File systemRepoFile = systemRepoPath.toFile();
         File ceylonLanguageFile = 
@@ -564,7 +568,7 @@ public class CeylonRepoConfigBlock extends CeylonRepositoryConfigurator {
         dialog.addFilter(filter);
         dialog.setInput(root);
         dialog.setInitialSelection(container);
-        dialog.setComparator(new ResourceComparator(ResourceComparator.NAME));
+        dialog.setComparator(new ResourceComparator(NAME));
 
         if (dialog.open() == Window.OK) {
             return (IResource) dialog.getFirstResult();
@@ -575,7 +579,8 @@ public class CeylonRepoConfigBlock extends CeylonRepositoryConfigurator {
     @Override
     public Object addAllRepositoriesToList(String[] repos) {
         for (String repo : repos) {
-            TableItem tableItem = new TableItem(lookupRepoTable, SWT.NONE);
+            TableItem tableItem = 
+                    new TableItem(lookupRepoTable, SWT.NONE);
             tableItem.setText(repo);
             tableItem.setImage(CeylonResources.REPO);
         }
@@ -584,7 +589,8 @@ public class CeylonRepoConfigBlock extends CeylonRepositoryConfigurator {
 
     @Override
     public Object addRepositoryToList(long index, String repo) {
-       TableItem tableItem = new TableItem(lookupRepoTable, SWT.NONE, (int) index);
+       TableItem tableItem = 
+               new TableItem(lookupRepoTable, SWT.NONE, (int) index);
        tableItem.setText(repo);
        tableItem.setImage(CeylonResources.REPO);
        lookupRepoTable.setSelection((int) index);
@@ -617,7 +623,9 @@ public class CeylonRepoConfigBlock extends CeylonRepositoryConfigurator {
 
     @Override
     public String removeRepositoryFromList(long index) {
-        String repo = lookupRepoTable.getItem((int) index).getText();
+        String repo = 
+                lookupRepoTable.getItem((int) index)
+                    .getText();
         lookupRepoTable.deselectAll();
         lookupRepoTable.remove((int) index);
         return repo;
