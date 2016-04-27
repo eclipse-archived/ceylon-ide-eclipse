@@ -99,7 +99,7 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
             IJavaElement[] selection = 
                     ca.codeSelect(region.getOffset(), 
                             region.getLength());
-            for (final IJavaElement javaElement: selection) {
+            for (IJavaElement javaElement: selection) {
                 if (JavaSearch.isCeylonDeclaration(javaElement) && 
                         !(javaElement instanceof IPackageFragment)) {
                     final IProject project = 
