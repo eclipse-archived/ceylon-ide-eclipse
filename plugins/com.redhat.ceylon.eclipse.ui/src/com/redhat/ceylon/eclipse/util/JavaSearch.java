@@ -46,6 +46,7 @@ import org.eclipse.jdt.core.IMemberValuePair;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
@@ -846,8 +847,9 @@ public class JavaSearch {
                     if (scope instanceof Value) {
                         Value value = (Value) scope;
                         if (! value.isShared()
-                                && ! value.isTransient()
-                                && value.getContainer() instanceof FunctionOrValue) {
+                                && !value.isTransient()
+                                && value.getContainer() 
+                                    instanceof FunctionOrValue) {
                             shouldSkip = true;
                         }
                     }
@@ -1066,7 +1068,8 @@ public class JavaSearch {
         if (javaSourceTypeDeclaration != null && 
                 javaSourceTypeDeclaration.isNative()) {
             Declaration headerDeclaration = 
-                    ModelUtil.getNativeHeader(javaSourceTypeDeclaration);
+                    ModelUtil.getNativeHeader(
+                            javaSourceTypeDeclaration);
             if (headerDeclaration != null) {
                 if (elementEqualsDeclaration(
                         declarationElement, 
@@ -1129,8 +1132,8 @@ public class JavaSearch {
                         if (m instanceof BaseIdeModule) {
                             BaseIdeModule module = (BaseIdeModule) m;
                             if (module.getIsCeylonArchive() && 
-                                    !module.getIsProjectModule() && 
-                                    module.getArtifact()!=null) {
+                               !module.getIsProjectModule() && 
+                                module.getArtifact()!=null) {
                                 String archivePath = 
                                         module.getArtifact()
                                             .getAbsolutePath();
@@ -1139,7 +1142,9 @@ public class JavaSearch {
                                     result = 
                                             toCeylonDeclaration(
                                                 javaElement, 
-                                                toJavaList_.toJavaList(TypeDescriptor.klass(PhasedUnit.class),module.getPhasedUnits()));
+                                                toJavaList_.toJavaList(
+                                                        TypeDescriptor.klass(PhasedUnit.class),
+                                                        module.getPhasedUnits()));
                                     if (result!=null) {
                                         return result;
                                     }
@@ -1158,14 +1163,14 @@ public class JavaSearch {
         IProject project = 
                 javaElement.getJavaProject()
                     .getProject();
-        IJavaModelAware unit = 
-                CeylonBuilder.getUnit(javaElement);
         IPath path = javaElement.getPath();
         if (path!=null) {
-            if (unit instanceof CeylonBinaryUnit ||
-                    (isExplodeModulesEnabled(project)
-                            && getCeylonClassesOutputFolder(project)
-                                    .getFullPath().isPrefixOf(path))) {
+            if (CeylonBuilder.getUnit(javaElement) 
+                        instanceof CeylonBinaryUnit ||
+                isExplodeModulesEnabled(project)
+                        && getCeylonClassesOutputFolder(project)
+                                .getFullPath()
+                                .isPrefixOf(path)) {
                 return true;
             }
             
@@ -1203,12 +1208,12 @@ public class JavaSearch {
                             CeylonBuilder.getProjectModelLoader(
                                     project);
                     if (modelLoader != null) {
-                        IJavaModelAware javaUnit = 
-                                CeylonBuilder.getUnit(
-                                        javaType);
-                        if (javaUnit != null) {
+                        IJavaModelAware<IProject,ITypeRoot,IJavaElement> javaUnit = 
+                                CeylonBuilder.getUnit(javaType);
+                        if (javaUnit instanceof IUnit) {
+                            IUnit unit = (IUnit) javaUnit;
                             BaseIdeModule module = 
-                                    ((IUnit)javaUnit).getCeylonModule();
+                                    unit.getCeylonModule();
                             if (module != null) {
                                 return modelLoader.convertToDeclaration(
                                         module, 
