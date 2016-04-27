@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
 import static java.lang.Character.isJavaIdentifierPart;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.ICodeAssist;
 import org.eclipse.jdt.core.IJavaElement;
@@ -85,8 +86,8 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
             ICodeAssist ca = null;
             
             if (editorInput instanceof FileEditorInput) {
-                ca = (ICodeAssist) 
-                        JavaCore.create(getFile(editorInput));
+                IFile file = getFile(editorInput);
+                ca = (ICodeAssist) JavaCore.create(file);
             }
             else if (editorInput instanceof IClassFileEditorInput) {
                 IClassFileEditorInput cfei = 
@@ -102,7 +103,7 @@ public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
             for (IJavaElement javaElement: selection) {
                 if (JavaSearch.isCeylonDeclaration(javaElement) && 
                         !(javaElement instanceof IPackageFragment)) {
-                    final IProject project = 
+                    IProject project = 
                             javaElement.getJavaProject()
                                 .getProject();
                     Declaration declaration = 
