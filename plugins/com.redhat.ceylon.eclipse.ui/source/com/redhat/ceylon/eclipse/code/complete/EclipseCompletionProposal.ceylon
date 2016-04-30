@@ -19,8 +19,7 @@ import com.redhat.ceylon.model.typechecker.model {
 }
 
 import java.lang {
-    CharSequence,
-    JCharacter=Character
+    CharSequence
 }
 
 import org.eclipse.jface.text {
@@ -118,7 +117,7 @@ interface EclipseCompletionProposal
     
     shared actual String completionMode => CeylonPlugin.preferences.getString(CeylonPreferenceInitializer.\iCOMPLETION);
     
-    shared actual JCharacter getDocChar(IDocument doc, Integer offset) => JCharacter(doc.getChar(offset));
+    shared actual Character getDocChar(IDocument doc, Integer offset) => doc.getChar(offset);
     
     shared actual Integer getDocLength(IDocument doc) => doc.length;
     
