@@ -11,7 +11,6 @@ import org.antlr.runtime.CommonToken;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -37,6 +36,7 @@ import com.redhat.ceylon.ide.common.model.CrossProjectSourceFile;
 import com.redhat.ceylon.ide.common.model.EditedSourceFile;
 import com.redhat.ceylon.ide.common.model.IResourceAware;
 import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
+import com.redhat.ceylon.ide.common.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -140,7 +140,7 @@ abstract class AbstractRefactoring extends Refactoring {
     }
     
     TextFileChange newTextFileChange(
-            ProjectPhasedUnit<IProject,IResource,IFolder,IFile> pu) {
+            IResourceAware<IProject,IFolder,IFile> pu) {
         TextFileChange tfc = 
                 new TextFileChange(getName(), 
                         pu.getResourceFile());
@@ -239,8 +239,8 @@ abstract class AbstractRefactoring extends Refactoring {
                     editor.getParseController()
                         .getLastPhasedUnit();
             if (searchInFile(pu)) {
-                ProjectPhasedUnit ppu = 
-                        (ProjectPhasedUnit) pu;
+                ModifiablePhasedUnit ppu = 
+                        (ModifiablePhasedUnit) pu;
                 refactorInFile(newTextFileChange(ppu), 
                         change, 
                         ppu.getCompilationUnit(),

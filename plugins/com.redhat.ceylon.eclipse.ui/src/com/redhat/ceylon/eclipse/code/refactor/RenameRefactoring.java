@@ -91,6 +91,21 @@ public class RenameRefactoring extends AbstractRefactoring {
         @Override
         public void visit(Tree.SpecifierStatement that) {
             if (that.getRefinement()) {
+                Tree.Term lhs = that.getBaseMemberExpression();
+                if (lhs instanceof Tree.ParameterizedExpression) {
+                    Tree.ParameterizedExpression pe = 
+                            (Tree.ParameterizedExpression) lhs;
+                    for (Tree.ParameterList pl: pe.getParameterLists()) {
+                        if (pl!=null) {
+                            pl.visit(this);
+                        }
+                    }
+                    Tree.TypeParameterList tpl = 
+                            pe.getTypeParameterList();
+                    if (tpl!=null) {
+                        tpl.visit(this);
+                    }
+                }
                 //the LHS will be treated as a refinement by
                 //FindRefinementsVisitor so ignore it here
                 super.visit(that.getSpecifierExpression());
