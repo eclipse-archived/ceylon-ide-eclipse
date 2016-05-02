@@ -22,6 +22,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModu
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.ceylonSourceArchiveToJavaSourceArchive;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.platformJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
@@ -32,6 +33,7 @@ import static org.eclipse.jdt.core.JavaCore.newLibraryEntry;
 import static org.eclipse.jdt.core.JavaCore.setClasspathContainer;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -78,6 +80,7 @@ import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.platform.platformUtils_;
 import com.redhat.ceylon.ide.common.util.ProgressMonitor;
 import com.redhat.ceylon.ide.common.util.ProgressMonitor$impl;
 import com.redhat.ceylon.ide.common.util.ProgressMonitorChild;
@@ -495,7 +498,15 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
                 ArtifactContext.LEGACY_SRC : ArtifactContext.SRC; 
         ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
                 module.getVersion(), suffix);
-        File srcArtifact = provider.getArtifact(ctx);
+        File srcArtifact = null;
+        try {
+            srcArtifact = provider.getArtifact(ctx);
+        } catch(Exception e) {
+            if (e.getCause() != null && e.getCause() instanceof Exception) {
+                e = (Exception) e.getCause();
+            }
+            platformUtils_.get_().log(com.redhat.ceylon.ide.common.platform.Status.getStatus$_WARNING(), "Eexception during retrieval of the artifact " + ctx + " : ", e);
+        }
         if (srcArtifact!=null) {
             if (srcArtifact.getPath().endsWith(suffix)) {
                 return srcArtifact;
@@ -544,7 +555,15 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
         ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
                 module.getVersion(), ArtifactContext.CAR);
         // try first with .car
-        File moduleArtifact = provider.getArtifact(ctx);
+        File moduleArtifact = null;
+        try {
+            moduleArtifact = provider.getArtifact(ctx);
+        } catch(Exception e) {
+            if (e.getCause() != null && e.getCause() instanceof Exception) {
+                e = (Exception) e.getCause();
+            }
+            platformUtils_.get_().log(com.redhat.ceylon.ide.common.platform.Status.getStatus$_WARNING(), "Exception during retrieval of the artifact " + ctx + " : ", e);
+        }
         if (moduleArtifact==null){
             // try with .jar
             ctx = new ArtifactContext(module.getNameAsString(), 
