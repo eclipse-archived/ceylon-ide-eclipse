@@ -74,7 +74,7 @@ object eclipseVfsServices
     then nativeFile
     else null;
 
-    shared actual IResource? findChild(IFolder parent, Path path) =>
+    shared actual IResource? findChild(IFolder|IProject parent, Path path) =>
             if (exists nativeResource = parent.findMember(path.string),
         nativeResource.accessible)
     then nativeResource
@@ -104,10 +104,10 @@ object eclipseVfsServices
     shared actual String getVirtualFilePathString(IResource resource) => 
             resource.projectRelativePath.string;
     
-    shared actual Path getProjectRelativePath(IResource resource, CeylonProject<IProject,IResource,IFolder,IFile> project) =>
+    shared actual Path getProjectRelativePath(IResource resource, CeylonProjectAlias|IProject project) =>
             Path(getProjectRelativePathString(resource, project));
     
-    shared actual String getProjectRelativePathString(IResource resource, CeylonProject<IProject,IResource,IFolder,IFile> project) =>
+    shared actual String getProjectRelativePathString(IResource resource, CeylonProjectAlias|IProject project) =>
             resource.projectRelativePath.string;
 
     shared actual File? getJavaFile(IResource resource) =>
