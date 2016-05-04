@@ -26,20 +26,19 @@ import org.eclipse.text.edits {
 shared interface EclipseDocumentChanges
         satisfies DocumentChanges<IDocument, InsertEdit, TextEdit, TextChange> {
 
-    shared actual void initMultiEditChange(TextChange importChange) {
-        importChange.edit = MultiTextEdit();
-    }
+    initMultiEditChange(TextChange importChange) 
+            => importChange.edit = MultiTextEdit();
 
-    shared actual IDocument getDocumentForChange(TextChange change)
+    getDocumentForChange(TextChange change)
             => EditorUtil.getDocument(change);
 
-    shared actual TextEdit newDeleteEdit(Integer start, Integer length)
+    newDeleteEdit(Integer start, Integer length)
             => DeleteEdit(start, length);
 
-    shared actual TextEdit newReplaceEdit(Integer start, Integer length, String text)
+    newReplaceEdit(Integer start, Integer length, String text)
             => ReplaceEdit(start, length, text);
 
-    shared actual InsertEdit newInsertEdit(Integer position, String text)
+    newInsertEdit(Integer position, String text)
             => InsertEdit(position, text);
 
     shared actual void addEditToChange(TextChange change, TextEdit edit) {
@@ -50,46 +49,50 @@ shared interface EclipseDocumentChanges
         }
     }
 
-    shared actual String getInsertedText(TextEdit edit)
+    getInsertedText(TextEdit edit)
             => switch(edit)
                case (is InsertEdit) edit.text
                case (is ReplaceEdit) edit.text
                else "";
     
-    shared actual Boolean hasChildren(TextChange change)
+    hasChildren(TextChange change)
             => change.edit.hasChildren();
     
-    shared actual String getDocContent(IDocument doc, Integer start, Integer length) 
+    getDocContent(IDocument doc, Integer start, Integer length) 
             => doc.get(start, length);
     
-    shared actual Integer getLineOfOffset(IDocument doc, Integer offset)
+    getLineOfOffset(IDocument doc, Integer offset)
             => doc.getLineOfOffset(offset);
     
-    shared actual Integer getLineStartOffset(IDocument doc, Integer line)
+    getLineStartOffset(IDocument doc, Integer line)
             => doc.getLineInformation(line).offset;
     
-    shared actual String getLineContent(IDocument doc, Integer line)
+    getLineContent(IDocument doc, Integer line)
             => let (info = doc.getLineInformation(line))
                doc.get(info.offset, info.length);
 }
 
-shared class EclipseDocument(shared IDocument doc) satisfies CommonDocument {
+shared class EclipseDocument(shared IDocument document) 
+        satisfies CommonDocument {
     
     getLineContent(Integer line)
-            => let(info = doc.getLineInformation(line))
-            doc.get(info.offset, info.length);
+            => let (info = document.getLineInformation(line))
+            document.get(info.offset, info.length);
 
     getLineStartOffset(Integer line)
-            => doc.getLineInformation(line).offset;
+            => document.getLineInformation(line).offset;
     
     getLineEndOffset(Integer line)
-            => doc.getLineInformation(line).offset
-             + doc.getLineInformation(line).length;
+            => document.getLineInformation(line).offset
+             + document.getLineInformation(line).length;
     
-    getLineOfOffset(Integer offset) => doc.getLineOfOffset(offset);
+    getLineOfOffset(Integer offset)
+            => document.getLineOfOffset(offset);
     
-    getText(Integer offset, Integer length) => doc.get(offset, length);
+    getText(Integer offset, Integer length)
+            => document.get(offset, length);
     
-    getDefaultLineDelimiter() => eclipseIndents.getDefaultLineDelimiter(doc);
+    getDefaultLineDelimiter()
+            => eclipseIndents.getDefaultLineDelimiter(document);
     
 }

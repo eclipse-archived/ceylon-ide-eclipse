@@ -85,7 +85,7 @@ shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit input)
     
     if (is EclipseDocument input) {
         doc = input;
-        nativeChange = DocumentChange(desc, input.doc);
+        nativeChange = DocumentChange(desc, input.document);
     } else if (is ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> input) {
         nativeChange = TextFileChange(desc, input.resourceFile);
         doc = EclipseDocument(EditorUtil.getDocument(nativeChange));

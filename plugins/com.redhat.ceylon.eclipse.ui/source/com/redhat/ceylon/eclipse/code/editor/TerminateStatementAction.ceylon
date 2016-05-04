@@ -36,7 +36,7 @@ class EclipseTerminateStatementAction(CeylonEditor editor) extends Action(null) 
                 value cpc = CeylonParseController();
                 cpc.initialize(editor.parseController.path,
                     editor.parseController.project, null);
-                cpc.parseAndTypecheck(doc.doc,
+                cpc.parseAndTypecheck(doc.document,
                     0, // don't wait for the source model since we don't even need it.
                     NullProgressMonitor(), null);
                 return [cpc.parsedRootNode, cpc.tokens];
