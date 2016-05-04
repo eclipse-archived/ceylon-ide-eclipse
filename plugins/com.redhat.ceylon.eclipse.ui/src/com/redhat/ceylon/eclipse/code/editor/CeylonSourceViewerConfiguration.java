@@ -132,7 +132,7 @@ public class CeylonSourceViewerConfiguration
                 ContentAssistEvent event) {
             if (editor!=null) {
                 editor.unpauseBackgroundParsing();
-                editor.scheduleParsing();
+                editor.scheduleParsing(false);
             }
         }
     }

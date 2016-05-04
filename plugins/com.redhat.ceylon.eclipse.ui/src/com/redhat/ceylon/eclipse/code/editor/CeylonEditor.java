@@ -1301,9 +1301,10 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
         themeManager.addPropertyChangeListener(fontChangeListener);
     }
 
-    public synchronized void scheduleParsing() {
+    public synchronized void scheduleParsing(boolean force) {
         if (parserScheduler!=null && !backgroundParsingPaused) {
             parserScheduler.cancel();
+            if (force) parseController.force();
             parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
         }
     }
@@ -1365,7 +1366,7 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
         }
         public void documentChanged(DocumentEvent event) {
             synchronized (CeylonEditor.this) {
-            	scheduleParsing();
+            	scheduleParsing(false);
             }
         }
     };
@@ -1374,16 +1375,18 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
             new IResourceChangeListener() {
         public void resourceChanged(IResourceChangeEvent event) {
             if (event.getBuildKind()!=CLEAN_BUILD) {
-                scheduleParsing();
+                scheduleParsing(true);
             }
         }
     };
 
     /**
-     * The following listener is intended to detect when the document associated
-     * with this editor changes its identity, which happens when, e.g., the
-     * underlying resource gets moved or renamed. We need to see when the editor 
-     * input changes, so we can watch the new document.
+     * The following listener is intended to detect when the 
+     * document associated with this editor changes its 
+     * identity, which happens when, e.g., the underlying 
+     * resource gets moved or renamed. We need to see when 
+     * the editor input changes, so we can watch the new 
+     * document.
      */
     private IPropertyListener editorInputPropertyListener = 
             new IPropertyListener() {
@@ -1407,7 +1410,7 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
                             documentListener);
                 }
                 initializeParseController();
-                scheduleParsing();
+                scheduleParsing(true);
             }
         }
     };
@@ -1457,11 +1460,12 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
         public void problemsChanged(
                 IResource[] changedResources, 
                 boolean isMarkerChange) {
-            // Remove annotations that were resolved by changes to 
-            // other resources.
-            // TODO: It would be better to match the markers to the 
-            // annotations, and decide which annotations to remove.
-            scheduleParsing();
+            // Remove annotations that were resolved by 
+            // changes to other resources.
+            // TODO: It would be better to match the markers 
+            // to the annotations, and decide exactly which 
+            // annotations to remove.
+            scheduleParsing(true);
         }
     };
     

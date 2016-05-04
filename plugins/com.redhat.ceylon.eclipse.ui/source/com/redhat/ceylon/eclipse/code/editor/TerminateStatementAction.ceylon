@@ -60,6 +60,6 @@ class EclipseTerminateStatementAction(CeylonEditor editor) extends Action(null) 
             editor.ceylonSourceViewer.setSelectedRange(start, 0);
         }
         
-        editor.scheduleParsing();
+        editor.scheduleParsing(false);
     }
 }

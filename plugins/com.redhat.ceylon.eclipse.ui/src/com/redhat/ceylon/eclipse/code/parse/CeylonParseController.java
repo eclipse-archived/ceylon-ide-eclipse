@@ -14,6 +14,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.allClasspathContainersInitialized;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.doWithSourceModel;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getInterpolatedCeylonSystemRepo;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectExternalModules;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
@@ -86,7 +87,6 @@ import com.redhat.ceylon.compiler.typechecker.util.WarningSuppressionVisitor;
 import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler.Stager;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
@@ -167,6 +167,8 @@ public class CeylonParseController
     private TypeChecker typeChecker;
     
     private Stage stage = Stage.NONE;
+    
+    private String contents = null;
      
     /**
      * @param filePath        the project-relative path of file
@@ -743,6 +745,10 @@ public class CeylonParseController
         }
         return null;
     }
+    
+    public void force() {
+        contents = null;
+    }
 
     /*
      * returns true is the the last AST was parsed *and* typechecked
@@ -755,6 +761,10 @@ public class CeylonParseController
                     final Stager stager) {
       document = doc;
       final String contents = doc.get();
+      if (contents.equals(this.contents)) {
+          return this.phasedUnit;
+      }
+      this.contents = null;
       IPath path = this.filePath;
       IProject project = this.project;
       IPath resolvedPath = path;
@@ -917,7 +927,7 @@ public class CeylonParseController
       final IPath finalPath = path;
       final FolderVirtualFile finalSrcDir = srcDir;
       try {
-          return CeylonBuilder.doWithSourceModel(
+          return doWithSourceModel(
                   project,
                   true,
                   waitForModelInSeconds,
@@ -965,6 +975,8 @@ public class CeylonParseController
                                         showWarnings, 
                                         builtPhasedUnit);
                         rootNode = phasedUnit.getCompilationUnit();
+                        CeylonParseController.this.contents = 
+                                contents;
                         if (finalProject!=null && 
                                 !CeylonNature.isEnabled(finalProject)) {
                             rootNode.visit(new Visitor() {
@@ -972,7 +984,8 @@ public class CeylonParseController
                                 public void visitAny(Node node) {
                                     super.visitAny(node);
                                     for (Iterator<Message> i 
-                                            = node.getErrors().iterator();
+                                            = node.getErrors()
+                                                .iterator();
                                          i.hasNext();) {
                                         if (!(i.next() 
                                                 instanceof RecognitionError)) {
@@ -994,7 +1007,7 @@ public class CeylonParseController
 
                   });
           }
-          catch(OperationCanceledException e) {
+          catch (OperationCanceledException e) {
               if (monitor!= null) {
                   // Sets the current monitor to canceled,
                   // so that the scheduler will reschedule it later
