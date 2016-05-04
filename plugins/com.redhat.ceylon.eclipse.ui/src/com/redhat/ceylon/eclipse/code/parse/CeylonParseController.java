@@ -20,6 +20,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTyp
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getReferencedProjectsOutputRepositories;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSourceFolders;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSuppressedWarnings;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isModelTypeChecked;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.showWarnings;
 import static com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileSystem.JAR_SUFFIX;
@@ -115,7 +116,8 @@ import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
-public class CeylonParseController implements LocalAnalysisResult<IDocument> {
+public class CeylonParseController 
+        implements LocalAnalysisResult<IDocument> {
     
     /**
      * The project containing the source being parsed. May be 
@@ -176,9 +178,12 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
     public void initialize(IPath filePath, IProject project, 
             AnnotationCreator handler) {
         if (isTheSourceArchiveProject(project)) {
-            IResource archiveEntry = project.findMember(filePath);
-            if (archiveEntry instanceof IFile && archiveEntry.exists()) {
-                IPath entryPath = toFullPath((IFile) archiveEntry);
+            IResource archiveEntry = 
+                    project.findMember(filePath);
+            if (archiveEntry instanceof IFile 
+                    && archiveEntry.exists()) {
+                IPath entryPath = 
+                        toFullPath((IFile) archiveEntry);
                 if (entryPath != null) {
                     filePath = entryPath;
                 }
@@ -303,7 +308,7 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
 
     private PhasedUnit typecheck(IPath path, 
             FileVirtualFile<IProject,IResource,IFolder,IFile> file,
-            Tree.CompilationUnit cu, 
+            Tree.CompilationUnit rootNode, 
             FolderVirtualFile<IProject,IResource,IFolder,IFile> srcDir, 
             final boolean showWarnings, 
             final PhasedUnit builtPhasedUnit) {
@@ -330,33 +335,46 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
                     TypeDescriptor.klass(IFolder.class),
                     TypeDescriptor.klass(IFile.class));
             //put it in the default module
-            pkg = typeChecker.getContext().getModules()
-                    .getDefaultModule().getPackages().get(0);
+            pkg = typeChecker
+                    .getContext()
+                    .getModules()
+                    .getDefaultModule()
+                    .getPackages()
+                    .get(0);
         }
         else {
             pkg = getPackage(file, srcDir, builtPhasedUnit);
         }
         
-        IdeModuleManager<IProject,IResource,IFolder,IFile> moduleManager = 
-                (IdeModuleManager<IProject,IResource,IFolder,IFile>) 
-                    typeChecker.getPhasedUnits().getModuleManager();
-        IdeModuleSourceMapper<IProject,IResource,IFolder,IFile> moduleSourceMapper = 
-                (IdeModuleSourceMapper<IProject,IResource,IFolder,IFile>)
-                    typeChecker.getPhasedUnits().getModuleSourceMapper();
+        PhasedUnits phasedUnits = 
+                typeChecker.getPhasedUnits();
+        IdeModuleManager moduleManager = 
+                (IdeModuleManager) 
+                    phasedUnits.getModuleManager();
+        IdeModuleSourceMapper moduleSourceMapper = 
+                (IdeModuleSourceMapper)
+                    phasedUnits.getModuleSourceMapper();
         if (builtPhasedUnit instanceof ProjectPhasedUnit) {
             newPhasednit = 
-                    newEditedPhasedUnit(file, srcDir, cu, pkg, 
-                            moduleManager, moduleSourceMapper, 
+                    newEditedPhasedUnit(file, srcDir, 
+                            rootNode, pkg, 
+                            moduleManager, 
+                            moduleSourceMapper, 
                             typeChecker, tokens, 
-                            (ProjectPhasedUnit) builtPhasedUnit);  
+                            (ProjectPhasedUnit) 
+                                builtPhasedUnit);  
         }
         else {
             newPhasednit = 
-                    newEditedPhasedUnit(file, srcDir, cu, pkg, 
-                    moduleManager, moduleSourceMapper, 
-                    typeChecker, tokens, null);
+                    newEditedPhasedUnit(file, srcDir, 
+                            rootNode, pkg, 
+                            moduleManager, 
+                            moduleSourceMapper, 
+                            typeChecker, tokens, 
+                            null);
             moduleManager.getModelLoader()
-                         .setupSourceFileObjects(asList(newPhasednit));
+                         .setupSourceFileObjects(
+                                 asList(newPhasednit));
         }
         
         final PhasedUnit phasedUnitToTypeCheck = newPhasednit;
@@ -378,8 +396,9 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
                 UnknownTypeCollector utc = new UnknownTypeCollector();
                 phasedUnitToTypeCheck.getCompilationUnit().visit(utc);
                 phasedUnitToTypeCheck.getCompilationUnit()
-                    .visit(new WarningSuppressionVisitor<Warning>(Warning.class, 
-                            CeylonBuilder.getSuppressedWarnings(project)));
+                    .visit(new WarningSuppressionVisitor<Warning>(
+                            Warning.class, 
+                            getSuppressedWarnings(project)));
             }
         });
         
@@ -413,9 +432,10 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
     private static TypeChecker createTypeChecker(IProject project, 
             boolean showWarnings) 
             throws CoreException {
-        final CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = 
-                modelJ2C().ceylonModel()
-                    .getProject(project);
+        final CeylonProject<IProject,IResource,IFolder,IFile> 
+            ceylonProject = 
+                    modelJ2C().ceylonModel()
+                        .getProject(project);
         
         VirtualFileSystem vfs = 
                 modelJ2C().ceylonModel()
@@ -468,14 +488,15 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
         
         List<String> userRepos =
                 getReferencedProjectsOutputRepositories(project);
-        RepositoryManager repositoryManager = repoManager()
-                .offline(offline)
-                .cwd(cwd)
-                .systemRepo(systemRepo)
-                .extraUserRepos(userRepos)
-                .logger(new EclipseLogger())
-                .isJDKIncluded(true)
-                .buildManager();
+        RepositoryManager repositoryManager = 
+                repoManager()
+                    .offline(offline)
+                    .cwd(cwd)
+                    .systemRepo(systemRepo)
+                    .extraUserRepos(userRepos)
+                    .logger(new EclipseLogger())
+                    .isJDKIncluded(true)
+                    .buildManager();
         
         tcb.setRepositoryManager(repositoryManager);
         
@@ -497,8 +518,8 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
         moduleManager.prepareForTypeChecking();
         phasedUnits.visitModules();
 
-        //By now the language module version should be known (as local)
-        //or we should use the default one.
+        //By now the language module version should be known 
+        //(as local) or we should use the default one.
         Module languageModule = 
                 context.getModules()
                     .getLanguageModule();
@@ -516,7 +537,8 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
         tc.setPhasedUnitsOfDependencies(
                 moduleValidator.getPhasedUnitsOfDependencies());
         
-        List<PhasedUnit> dependencies = new ArrayList<PhasedUnit>();
+        List<PhasedUnit> dependencies = 
+                new ArrayList<PhasedUnit>();
         for (PhasedUnits dependencyPhasedUnits: 
                 tc.getPhasedUnitsOfDependencies()) {
             modelLoader.addSourceArchivePhasedUnits(
@@ -549,22 +571,31 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
         //search for the project by iterating all 
         //projects in the workspace
         //TODO: should we use CeylonBuilder.getProjects()?
-        for (IProject p: getWorkspace().getRoot().getProjects()) {
+        IProject[] projects = 
+                getWorkspace()
+                    .getRoot()
+                    .getProjects();
+        for (IProject p: projects) {
             if (p.getLocation().isPrefixOf(path)) {
                 return p;
             }
         }
 
         for (IProject p: getProjects()) {
-            TypeChecker typeChecker = getProjectTypeChecker(p);
-            for (PhasedUnit unit: 
-                    typeChecker.getPhasedUnits().getPhasedUnits()) {
-                if (unit.getUnit().getFullPath().equals(path)) {
+            TypeChecker typeChecker = 
+                    getProjectTypeChecker(p);
+            List<PhasedUnit> projPhasedUnits = 
+                    typeChecker.getPhasedUnits()
+                        .getPhasedUnits();
+            for (PhasedUnit unit: projPhasedUnits) {
+                if (unit.getUnit().getFullPath()
+                        .equals(path.toString())) {
                     return p;
                 }
             }
-            for (PhasedUnits units: 
-                    typeChecker.getPhasedUnitsOfDependencies()) {
+            List<PhasedUnits> depPhasedUnits = 
+                    typeChecker.getPhasedUnitsOfDependencies();
+            for (PhasedUnits units: depPhasedUnits) {
                 for (PhasedUnit unit: units.getPhasedUnits()) {
                     if (unit.getUnit().getFullPath()
                             .equals(path.toString())) {
@@ -604,7 +635,8 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
             Modules modules = 
                     typeChecker.getContext()
                         .getModules();
-            // Retrieve the target package from the file src-relative path
+            // Retrieve the target package from the file 
+            // src-relative path
             //TODO: this is very fragile!
             String packageName = 
                     constructPackageName(file, srcDir);
@@ -649,16 +681,22 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
                         !wsRoot.exists(path));
     }
     
-    private String constructPackageName(VirtualFile file, VirtualFile srcDir) {
-        return file.getPath().substring(srcDir.getPath().length()+1)
-                .replace("/" + file.getName(), "").replace('/', '.');
+    private String constructPackageName(
+            VirtualFile file, VirtualFile srcDir) {
+        return file.getPath()
+                .substring(srcDir.getPath().length()+1)
+                .replace("/" + file.getName(), "")
+                .replace('/', '.');
     }
     
-    private FolderVirtualFile getSourceFolder(IProject project, IPath resolvedPath) {
-        for (IFolder sourceFolder: getSourceFolders(project)) {
-            if (sourceFolder.getFullPath().isPrefixOf(resolvedPath)) {
-                return vfsJ2C().createVirtualFolder(project, 
-                        sourceFolder.getProjectRelativePath());
+    private FolderVirtualFile getSourceFolder(
+            IProject project, IPath resolvedPath) {
+        for (IFolder folder: getSourceFolders(project)) {
+            if (folder.getFullPath()
+                    .isPrefixOf(resolvedPath)) {
+                return vfsJ2C()
+                        .createVirtualFolder(project,
+                                folder.getProjectRelativePath());
             }
         }
         return null;
@@ -703,7 +741,8 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
      * running typechecking ...)
      */
     public Tree.CompilationUnit getTypecheckedRootNode() {
-        Tree.CompilationUnit lastRootNode = getLastCompilationUnit();
+        Tree.CompilationUnit lastRootNode = 
+                getLastCompilationUnit();
         if (lastRootNode == rootNode) {
             return lastRootNode;
         }
@@ -738,7 +777,8 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
                           .append(filePath);
               //TODO: do we need to add in the source folder???
               IWorkspaceRoot root = 
-                      project.getWorkspace().getRoot();
+                      project.getWorkspace()
+                          .getRoot();
               if (!root.exists(resolvedPath)) {
                   // file has been deleted for example
                   path = null;
@@ -762,7 +802,8 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
                   BaseIdeModule module = 
                           moduleManager.getArchiveModuleFromSourcePath(commonPath);
                   if (module != null) {
-                      builtPhasedUnit = module.getPhasedUnit(commonPath);
+                      builtPhasedUnit = 
+                              module.getPhasedUnit(commonPath);
                       if (builtPhasedUnit != null) {
                           if (project == p) {
                               break;
@@ -851,7 +892,7 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
           return null;
       }
 
-      FolderVirtualFile<IProject,IResource,IFolder,IFile> srcDir = null;
+      FolderVirtualFile srcDir = null;
       if (project!=null) {
           srcDir = getSourceFolder(project, resolvedPath);
       }
@@ -879,7 +920,7 @@ public class CeylonParseController implements LocalAnalysisResult<IDocument> {
 
       final IProject finalProject = project;
       final IPath finalPath = path;
-      final FolderVirtualFile<IProject,IResource,IFolder,IFile> finalSrcDir = srcDir;
+      final FolderVirtualFile finalSrcDir = srcDir;
       try {
           return CeylonBuilder.doWithSourceModel(
                   project,
