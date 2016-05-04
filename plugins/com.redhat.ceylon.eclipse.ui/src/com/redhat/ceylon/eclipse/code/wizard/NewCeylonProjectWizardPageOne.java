@@ -73,6 +73,8 @@ import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.TreePath;
@@ -1519,37 +1521,32 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
     //TODO: fix copy/paste!
     void addCompilerSettings(Composite parent) {
         Group group = new Group(parent, SWT.NONE);
-        Composite composite = group;
         group.setText("Target virtual machine");
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        composite.setLayoutData(gd);
+        group.setLayoutData(gd);
         GridLayout layout = new GridLayout();
         initGridLayout(layout, false);
         layout.numColumns = 1;
         layout.marginBottom = 1;
-        composite.setLayout(layout);        
+        group.setLayout(layout);        
         
-        final Button jc = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        final Button jc = new Button(group, SWT.CHECK | SWT.LEFT | SWT.WRAP);
         jc.setText("Compile project for JVM");
         jc.setSelection(compileJava);
         jc.setSelection(compileJava);
 
-        final Button jsc = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        final Button jsc = new Button(group, SWT.CHECK | SWT.LEFT | SWT.WRAP);
         jsc.setText("Compile project to JavaScript");
         jsc.setSelection(compileJs);
 
         initJdkProvider(parent);
         
-        composite = new Composite(parent, SWT.NONE);
-        GridData gdb = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        gdb.grabExcessHorizontalSpace=true;
-        composite.setLayoutData(gdb);
-        GridLayout layoutb = new GridLayout();
-        layoutb.numColumns = 1;
-        layoutb.marginBottom = 3;
-        composite.setLayout(layoutb);
+        Composite composite = new Composite(parent, SWT.NONE);
+        composite.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+        composite.setLayout(GridLayoutFactory.swtDefaults().numColumns(2).spacing(5, 10).create());
         
         final Button offlineButton = new Button(composite, SWT.CHECK);
+        offlineButton.setLayoutData(GridDataFactory.swtDefaults().span(2, 1).create());
         offlineButton.setText("Work offline (disable connection to remote module repositories)");
         offlineButton.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event e) {
@@ -1562,6 +1559,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         });
         
         final Button showWarnings = new Button(composite, SWT.CHECK | SWT.LEFT | SWT.WRAP);
+        showWarnings.setLayoutData(GridDataFactory.swtDefaults().span(2, 1).create());
         showWarnings.setText("Show compilation warnings");
         showWarnings.setSelection(showCompilerWarnings);
         showWarnings.setEnabled(true);
@@ -1575,17 +1573,10 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
             public void widgetDefaultSelected(SelectionEvent e) {}
         });
 
-        Composite bootstrapComposite = new Composite(composite, NONE);
-        GridData bcgdb = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        bcgdb.grabExcessHorizontalSpace=true;
-        bootstrapComposite.setLayoutData(bcgdb);
-        GridLayout bclayoutb = new GridLayout();
-        bclayoutb.numColumns = 2;
-        bclayoutb.marginLeft = -5;
-        bootstrapComposite.setLayout(bclayoutb);
-
-        final Button createBootstrapFilesButton = new Button(bootstrapComposite, SWT.CHECK);
-        final Combo createBootstrapFilesVersionsCombo = new Combo(bootstrapComposite, SWT.READ_ONLY);
+        final Button createBootstrapFilesButton = new Button(composite, SWT.CHECK);
+        createBootstrapFilesButton.setLayoutData(GridDataFactory.swtDefaults().create());
+        final Combo createBootstrapFilesVersionsCombo = new Combo(composite, SWT.READ_ONLY);
+        createBootstrapFilesVersionsCombo.setLayoutData(GridDataFactory.swtDefaults().create());
         String[] choices = toJavaStringList_.toJavaStringList(versionsAvailableForBoostrap_.get_()).toArray(new String[0]);
         createBootstrapFilesVersionsCombo.setItems(choices);
         createBootstrapFilesVersionsCombo.select(0);
