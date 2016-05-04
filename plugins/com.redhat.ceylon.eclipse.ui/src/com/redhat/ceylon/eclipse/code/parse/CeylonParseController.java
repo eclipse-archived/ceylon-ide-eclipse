@@ -98,7 +98,6 @@ import com.redhat.ceylon.ide.common.model.BaseIdeModuleManager;
 import com.redhat.ceylon.ide.common.model.BaseIdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.IdeModuleManager;
-import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.settings.CompletionOptions;
 import com.redhat.ceylon.ide.common.typechecker.EditedPhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.IdePhasedUnit;
@@ -312,6 +311,7 @@ public class CeylonParseController
             FolderVirtualFile<IProject,IResource,IFolder,IFile> srcDir, 
             final boolean showWarnings, 
             final PhasedUnit builtPhasedUnit) {
+        
         if (isExternalPath(path) && builtPhasedUnit!=null) {
             // reuse the existing AST
             phasedUnit = builtPhasedUnit;
@@ -326,7 +326,8 @@ public class CeylonParseController
             });
             return builtPhasedUnit;
         }
-        PhasedUnit newPhasednit;
+        
+        final PhasedUnit newPhasedUnit;
         Package pkg;
         if (srcDir==null) {
             srcDir = new DummyFolder<IProject,IResource,IFolder,IFile>(
@@ -348,61 +349,56 @@ public class CeylonParseController
         
         PhasedUnits phasedUnits = 
                 typeChecker.getPhasedUnits();
-        IdeModuleManager moduleManager = 
-                (IdeModuleManager) 
-                    phasedUnits.getModuleManager();
-        IdeModuleSourceMapper moduleSourceMapper = 
-                (IdeModuleSourceMapper)
-                    phasedUnits.getModuleSourceMapper();
         if (builtPhasedUnit instanceof ProjectPhasedUnit) {
-            newPhasednit = 
+            newPhasedUnit = 
                     newEditedPhasedUnit(file, srcDir, 
                             rootNode, pkg, 
-                            moduleManager, 
-                            moduleSourceMapper, 
+                            phasedUnits.getModuleManager(), 
+                            phasedUnits.getModuleSourceMapper(), 
                             typeChecker, tokens, 
                             (ProjectPhasedUnit) 
                                 builtPhasedUnit);  
         }
         else {
-            newPhasednit = 
+            newPhasedUnit = 
                     newEditedPhasedUnit(file, srcDir, 
                             rootNode, pkg, 
-                            moduleManager, 
-                            moduleSourceMapper, 
+                            phasedUnits.getModuleManager(), 
+                            phasedUnits.getModuleSourceMapper(), 
                             typeChecker, tokens, 
                             null);
+            IdeModuleManager moduleManager = 
+                    (IdeModuleManager)
+                        phasedUnits.getModuleManager();
             moduleManager.getModelLoader()
                          .setupSourceFileObjects(
-                                 asList(newPhasednit));
+                                 asList(newPhasedUnit));
         }
         
-        final PhasedUnit phasedUnitToTypeCheck = newPhasednit;
-        
-        useTypechecker(phasedUnitToTypeCheck, new Runnable() {
+        useTypechecker(newPhasedUnit, new Runnable() {
             @Override
             public void run() {
-                phasedUnitToTypeCheck.validateTree();
-                phasedUnitToTypeCheck.visitSrcModulePhase();
-                phasedUnitToTypeCheck.visitRemainingModulePhase();
-                phasedUnitToTypeCheck.scanDeclarations();
-                phasedUnitToTypeCheck.scanTypeDeclarations();
-                phasedUnitToTypeCheck.validateRefinement();
-                phasedUnitToTypeCheck.analyseTypes();
+                newPhasedUnit.validateTree();
+                newPhasedUnit.visitSrcModulePhase();
+                newPhasedUnit.visitRemainingModulePhase();
+                newPhasedUnit.scanDeclarations();
+                newPhasedUnit.scanTypeDeclarations();
+                newPhasedUnit.validateRefinement();
+                newPhasedUnit.analyseTypes();
                 if (showWarnings) {
-                    phasedUnitToTypeCheck.analyseUsage();
+                    newPhasedUnit.analyseUsage();
                 }
-                phasedUnitToTypeCheck.analyseFlow();
-                UnknownTypeCollector utc = new UnknownTypeCollector();
-                phasedUnitToTypeCheck.getCompilationUnit().visit(utc);
-                phasedUnitToTypeCheck.getCompilationUnit()
+                newPhasedUnit.analyseFlow();
+                newPhasedUnit.getCompilationUnit()
+                    .visit(new UnknownTypeCollector());
+                newPhasedUnit.getCompilationUnit()
                     .visit(new WarningSuppressionVisitor<Warning>(
                             Warning.class, 
                             getSuppressedWarnings(project)));
             }
         });
         
-        return newPhasednit;
+        return newPhasedUnit;
     }
 
     private void useTypechecker(final PhasedUnit phasedUnitToTypeCheck,
@@ -443,7 +439,7 @@ public class CeylonParseController
         TypeCheckerBuilder tcb = 
                 new TypeCheckerBuilder(vfs)
                 .verbose(false)
-                .moduleManagerFactory(new ModuleManagerFactory(){
+                .moduleManagerFactory(new ModuleManagerFactory() {
                     @Override
                     public ModuleManager createModuleManager(
                             Context context) {
@@ -451,7 +447,6 @@ public class CeylonParseController
                                 .newModuleManager(context, 
                                         ceylonProject);
                     }
-
                     @Override
                     public ModuleSourceMapper createModuleManagerUtil(
                             Context context, 
@@ -541,10 +536,10 @@ public class CeylonParseController
                 new ArrayList<PhasedUnit>();
         for (PhasedUnits dependencyPhasedUnits: 
                 tc.getPhasedUnitsOfDependencies()) {
-            modelLoader.addSourceArchivePhasedUnits(
-                    dependencyPhasedUnits.getPhasedUnits());
-            for (PhasedUnit phasedUnit: 
-                    dependencyPhasedUnits.getPhasedUnits()) {
+            List<PhasedUnit> units = 
+                    dependencyPhasedUnits.getPhasedUnits();
+            modelLoader.addSourceArchivePhasedUnits(units);
+            for (PhasedUnit phasedUnit: units) {
                 dependencies.add(phasedUnit);
             }
         }
