@@ -376,11 +376,16 @@ shared class EclipseCompletionManager(CeylonEditor editor)
             exists pu = controller.parseAndTypecheck(viewer.document, 10, monitor.wrapped, null)) {
             
             editor.annotationCreator.updateAnnotations();
-            
-            value line = CompletionUtil.getLine(offset, viewer);
-            return getContentProposals(pu.compilationUnit, controller, offset, line,
-                secondLevel, monitor, returnedParamInfo,
-                monitor);
+            return getContentProposals {
+                typecheckedRootNode = pu.compilationUnit;
+                analysisResult = controller;
+                offset = offset;
+                line = CompletionUtil.getLine(offset, viewer);
+                secondLevel = secondLevel;
+                monitor = monitor;
+                returnedParamInfo = returnedParamInfo;
+                cancellable = monitor;
+            };
         }
         else {
             return [];
