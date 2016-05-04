@@ -9,10 +9,11 @@ import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.ide.common.util.escaping_;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Scope;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 class BasicCompletionProposal extends CompletionProposal {
     
@@ -28,10 +29,12 @@ class BasicCompletionProposal extends CompletionProposal {
     static void addDocLinkProposal(int offset, String prefix, 
             CeylonParseController cpc, List<ICompletionProposal> result, 
             Declaration dec, Scope scope) {
-        //for doc links, propose both aliases and unaliased qualified form
-        //we don't need to do this in code b/c there is no fully-qualified form
+        //for doc links, propose both aliases and unaliased 
+        //qualified form we don't need to do this in code 
+        //b/c there is no fully-qualified form
         String name = dec.getName();
-        String aliasedName = dec.getName(cpc.getLastCompilationUnit().getUnit());
+        Unit unit = cpc.getLastCompilationUnit().getUnit();
+        String aliasedName = dec.getName(unit);
         if (!name.equals(aliasedName)) {
             result.add(new BasicCompletionProposal(offset, prefix,
                     aliasedName, aliasedName, dec, cpc));
