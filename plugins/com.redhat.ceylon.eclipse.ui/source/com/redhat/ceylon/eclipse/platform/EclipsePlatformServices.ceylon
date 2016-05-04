@@ -15,7 +15,6 @@ import com.redhat.ceylon.ide.common.correct {
 import com.redhat.ceylon.ide.common.platform {
     PlatformServices,
     ModelServices,
-    IdeUtils,
     VfsServices,
     TextChange,
     TextEdit,
@@ -54,22 +53,26 @@ import org.eclipse.text.edits {
 
 object eclipsePlatformServices satisfies PlatformServices {
     
-    shared actual ModelServices<NativeProject,NativeResource,NativeFolder,NativeFile>
-        model<NativeProject, NativeResource, NativeFolder, NativeFile>() => 
-            unsafeCast<ModelServices<NativeProject,NativeResource,NativeFolder,NativeFile>>(eclipseModelServices);
+    utils() => eclipsePlatformUtils;
     
-    shared actual VfsServices<NativeProject,NativeResource,NativeFolder,NativeFile> vfs<NativeProject, NativeResource, NativeFolder, NativeFile>() => 
-            unsafeCast<VfsServices<NativeProject,NativeResource,NativeFolder,NativeFile>>(eclipseVfsServices);
-
-    shared actual IdeUtils utils() => eclipsePlatformUtils;
+    shared actual ModelServices<NativeProject,NativeResource,NativeFolder,NativeFile>
+            model<NativeProject, NativeResource, NativeFolder, NativeFile>() 
+            => unsafeCast<ModelServices<NativeProject,NativeResource,NativeFolder,NativeFile>>
+                    (eclipseModelServices);
+    
+    shared actual VfsServices<NativeProject,NativeResource,NativeFolder,NativeFile> 
+            vfs<NativeProject, NativeResource, NativeFolder, NativeFile>() 
+            => unsafeCast<VfsServices<NativeProject,NativeResource,NativeFolder,NativeFile>>
+                    (eclipseVfsServices);
     
     shared actual ImportProposals<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange>
-        importProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange>() =>
-            unsafeCast<ImportProposals<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange>>(eclipseImportProposals);
+            importProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange>() 
+            => unsafeCast<ImportProposals<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange>>
+                    (eclipseImportProposals);
     
     shared actual Indents<IDocument> indents<IDocument>() 
             => unsafeCast<Indents<IDocument>>(eclipseIndents);
-
+    
     createTextChange(String desc, CommonDocument|PhasedUnit input)
             => EclipseTextChange(desc, input);
     
@@ -86,23 +89,26 @@ shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit input)
     if (is EclipseDocument input) {
         doc = input;
         nativeChange = DocumentChange(desc, input.document);
-    } else if (is ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> input) {
+    }
+    else if (is ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> input) {
         nativeChange = TextFileChange(desc, input.resourceFile);
         doc = EclipseDocument(EditorUtil.getDocument(nativeChange));
-    } else {
+    }
+    else {
         throw Exception("Unsupported input: ``input``");
     }
     
-    ETextEdit toEclipseTextEdit(TextEdit edit) {
-        return switch (edit)
-        case (is InsertEdit) EInsertEdit(edit.start, edit.text)
-        case (is ReplaceEdit) EReplaceEdit(edit.start, edit.length, edit.text)
-        else EDeleteEdit(edit.start, edit.length);
-    }
+    ETextEdit toEclipseTextEdit(TextEdit edit) 
+            => switch (edit)
+            case (is InsertEdit) 
+                EInsertEdit(edit.start, edit.text)
+            case (is ReplaceEdit) 
+                EReplaceEdit(edit.start, edit.length, edit.text)
+            else 
+                EDeleteEdit(edit.start, edit.length);
     
     shared actual void addEdit(TextEdit edit) {
         value eclipseEdit = toEclipseTextEdit(edit);
-        
         if (is MultiTextEdit me = nativeChange.edit) {
             nativeChange.addEdit(eclipseEdit);
         } else {
@@ -119,7 +125,8 @@ shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit input)
     apply() => EditorUtil.performChange(nativeChange);
 }
 
-shared class EclipseCompositeChange(String desc) satisfies CompositeChange {
+shared class EclipseCompositeChange(String desc) 
+        satisfies CompositeChange {
     shared ECompositeChange nativeChange = ECompositeChange(desc);
     
     shared actual void addTextChange(TextChange change) {
