@@ -139,7 +139,7 @@ public class CeylonNavigatorContentProvider implements
 					        SourceModuleNode moduleNode = moduleNodes.get(signature);
 					        if (moduleNode != null) {
 					        	if (! isFlatLayout() 
-					        			&& ! module.isDefault()
+					        			&& ! module.isDefaultModule()
 					        			&& ! pkg.getNameAsString().equals(module.getNameAsString())) {
 					        		continue;
 					        	}

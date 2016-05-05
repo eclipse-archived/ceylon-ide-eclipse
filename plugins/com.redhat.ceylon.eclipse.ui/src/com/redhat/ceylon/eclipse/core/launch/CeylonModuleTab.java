@@ -93,7 +93,7 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
     protected void handleModuleSearchButtonSelected() {
         Module mod = LaunchHelper.chooseModule(LaunchHelper.getProjectFromName(this.fProjText.getText()), true);
         if (mod != null) {
-            if (mod.isDefault()) {
+            if (mod.isDefaultModule()) {
                 fModuleText.setText(Module.DEFAULT_MODULE_NAME);
             } else {
                 fModuleText.setText(LaunchHelper.getFullModuleName(mod));
@@ -123,7 +123,7 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
             
             // unique situation in which default module was selected but that the type belongs to a module
             Module mod = LaunchHelper.getModule(d);
-            if (mod != null && !mod.isDefault()) {
+            if (mod != null && !mod.isDefaultModule()) {
                 fModuleText.setText(LaunchHelper.getModuleFullName(d));
             }
         }

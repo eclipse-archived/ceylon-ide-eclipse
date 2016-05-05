@@ -1198,7 +1198,7 @@ public class DocumentationHover extends SourceInfoHover {
         if (mod.isJava()) {
             buffer.append("<p>This module is implemented in Java.</p>");
         }
-        if (mod.isDefault()) {
+        if (mod.isDefaultModule()) {
             buffer.append("<p>The default module for packages which do not belong to explicit module.</p>");
         }
         if (JDKUtils.isJDKModule(mod.getNameAsString())) {

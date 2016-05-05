@@ -142,7 +142,7 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
  
             Module mod = LaunchHelper.getModule(declaration);
             String moduleName = LaunchHelper.getFullModuleName(mod);
-            if (mod.isDefault()) {
+            if (mod.isDefaultModule()) {
                 moduleName = mod.getNameAsString();
             }
             

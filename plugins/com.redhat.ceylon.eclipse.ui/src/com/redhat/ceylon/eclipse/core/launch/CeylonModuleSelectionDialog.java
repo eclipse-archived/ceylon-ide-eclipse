@@ -63,7 +63,7 @@ public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
         public StyledString getStyledText(Object element) {
             if (element instanceof Module) {
                 Module module = (Module) element;
-                if (module.isDefault()) {
+                if (module.isDefaultModule()) {
                     return new StyledString("(default module)");
                 } else {
                     return new StyledString(module.getNameAsString())

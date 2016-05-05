@@ -404,7 +404,7 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
 //        if (project!=null) {
 //            modules.removeAll();
 //            for (Module m: getProjectModules(project.getProject()).getListOfModules()) {
-//                if (!m.isDefault() && !m.isJava()) {
+//                if (!m.isDefaultModule() && !m.isJava()) {
 //                    try {
 //                        for (IPackageFragment pkg: project.getPackageFragments()) {
 //                            if (!pkg.isReadOnly() &&

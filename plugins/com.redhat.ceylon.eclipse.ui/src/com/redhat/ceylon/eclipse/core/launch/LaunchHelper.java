@@ -220,7 +220,7 @@ public class LaunchHelper {
         Module defaultModule = new Module();
         defaultModule.setName(Arrays.asList(DEFAULT_MODULE_NAME));
         defaultModule.setVersion("unversioned");
-        defaultModule.setDefault(true);
+//        defaultModule.setDefault(true);
         return defaultModule;
     }
     
@@ -237,7 +237,7 @@ public class LaunchHelper {
 
     static String getModuleFullName(Declaration decl) {
         Module module = getModule(decl);
-        if (module.isDefault()) {
+        if (module.isDefaultModule()) {
             return DEFAULT_MODULE_NAME;
         } else {
             return getFullModuleName(module);
@@ -253,8 +253,8 @@ public class LaunchHelper {
                     !module.getNameAsString()
                             .startsWith(LANGUAGE_MODULE_NAME) && 
                     !module.isJava()) {
-                if ((module.isDefault() && includeDefault) // TODO : this is *never* true : the default module is not in the requested list
-                        || (!module.isDefault() && 
+                if ((module.isDefaultModule() && includeDefault) // TODO : this is *never* true : the default module is not in the requested list
+                        || (!module.isDefaultModule() && 
                                 module.getPackage(module.getNameAsString())!=null)){
                     modules.add(module);
                 }
@@ -517,7 +517,7 @@ public class LaunchHelper {
             Iterator<Module> modIterator = modules.iterator(); 
             while (modIterator.hasNext()) {
                 Module realMod = modIterator.next();
-                if (!realMod.isDefault()) {
+                if (!realMod.isDefaultModule()) {
                     return realMod;
                 }
             }

@@ -157,7 +157,7 @@ shared interface ClassPathEnricher {
                 }
                 value moduleList = CeylonIterable(modules.listOfModules)
                     .narrow<JDTModule>()
-                    .filter((m)=>m.isProjectModule && !m.default)
+                    .filter((m)=>m.isProjectModule && !m.defaultModule)
                     .flatMap(
                         (m) => 
                             moduleClassPath(m))
