@@ -403,7 +403,8 @@ public class CeylonParseController
         return newPhasedUnit;
     }
 
-    private void useTypechecker(final PhasedUnit phasedUnitToTypeCheck,
+    private void useTypechecker(
+            PhasedUnit phasedUnitToTypeCheck,
             final Runnable typecheckSteps) {
         Job typecheckJob = 
                 new Job("Typechecking the working copy of " + 
@@ -415,7 +416,7 @@ public class CeylonParseController
             }
         };
         CeylonParserScheduler scheduler = getScheduler();
-        if (scheduler != null) {
+        if (scheduler!=null) {
             typecheckJob.setPriority(scheduler.getPriority());
         }
         typecheckJob.setSystem(true);
@@ -427,14 +428,95 @@ public class CeylonParseController
         }
     }
 
-    private static TypeChecker createTypeChecker(IProject project, 
-            boolean showWarnings) 
-            throws CoreException {
-        final CeylonProject<IProject,IResource,IFolder,IFile> 
-            ceylonProject = 
-                    modelJ2C().ceylonModel()
-                        .getProject(project);
+    private static TypeChecker createTypeChecker(
+            IProject project, boolean showWarnings) 
+                    throws CoreException {
         
+        TypeChecker typeChecker = 
+                buildTypeChecker(project, showWarnings);
+        
+        List<PhasedUnit> dependencies = 
+                getDependencies(typeChecker);
+        
+        for (PhasedUnit pu: dependencies) {
+            pu.scanDeclarations();
+        }
+        for (PhasedUnit pu: dependencies) {
+            pu.scanTypeDeclarations();
+        }
+        for (PhasedUnit pu: dependencies) {
+            pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
+        }
+        for (PhasedUnit pu: dependencies) {
+            pu.analyseTypes(); //TODO: Needed to have the right values in the Value.trans field (set in Expression visitor)
+                               // which in turn is important for debugging !
+        }
+        
+        return typeChecker;
+    }
+
+    private static List<PhasedUnit> getDependencies(
+            TypeChecker typeChecker) {
+        
+        PhasedUnits phasedUnits = 
+                typeChecker.getPhasedUnits();
+        
+        BaseIdeModuleManager moduleManager = 
+                (BaseIdeModuleManager) 
+                    phasedUnits.getModuleManager();
+        moduleManager.setTypeChecker(typeChecker);
+        BaseIdeModuleSourceMapper moduleSourceMapper = 
+                (BaseIdeModuleSourceMapper) 
+                    phasedUnits.getModuleSourceMapper();
+        moduleSourceMapper.setTypeChecker(typeChecker);
+        Context context = typeChecker.getContext();
+        BaseIdeModelLoader modelLoader = 
+                moduleManager.getModelLoader();
+        
+        moduleManager.prepareForTypeChecking();
+        phasedUnits.visitModules();
+
+        //By now the language module version should be known 
+        //(as local) or we should use the default one.
+        Module languageModule = 
+                context.getModules()
+                    .getLanguageModule();
+        if (languageModule.getVersion() == null) {
+            languageModule.setVersion(LANGUAGE_MODULE_VERSION);
+        }
+
+        final ModuleValidator moduleValidator = 
+                new ModuleValidator(context, phasedUnits) {
+            @Override
+            protected void executeExternalModulePhases() {}
+        };
+        
+        moduleValidator.verifyModuleDependencyTree();
+        typeChecker.setPhasedUnitsOfDependencies(
+                moduleValidator.getPhasedUnitsOfDependencies());
+        
+        List<PhasedUnit> dependencies = 
+                new ArrayList<PhasedUnit>();
+        for (PhasedUnits dependencyPhasedUnits: 
+                typeChecker.getPhasedUnitsOfDependencies()) {
+            List<PhasedUnit> units = 
+                    dependencyPhasedUnits.getPhasedUnits();
+            modelLoader.addSourceArchivePhasedUnits(units);
+            for (PhasedUnit phasedUnit: units) {
+                dependencies.add(phasedUnit);
+            }
+        }
+        
+        return dependencies;
+    }
+
+    private static TypeChecker buildTypeChecker(
+            IProject project, boolean showWarnings) 
+                    throws CoreException {
+        final CeylonProject<IProject,IResource,IFolder,IFile> 
+        ceylonProject = 
+                modelJ2C().ceylonModel()
+                    .getProject(project);
         VirtualFileSystem vfs = 
                 modelJ2C().ceylonModel()
                     .getVfs();
@@ -497,70 +579,7 @@ public class CeylonParseController
         
         tcb.setRepositoryManager(repositoryManager);
         
-        TypeChecker tc = tcb.getTypeChecker();
-        PhasedUnits phasedUnits = tc.getPhasedUnits();
-
-        BaseIdeModuleManager moduleManager = 
-                (BaseIdeModuleManager) 
-                    phasedUnits.getModuleManager();
-        moduleManager.setTypeChecker(tc);
-        BaseIdeModuleSourceMapper moduleSourceMapper = 
-                (BaseIdeModuleSourceMapper) 
-                    phasedUnits.getModuleSourceMapper();
-        moduleSourceMapper.setTypeChecker(tc);
-        Context context = tc.getContext();
-        BaseIdeModelLoader modelLoader = 
-                moduleManager.getModelLoader();
-        
-        moduleManager.prepareForTypeChecking();
-        phasedUnits.visitModules();
-
-        //By now the language module version should be known 
-        //(as local) or we should use the default one.
-        Module languageModule = 
-                context.getModules()
-                    .getLanguageModule();
-        if (languageModule.getVersion() == null) {
-            languageModule.setVersion(LANGUAGE_MODULE_VERSION);
-        }
-
-        final ModuleValidator moduleValidator = 
-                new ModuleValidator(context, phasedUnits) {
-            @Override
-            protected void executeExternalModulePhases() {}
-        };
-        
-        moduleValidator.verifyModuleDependencyTree();
-        tc.setPhasedUnitsOfDependencies(
-                moduleValidator.getPhasedUnitsOfDependencies());
-        
-        List<PhasedUnit> dependencies = 
-                new ArrayList<PhasedUnit>();
-        for (PhasedUnits dependencyPhasedUnits: 
-                tc.getPhasedUnitsOfDependencies()) {
-            List<PhasedUnit> units = 
-                    dependencyPhasedUnits.getPhasedUnits();
-            modelLoader.addSourceArchivePhasedUnits(units);
-            for (PhasedUnit phasedUnit: units) {
-                dependencies.add(phasedUnit);
-            }
-        }
-
-        for (PhasedUnit pu: dependencies) {
-            pu.scanDeclarations();
-        }
-        for (PhasedUnit pu: dependencies) {
-            pu.scanTypeDeclarations();
-        }
-        for (PhasedUnit pu: dependencies) {
-            pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
-        }
-        for (PhasedUnit pu: dependencies) {
-            pu.analyseTypes(); //TODO: Needed to have the right values in the Value.trans field (set in Expression visitor)
-                                // which in turn is important for debugging !
-        }
-        
-        return tc;
+        return tcb.getTypeChecker();
     }
 
     private IProject findProject(IPath path) {
@@ -806,10 +825,10 @@ public class CeylonParseController
                   Path commonPath = PathUtils.toCommonPath(path);
                   BaseIdeModule module = 
                           moduleManager.getArchiveModuleFromSourcePath(commonPath);
-                  if (module != null) {
+                  if (module!=null) {
                       builtPhasedUnit = 
                               module.getPhasedUnit(commonPath);
-                      if (builtPhasedUnit != null) {
+                      if (builtPhasedUnit!=null) {
                           if (project == p) {
                               break;
                           }
@@ -927,13 +946,12 @@ public class CeylonParseController
       final IPath finalPath = path;
       final FolderVirtualFile finalSrcDir = srcDir;
       try {
-          return doWithSourceModel(
-                  project,
-                  true,
+          return doWithSourceModel(project, true,
                   waitForModelInSeconds,
                   new Callable<PhasedUnit>() {
                     @Override
-                    public PhasedUnit call() throws Exception {
+                    public PhasedUnit call() 
+                            throws Exception {
                         if (CeylonNature.isEnabled(finalProject)) {
                             typeChecker = 
                                     getProjectTypeChecker(
@@ -1005,10 +1023,10 @@ public class CeylonParseController
                         return phasedUnit;
                     }
 
-                  });
+              });
           }
           catch (OperationCanceledException e) {
-              if (monitor!= null) {
+              if (monitor!=null) {
                   // Sets the current monitor to canceled,
                   // so that the scheduler will reschedule it later
                   monitor.setCanceled(true);
