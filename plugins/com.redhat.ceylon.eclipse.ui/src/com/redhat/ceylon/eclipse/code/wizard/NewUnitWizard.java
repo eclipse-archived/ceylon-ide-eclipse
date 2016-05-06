@@ -27,7 +27,8 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     private String importText;
     
     public NewUnitWizard() {
-        setDialogSettings(CeylonPlugin.getInstance().getDialogSettings());
+        setDialogSettings(CeylonPlugin.getInstance()
+                .getDialogSettings());
         setWindowTitle("New Ceylon Source File");
     }
     
@@ -43,13 +44,15 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         unitName = name;
     }
     
-    public void setTitleAndDescription(String title, String description) {
+    public void setTitleAndDescription(String title, 
+            String description) {
         this.title = title;
         this.description = description;
     }
     
     @Override
-    public void init(IWorkbench workbench, IStructuredSelection selection) {
+    public void init(IWorkbench workbench, 
+            IStructuredSelection selection) {
         this.selection = selection;
         this.workbench = workbench;
     }
@@ -57,7 +60,8 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     @Override
     public boolean performFinish() {
         CreateSourceFileOperation op = 
-                new CreateSourceFileOperation(page.getSourceDir(),
+                new CreateSourceFileOperation(
+                        page.getSourceDir(),
                         page.getPackageFragment(), 
                         page.getUnitName(),
                         page.isIncludePreamble(), 

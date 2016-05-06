@@ -21,7 +21,8 @@ public class NewPackageWizard extends Wizard implements INewWizard {
     private boolean created = false;
     
     public NewPackageWizard() {
-        setDialogSettings(CeylonPlugin.getInstance().getDialogSettings());
+        setDialogSettings(CeylonPlugin.getInstance()
+                .getDialogSettings());
         setWindowTitle("New Ceylon Package");
     }
     
@@ -42,14 +43,16 @@ public class NewPackageWizard extends Wizard implements INewWizard {
     }
     
     @Override
-    public void init(IWorkbench workbench, IStructuredSelection selection) {
+    public void init(IWorkbench workbench, 
+            IStructuredSelection selection) {
         this.selection = selection;
         this.workbench=workbench;
     }
     
     @Override
     public boolean performFinish() {
-        CeylonPlugin.getInstance().getDialogSettings()
+        CeylonPlugin.getInstance()
+                .getDialogSettings()
                 .put("sharedPackage", page.isShared());
         IPackageFragment pf = page.getPackageFragment();
         CreateSourceFileOperation op = packageDescriptorOp(pf);
@@ -65,7 +68,8 @@ public class NewPackageWizard extends Wizard implements INewWizard {
         }
     }
 
-    private CreateSourceFileOperation packageDescriptorOp(IPackageFragment pf) {
+    private CreateSourceFileOperation packageDescriptorOp(
+            IPackageFragment pf) {
         StringBuilder packageDescriptor = 
                 new StringBuilder();
         if (page.isShared()) {
@@ -76,7 +80,8 @@ public class NewPackageWizard extends Wizard implements INewWizard {
                 .append(pf.getElementName()) 
                 .append(";")
                 .append(System.lineSeparator());
-        return new CreateSourceFileOperation(page.getSourceDir(), 
+        return new CreateSourceFileOperation(
+                page.getSourceDir(), 
                 pf, "package", 
                 page.isIncludePreamble(), 
                 packageDescriptor.toString());
@@ -87,7 +92,8 @@ public class NewPackageWizard extends Wizard implements INewWizard {
         super.addPages();
         if (page == null) {
             boolean shared = 
-                    getDialogSettings().getBoolean("sharedPackage");
+                    getDialogSettings()
+                        .getBoolean("sharedPackage");
             page = new NewPackageWizardPage(shared);
             page.init(workbench, selection);
         }

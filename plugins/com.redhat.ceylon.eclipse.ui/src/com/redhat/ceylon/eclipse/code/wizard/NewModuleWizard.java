@@ -88,7 +88,8 @@ public class NewModuleWizard extends Wizard implements INewWizard {
             return Status.OK_STATUS;
         }
 
-        private CreateSourceFileOperation packageDescriptorOp(IPackageFragment pf) {
+        private CreateSourceFileOperation packageDescriptorOp(
+                IPackageFragment pf) {
             String moduleName = pf.getElementName();
             boolean preamble = page.isIncludePreamble();
             String newline = System.lineSeparator();
@@ -108,15 +109,20 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                     packageDescriptor.toString());
         }
 
-        private CreateSourceFileOperation moduleDescriptorOp(IPackageFragment pf) {
+        private CreateSourceFileOperation moduleDescriptorOp(
+                IPackageFragment pf) {
             String moduleName = pf.getElementName();
             boolean preamble = page.isIncludePreamble();
             String newline = System.lineSeparator();
             StringBuilder moduleDescriptor = 
                     new StringBuilder();
-            IProject project = pf.getResource().getProject();
-            boolean compileToJava = CeylonBuilder.compileToJava(project );
-            boolean compileToJs = CeylonBuilder.compileToJs(project);
+            IProject project = 
+                    pf.getResource()
+                      .getProject();
+            boolean compileToJava = 
+                    CeylonBuilder.compileToJava(project);
+            boolean compileToJs = 
+                    CeylonBuilder.compileToJs(project);
             if (compileToJava==compileToJs) {
                 //no native annotation
             }
@@ -154,7 +160,8 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                     moduleDescriptor.toString());
         }
 
-        private CreateSourceFileOperation runFunctionOp(IPackageFragment pf) {
+        private CreateSourceFileOperation runFunctionOp(
+                IPackageFragment pf) {
             String moduleName = pf.getElementName();
             boolean preamble = page.isIncludePreamble();
             String newline = System.lineSeparator();
@@ -171,18 +178,21 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                         .append("}")
                         .toString();
             
-            return new CreateSourceFileOperation(page.getSourceDir(), 
+            return new CreateSourceFileOperation(
+                    page.getSourceDir(), 
                     pf, page.getUnitName(), 
                     preamble, runFunction);
         }
         
         @Override
-        public IStatus redo(IProgressMonitor monitor, IAdaptable info)
+        public IStatus redo(IProgressMonitor monitor, 
+                IAdaptable info)
                 throws ExecutionException {
             return execute(monitor, info);
         }
         @Override
-        public IStatus undo(IProgressMonitor monitor, IAdaptable info)
+        public IStatus undo(IProgressMonitor monitor, 
+                IAdaptable info)
                 throws ExecutionException {
             for (IUndoableOperation op: ops) {
                 op.undo(monitor, info);
@@ -197,12 +207,14 @@ public class NewModuleWizard extends Wizard implements INewWizard {
     private IWorkbench workbench;
     
     public NewModuleWizard() {
-        setDialogSettings(CeylonPlugin.getInstance().getDialogSettings());
+        setDialogSettings(CeylonPlugin.getInstance()
+                .getDialogSettings());
         setWindowTitle("New Ceylon Module");
     }
     
     @Override
-    public void init(IWorkbench workbench, IStructuredSelection selection) {
+    public void init(IWorkbench workbench, 
+            IStructuredSelection selection) {
         this.selection = selection;
         this.workbench = workbench;
     }
@@ -210,10 +222,12 @@ public class NewModuleWizard extends Wizard implements INewWizard {
     @Override
     public boolean performFinish() {
         CreateModuleOperation op = 
-                new CreateModuleOperation(importsPage.getImports(), 
+                new CreateModuleOperation(
+                        importsPage.getImports(), 
                         importsPage.getSharedImports());
         if (runOperation(op, getContainer())) {        
-            BasicNewResourceWizard.selectAndReveal(op.getResult(), 
+            BasicNewResourceWizard.selectAndReveal(
+                    op.getResult(), 
                     workbench.getActiveWorkbenchWindow());
             gotoLocation(op.getResult().getFullPath(), 0);
             return true;
@@ -236,11 +250,13 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                     IPackageFragmentRoot sourceDir = 
                             page.getSourceDir();
                     return sourceDir==null ? null : 
-                            sourceDir.getResource().getProject();
+                            sourceDir.getResource()
+                                     .getProject();
                 }
                 @Override
                 Map<String, ModuleVersionNode> getModules() {
-                    return selectModules(new ModuleImportSelectionDialog(getShell(), 
+                    return selectModules(new ModuleImportSelectionDialog(
+                            getShell(), 
                             new ModuleImportContentProvider(null, getProject()) {
                         @Override
                         public ModuleSearchResult getModules(String prefix) {
@@ -249,7 +265,8 @@ public class NewModuleWizard extends Wizard implements INewWizard {
                                         .getJavaProject()
                                         .getProject();
                             return getModuleSearchResults(prefix, null,
-                                    getProjectTypeChecker(project), project);
+                                    getProjectTypeChecker(project), 
+                                    project);
                         }
                     }), getProject());
                 }
