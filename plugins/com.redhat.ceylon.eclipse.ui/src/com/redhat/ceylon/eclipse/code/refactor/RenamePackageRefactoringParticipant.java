@@ -1,16 +1,16 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.escapePackageName;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 import static com.redhat.ceylon.eclipse.util.DocLinks.packageName;
 import static com.redhat.ceylon.eclipse.util.DocLinks.packageRegion;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -37,7 +37,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 
 public class RenamePackageRefactoringParticipant extends RenameParticipant {
@@ -107,17 +106,8 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
         try {
             final String newName = 
                     getArguments().getNewName();
-            StringTokenizer tokenizer = 
-                    new StringTokenizer(newName, ".");
-            StringBuilder builder = new StringBuilder();
-            while (tokenizer.hasMoreTokens()) {
-                if (builder.length()!=0) {
-                    builder.append('.');
-                }
-                builder.append(escaping_.get_()
-                        .escape(tokenizer.nextToken()));
-            }
-            final String escapedName = builder.toString();
+            final String escapedName = 
+                    escapePackageName(newName);
             final String oldName = 
                     javaPackageFragment.getElementName();
             final IProject project = 

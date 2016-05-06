@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -44,6 +45,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.DocLinks;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -412,6 +414,22 @@ public class MoveUtil {
             }
         }
         return null;
+    }
+    
+    //TODO: move to escaping!
+    public static String escapePackageName(final String newName) {
+        StringTokenizer tokenizer = 
+                new StringTokenizer(newName, ".");
+        StringBuilder builder = new StringBuilder();
+        while (tokenizer.hasMoreTokens()) {
+            if (builder.length()!=0) {
+                builder.append('.');
+            }
+            builder.append(escaping_.get_()
+                    .escape(tokenizer.nextToken()));
+        }
+        final String escapedName = builder.toString();
+        return escapedName;
     }
 
 }

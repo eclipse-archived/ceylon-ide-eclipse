@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.wizard;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
 import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.appendImportStatement;
 import static com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.escapePackageName;
 import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.runOperation;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleSearchResults;
@@ -90,7 +91,8 @@ public class NewModuleWizard extends Wizard implements INewWizard {
 
         private CreateSourceFileOperation packageDescriptorOp(
                 IPackageFragment pf) {
-            String moduleName = pf.getElementName();
+            String moduleName = 
+                    escapePackageName(pf.getElementName());
             boolean preamble = page.isIncludePreamble();
             String newline = System.lineSeparator();
             StringBuilder packageDescriptor = 
@@ -111,7 +113,8 @@ public class NewModuleWizard extends Wizard implements INewWizard {
 
         private CreateSourceFileOperation moduleDescriptorOp(
                 IPackageFragment pf) {
-            String moduleName = pf.getElementName();
+            String moduleName = 
+                    escapePackageName(pf.getElementName());
             boolean preamble = page.isIncludePreamble();
             String newline = System.lineSeparator();
             StringBuilder moduleDescriptor = 

@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
+import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.escapePackageName;
 import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.runOperation;
 
 import org.eclipse.jdt.core.IPackageFragment;
@@ -75,9 +76,11 @@ public class NewPackageWizard extends Wizard implements INewWizard {
         if (page.isShared()) {
             packageDescriptor.append("shared ");
         }
+        String name = 
+                escapePackageName(pf.getElementName());
         packageDescriptor
                 .append("package ") 
-                .append(pf.getElementName()) 
+                .append(name) 
                 .append(";")
                 .append(System.lineSeparator());
         return new CreateSourceFileOperation(

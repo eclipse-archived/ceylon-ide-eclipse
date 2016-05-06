@@ -53,7 +53,6 @@ import org.eclipse.ui.wizards.IWizardDescriptor;
 
 import com.redhat.ceylon.eclipse.code.navigator.GenerateBuildPathActionGroup;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 
 class NewUnitWizardPage extends WizardPage {
@@ -820,16 +819,16 @@ class NewUnitWizardPage extends WizardPage {
         return "Please select a source folder.";
     }
     
-    private static final String KEYWORDS
+    /*private static final String KEYWORDS
             = escaping_.get_().concatenateKeywords("|");
     
     static final String KEYWORD_PATTERN = 
-            ".*\\b(" + KEYWORDS + ")\\b.*";
+            ".*\\b(" + KEYWORDS + ")\\b.*";*/
 
     boolean packageNameIsLegal(String packageName) {
         return packageName.isEmpty() || 
-            packageName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$") &&
-            !packageName.matches(KEYWORD_PATTERN);
+            packageName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$") /*&&
+            !packageName.matches(KEYWORD_PATTERN)*/;
     }
     
     private boolean packageNameIsDiscouraged() {
@@ -842,14 +841,14 @@ class NewUnitWizardPage extends WizardPage {
     }
     
     String getIllegalPackageNameMessage() {
-        if (packageName.matches(KEYWORD_PATTERN)) {
+        /*if (packageName.matches(KEYWORD_PATTERN)) {
             return getIllegalPackageNameMessageStart() + 
                     "\n (May not contain keywords).";
         }
-        else {
-            return getIllegalPackageNameMessageStart() + 
-                    "\n (Must be a period-separated list of initial-lowercase identifiers).";
-        }
+        else {*/
+        return getIllegalPackageNameMessageStart() + 
+                "\n (Must be a period-separated list of initial-lowercase identifiers).";
+//        }
     }
     
     String getIllegalPackageNameMessageStart() {
