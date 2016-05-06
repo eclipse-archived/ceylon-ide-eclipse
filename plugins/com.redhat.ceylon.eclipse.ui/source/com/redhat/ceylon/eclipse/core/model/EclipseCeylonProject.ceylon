@@ -73,7 +73,7 @@ shared object nativeFolderProperties {
 }
 
 // TODO : add the EclipseBuildHook (that manages also the Android Stuff
-class EclipseBuildHook() 
+object eclipseSpecificAnalysisBuildHook 
         satisfies BuildHook<IProject, IResource, IFolder, IFile>
         & VfsServicesConsumer<IProject, IResource, IFolder, IFile> {
     
@@ -276,5 +276,6 @@ shared class EclipseCeylonProject(ideArtifact)
     }
 
     shared actual {BuildHook<IProject, IResource, IFolder, IFile>*} buildHooks => {
+        eclipseSpecificAnalysisBuildHook
     };
  }
