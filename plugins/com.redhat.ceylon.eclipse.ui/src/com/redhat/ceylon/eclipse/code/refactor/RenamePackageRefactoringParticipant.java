@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -36,6 +37,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 
 public class RenamePackageRefactoringParticipant extends RenameParticipant {
@@ -52,7 +54,8 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
         //      naturally, a massive PITA.
         javaPackageFragment = (IPackageFragment) element;
         IProject project = 
-                javaPackageFragment.getJavaProject().getProject();
+                javaPackageFragment.getJavaProject()
+                    .getProject();
         try {
             if (!project.hasNature(CeylonNature.NATURE_ID)) {
                 return false;
@@ -104,10 +107,22 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
         try {
             final String newName = 
                     getArguments().getNewName();
+            StringTokenizer tokenizer = 
+                    new StringTokenizer(newName, ".");
+            StringBuilder builder = new StringBuilder();
+            while (tokenizer.hasMoreTokens()) {
+                if (builder.length()!=0) {
+                    builder.append('.');
+                }
+                builder.append(escaping_.get_()
+                        .escape(tokenizer.nextToken()));
+            }
+            final String escapedName = builder.toString();
             final String oldName = 
                     javaPackageFragment.getElementName();
             final IProject project = 
-                    javaPackageFragment.getJavaProject().getProject();
+                    javaPackageFragment.getJavaProject()
+                            .getProject();
 
             final List<Change> changes = 
                     new ArrayList<Change>();
@@ -122,9 +137,10 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
                     @Override
                     public void visit(ImportPath that) {
                         super.visit(that);
-                        if (formatPath(that.getIdentifiers()).equals(oldName)) {
+                        if (formatPath(that.getIdentifiers())
+                                .equals(oldName)) {
                             edits.add(new ReplaceEdit(that.getStartIndex(), 
-                                    oldName.length(), newName));
+                                    that.getDistance(), escapedName));
                         }
                     }
                     @Override
@@ -145,8 +161,11 @@ public class RenamePackageRefactoringParticipant extends RenameParticipant {
                         FileVirtualFile<IProject, IResource, IFolder, IFile> virtualFile = 
                                 vfsJ2C().getIFileVirtualFile(phasedUnit.getUnitFile());
                         IFile file = virtualFile.getNativeResource();
-                        String path = file.getProjectRelativePath().toPortableString();
-                        TextFileChange change = fileChanges.get(path);
+                        String path = 
+                                file.getProjectRelativePath()
+                                    .toPortableString();
+                        TextFileChange change = 
+                                fileChanges.get(path);
                         if (change==null) {
                             change = new TextFileChange(file.getName(), file);
                             change.setEdit(new MultiTextEdit());
