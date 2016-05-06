@@ -63,10 +63,8 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.SyntheticVariable;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
@@ -76,6 +74,7 @@ import com.redhat.ceylon.eclipse.code.preferences.CeylonOutlinesPreferencePage;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.model.CeylonUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class CeylonOutlinePage extends ContentOutlinePage 
         implements TreeLifecycleListener, CaretListener {
@@ -544,12 +543,12 @@ public class CeylonOutlinePage extends ContentOutlinePage
     private void expandCaretedNode(int offset) {
         if (suspend) return;
         if (offset==0) return; //right at the start of file, don't expand the import list
-        CompilationUnit rootNode = 
+        Tree.CompilationUnit rootNode = 
                 parseController.getLastCompilationUnit();
         if (rootNode==null) {
             return;
         }
-        TypecheckerUnit unit = rootNode.getUnit();
+        Unit unit = rootNode.getUnit();
         if (unit==null) {
             return;
         }

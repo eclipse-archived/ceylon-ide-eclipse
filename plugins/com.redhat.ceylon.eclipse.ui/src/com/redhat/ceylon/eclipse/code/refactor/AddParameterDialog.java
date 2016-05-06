@@ -22,7 +22,6 @@ import org.eclipse.swt.widgets.Text;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.ExpressionVisitor;
 import com.redhat.ceylon.compiler.typechecker.analyzer.TypeVisitor;
-import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
@@ -37,6 +36,7 @@ import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Value;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
     
@@ -45,7 +45,7 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
     private String argument;
     private Node node;
     private Set<String> parameterNames;
-    private TypecheckerUnit unit;
+    private Unit unit;
     
     public AddParameterDialog(Shell parentShell, 
             Node node, final IProject project, 

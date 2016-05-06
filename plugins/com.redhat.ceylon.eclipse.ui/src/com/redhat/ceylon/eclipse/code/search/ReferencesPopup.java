@@ -82,7 +82,6 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -868,7 +867,7 @@ public final class ReferencesPopup extends PopupDialog
             message = "references to";
         }
         String name;
-        TypecheckerUnit unit = pc.getLastCompilationUnit().getUnit();
+        Unit unit = pc.getLastCompilationUnit().getUnit();
         if (declaration instanceof Declaration) {
             Declaration dec = (Declaration) declaration;
             name = dec.getName(unit);

@@ -19,11 +19,11 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
 
-import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.Nodes;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.ide.common.model.ModifiableSourceFile;
 import com.redhat.ceylon.ide.common.typechecker.ModifiablePhasedUnit;
 
@@ -129,7 +129,7 @@ class CreateEnumProposal extends CorrectionProposal {
             Collection<ICompletionProposal> proposals,
             IProject project, String def, String desc, Image image,
             Tree.CompilationUnit rootNode, Tree.TypeDeclaration cd) {
-            TypecheckerUnit u = rootNode.getUnit();
+            Unit u = rootNode.getUnit();
         if (u instanceof ModifiableSourceFile) {
             ModifiableSourceFile cu = 
                     (ModifiableSourceFile) u;

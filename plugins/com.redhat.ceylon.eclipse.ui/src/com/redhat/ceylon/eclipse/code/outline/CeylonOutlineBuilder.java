@@ -14,7 +14,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
@@ -114,7 +113,7 @@ public class CeylonOutlineBuilder extends Visitor {
         if (cpc==null) return null;
         Tree.CompilationUnit rootNode = cpc.getLastCompilationUnit();
         if (rootNode==null) return null;
-        TypecheckerUnit u = rootNode.getUnit();
+        Unit u = rootNode.getUnit();
         if (u==null) return null;
         if (rootNode.getStartIndex()==null) return null;
         

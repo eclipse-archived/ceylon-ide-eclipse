@@ -1340,9 +1340,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
             
             for (PhasedUnit phasedUnit : phasedUnits.getPhasedUnits()) {
-                TypecheckerUnit unit = phasedUnit.getUnit();
-                if (!unit.getUnresolvedReferences().isEmpty() ||
-                        !unit.getMissingNativeImplementations().isEmpty()) {
+                Unit unit = phasedUnit.getUnit();
+                if (unit.getUnresolvedReferences()) {
                     IFile fileToAdd = vfsJ2C().getIFileVirtualFile(phasedUnit.getUnitFile()).getNativeResource();
                     if (fileToAdd.exists()) {
                         filesToAddInTypecheck.add(fileToAdd);

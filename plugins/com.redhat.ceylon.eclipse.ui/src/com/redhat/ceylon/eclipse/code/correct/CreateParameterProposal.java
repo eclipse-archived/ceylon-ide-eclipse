@@ -26,7 +26,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
@@ -160,8 +159,7 @@ class CreateParameterProposal extends InitializerProposal {
                         def.substring(0, def.length() - (def.endsWith("{}")?3:1));
                 String paramDesc = 
                         "parameter '" + dg.getBrokenName() + "'";
-                TypecheckerUnit u = 
-                        dg.getRootNode().getUnit();
+                Unit u = dg.getRootNode().getUnit();
                 if (u instanceof ModifiableSourceFile) {
                     ModifiableSourceFile msf = 
                             (ModifiableSourceFile) u;

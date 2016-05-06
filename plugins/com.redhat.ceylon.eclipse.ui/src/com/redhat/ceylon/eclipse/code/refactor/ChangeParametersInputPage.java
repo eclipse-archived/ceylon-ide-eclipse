@@ -49,7 +49,6 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.ExpressionVisitor;
 import com.redhat.ceylon.compiler.typechecker.analyzer.TypeVisitor;
-import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
@@ -63,6 +62,7 @@ import com.redhat.ceylon.eclipse.util.ErrorVisitor;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.ide.common.model.CeylonUnit;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
@@ -733,7 +733,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
             }
             
             Node node = refactoring.node;
-            final TypecheckerUnit unit = node.getUnit();
+            final Unit unit = node.getUnit();
             final Scope scope = node.getScope();
             final Value value = new Value();
             value.setName(parameterName);
