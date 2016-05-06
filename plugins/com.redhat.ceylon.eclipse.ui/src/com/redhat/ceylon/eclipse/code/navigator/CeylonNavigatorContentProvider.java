@@ -669,7 +669,7 @@ public class CeylonNavigatorContentProvider implements
     }
 
     @Override
-    public Object modelParsed(CeylonProject<IProject, IResource, IFolder, IFile> project) {
+    public Object ceylonModelParsed(CeylonProject<IProject, IResource, IFolder, IFile> project) {
         if (project != null) {
             try {
                 for (IPackageFragmentRoot pfr : JavaCore.create(project.getIdeArtifact()).getAllPackageFragmentRoots()) {
@@ -681,6 +681,18 @@ public class CeylonNavigatorContentProvider implements
                 e.printStackTrace();
             }
         }
+        return null;
+    }
+
+    @Override
+    public Object ceylonProjectAdded(
+            CeylonProject<IProject, IResource, IFolder, IFile> project) {
+        return null;
+    }
+
+    @Override
+    public Object ceylonProjectRemoved(
+            CeylonProject<IProject, IResource, IFolder, IFile> project) {
         return null;
     }
 

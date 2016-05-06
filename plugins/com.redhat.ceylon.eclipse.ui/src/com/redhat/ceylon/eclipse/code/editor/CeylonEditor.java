@@ -2128,7 +2128,7 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
     }
     
     @Override
-    public Object modelParsed(CeylonProject<IProject, IResource, IFolder, IFile> project) {
+    public Object ceylonModelParsed(CeylonProject<IProject, IResource, IFolder, IFile> project) {
         IEditorInput input = getEditorInput();
         if (input instanceof FileStoreEditorInput) {
             FileStoreEditorInput fsei = 
@@ -2151,6 +2151,18 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
                 }
             }
         }
+        return null;
+    }
+
+    @Override
+    public Object ceylonProjectAdded(
+            CeylonProject<IProject, IResource, IFolder, IFile> project) {
+        return null;
+    }
+
+    @Override
+    public Object ceylonProjectRemoved(
+            CeylonProject<IProject, IResource, IFolder, IFile> project) {
         return null;
     }
 }

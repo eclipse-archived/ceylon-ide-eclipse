@@ -829,7 +829,7 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, Mode
     }
 
     @Override
-    public Object modelParsed(final CeylonProject<IProject, IResource, IFolder, IFile> project) {
+    public Object ceylonModelParsed(final CeylonProject<IProject, IResource, IFolder, IFile> project) {
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
@@ -840,6 +840,18 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, Mode
                 }
             }
         });
+        return null;
+    }
+
+    @Override
+    public Object ceylonProjectAdded(
+            CeylonProject<IProject, IResource, IFolder, IFile> project) {
+        return null;
+    }
+
+    @Override
+    public Object ceylonProjectRemoved(
+            CeylonProject<IProject, IResource, IFolder, IFile> project) {
         return null;
     }
     
