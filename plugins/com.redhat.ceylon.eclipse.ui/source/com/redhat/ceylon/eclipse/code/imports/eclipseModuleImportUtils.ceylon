@@ -1,6 +1,3 @@
-import com.redhat.ceylon.compiler.typechecker.context {
-    TypecheckerUnit
-}
 import com.redhat.ceylon.compiler.typechecker.tree {
     Tree
 }
@@ -27,7 +24,8 @@ import com.redhat.ceylon.ide.common.util {
     Indents
 }
 import com.redhat.ceylon.model.typechecker.model {
-    Module
+    Module,
+    Unit
 }
 
 import org.eclipse.core.resources {
@@ -59,7 +57,7 @@ shared object eclipseModuleImportUtils
             => change.edit.offset;
     
     suppressWarnings("expressionTypeNothing")
-    shared actual [IFile, Tree.CompilationUnit, TypecheckerUnit]
+    shared actual [IFile, Tree.CompilationUnit, Unit]
     getUnit(IProject project, Module mod) {
         
         if (exists ppu = getDescriptorPhasedUnit(project, mod)) {
@@ -89,7 +87,7 @@ shared object eclipseModuleImportUtils
         return null;
     }
     
-    shared actual void gotoLocation(TypecheckerUnit unit, Integer offset,
+    shared actual void gotoLocation(Unit unit, Integer offset,
         Integer length) {
         
         Navigation.gotoLocation(unit, offset, length);

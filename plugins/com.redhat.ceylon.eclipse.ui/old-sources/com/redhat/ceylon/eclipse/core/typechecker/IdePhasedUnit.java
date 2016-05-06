@@ -37,9 +37,9 @@ public abstract class IdePhasedUnit extends PhasedUnit {
         return typeCheckerRef.get();
     }
     
-    protected TypecheckerUnit createUnit() {
-        TypecheckerUnit oldUnit = getUnit();
-        TypecheckerUnit newUnit = newUnit();
+    protected Unit createUnit() {
+        Unit oldUnit = getUnit();
+        Unit newUnit = newUnit();
         if (oldUnit != null) {
             newUnit.setFilename(oldUnit.getFilename());
             newUnit.setFullPath(oldUnit.getFullPath());
@@ -50,5 +50,5 @@ public abstract class IdePhasedUnit extends PhasedUnit {
         return newUnit;
     }
     
-    protected abstract TypecheckerUnit newUnit();
+    protected abstract Unit newUnit();
 }
