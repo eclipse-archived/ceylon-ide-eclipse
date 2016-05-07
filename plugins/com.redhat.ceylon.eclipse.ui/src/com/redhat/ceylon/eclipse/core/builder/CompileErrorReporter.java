@@ -210,11 +210,12 @@ final class CompileErrorReporter implements
                 //Javac doesn't have line number info for certain errors
                 marker.setAttribute(IMarker.LINE_NUMBER, (int) line);
                 long startPosition = diagnostic.getStartPosition();
-                long endPosition = diagnostic.getEndPosition() + 1;
+                long endPosition = diagnostic.getEndPosition();
                 marker.setAttribute(IMarker.CHAR_START, 
                         (int) startPosition);
                 marker.setAttribute(IMarker.CHAR_END, 
-                        (int) endPosition);
+                        (int) (endPosition<0 ? startPosition : endPosition)
+                                + 1);
             }
             if (markerId.equals(JAVA_MODEL_PROBLEM_MARKER)) {
                 marker.setAttribute(IMarker.SOURCE_ID, PLUGIN_ID);
