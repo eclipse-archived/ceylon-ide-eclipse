@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.preferences;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.ENCLOSING_BRACKETS;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.MATCHING_BRACKET;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.SELECTED_BRACKET;
+import static com.redhat.ceylon.eclipse.code.hover.AnnotationHover.ANNOTATION_PREFERENCE_PAGE_ID;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_FOLD_COMMENTS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_FOLD_IMPORTS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_ANGLES;
@@ -15,6 +16,8 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_ESCAPE_QUOTED;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_IMPORTS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.SUB_WORD_NAVIGATION;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.COLORS_AND_FONTS_PAGE_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_FONT_PREFERENCE;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
@@ -45,7 +48,11 @@ public class CeylonEditorPreferencePage
         extends FieldEditorPreferencePage 
         implements IWorkbenchPreferencePage {
     
-    public static final String ID = CeylonPlugin.PLUGIN_ID + ".preferences.editor";
+    public static final String TEXTEDITOR_PREFERENCE_PAGE_ID = 
+            "org.eclipse.ui.preferencePages.GeneralTextEditor";
+
+    public static final String ID = 
+            CeylonPlugin.PLUGIN_ID + ".preferences.editor";
     
     BoolFieldEditor bracketMatching;
     Button oppositeBracket;
@@ -78,7 +85,8 @@ public class CeylonEditorPreferencePage
     @Override
     public boolean performOk() {
         bracketMatching.store();
-        IPreferenceStore store = EditorsUI.getPreferenceStore();
+        IPreferenceStore store = 
+                EditorsUI.getPreferenceStore();
         store.setValue(SELECTED_BRACKET, 
                 matchingBrackets.getSelection());
         store.setValue(ENCLOSING_BRACKETS, 
@@ -103,9 +111,12 @@ public class CeylonEditorPreferencePage
     protected void performDefaults() {
         super.performDefaults();
         bracketMatching.loadDefault();
-        IPreferenceStore store = EditorsUI.getPreferenceStore();
-        matchingBrackets.setSelection(store.getDefaultBoolean(SELECTED_BRACKET));
-        enclosingBrackets.setSelection(store.getDefaultBoolean(ENCLOSING_BRACKETS));
+        IPreferenceStore store = 
+                EditorsUI.getPreferenceStore();
+        matchingBrackets.setSelection(
+                store.getDefaultBoolean(SELECTED_BRACKET));
+        enclosingBrackets.setSelection(
+                store.getDefaultBoolean(ENCLOSING_BRACKETS));
         oppositeBracket.setSelection(false);
         smartCaret.loadDefault();
         pasteCorrectIndent.loadDefault();
@@ -133,76 +144,109 @@ public class CeylonEditorPreferencePage
     protected Control createContents(Composite parent) {
         
         Link textEditorsLink = new Link(parent, 0);
-        textEditorsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        textEditorsLink.setLayoutData(
+                GridDataFactory.swtDefaults()
+                    .align(SWT.FILL, SWT.CENTER)
+                    .create());
         textEditorsLink.setText("See '<a>Text Editors</a>' for general editor preferences.");
-        textEditorsLink.addSelectionListener(new SelectionAdapter() {
+        textEditorsLink.addSelectionListener(
+                new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
-                        "org.eclipse.ui.preferencePages.GeneralTextEditor", null, null);
+                        TEXTEDITOR_PREFERENCE_PAGE_ID, 
+                        null, null);
             }
         });
         
         Link colorsAndFontsLink = new Link(parent, 0);
-        colorsAndFontsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        colorsAndFontsLink.setLayoutData(
+                GridDataFactory.swtDefaults()
+                    .align(SWT.FILL, SWT.CENTER)
+                    .create());
         colorsAndFontsLink.setText("See '<a>Colors and Fonts</a>' to customize appearance and syntax highlighting.");
-        colorsAndFontsLink.addSelectionListener(new SelectionAdapter() {
+        colorsAndFontsLink.addSelectionListener(
+                new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
-                        CeylonPlugin.COLORS_AND_FONTS_PAGE_ID, null, 
-                        "selectFont:" + 
-                                CeylonPlugin.EDITOR_FONT_PREFERENCE);
+                        COLORS_AND_FONTS_PAGE_ID, null, 
+                        "selectFont:" 
+                                + EDITOR_FONT_PREFERENCE);
             }
         });
         
         Link annotationsLink = new Link(parent, 0);
-        annotationsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        annotationsLink.setLayoutData(
+                GridDataFactory.swtDefaults()
+                    .align(SWT.FILL, SWT.CENTER)
+                    .create());
         annotationsLink.setText("See '<a>Annotations</a>' to customize annotation appearance.");
-        annotationsLink.addSelectionListener(new SelectionAdapter() {
+        annotationsLink.addSelectionListener(
+                new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
-                        "org.eclipse.ui.editors.preferencePages.Annotations", null, null);
+                        ANNOTATION_PREFERENCE_PAGE_ID, 
+                        null, null);
             }
         });
         
-        Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+        Composite composite = 
+                new Composite(parent, SWT.NONE);
+        composite.setLayoutData(
+                GridDataFactory.fillDefaults()
+                    .grab(true, false)
+                    .create());
         composite.setLayout(new GridLayout(1, true));
         
         Control contents = super.createContents(composite);
         
         Link completionLink = new Link(parent, 0);
-        completionLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        completionLink.setLayoutData(
+                GridDataFactory.swtDefaults()
+                    .align(SWT.FILL, SWT.CENTER)
+                    .create());
         completionLink.setText("See '<a>Completion</a>' for preferences related to completion.");
-        completionLink.addSelectionListener(new SelectionAdapter() {
+        completionLink.addSelectionListener(
+                new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
-                        CeylonCompletionPreferencePage.ID, null, null);
+                        CeylonCompletionPreferencePage.ID, 
+                        null, null);
             }
         });
         
         Link refactoringLink = new Link(parent, 0);
-        refactoringLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        refactoringLink.setLayoutData(
+                GridDataFactory.swtDefaults()
+                    .align(SWT.FILL, SWT.CENTER)
+                    .create());
         refactoringLink.setText("See '<a>Refactoring</a>' for preferences related to refactoring.");
-        refactoringLink.addSelectionListener(new SelectionAdapter() {
+        refactoringLink.addSelectionListener(
+                new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
-                        CeylonRefactoringPreferencePage.ID, null, null);
+                        CeylonRefactoringPreferencePage.ID, 
+                        null, null);
             }
         });
         
         Link saveLink = new Link(parent, 0);
-        saveLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        saveLink.setLayoutData(
+                GridDataFactory.swtDefaults()
+                    .align(SWT.FILL, SWT.CENTER)
+                    .create());
         saveLink.setText("See '<a>Save Actions</a>' to enable save actions.");
-        saveLink.addSelectionListener(new SelectionAdapter() {
+        saveLink.addSelectionListener(
+                new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
-                        CeylonSaveActionsPreferencePage.ID, null, null);
+                        CeylonSaveActionsPreferencePage.ID, 
+                        null, null);
             }
         });
         
@@ -221,8 +265,16 @@ public class CeylonEditorPreferencePage
         Composite parent = getFieldEditorParent();
         Group group = new Group(parent, SWT.NONE);
         group.setText(text);
-        group.setLayout(GridLayoutFactory.swtDefaults().equalWidth(true).numColumns(cols).create());
-        group.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).grab(true, false).create());
+        group.setLayout(
+                GridLayoutFactory.swtDefaults()
+                    .equalWidth(true)
+                    .numColumns(cols)
+                    .create());
+        group.setLayoutData(
+                GridDataFactory.fillDefaults()
+                    .span(3, 1)
+                    .grab(true, false)
+                    .create());
         return group;
     }
     
@@ -261,7 +313,8 @@ public class CeylonEditorPreferencePage
     }
     
     static class SpecialBoolFieldEditor extends BoolFieldEditor {
-        public SpecialBoolFieldEditor(String name, String label, Composite parent) {
+        public SpecialBoolFieldEditor(String name, 
+                String label, Composite parent) {
             super(name, label, parent);
         }
         @Override
@@ -276,21 +329,25 @@ public class CeylonEditorPreferencePage
         GridData gd = new GridData();
         gd.horizontalSpan=1;
         p.setLayoutData(gd);
-        bracketMatching = new SpecialBoolFieldEditor(MATCHING_BRACKET, 
-                "Enable matching bracket highlighting", p);
+        bracketMatching = 
+                new SpecialBoolFieldEditor(MATCHING_BRACKET, 
+                        "Enable matching bracket highlighting", 
+                        p);
         bracketMatching.load();
         addField(bracketMatching);
         
         Composite composite = new Composite(group, SWT.NONE);
         GridLayout layout = new GridLayout(1, true);
         composite.setLayout(layout);
-        GridData gd2 = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        GridData gd2 = 
+                new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         gd2.grabExcessHorizontalSpace=true;
         composite.setLayoutData(gd2);
         
         oppositeBracket = new Button(composite, SWT.RADIO);
         oppositeBracket.setText("Matching bracket only");
-        oppositeBracket.addSelectionListener(new SelectionAdapter() {
+        oppositeBracket.addSelectionListener(
+                new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 boolean selected = oppositeBracket.getSelection();
@@ -300,33 +357,43 @@ public class CeylonEditorPreferencePage
         });
         matchingBrackets = new Button(composite, SWT.RADIO);
         matchingBrackets.setText("Matching bracket and selected bracket");
-        matchingBrackets.addSelectionListener(new SelectionAdapter() {
+        matchingBrackets.addSelectionListener(
+                new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                boolean selected = matchingBrackets.getSelection();
+                boolean selected = 
+                        matchingBrackets.getSelection();
                 oppositeBracket.setSelection(!selected);
                 enclosingBrackets.setSelection(!selected);
             }
         });
         enclosingBrackets = new Button(composite, SWT.RADIO);
         enclosingBrackets.setText("Enclosing brackets");
-        enclosingBrackets.addSelectionListener(new SelectionAdapter() {
+        enclosingBrackets.addSelectionListener(
+                new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                boolean selected = enclosingBrackets.getSelection();
+                boolean selected = 
+                        enclosingBrackets.getSelection();
                 matchingBrackets.setSelection(!selected);
                 oppositeBracket.setSelection(!selected);
             }
         });
         
-        IPreferenceStore store = EditorsUI.getPreferenceStore();
-        matchingBrackets.setSelection(store.getBoolean(SELECTED_BRACKET) &&
+        IPreferenceStore store = 
+                EditorsUI.getPreferenceStore();
+        matchingBrackets.setSelection(
+                store.getBoolean(SELECTED_BRACKET) &&
                 !store.getBoolean(ENCLOSING_BRACKETS));
-        enclosingBrackets.setSelection(store.getBoolean(ENCLOSING_BRACKETS));
-        oppositeBracket.setSelection(!store.getBoolean(SELECTED_BRACKET) && 
+        enclosingBrackets.setSelection(
+                store.getBoolean(ENCLOSING_BRACKETS));
+        oppositeBracket.setSelection(
+                !store.getBoolean(SELECTED_BRACKET) && 
                 !store.getBoolean(ENCLOSING_BRACKETS));
         
-        boolean enabled = EditorsUI.getPreferenceStore().getBoolean(MATCHING_BRACKET);        
+        boolean enabled = 
+                EditorsUI.getPreferenceStore()
+                    .getBoolean(MATCHING_BRACKET);        
         oppositeBracket.setEnabled(enabled);
         matchingBrackets.setEnabled(enabled);
         enclosingBrackets.setEnabled(enabled);
@@ -341,36 +408,46 @@ public class CeylonEditorPreferencePage
     }
 
     private void foldingSection() {
-        final Composite group = createGroup(2, "Source folding");
+        final Composite group = 
+                createGroup(2, "Source folding");
         Composite p0 = getFieldEditorParent(group);
         GridData gd = new GridData();
         gd.horizontalSpan=2;
         p0.setLayoutData(gd);
-        enableFolding = new SpecialBoolFieldEditor(EDITOR_FOLDING_ENABLED, 
-                "Enable source folding", p0);
+        enableFolding = 
+                new SpecialBoolFieldEditor(EDITOR_FOLDING_ENABLED, 
+                        "Enable source folding", p0);
         enableFolding.load();
         addField(enableFolding);
         
-        final Composite composite = new Composite(group, SWT.NONE);
+        final Composite composite = 
+                new Composite(group, SWT.NONE);
         GridLayout layout = new GridLayout(1, true);
         composite.setLayout(layout);
         GridData gd2 = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         gd2.grabExcessHorizontalSpace=true;
         composite.setLayoutData(gd2);
         
-        final Composite p1 = getFieldEditorParent(composite);
-        autoFoldImports = new BooleanFieldEditor(AUTO_FOLD_IMPORTS, 
-                "Automatically fold import lists", p1);
+        final Composite p1 = 
+                getFieldEditorParent(composite);
+        autoFoldImports = 
+                new BooleanFieldEditor(AUTO_FOLD_IMPORTS, 
+                        "Automatically fold import lists", 
+                        p1);
         autoFoldImports.load();
         addField(autoFoldImports);
-        final Composite p2 = getFieldEditorParent(composite);
-        autoFoldComments = new BooleanFieldEditor(AUTO_FOLD_COMMENTS, 
-                "Automatically fold comments", p2);
+        final Composite p2 = 
+                getFieldEditorParent(composite);
+        autoFoldComments = 
+                new BooleanFieldEditor(AUTO_FOLD_COMMENTS, 
+                        "Automatically fold comments", 
+                        p2);
         autoFoldComments.load();
         addField(autoFoldComments);
         
-        boolean enabled = EditorsUI.getPreferenceStore()
-                .getBoolean(EDITOR_FOLDING_ENABLED);
+        boolean enabled = 
+                EditorsUI.getPreferenceStore()
+                    .getBoolean(EDITOR_FOLDING_ENABLED);
         autoFoldImports.setEnabled(enabled, p1);
         autoFoldComments.setEnabled(enabled, p2);
 //        composite.setVisible(enabled);
@@ -391,24 +468,28 @@ public class CeylonEditorPreferencePage
 
     private void otherSection() {
         Composite group = createGroup(1, "General");
-        smartCaret = new BooleanFieldEditor(SUB_WORD_NAVIGATION, 
-                "Smart caret positioning inside identifiers", 
-                getFieldEditorParent(group));
+        smartCaret = 
+                new BooleanFieldEditor(SUB_WORD_NAVIGATION, 
+                    "Smart caret positioning inside identifiers", 
+                    getFieldEditorParent(group));
         smartCaret.load();
         addField(smartCaret);
-        pasteCorrectIndent = new BooleanFieldEditor(PASTE_CORRECT_INDENTATION, 
-                "Correct indentation of pasted code", 
-                getFieldEditorParent(group));
+        pasteCorrectIndent = 
+                new BooleanFieldEditor(PASTE_CORRECT_INDENTATION, 
+                    "Correct indentation of pasted code", 
+                    getFieldEditorParent(group));
         pasteCorrectIndent.load();
         addField(pasteCorrectIndent);
-        pasteImports = new BooleanFieldEditor(PASTE_IMPORTS,
-                "Automatically add missing imports when pasting code", 
-                getFieldEditorParent(group));
+        pasteImports = 
+                new BooleanFieldEditor(PASTE_IMPORTS,
+                    "Automatically add missing imports when pasting code", 
+                    getFieldEditorParent(group));
         pasteImports.load();
         addField(pasteImports);
-        pasteEscapeQuoted = new BooleanFieldEditor(PASTE_ESCAPE_QUOTED, 
-                "Escape text pasted into quoted strings", 
-                getFieldEditorParent(group));
+        pasteEscapeQuoted = 
+                new BooleanFieldEditor(PASTE_ESCAPE_QUOTED, 
+                    "Escape text pasted into quoted strings", 
+                    getFieldEditorParent(group));
         pasteEscapeQuoted.load();
         addField(pasteEscapeQuoted);
     }
@@ -421,34 +502,40 @@ public class CeylonEditorPreferencePage
 
     private void autocloseSection() {
         Composite group = createGroup(3, "Automatically close");
-        closeParens = new BooleanFieldEditor(CLOSE_PARENS, 
-                "Parentheses", 
-                getFieldEditorParent(group));
+        closeParens = 
+                new BooleanFieldEditor(CLOSE_PARENS, 
+                    "Parentheses", 
+                    getFieldEditorParent(group));
         closeParens.load();
         addField(closeParens);
-        closeBrackets = new BooleanFieldEditor(CLOSE_BRACKETS, 
-                "Brackets", 
-                getFieldEditorParent(group));
+        closeBrackets = 
+                new BooleanFieldEditor(CLOSE_BRACKETS, 
+                    "Brackets", 
+                    getFieldEditorParent(group));
         closeBrackets.load();
         addField(closeBrackets);
-        closeAngles = new BooleanFieldEditor(CLOSE_ANGLES, 
-                "Angle brackets", 
-                getFieldEditorParent(group));
+        closeAngles = 
+                new BooleanFieldEditor(CLOSE_ANGLES, 
+                    "Angle brackets", 
+                    getFieldEditorParent(group));
         closeAngles.load();
         addField(closeAngles);
-        closeBackticks = new BooleanFieldEditor(CLOSE_BACKTICKS, 
-                "Backticks", 
-                getFieldEditorParent(group));
+        closeBackticks = 
+                new BooleanFieldEditor(CLOSE_BACKTICKS, 
+                    "Backticks", 
+                    getFieldEditorParent(group));
         closeBackticks.load();
         addField(closeBackticks);
-        closeBraces = new BooleanFieldEditor(CLOSE_BRACES, 
-                "Braces", 
-                getFieldEditorParent(group));
+        closeBraces = 
+                new BooleanFieldEditor(CLOSE_BRACES, 
+                    "Braces", 
+                    getFieldEditorParent(group));
         closeBraces.load();
         addField(closeBraces);
-        closeQuotes = new BooleanFieldEditor(CLOSE_QUOTES, 
-                "Quotes", 
-                getFieldEditorParent(group));
+        closeQuotes = 
+                new BooleanFieldEditor(CLOSE_QUOTES, 
+                    "Quotes", 
+                    getFieldEditorParent(group));
         closeQuotes.load();
         addField(closeQuotes);
     }
@@ -459,7 +546,8 @@ public class CeylonEditorPreferencePage
     public void dispose() {
         super.dispose();
         if (listener!=null) {
-            CeylonPlugin.getPreferences().removePropertyChangeListener(listener);
+            CeylonPlugin.getPreferences()
+                .removePropertyChangeListener(listener);
         }
     }
 

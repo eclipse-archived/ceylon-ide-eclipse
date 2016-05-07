@@ -37,8 +37,8 @@ public class BestMatchHover
     
     private CeylonEditor editor;
 
-    private List<ITextHover> fInstantiatedTextHovers;
-    private ITextHover fBestHover;
+    private List<ITextHover> hovers;
+    private ITextHover bestHover;
 
     public BestMatchHover(CeylonEditor editor) {
         this.editor = editor;
@@ -46,11 +46,12 @@ public class BestMatchHover
     }
     
     private void installTextHovers() {
-        fInstantiatedTextHovers = new ArrayList<ITextHover>(2);
-        fInstantiatedTextHovers.add(new CeylonDebugHover(editor));
-        fInstantiatedTextHovers.add(new AnnotationHover(editor, false));
+        hovers = new ArrayList<ITextHover>(2);
+        hovers.add(new CeylonDebugHover(editor));
+        hovers.add(new AnnotationHover(editor, false));
         //fInstantiatedTextHovers.add(new DocumentationHover(editor));
-        fInstantiatedTextHovers.add(hoverJ2C().newEclipseDocGeneratorAsSourceInfoHover(editor));
+        hovers.add(hoverJ2C()
+                .newEclipseDocGeneratorAsSourceInfoHover(editor));
     }
     
     @Override
@@ -58,13 +59,13 @@ public class BestMatchHover
     public String getHoverInfo(ITextViewer textViewer, 
             IRegion hoverRegion) {
 
-        fBestHover = null;
+        bestHover = null;
 
-        if (fInstantiatedTextHovers == null) {
+        if (hovers == null) {
             return null;
         }
 
-        for (ITextHover hover: fInstantiatedTextHovers) {
+        for (ITextHover hover: hovers) {
             if (hover instanceof CeylonDebugHover) {
                 CeylonDebugHover debugHover = 
                         (CeylonDebugHover) hover;
@@ -76,7 +77,7 @@ public class BestMatchHover
                     hover.getHoverInfo(textViewer, 
                             hoverRegion);
             if (string!=null && !string.trim().isEmpty()) {
-                fBestHover = hover;
+                bestHover = hover;
                 return string;
             }
         }
@@ -93,13 +94,13 @@ public class BestMatchHover
     public Object getHoverInfo2(ITextViewer textViewer, 
             IRegion hoverRegion, boolean forInformationProvider) {
         
-        fBestHover = null;
+        bestHover = null;
 
-        if (fInstantiatedTextHovers == null) {
+        if (hovers == null) {
             return null;
         }
 
-        for (ITextHover hover: fInstantiatedTextHovers) {
+        for (ITextHover hover: hovers) {
             if (hover instanceof CeylonDebugHover) {
                 CeylonDebugHover debugHover = 
                         (CeylonDebugHover) hover;
@@ -116,7 +117,7 @@ public class BestMatchHover
                 if (info!=null) {
                     if (!forInformationProvider || 
                             getInformationPresenterControlCreator(hover)!=null) {
-                        fBestHover = hover;
+                        bestHover = hover;
                         return info;
                     }
                 }
@@ -127,7 +128,7 @@ public class BestMatchHover
                         hover.getHoverInfo(textViewer, 
                                 hoverRegion);
                 if (text!=null && text.trim().length()>0) {
-                    fBestHover = hover;
+                    bestHover = hover;
                     return text;
                 }
             }
@@ -143,9 +144,9 @@ public class BestMatchHover
     
     @Override
     public IInformationControlCreator getHoverControlCreator() {
-        if (fBestHover instanceof ITextHoverExtension) {
+        if (bestHover instanceof ITextHoverExtension) {
             ITextHoverExtension hoverExt = 
-                    (ITextHoverExtension) fBestHover;
+                    (ITextHoverExtension) bestHover;
             return hoverExt.getHoverControlCreator();
         }
         else {
@@ -154,7 +155,7 @@ public class BestMatchHover
     }
     
     public IInformationControlCreator getInformationPresenterControlCreator() {
-        return getInformationPresenterControlCreator(fBestHover);
+        return getInformationPresenterControlCreator(bestHover);
     }
 
     private static IInformationControlCreator 
@@ -167,7 +168,9 @@ public class BestMatchHover
         if (hover instanceof DocGenerator) {
             DocGenerator<IDocument> docGenerator =
                     (DocGenerator<IDocument>) hover;
-            return hoverJ2C().getInformationPresenterControlCreator(docGenerator);
+            return hoverJ2C()
+                    .getInformationPresenterControlCreator(
+                            docGenerator);
         }
         else {
             return null;

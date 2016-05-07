@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_ANN;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_ANN_DIS;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
+import static org.eclipse.ui.editors.text.EditorsUI.getAnnotationPreferenceLookup;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -31,7 +32,6 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.LineRange;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 
@@ -46,6 +46,9 @@ public class AnnotationHover
         extends SourceInfoHover
         implements IAnnotationHover, IAnnotationHoverExtension {
 
+    public static final String ANNOTATION_PREFERENCE_PAGE_ID = 
+            "org.eclipse.ui.editors.preferencePages.Annotations";
+    
     /**
      * Action to configure the annotation preferences.
      */
@@ -88,13 +91,13 @@ public class AnnotationHover
                         .getShell();
             fInfoControl.dispose(); //FIXME: should have protocol to hide, rather than dispose
             createPreferenceDialogOn(shell, 
-                    "org.eclipse.ui.editors.preferencePages.Annotations", 
+                    ANNOTATION_PREFERENCE_PAGE_ID, 
                     null, data).open();
         }
     }
 
     //private final IPreferenceStore fStore= EditorUtil.getPreferences();
-    private final DefaultMarkerAnnotationAccess fAnnotationAccess = 
+    private final DefaultMarkerAnnotationAccess annotationAccess = 
             new DefaultMarkerAnnotationAccess();
 
     private final CeylonEditor editor;
@@ -134,11 +137,12 @@ public class AnnotationHover
 
         Iterator<Annotation> parent;
         if (model instanceof IAnnotationModelExtension2) {
-            parent = ((IAnnotationModelExtension2) model)
-                    .getAnnotationIterator(
-                            hoverRegion.getOffset(), 
-                            hoverRegion.getLength()+1, 
-                            true, true);
+            IAnnotationModelExtension2 modelExt = 
+                    (IAnnotationModelExtension2) model;
+            parent = modelExt.getAnnotationIterator(
+                        hoverRegion.getOffset(), 
+                        hoverRegion.getLength()+1, 
+                        true, true);
         }
         else {
             parent = model.getAnnotationIterator();
@@ -151,7 +155,7 @@ public class AnnotationHover
         while (iter.hasNext()) {
             Annotation a = (Annotation) iter.next();
             Position p = model.getPosition(a);
-            int l = fAnnotationAccess.getLayer(a);
+            int l = annotationAccess.getLayer(a);
             //TODO: make higher-layer annotations suppress lower-layer ones
             if (p!=null && 
                     p.overlapsWith(
@@ -209,10 +213,15 @@ public class AnnotationHover
                                     @Override
                                     public void setInput(Object input) {
                                         Assert.isLegal(input instanceof AnnotationInfo);
-                                        AnnotationInfo oldInput = simpleAnnotationControl.getAnnotationInfo();
-                                        AnnotationInfo newInput = (AnnotationInfo) input;
-                                        Tree.CompilationUnit oldRootNode = getTypecheckedRootNode(oldInput);
-                                        Tree.CompilationUnit newRootNode = getTypecheckedRootNode(newInput);
+                                        AnnotationInfo oldInput = 
+                                                simpleAnnotationControl.getAnnotationInfo();
+                                        AnnotationInfo newInput = 
+                                                (AnnotationInfo) 
+                                                    input;
+                                        Tree.CompilationUnit oldRootNode = 
+                                                getTypecheckedRootNode(oldInput);
+                                        Tree.CompilationUnit newRootNode = 
+                                                getTypecheckedRootNode(newInput);
                                         
                                         if (newRootNode == oldRootNode) {
                                             newInput.setProposals(oldInput.getProposals());
@@ -260,7 +269,7 @@ public class AnnotationHover
             return null;
         }
         else {
-            return EditorsUI.getAnnotationPreferenceLookup()
+            return getAnnotationPreferenceLookup()
                     .getAnnotationPreference(annotation);
         }
     }
