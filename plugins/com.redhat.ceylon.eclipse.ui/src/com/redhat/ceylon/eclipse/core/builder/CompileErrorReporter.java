@@ -6,15 +6,10 @@ import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER;
 
-import java.util.List;
-import java.util.Locale;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
-import com.redhat.ceylon.javax.tools.Diagnostic;
-import com.redhat.ceylon.javax.tools.DiagnosticListener;
-import com.redhat.ceylon.javax.tools.JavaFileObject;
+import java.util.List;
+import java.util.Locale;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -27,6 +22,9 @@ import org.eclipse.core.runtime.Path;
 
 import com.redhat.ceylon.compiler.java.launcher.Main.ExitState;
 import com.redhat.ceylon.compiler.java.launcher.Main.ExitState.CeylonState;
+import com.redhat.ceylon.javax.tools.Diagnostic;
+import com.redhat.ceylon.javax.tools.DiagnosticListener;
+import com.redhat.ceylon.javax.tools.JavaFileObject;
 
 final class CompileErrorReporter implements
         DiagnosticListener<JavaFileObject> {
@@ -192,11 +190,26 @@ final class CompileErrorReporter implements
     
     private void setupMarker(IResource resource, Diagnostic<? extends JavaFileObject> diagnostic) {
         try {
-            long line = diagnostic==null ? -1 : diagnostic.getLineNumber();
+            long line = diagnostic==null ? -1 : 
+                diagnostic.getLineNumber();
             String markerId = PROBLEM_MARKER_ID + ".backend";
             if (resource instanceof IFile) {
-                if (CeylonBuilder.isJava((IFile)resource)) {
+                IFile file = (IFile) resource;
+                if (CeylonBuilder.isJava(file)) {
                     markerId = JAVA_MODEL_PROBLEM_MARKER;
+                }
+                else if (CeylonBuilder.isCeylon(file)) {
+                    for (IMarker marker: 
+                        file.findMarkers(PROBLEM_MARKER_ID, 
+                                false, DEPTH_ZERO)) {
+                        Integer severity = (Integer) 
+                                marker.getAttribute(IMarker.SEVERITY);
+                        if (severity!=null &&
+                                severity.intValue() 
+                                >= IMarker.SEVERITY_ERROR) {
+                            return;
+                        }
+                    }
                 }
 //                if (line<0) {
                     //TODO: use the Symbol to get a location for the javac error
