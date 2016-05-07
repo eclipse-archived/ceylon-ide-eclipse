@@ -8,6 +8,8 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_DIALOGS;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.COLORS_AND_FONTS_PAGE_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.OPEN_FONT_PREFERENCE;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import org.eclipse.jface.layout.GridDataFactory;
@@ -110,26 +112,33 @@ public class CeylonOpenDialogsPreferencePage
     @Override
     protected Control createContents(Composite parent) {
         Link colorsAndFontsLink = new Link(parent, 0);
-        colorsAndFontsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        colorsAndFontsLink.setLayoutData(
+                GridDataFactory.swtDefaults()
+                    .align(SWT.FILL, SWT.CENTER)
+                    .create());
         colorsAndFontsLink.setText("See '<a>Colors and Fonts</a>' to customize font and label colors.");
         colorsAndFontsLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
-                        CeylonPlugin.COLORS_AND_FONTS_PAGE_ID, null, 
-                        "selectFont:" + 
-                                CeylonPlugin.OPEN_FONT_PREFERENCE);
+                        COLORS_AND_FONTS_PAGE_ID, null, 
+                        "selectFont:" 
+                                + OPEN_FONT_PREFERENCE);
             }
         });
         
         Link filtersLink = new Link(parent, 0);
-        filtersLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        filtersLink.setLayoutData(
+                GridDataFactory.swtDefaults()
+                    .align(SWT.FILL, SWT.CENTER)
+                    .create());
         filtersLink.setText("See '<a>Filtering</a>' to set up global filters and match highlighting.");
         filtersLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
-                        CeylonFiltersPreferencePage.ID, null, null);
+                        CeylonFiltersPreferencePage.ID, 
+                        null, null);
             }
         });
         

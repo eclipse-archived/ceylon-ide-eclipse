@@ -7,6 +7,8 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.COLORS_AND_FONTS_PAGE_ID;
+import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.OUTLINE_FONT_PREFERENCE;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import org.eclipse.jface.layout.GridDataFactory;
@@ -43,20 +45,25 @@ public class CeylonOutlinesPreferencePage
         Link colorsAndFontsLink = new Link(parent, 0);
         colorsAndFontsLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
         colorsAndFontsLink.setText("See '<a>Colors and Fonts</a>' to customize fonts and label colors.");
-        colorsAndFontsLink.addSelectionListener(new SelectionAdapter() {
+        colorsAndFontsLink.addSelectionListener(
+                new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
-                        CeylonPlugin.COLORS_AND_FONTS_PAGE_ID, null, 
-                        "selectFont:" + 
-                                CeylonPlugin.OUTLINE_FONT_PREFERENCE);
+                        COLORS_AND_FONTS_PAGE_ID, null, 
+                        "selectFont:" 
+                                + OUTLINE_FONT_PREFERENCE);
             }
         });
                 
         Link filtersLink = new Link(parent, 0);
-        filtersLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        filtersLink.setLayoutData(
+                GridDataFactory.swtDefaults()
+                    .align(SWT.FILL, SWT.CENTER)
+                    .create());
         filtersLink.setText("See '<a>Filtering</a>' to set up global filters and match highlighting.");
-        filtersLink.addSelectionListener(new SelectionAdapter() {
+        filtersLink.addSelectionListener(
+                new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 

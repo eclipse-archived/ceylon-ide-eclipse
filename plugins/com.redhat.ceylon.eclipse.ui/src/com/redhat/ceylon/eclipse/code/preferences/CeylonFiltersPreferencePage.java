@@ -55,9 +55,13 @@ public class CeylonFiltersPreferencePage
         Control contents = super.createContents(composite);
         
         Link completionLink = new Link(parent, 0);
-        completionLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        completionLink.setLayoutData(
+                GridDataFactory.swtDefaults()
+                    .align(SWT.FILL, SWT.CENTER)
+                    .create());
         completionLink.setText("See '<a>Completion</a>' to add additional filters for completion proposals.");
-        completionLink.addSelectionListener(new SelectionAdapter() {
+        completionLink.addSelectionListener(
+                new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
@@ -66,9 +70,13 @@ public class CeylonFiltersPreferencePage
         });
         
         Link outlineLink = new Link(parent, 0);
-        outlineLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
+        outlineLink.setLayoutData(
+                GridDataFactory.swtDefaults()
+                    .align(SWT.FILL, SWT.CENTER)
+                    .create());
         outlineLink.setText("See '<a>Outlines, Hierarchies, and Search Results</a>' to add additional filters for views.");
-        outlineLink.addSelectionListener(new SelectionAdapter() {
+        outlineLink.addSelectionListener(
+                new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
@@ -79,22 +87,26 @@ public class CeylonFiltersPreferencePage
         Link openLink = new Link(parent, 0);
         openLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
         openLink.setText("See '<a>Open Dialogs</a>' to add additional filters for 'Open ...' dialogs.");
-        openLink.addSelectionListener(new SelectionAdapter() {
+        openLink.addSelectionListener(
+                new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
-                        CeylonOpenDialogsPreferencePage.ID, null, null);
+                        CeylonOpenDialogsPreferencePage.ID, 
+                        null, null);
             }
         });
         
         Link debugLink = new Link(parent, 0);
         debugLink.setLayoutData(GridDataFactory.swtDefaults().align(SWT.FILL, SWT.CENTER).indent(0, 0).create());
         debugLink.setText("See '<a>Debugging</a>' to set up step filtering.");
-        debugLink.addSelectionListener(new SelectionAdapter() {
+        debugLink.addSelectionListener(
+                new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 createPreferenceDialogOn(getShell(), 
-                        CeylonStepFilterPreferencePage.ID, null, null);
+                        CeylonStepFilterPreferencePage.ID, 
+                        null, null);
             }
         });
         

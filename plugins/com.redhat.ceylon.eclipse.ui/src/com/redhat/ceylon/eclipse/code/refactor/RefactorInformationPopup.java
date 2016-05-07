@@ -84,6 +84,9 @@ import com.redhat.ceylon.eclipse.code.preferences.CeylonRefactoringPreferencePag
 public class RefactorInformationPopup 
         implements IWidgetTokenKeeper, IWidgetTokenKeeperExtension {
 
+    public static final String LINKED_MODE_PREFERENCE_PAGE_ID = 
+            "org.eclipse.ui.editors.preferencePages.LinkedModePreferencePage";
+
     private class PopupVisibilityManager implements 
             IPartListener2, ControlListener, MouseListener, 
             KeyListener, ITextListener, IViewportListener {
@@ -755,13 +758,13 @@ public class RefactorInformationPopup
             @Override
             public void run() {
                 fLinkedMode.cancel();
-                String linkedModePrefPageID= 
-                        "org.eclipse.ui.editors.preferencePages.LinkedModePreferencePage";
-                String refactoringPrefPageID = CeylonRefactoringPreferencePage.ID;
-                createPreferenceDialogOn(fEditor.getSite().getShell(), 
-                        refactoringPrefPageID, 
-                        new String[] { linkedModePrefPageID, refactoringPrefPageID }, 
-                        null).open();
+                Shell shell = fEditor.getSite().getShell();
+                createPreferenceDialogOn(shell, 
+                        CeylonRefactoringPreferencePage.ID, 
+                        new String[] { 
+                                LINKED_MODE_PREFERENCE_PAGE_ID, 
+                                CeylonRefactoringPreferencePage.ID 
+                        }, null).open();
             }
         };
         manager.add(prefsAction);
