@@ -5,3 +5,4 @@ target
 /.exploded/
 /generated-source/
 /eclipse-sources-repo/
+**/.DS_Store
