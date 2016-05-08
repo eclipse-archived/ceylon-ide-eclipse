@@ -31,6 +31,7 @@ public class InlineRefactoringAction extends AbstractRefactoringAction {
     }
 
     public boolean isEnabled() {
-        return refactoring.getEnabled();
+        return refactoring!=null &&
+                refactoring.getEnabled();
     }
 }
