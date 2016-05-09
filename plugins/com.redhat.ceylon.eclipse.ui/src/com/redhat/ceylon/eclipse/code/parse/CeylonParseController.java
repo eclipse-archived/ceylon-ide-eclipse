@@ -30,6 +30,7 @@ import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManag
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getPreferences;
+import static com.redhat.ceylon.eclipse.util.PathUtils.toCommonPath;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static java.util.Arrays.asList;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -90,7 +91,6 @@ import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
-import com.redhat.ceylon.eclipse.util.PathUtils;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
@@ -168,7 +168,7 @@ public class CeylonParseController
     
     private Stage stage = Stage.NONE;
     
-    private String contents = null;
+    private boolean dirty = true;
      
     /**
      * @param filePath        the project-relative path of file
@@ -243,7 +243,7 @@ public class CeylonParseController
                     TypeDescriptor.klass(IResource.class),
                     TypeDescriptor.klass(IFolder.class),
                     TypeDescriptor.klass(IFile.class),
-                    contents, PathUtils.toCommonPath(path));
+                    contents, toCommonPath(path));
         }
     }
 
@@ -299,8 +299,7 @@ public class CeylonParseController
                         file, srcDir, 
                         cu, pkg, 
                         moduleManager, moduleSourceMapper,
-                        typeChecker, tokens, savedPhasedUnit
-                        );
+                        typeChecker, tokens, savedPhasedUnit);
         if (savedPhasedUnit != null) {
             savedPhasedUnit.addWorkingCopy(editedPhasedUnit);
         }
@@ -329,7 +328,6 @@ public class CeylonParseController
             return builtPhasedUnit;
         }
         
-        final PhasedUnit newPhasedUnit;
         Package pkg;
         if (srcDir==null) {
             srcDir = new DummyFolder<IProject,IResource,IFolder,IFile>(
@@ -349,6 +347,43 @@ public class CeylonParseController
             pkg = getPackage(file, srcDir, builtPhasedUnit);
         }
         
+        final PhasedUnit newPhasedUnit = 
+                createPhasedUnit(file, rootNode, srcDir, 
+                        builtPhasedUnit, pkg);
+        
+        useTypechecker(newPhasedUnit, new Runnable() {
+            @Override
+            public void run() {
+                newPhasedUnit.validateTree();
+                newPhasedUnit.visitSrcModulePhase();
+                newPhasedUnit.visitRemainingModulePhase();
+                newPhasedUnit.scanDeclarations();
+                newPhasedUnit.scanTypeDeclarations();
+                newPhasedUnit.validateRefinement();
+                newPhasedUnit.analyseTypes();
+                if (showWarnings) {
+                    newPhasedUnit.analyseUsage();
+                }
+                newPhasedUnit.analyseFlow();
+                newPhasedUnit.getCompilationUnit()
+                    .visit(new UnknownTypeCollector());
+                newPhasedUnit.getCompilationUnit()
+                    .visit(new WarningSuppressionVisitor<Warning>(
+                            Warning.class, 
+                            getSuppressedWarnings(project)));
+            }
+        });
+        
+        return newPhasedUnit;
+    }
+
+    public PhasedUnit createPhasedUnit(
+            FileVirtualFile<IProject, IResource, IFolder, IFile> file,
+            Tree.CompilationUnit rootNode, 
+            FolderVirtualFile<IProject, IResource, IFolder, IFile> srcDir,
+            final PhasedUnit builtPhasedUnit, 
+            Package pkg) {
+        final PhasedUnit newPhasedUnit;
         PhasedUnits phasedUnits = 
                 typeChecker.getPhasedUnits();
         if (builtPhasedUnit instanceof ProjectPhasedUnit) {
@@ -376,30 +411,6 @@ public class CeylonParseController
                          .setupSourceFileObjects(
                                  asList(newPhasedUnit));
         }
-        
-        useTypechecker(newPhasedUnit, new Runnable() {
-            @Override
-            public void run() {
-                newPhasedUnit.validateTree();
-                newPhasedUnit.visitSrcModulePhase();
-                newPhasedUnit.visitRemainingModulePhase();
-                newPhasedUnit.scanDeclarations();
-                newPhasedUnit.scanTypeDeclarations();
-                newPhasedUnit.validateRefinement();
-                newPhasedUnit.analyseTypes();
-                if (showWarnings) {
-                    newPhasedUnit.analyseUsage();
-                }
-                newPhasedUnit.analyseFlow();
-                newPhasedUnit.getCompilationUnit()
-                    .visit(new UnknownTypeCollector());
-                newPhasedUnit.getCompilationUnit()
-                    .visit(new WarningSuppressionVisitor<Warning>(
-                            Warning.class, 
-                            getSuppressedWarnings(project)));
-            }
-        });
-        
         return newPhasedUnit;
     }
 
@@ -765,8 +776,8 @@ public class CeylonParseController
         return null;
     }
     
-    public void force() {
-        contents = null;
+    public void dirty() {
+        dirty = true;
     }
 
     /*
@@ -779,11 +790,9 @@ public class CeylonParseController
                     final IProgressMonitor monitor,
                     final Stager stager) {
       document = doc;
-      final String contents = doc.get();
-      if (contents.equals(this.contents)) {
+      if (!dirty) {
           return this.phasedUnit;
       }
-      this.contents = null;
       IPath path = this.filePath;
       IProject project = this.project;
       IPath resolvedPath = path;
@@ -812,19 +821,19 @@ public class CeylonParseController
 
           if (path.isAbsolute()) {
               IdePhasedUnit builtPhasedUnit = null;
-              for (IProject p: new ArrayList<IProject>(getProjects())) {
+              List<IProject> projects = 
+                      new ArrayList<IProject>
+                          (getProjects());
+              for (IProject p: projects) {
                   if (project!=null && project!=p) {
                       continue;
                   }
 
-                  BaseIdeModuleManager moduleManager = 
-                          (BaseIdeModuleManager)
-                              getProjectTypeChecker(p)
-                                  .getPhasedUnits()
-                                      .getModuleManager();
-                  Path commonPath = PathUtils.toCommonPath(path);
+                  Path commonPath = toCommonPath(path);
                   BaseIdeModule module = 
-                          moduleManager.getArchiveModuleFromSourcePath(commonPath);
+                          getModuleManager(p)
+                              .getArchiveModuleFromSourcePath(
+                                      commonPath);
                   if (module!=null) {
                       builtPhasedUnit = 
                               module.getPhasedUnit(commonPath);
@@ -841,9 +850,13 @@ public class CeylonParseController
               }
               if (builtPhasedUnit != null) {
                   phasedUnit = builtPhasedUnit;
-                  typeChecker = builtPhasedUnit.getTypeChecker();
-                  rootNode = builtPhasedUnit.getCompilationUnit();
-                  tokens = builtPhasedUnit.getTokens();
+                  typeChecker = 
+                          builtPhasedUnit.getTypeChecker();
+                  rootNode = 
+                          builtPhasedUnit.getCompilationUnit();
+                  tokens = 
+                          builtPhasedUnit.getTokens();
+                  
                   stage = SYNTACTIC_ANALYSIS;
                   if (stager!=null) {
                       stager.afterStage(LEXICAL_ANALYSIS, monitor);
@@ -865,6 +878,7 @@ public class CeylonParseController
                       stager.afterStage(FOR_OUTLINE, monitor);
                       stager.afterStage(TYPE_ANALYSIS, monitor);
                   }
+                  
                   return phasedUnit;
               }
           }
@@ -874,8 +888,9 @@ public class CeylonParseController
           return null;
       }
 
+      final String code = doc.get();
       NewlineFixingStringStream stream =
-              new NewlineFixingStringStream(contents);
+              new NewlineFixingStringStream(code);
       CeylonLexer lexer = new CeylonLexer(stream);
       CommonTokenStream tokenStream = 
               new CommonTokenStream(lexer);
@@ -924,11 +939,14 @@ public class CeylonParseController
           srcDir = inferSrcDir(path);
           project = findProject(path);
       }
+      final IProject finalProject = project;
+      final boolean ceylonEnabled = 
+              CeylonNature.isEnabled(finalProject);
 
       if (!allClasspathContainersInitialized() ||
-              CeylonNature.isEnabled(project)
-              && !isModelTypeChecked(project)) {
-          // Ceylon projects have not been setup, so don't try to typecheck
+          ceylonEnabled && !isModelTypeChecked(project)) {
+          // Ceylon projects have not been setup, 
+          // so don't try to typecheck
           //
           // or
           //
@@ -942,7 +960,6 @@ public class CeylonParseController
           return null;
       }
 
-      final IProject finalProject = project;
       final IPath finalPath = path;
       final FolderVirtualFile finalSrcDir = srcDir;
       try {
@@ -952,7 +969,7 @@ public class CeylonParseController
                     @Override
                     public PhasedUnit call() 
                             throws Exception {
-                        if (CeylonNature.isEnabled(finalProject)) {
+                        if (ceylonEnabled) {
                             typeChecker = 
                                     getProjectTypeChecker(
                                             finalProject);
@@ -982,8 +999,8 @@ public class CeylonParseController
                         }
 
                         FileVirtualFile file = 
-                                createSourceCodeVirtualFile(contents, 
-                                        finalPath);
+                                createSourceCodeVirtualFile(
+                                        code, finalPath);
                         IdePhasedUnit builtPhasedUnit = 
                                 (IdePhasedUnit) 
                                     typeChecker.getPhasedUnit(file); // TODO : refactor !
@@ -992,11 +1009,11 @@ public class CeylonParseController
                                         rootNode, finalSrcDir,
                                         showWarnings, 
                                         builtPhasedUnit);
-                        rootNode = phasedUnit.getCompilationUnit();
-                        CeylonParseController.this.contents = 
-                                contents;
-                        if (finalProject!=null && 
-                                !CeylonNature.isEnabled(finalProject)) {
+                        rootNode = 
+                                phasedUnit.getCompilationUnit();
+                        dirty = false;
+                        if (finalProject!=null 
+                                && !ceylonEnabled) {
                             rootNode.visit(new Visitor() {
                                 @Override
                                 public void visitAny(Node node) {
@@ -1028,18 +1045,28 @@ public class CeylonParseController
           catch (OperationCanceledException e) {
               if (monitor!=null) {
                   // Sets the current monitor to canceled,
-                  // so that the scheduler will reschedule it later
+                  // so that the scheduler will reschedule 
+                  // it later
                   monitor.setCanceled(true);
               }
 
-              // Consider that the previous steps of the anaysis
-              // are OK, and still notify the related model listeners
+              // Consider that the previous steps of the 
+              // anaysis are OK, and still notify the 
+              // related model listeners
               stage = FOR_OUTLINE;
               if (stager!=null) {
                   stager.afterStage(FOR_OUTLINE, monitor);
               }
               return null;
           }
+    }
+
+    private static BaseIdeModuleManager getModuleManager(
+            IProject project) {
+        return (BaseIdeModuleManager)
+                getProjectTypeChecker(project)
+                    .getPhasedUnits()
+                    .getModuleManager();
     }
 
     public IProject getProject() {

@@ -1304,8 +1304,11 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
     public synchronized void scheduleParsing(boolean force) {
         if (parserScheduler!=null && !backgroundParsingPaused) {
             parserScheduler.cancel();
-            if (force) parseController.force();
+            if (force) parseController.dirty();
             parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
+        }
+        else {
+            if (force) parseController.dirty();
         }
     }
 
@@ -1366,7 +1369,7 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
         }
         public void documentChanged(DocumentEvent event) {
             synchronized (CeylonEditor.this) {
-            	scheduleParsing(false);
+            	scheduleParsing(true);
             }
         }
     };
