@@ -1376,12 +1376,12 @@ public class DocumentationHover extends SourceInfoHover {
         insertPageProlog(buffer, 0, HTML.getStyleSheet());
         addMainDescription(buffer, dec, node, pr, controller, unit);
         boolean obj = addInheritanceInfo(dec, node, pr, buffer, unit);
-        addContainerInfo(dec, node, buffer); //TODO: use the pr to get the qualifying type??
+        addContainerInfo(dec, pr, node, buffer);
         if (!(dec instanceof NothingType)) {
             addPackageInfo(dec, buffer);
         }
         boolean hasDoc = addDoc(dec, node, buffer, monitor);
-        addRefinementInfo(dec, node, buffer, hasDoc, unit); //TODO: use the pr to get the qualifying type??
+        addRefinementInfo(dec, pr, node, buffer, hasDoc, unit);
         addReturnType(dec, buffer, node, pr, obj, unit);
         addParameters(controller, dec, node, pr, buffer, unit);
         addClassMembersInfo(dec, buffer);
@@ -1511,17 +1511,16 @@ public class DocumentationHover extends SourceInfoHover {
     }
 
     private static void addRefinementInfo(Declaration dec, 
-            Node node, StringBuilder buffer, 
+            Reference pr, Node node, StringBuilder buffer, 
             boolean hasDoc, Unit unit) {
         Declaration rd = dec.getRefinedDeclaration();
         if (dec!=rd && rd!=null) {
             buffer.append("<p>");
             TypeDeclaration superclass = 
-                    (TypeDeclaration) rd.getContainer();
-            ClassOrInterface outer = 
-                    (ClassOrInterface) dec.getContainer();
+                    (TypeDeclaration) 
+                        rd.getContainer();
             Type sup = 
-                    getQualifyingType(node, outer)
+                    getQualifyingType(dec, pr, node)
                         .getSupertype(superclass);
             String icon = rd.isFormal() ? 
                     "implm_co.png" : "over_co.png";
@@ -1813,8 +1812,8 @@ public class DocumentationHover extends SourceInfoHover {
     }
 
     private static void addContainerInfo(
-            Declaration dec, Node node,
-            StringBuilder buffer) {
+            Declaration dec, Reference pr,
+            Node node, StringBuilder buffer) {
         Unit unit = node==null ? null : node.getUnit();
         buffer.append("<p>");
         if (dec.isParameter()) {
@@ -1858,10 +1857,7 @@ public class DocumentationHover extends SourceInfoHover {
         }
         else {
             if (dec.isClassOrInterfaceMember()) {
-                ClassOrInterface outer = 
-                        (ClassOrInterface) 
-                            dec.getContainer();
-                Type qt = getQualifyingType(node, outer);
+                Type qt = getQualifyingType(dec, pr, node);
                 if (qt!=null) {
                     String desc;
                     if (dec instanceof Constructor) {
@@ -1968,8 +1964,14 @@ public class DocumentationHover extends SourceInfoHover {
         }
     }
     
-    private static Type getQualifyingType(
-            Node node, ClassOrInterface outer) {
+    private static Type getQualifyingType(Declaration dec,
+            Reference r, Node node) {
+        if (r!=null) {
+            return r.getQualifyingType();
+        }
+        ClassOrInterface outer = 
+                (ClassOrInterface) 
+                    dec.getContainer();
         if (outer == null) {
             return null;
         }
