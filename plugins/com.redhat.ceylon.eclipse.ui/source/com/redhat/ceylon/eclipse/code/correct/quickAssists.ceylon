@@ -19,7 +19,8 @@ import com.redhat.ceylon.ide.common.correct {
     AddThrowsAnnotationQuickFix,
     RefineEqualsHashQuickFix,
     ConvertStringQuickFix,
-    ExpandTypeQuickFix
+    ExpandTypeQuickFix,
+    ConvertForToWhileQuickFix
 }
 import com.redhat.ceylon.ide.common.refactoring {
     DefaultRegion
@@ -114,6 +115,11 @@ object splitIfStatementQuickFix
       
 object joinIfStatementsQuickFix
         satisfies JoinIfStatementsQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+        & EclipseGenericQuickFix {
+}
+
+object convertForToWhileQuickFix
+        satisfies ConvertForToWhileQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
         & EclipseGenericQuickFix {
 }
 

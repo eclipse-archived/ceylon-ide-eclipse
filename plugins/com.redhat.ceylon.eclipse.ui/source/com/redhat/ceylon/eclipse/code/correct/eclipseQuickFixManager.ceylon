@@ -157,6 +157,8 @@ object eclipseQuickFixManager
         splitIfStatementQuickFix.addSplitIfStatementProposal(data, file, statement);
         joinIfStatementsQuickFix.addJoinIfStatementsProposal(data, file, statement);
         
+        convertForToWhileQuickFix.addConvertForToWhileProposal(data, file, statement);
+        
         addThrowsAnnotationQuickFix.addThrowsAnnotationProposal(data, file, doc, statement);
         
         refineFormalMembersQuickFix.addRefineFormalMembersProposal(data, false);
