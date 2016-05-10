@@ -66,6 +66,7 @@ shared class EclipseQuickFixData(ProblemLocation location,
     problemOffset => location.offset;
     problemLength => location.length;
     
+    phasedUnit => editor.parseController.lastPhasedUnit;
     doc = EclipseDocument(document);
     
     shared actual void addQuickFix(String desc, CommonTextChange change,
