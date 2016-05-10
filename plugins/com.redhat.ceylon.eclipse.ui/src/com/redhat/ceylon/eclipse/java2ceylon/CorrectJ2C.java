@@ -32,7 +32,7 @@ import com.redhat.ceylon.ide.common.platform.CommonDocument;
 public interface CorrectJ2C {
     ImportProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange> importProposals();
 
-    IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,IFile,ICompletionProposal,? extends QuickFixData<IProject>,LinkedModeModel> eclipseQuickFixManager();
+    IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,IFile,ICompletionProposal,? extends QuickFixData,LinkedModeModel> eclipseQuickFixManager();
 
     void addQuickFixes(
         ProblemLocation problem,

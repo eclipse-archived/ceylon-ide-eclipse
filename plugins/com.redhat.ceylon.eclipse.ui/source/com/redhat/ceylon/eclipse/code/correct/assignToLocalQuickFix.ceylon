@@ -58,7 +58,7 @@ object eclipseAssignToLocalQuickFix
 
 class EclipseAssignToLocalProposal(EclipseQuickFixData data, String desc)
         extends EclipseLocalProposal(data, desc)
-        satisfies AssignToLocalProposal<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal,LinkedModeModel> {
+        satisfies AssignToLocalProposal<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal,LinkedModeModel> {
 
     shared actual ICompletionProposal[] toNameProposals(String[] names, 
         Integer offset, Unit unit, Integer seq) => [

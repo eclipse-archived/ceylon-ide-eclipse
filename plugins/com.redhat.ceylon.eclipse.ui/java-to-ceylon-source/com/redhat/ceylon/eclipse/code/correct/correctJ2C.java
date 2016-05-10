@@ -37,11 +37,11 @@ public class correctJ2C implements CorrectJ2C {
     }
     
     @Override
-    public IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,IFile,ICompletionProposal,? extends QuickFixData<IProject>,LinkedModeModel> eclipseQuickFixManager() {
+    public IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,IFile,ICompletionProposal,? extends QuickFixData,LinkedModeModel> eclipseQuickFixManager() {
         return eclipseQuickFixManager_.get_();
     }
     
-    public AddAnnotationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,? extends QuickFixData<IProject>,ICompletionProposal> addAnnotationsQuickFix() {
+    public AddAnnotationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,? extends QuickFixData,ICompletionProposal> addAnnotationsQuickFix() {
         return eclipseAnnotationsQuickFix_.get_();
     }
     

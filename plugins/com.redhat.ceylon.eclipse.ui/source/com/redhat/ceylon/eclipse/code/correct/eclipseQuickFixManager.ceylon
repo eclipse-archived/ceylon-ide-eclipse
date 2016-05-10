@@ -55,12 +55,12 @@ import com.redhat.ceylon.ide.common.refactoring {
 shared class EclipseQuickFixData(ProblemLocation location,
     shared actual Tree.CompilationUnit rootNode,
     shared actual Node node,
-    shared actual IProject project,
+    shared IProject project,
     shared Collection<ICompletionProposal> proposals,
     shared CeylonEditor editor,
     shared actual BaseCeylonProject ceylonProject,
     IDocument document)
-        satisfies QuickFixData<IProject> {
+        satisfies QuickFixData {
     
     errorCode => location.problemId;
     problemOffset => location.offset;
@@ -128,12 +128,12 @@ object eclipseQuickFixManager
     
     shared actual void addCreateTypeParameterProposal<Data>(Data data,
         Tree.BaseType bt, String brokenName)
-            given Data satisfies QuickFixData<IProject> {
+            given Data satisfies QuickFixData {
         
         assert (is EclipseQuickFixData data);
         
         CreateTypeParameterProposal.addCreateTypeParameterProposal(
-            data.proposals, data.project, data.rootNode, bt, brokenName);
+            data.proposals, data.rootNode, bt, brokenName);
     }
     
     shared void addQuickAssists(EclipseQuickFixData data, IFile file,

@@ -153,7 +153,7 @@ class CreateTypeParameterProposal extends CorrectionProposal {
     
     static void addCreateTypeParameterProposal(
             Collection<ICompletionProposal> proposals, 
-            IProject project, Tree.CompilationUnit rootNode,
+            Tree.CompilationUnit rootNode,
             final Tree.BaseType type, String brokenName) {
         
         if (type.getTypeArgumentList()!=null) {

@@ -82,7 +82,7 @@ import org.eclipse.text.edits {
 }
 
 shared interface EclipseAbstractQuickFix
-        satisfies AbstractQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> {
+        satisfies AbstractQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal> {
     
     shared actual IdeCompletionManager<out Anything,out ICompletionProposal,IDocument> completionManager 
             => EclipseCompletionManager(CeylonEditor());
@@ -129,7 +129,7 @@ shared interface EclipseAbstractQuickFix
 
 interface EclipseGenericQuickFix 
         satisfies EclipseAbstractQuickFix
-                & GenericQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+                & GenericQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
                 & EclipseDocumentChanges {
     
     shared default actual void newProposal(EclipseQuickFixData data, String desc, 
@@ -140,7 +140,7 @@ interface EclipseGenericQuickFix
 
 abstract class EclipseLocalProposal(EclipseQuickFixData data, shared actual String displayString)
         extends AbstractLinkedMode(data.editor)
-        satisfies AbstractLocalProposal<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal,LinkedModeModel>
+        satisfies AbstractLocalProposal<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal,LinkedModeModel>
                 & EclipseAbstractQuickFix
                 & EclipseDocumentChanges
                 & EclipseLinkedModeSupport
