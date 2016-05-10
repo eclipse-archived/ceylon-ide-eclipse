@@ -153,7 +153,7 @@ abstract class AbstractRefactoring extends Refactoring {
     }
 
     protected boolean searchInFile(PhasedUnit pu) {
-        return editor==null || !editor.isDirty() || rootNode == null ||
+        return !searchInEditor() || rootNode == null ||
                 !pu.getUnit().equals(rootNode.getUnit());
     }
     
