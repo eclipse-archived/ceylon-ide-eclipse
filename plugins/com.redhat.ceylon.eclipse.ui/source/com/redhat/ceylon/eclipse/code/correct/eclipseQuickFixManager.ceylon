@@ -9,7 +9,9 @@ import com.redhat.ceylon.ide.common.correct {
     IdeQuickFixManager,
     QuickFixData,
     SpecifyTypeQuickFix,
-    convertForToWhileQuickFix
+    convertForToWhileQuickFix,
+    joinIfStatementsQuickFix,
+    splitIfStatementQuickFix
 }
 import com.redhat.ceylon.ide.common.model {
     BaseCeylonProject
@@ -179,8 +181,8 @@ object eclipseQuickFixManager
         convertSwitchToIfQuickFix.addConvertSwitchToIfProposal(data, file, statement);
         convertSwitchToIfQuickFix.addConvertIfToSwitchProposal(data, file, statement);
         
-        splitIfStatementQuickFix.addSplitIfStatementProposal(data, file, statement);
-        joinIfStatementsQuickFix.addJoinIfStatementsProposal(data, file, statement);
+        splitIfStatementQuickFix.addSplitIfStatementProposal(data, statement);
+        joinIfStatementsQuickFix.addJoinIfStatementsProposal(data, statement);
         
         convertForToWhileQuickFix.addConvertForToWhileProposal(data, statement);
         
