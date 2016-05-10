@@ -8,7 +8,8 @@ import com.redhat.ceylon.eclipse.code.editor {
 import com.redhat.ceylon.ide.common.correct {
     IdeQuickFixManager,
     QuickFixData,
-    SpecifyTypeQuickFix
+    SpecifyTypeQuickFix,
+    convertForToWhileQuickFix
 }
 import com.redhat.ceylon.ide.common.model {
     BaseCeylonProject
@@ -39,6 +40,15 @@ import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
 }
+import com.redhat.ceylon.ide.common.platform {
+    CommonTextChange=TextChange
+}
+import com.redhat.ceylon.eclipse.platform {
+    EclipseTextChange
+}
+import com.redhat.ceylon.ide.common.refactoring {
+    DefaultRegion
+}
 
 shared class EclipseQuickFixData(ProblemLocation location,
     shared actual Tree.CompilationUnit rootNode,
@@ -46,12 +56,27 @@ shared class EclipseQuickFixData(ProblemLocation location,
     shared actual IProject project,
     shared Collection<ICompletionProposal> proposals,
     shared CeylonEditor editor,
-    shared actual BaseCeylonProject ceylonProject)
+    shared actual BaseCeylonProject ceylonProject,
+    IDocument document)
         satisfies QuickFixData<IProject> {
     
     errorCode => location.problemId;
     problemOffset => location.offset;
     problemLength => location.length;
+    
+    doc = EclipseDocument(document);
+    
+    shared actual void addQuickFix(String desc, CommonTextChange change,
+        DefaultRegion? selection) {
+        
+        if (is EclipseTextChange change) {
+            value region = if (exists selection)
+                           then Region(selection.start, selection.length)
+                           else null;
+            proposals.add(CorrectionProposal(desc, change.nativeChange, region));
+        }
+    }
+    
 }
 
 object eclipseQuickFixManager
@@ -157,7 +182,7 @@ object eclipseQuickFixManager
         splitIfStatementQuickFix.addSplitIfStatementProposal(data, file, statement);
         joinIfStatementsQuickFix.addJoinIfStatementsProposal(data, file, statement);
         
-        convertForToWhileQuickFix.addConvertForToWhileProposal(data, file, statement);
+        convertForToWhileQuickFix.addConvertForToWhileProposal(data, statement);
         
         addThrowsAnnotationQuickFix.addThrowsAnnotationProposal(data, file, doc, statement);
         

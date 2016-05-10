@@ -19,8 +19,7 @@ import com.redhat.ceylon.ide.common.correct {
     AddThrowsAnnotationQuickFix,
     RefineEqualsHashQuickFix,
     ConvertStringQuickFix,
-    ExpandTypeQuickFix,
-    ConvertForToWhileQuickFix
+    ExpandTypeQuickFix
 }
 import com.redhat.ceylon.ide.common.refactoring {
     DefaultRegion
@@ -37,15 +36,15 @@ import org.eclipse.jface.text {
 import org.eclipse.jface.text.contentassist {
     ICompletionProposal
 }
+import org.eclipse.jface.viewers {
+    StyledString
+}
 import org.eclipse.ltk.core.refactoring {
     TextChange
 }
 import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
-}
-import org.eclipse.jface.viewers {
-    StyledString
 }
 
 object operatorQuickFix
@@ -115,11 +114,6 @@ object splitIfStatementQuickFix
       
 object joinIfStatementsQuickFix
         satisfies JoinIfStatementsQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
-        & EclipseGenericQuickFix {
-}
-
-object convertForToWhileQuickFix
-        satisfies ConvertForToWhileQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
         & EclipseGenericQuickFix {
 }
 

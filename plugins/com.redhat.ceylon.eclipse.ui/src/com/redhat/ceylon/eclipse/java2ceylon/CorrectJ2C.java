@@ -42,7 +42,8 @@ public interface CorrectJ2C {
         Collection<ICompletionProposal> proposals,
         CeylonEditor editor, 
         TypeChecker tc, 
-        IFile file);
+        IFile file,
+        IDocument doc);
 
     void addQuickAssists(
             CompilationUnit rootNode,

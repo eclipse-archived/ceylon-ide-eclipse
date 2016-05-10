@@ -523,7 +523,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         Node node = findNode(rootNode, null, start, end);
 
         correctJ2C().addQuickFixes(problem, rootNode, node, project, proposals,
-                getCurrentCeylonEditor(), tc, file);
+                getCurrentCeylonEditor(), tc, file, context.getSourceViewer().getDocument());
 
         switch (problem.getProblemId()) {
 //        case 100:
