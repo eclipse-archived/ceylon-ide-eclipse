@@ -4,13 +4,18 @@ import com.redhat.ceylon.compiler.typechecker.tree {
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
 }
+import com.redhat.ceylon.eclipse.ui {
+    CeylonResources
+}
+import com.redhat.ceylon.eclipse.util {
+    EditorUtil
+}
 import com.redhat.ceylon.ide.common.correct {
     ConvertToClassQuickFix,
     AbstractConvertToClassProposal
 }
 
 import org.eclipse.core.resources {
-    IProject,
     IFile
 }
 import org.eclipse.jface.text {
@@ -35,15 +40,9 @@ import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
 }
-import com.redhat.ceylon.eclipse.ui {
-    CeylonResources
-}
-import com.redhat.ceylon.eclipse.util {
-    EditorUtil
-}
 
 object convertToClassQuickFix
-        satisfies ConvertToClassQuickFix<IProject,EclipseQuickFixData> {
+        satisfies ConvertToClassQuickFix<EclipseQuickFixData> {
             
     shared actual void newProposal(EclipseQuickFixData data, String desc,
         Tree.ObjectDefinition declaration) {
@@ -58,7 +57,7 @@ class EclipseConvertToClassProposal(String desc, CeylonEditor editor,
             satisfies ICompletionProposal
                     & EclipseAbstractQuickFix
                     & EclipseDocumentChanges
-                    & AbstractConvertToClassProposal<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal,LinkedModeModel>{
+                    & AbstractConvertToClassProposal<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal,LinkedModeModel>{
     
     shared actual String? additionalProposalInfo => null;
     

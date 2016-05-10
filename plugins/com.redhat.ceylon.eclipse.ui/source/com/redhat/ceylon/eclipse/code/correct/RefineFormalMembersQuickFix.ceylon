@@ -10,7 +10,6 @@ import com.redhat.ceylon.ide.common.correct {
 
 import org.eclipse.core.resources {
     IFile,
-    IProject,
     ResourcesPlugin {
         workspace
     }
@@ -44,7 +43,7 @@ import org.eclipse.text.edits {
 }
 
 object eclipseRefineFormalMembersQuickFix 
-        satisfies RefineFormalMembersQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+        satisfies RefineFormalMembersQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
                 & EclipseDocumentChanges & EclipseAbstractQuickFix {
     
     getDocChar(IDocument doc, Integer offset) => doc.getChar(offset);

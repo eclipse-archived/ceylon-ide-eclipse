@@ -1,3 +1,8 @@
+import com.redhat.ceylon.eclipse.code.correct {
+    LinkedModeCompletionProposal {
+        NullProposal
+    }
+}
 import com.redhat.ceylon.eclipse.code.outline {
     CeylonLabelProvider
 }
@@ -13,8 +18,11 @@ import com.redhat.ceylon.model.typechecker.model {
     Type
 }
 
+import java.util {
+    Collections
+}
+
 import org.eclipse.core.resources {
-    IProject,
     IFile
 }
 import org.eclipse.jface.text {
@@ -27,6 +35,9 @@ import org.eclipse.jface.text.contentassist {
 import org.eclipse.jface.text.link {
     LinkedModeModel
 }
+import org.eclipse.jface.viewers {
+    StyledString
+}
 import org.eclipse.ltk.core.refactoring {
     TextChange
 }
@@ -34,20 +45,9 @@ import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
 }
-import java.util {
-    Collections
-}
-import com.redhat.ceylon.eclipse.code.correct {
-    LinkedModeCompletionProposal {
-        NullProposal
-    }
-}
-import org.eclipse.jface.viewers {
-    StyledString
-}
 
 object eclipseAssignToLocalQuickFix
-        satisfies AssignToLocalQuickFix<IFile,IProject,EclipseQuickFixData>
+        satisfies AssignToLocalQuickFix<IFile,EclipseQuickFixData>
                 & EclipseAbstractQuickFix
                 & EclipseDocumentChanges {
     

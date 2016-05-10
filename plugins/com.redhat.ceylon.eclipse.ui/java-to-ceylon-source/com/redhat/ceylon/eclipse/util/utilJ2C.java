@@ -2,7 +2,6 @@ package com.redhat.ceylon.eclipse.util;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.text.IDocument;
 
 import com.redhat.ceylon.eclipse.java2ceylon.UtilJ2C;

@@ -1,24 +1,9 @@
+import com.redhat.ceylon.eclipse.ui {
+    CeylonResources
+}
 import com.redhat.ceylon.ide.common.correct {
     CreateQuickFix,
     CreateParameterQuickFix
-}
-import org.eclipse.core.resources {
-    IFile,
-    IProject
-}
-import org.eclipse.jface.text {
-    IDocument,
-    Region
-}
-import org.eclipse.text.edits {
-    InsertEdit,
-    TextEdit
-}
-import org.eclipse.ltk.core.refactoring {
-    TextChange
-}
-import org.eclipse.jface.text.contentassist {
-    ICompletionProposal
 }
 import com.redhat.ceylon.ide.common.doc {
     Icons
@@ -28,16 +13,31 @@ import com.redhat.ceylon.model.typechecker.model {
     Type,
     Scope
 }
-import com.redhat.ceylon.eclipse.ui {
-    CeylonResources
+
+import org.eclipse.core.resources {
+    IFile
+}
+import org.eclipse.jface.text {
+    IDocument,
+    Region
+}
+import org.eclipse.jface.text.contentassist {
+    ICompletionProposal
+}
+import org.eclipse.ltk.core.refactoring {
+    TextChange
+}
+import org.eclipse.text.edits {
+    InsertEdit,
+    TextEdit
 }
 
 object eclipseCreateQuickFix
-        satisfies CreateQuickFix<IFile,IProject,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
+        satisfies CreateQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
                 & EclipseAbstractQuickFix
                 & EclipseDocumentChanges {
 
-    shared actual CreateParameterQuickFix<IFile,IProject,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal> createParameterQuickFix
+    shared actual CreateParameterQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal> createParameterQuickFix
             => eclipseCreateParameterQuickFix;
     
     shared actual void newCreateQuickFix(EclipseQuickFixData data, String desc, Scope scope,

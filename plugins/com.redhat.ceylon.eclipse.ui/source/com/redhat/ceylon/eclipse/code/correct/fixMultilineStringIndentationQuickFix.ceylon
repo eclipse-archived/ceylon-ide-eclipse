@@ -3,7 +3,6 @@ import com.redhat.ceylon.ide.common.correct {
 }
 
 import org.eclipse.core.resources {
-    IProject,
     IFile
 }
 import org.eclipse.jface.text {
@@ -22,7 +21,7 @@ import org.eclipse.text.edits {
 }
 
 object eclipseFixMultilineStringIndentationQuickFix
-        satisfies FixMultilineStringIndentationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+        satisfies FixMultilineStringIndentationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
                 & EclipseAbstractQuickFix
                 & EclipseDocumentChanges {
     

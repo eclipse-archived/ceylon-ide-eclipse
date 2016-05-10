@@ -9,7 +9,6 @@ import com.redhat.ceylon.ide.common.correct {
 }
 
 import org.eclipse.core.resources {
-    IProject,
     IFile
 }
 import org.eclipse.jface.text {
@@ -28,7 +27,7 @@ import org.eclipse.text.edits {
 }
 
 object eclipseRenameDescriptorQuickFix
-        satisfies RenameDescriptorQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+        satisfies RenameDescriptorQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
                 & EclipseAbstractQuickFix
                 & EclipseDocumentChanges {
     

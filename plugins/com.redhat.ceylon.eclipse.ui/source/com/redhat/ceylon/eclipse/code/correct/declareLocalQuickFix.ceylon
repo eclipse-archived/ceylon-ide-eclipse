@@ -9,8 +9,7 @@ import com.redhat.ceylon.ide.common.correct {
 }
 
 import org.eclipse.core.resources {
-    IFile,
-    IProject
+    IFile
 }
 import org.eclipse.jface.text {
     IDocument,
@@ -31,7 +30,7 @@ import org.eclipse.text.edits {
 }
 
 object eclipseDeclareLocalQuickFix
-        satisfies DeclareLocalQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,LinkedModeModel,ICompletionProposal,IProject,EclipseQuickFixData,Region> & EclipseAbstractQuickFix & EclipseDocumentChanges & EclipseLinkedModeSupport {
+        satisfies DeclareLocalQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,LinkedModeModel,ICompletionProposal,EclipseQuickFixData,Region> & EclipseAbstractQuickFix & EclipseDocumentChanges & EclipseLinkedModeSupport {
     
     shared actual void newDeclareLocalQuickFix(EclipseQuickFixData data, String desc, TextChange change,
         Tree.Term term, Tree.BaseMemberExpression bme) {

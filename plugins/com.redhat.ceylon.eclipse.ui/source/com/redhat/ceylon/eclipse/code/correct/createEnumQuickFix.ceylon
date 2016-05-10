@@ -9,7 +9,6 @@ import com.redhat.ceylon.ide.common.doc {
 }
 
 import org.eclipse.core.resources {
-    IProject,
     IFile
 }
 import org.eclipse.jface.text {
@@ -29,7 +28,7 @@ import org.eclipse.text.edits {
 }
 
 object eclipseCreateEnumQuickFix
-        satisfies CreateEnumQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal> 
+        satisfies CreateEnumQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal> 
                 & EclipseDocumentChanges
                 & EclipseAbstractQuickFix {
     

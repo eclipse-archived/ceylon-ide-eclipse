@@ -123,7 +123,7 @@ object eclipseQuickFixManager
     }
     
     shared actual SpecifyTypeQuickFix<IFile,IDocument,InsertEdit,TextEdit,
-        TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal,
+        TextChange,Region,EclipseQuickFixData,ICompletionProposal,
         LinkedModeModel> specifyTypeQuickFix => eclipseSpecifyTypeQuickFix;
     
     shared actual void addCreateTypeParameterProposal<Data>(Data data,

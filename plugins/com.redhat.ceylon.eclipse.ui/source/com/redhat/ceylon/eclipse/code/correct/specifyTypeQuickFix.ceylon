@@ -18,7 +18,6 @@ import com.redhat.ceylon.model.typechecker.model {
 }
 
 import org.eclipse.core.resources {
-    IProject,
     IFile
 }
 import org.eclipse.jface.text {
@@ -49,7 +48,7 @@ import org.eclipse.text.edits {
 }
 
 object eclipseSpecifyTypeQuickFix
-        satisfies SpecifyTypeQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal,LinkedModeModel>
+        satisfies SpecifyTypeQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal,LinkedModeModel>
                 & EclipseAbstractQuickFix 
                 & EclipseDocumentChanges
                 & EclipseLinkedModeSupport {

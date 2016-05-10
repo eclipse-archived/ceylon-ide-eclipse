@@ -13,7 +13,6 @@ import com.redhat.ceylon.model.typechecker.model {
 }
 
 import org.eclipse.core.resources {
-    IProject,
     IFile
 }
 import org.eclipse.jface.text {
@@ -32,7 +31,7 @@ import org.eclipse.text.edits {
 }
 
 object eclipseCreateParameterQuickFix
-        satisfies CreateParameterQuickFix<IFile,IProject,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
+        satisfies CreateParameterQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
         & EclipseAbstractQuickFix
         & EclipseDocumentChanges {
 

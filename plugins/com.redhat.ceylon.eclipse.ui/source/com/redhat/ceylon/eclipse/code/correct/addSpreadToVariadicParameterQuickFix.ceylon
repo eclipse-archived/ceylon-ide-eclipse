@@ -6,7 +6,6 @@ import com.redhat.ceylon.model.typechecker.model {
 }
 
 import org.eclipse.core.resources {
-    IProject,
     IFile
 }
 import org.eclipse.jface.text {
@@ -25,7 +24,7 @@ import org.eclipse.text.edits {
 }
 
 object eclipseAddSpreadToVariadicParameterQuickFix
-        satisfies AddSpreadToVariadicParameterQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+        satisfies AddSpreadToVariadicParameterQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
         & EclipseAbstractQuickFix
         & EclipseDocumentChanges {
     

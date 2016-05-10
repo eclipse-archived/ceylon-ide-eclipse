@@ -1,3 +1,6 @@
+import com.redhat.ceylon.eclipse.ui {
+    CeylonResources
+}
 import com.redhat.ceylon.ide.common.correct {
     AddInitializerQuickFix
 }
@@ -6,7 +9,6 @@ import com.redhat.ceylon.model.typechecker.model {
 }
 
 import org.eclipse.core.resources {
-    IProject,
     IFile
 }
 import org.eclipse.jface.text {
@@ -23,12 +25,9 @@ import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
 }
-import com.redhat.ceylon.eclipse.ui {
-    CeylonResources
-}
 
 object eclipseAddInitializerQuickFix
-        satisfies AddInitializerQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+        satisfies AddInitializerQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
                 & EclipseAbstractQuickFix
                 & EclipseDocumentChanges {
     

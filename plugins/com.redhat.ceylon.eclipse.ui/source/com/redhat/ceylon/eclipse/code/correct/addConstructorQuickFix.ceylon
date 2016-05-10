@@ -1,30 +1,30 @@
 import com.redhat.ceylon.ide.common.correct {
     AddConstructorQuickFix
 }
+import com.redhat.ceylon.ide.common.refactoring {
+    DefaultRegion
+}
+
 import org.eclipse.core.resources {
-    IFile,
-    IProject
+    IFile
 }
 import org.eclipse.jface.text {
     IDocument,
     Region
 }
-import org.eclipse.text.edits {
-    InsertEdit,
-    TextEdit
+import org.eclipse.jface.text.contentassist {
+    ICompletionProposal
 }
 import org.eclipse.ltk.core.refactoring {
     TextChange
 }
-import org.eclipse.jface.text.contentassist {
-    ICompletionProposal
-}
-import com.redhat.ceylon.ide.common.refactoring {
-    DefaultRegion
+import org.eclipse.text.edits {
+    InsertEdit,
+    TextEdit
 }
 
 object eclipseAddConstructorQuickFix
-        satisfies AddConstructorQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
+        satisfies AddConstructorQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
                 & EclipseAbstractQuickFix
                 & EclipseDocumentChanges {
     

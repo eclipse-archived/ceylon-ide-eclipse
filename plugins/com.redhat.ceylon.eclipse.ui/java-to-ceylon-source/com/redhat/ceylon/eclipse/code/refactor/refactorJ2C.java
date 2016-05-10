@@ -13,8 +13,6 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.java2ceylon.RefactorJ2C;
-import com.redhat.ceylon.ide.common.refactoring.DeprecatedExtractFunctionRefactoring;
-import com.redhat.ceylon.ide.common.refactoring.ExtractFunctionRefactoring;
 import com.redhat.ceylon.ide.common.refactoring.ExtractParameterRefactoring;
 import com.redhat.ceylon.ide.common.refactoring.ExtractValueRefactoring;
 import com.redhat.ceylon.ide.common.refactoring.InlineRefactoring;
