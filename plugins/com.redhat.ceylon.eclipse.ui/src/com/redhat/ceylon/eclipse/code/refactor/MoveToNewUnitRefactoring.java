@@ -72,9 +72,12 @@ public class MoveToNewUnitRefactoring extends Refactoring {
 
     public MoveToNewUnitRefactoring(CeylonEditor ceylonEditor) {
         editor = ceylonEditor;
-        rootNode = editor.getParseController().getTypecheckedRootNode();
-        document = editor.getDocumentProvider()
-                .getDocument(editor.getEditorInput());
+        rootNode = 
+                editor.getParseController()
+                    .getTypecheckedRootNode();
+        document = 
+                editor.getDocumentProvider()
+                    .getDocument(editor.getEditorInput());
         originalFile = getFile(editor.getEditorInput());
         if (rootNode!=null) {
             Node node = editor.getSelectedNode();
@@ -113,9 +116,12 @@ public class MoveToNewUnitRefactoring extends Refactoring {
         if (targetFile.exists()) {
             refactoringStatus.addError("source file already exists");
         }
-        Package originalPackage = rootNode.getUnit().getPackage();
-        String originalPackageName = originalPackage.getNameAsString();
-        String targetPackageName = targetPackage.getElementName();
+        Package originalPackage = 
+                rootNode.getUnit().getPackage();
+        String originalPackageName = 
+                originalPackage.getNameAsString();
+        String targetPackageName = 
+                targetPackage.getElementName();
         HashSet<String> packages = new HashSet<String>();
         Map<Declaration, String> imports = 
                 MoveUtil.getImports(node, 
@@ -125,21 +131,30 @@ public class MoveToNewUnitRefactoring extends Refactoring {
             Package p = d.getUnit().getPackage();
             String packageName = p.getNameAsString();
             if (packageName.isEmpty()) {
-                refactoringStatus.addWarning("moved declaration depends on declaration in the default package: " +
+                refactoringStatus.addWarning(
+                        "moved declaration depends on declaration in the default package: " +
                         d.getName());
             }
             else {
                 if (!d.isShared() && 
                         !packageName.equals(targetPackageName)) {
-                    refactoringStatus.addWarning("moved declaration depends on unshared declaration: " + 
+                    refactoringStatus.addWarning(
+                            "moved declaration depends on unshared declaration: " + 
                             d.getName());
                 }
-                TypeChecker tc = getProjectTypeChecker(targetProject);
+                TypeChecker tc = 
+                        getProjectTypeChecker(targetProject);
                 if (tc!=null) {
-                    for (PhasedUnit phasedUnit: tc.getPhasedUnits().getPhasedUnits()) {
-                        if (phasedUnit.getPackage().getNameAsString().equals(targetPackage.getElementName())) {
-                            if (phasedUnit.getPackage().getModule().getPackage(packageName)==null) {
-                                refactoringStatus.addWarning("moved declaration depends on declaration in unimported module: " + 
+                    for (PhasedUnit phasedUnit: 
+                        tc.getPhasedUnits().getPhasedUnits()) {
+                        if (phasedUnit.getPackage().getNameAsString()
+                                .equals(targetPackage.getElementName())) {
+                            if (phasedUnit.getPackage()
+                                    .getModule()
+                                    .getPackage(packageName)
+                                        ==null) {
+                                refactoringStatus.addWarning(
+                                        "moved declaration depends on declaration in unimported module: " + 
                                         d.getName() + " in module " + p.getModule().getNameAsString());
                             }
                             break;
@@ -151,10 +166,14 @@ public class MoveToNewUnitRefactoring extends Refactoring {
         if (isUnsharedUsedLocally(node, originalFile, 
                 originalPackageName, targetPackageName)) {
             if (targetPackageName.isEmpty()) {
-                refactoringStatus.addWarning("moving declaration used locally to default package");
+                refactoringStatus.addWarning(
+                        "moving declaration used locally to default package");
             }
-            else if (originalPackage.getModule().getPackage(targetPackageName)==null) {
-                refactoringStatus.addWarning("moving declaration used locally to unimported module");
+            else if (originalPackage.getModule()
+                        .getPackage(targetPackageName)
+                            ==null) {
+                refactoringStatus.addWarning(
+                        "moving declaration used locally to unimported module");
             }
         }
         return refactoringStatus;
@@ -165,10 +184,13 @@ public class MoveToNewUnitRefactoring extends Refactoring {
             throws CoreException, OperationCanceledException {
         String originalPackageName = rootNode.getUnit()
                 .getPackage().getNameAsString();
-        String targetPackageName = targetPackage.getElementName();
+        String targetPackageName = 
+                targetPackage.getElementName();
         int start = node.getStartIndex();
         int length = node.getDistance();
-        String delim = utilJ2C().indents().getDefaultLineDelimiter(document);
+        String delim = 
+                utilJ2C().indents()
+                    .getDefaultLineDelimiter(document);
 
         CompositeChange change = 
                 new CompositeChange("Move to New Source File");
@@ -187,7 +209,8 @@ public class MoveToNewUnitRefactoring extends Refactoring {
         }
         //TODO: should we use this alternative when original==moved?
 //        String importText = imports(node, cu.getImportList(), document);
-        String importText = getImportText(node, targetPackageName, delim);
+        String importText = 
+                getImportText(node, targetPackageName, delim);
         String text = importText.isEmpty() ? 
                 contents : importText + delim + contents;
         offset = importText.isEmpty() ? 

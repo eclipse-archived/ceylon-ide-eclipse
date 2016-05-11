@@ -2,11 +2,11 @@ package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
-
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,13 +38,9 @@ import org.eclipse.ui.IFileEditorInput;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.util.DocLinks;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -54,13 +50,16 @@ import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 
 public class MoveUtil {
 
-    public static int addImportEdits(Tree.Declaration node, TextChange fc,
-            IDocument doc, final Tree.CompilationUnit ncu, 
-            final Set<String> packages, Declaration declaration) {
+    public static int addImportEdits(Tree.Declaration node, 
+            TextChange fc, IDocument doc, Tree.CompilationUnit ncu, 
+            Set<String> packages, Declaration declaration) {
         Package p = ncu.getUnit().getPackage();
         Map<Declaration, String> imports = 
-                getImports(node, p.getNameAsString(), ncu, packages);
-        return (int) importProposals().applyImportsWithAliases(fc, imports, ncu, doc, declaration);
+                getImports(node, p.getNameAsString(), ncu, 
+                        packages);
+        return (int) importProposals()
+                .applyImportsWithAliases(fc, imports, ncu, 
+                        doc, declaration);
     }
 
     public static Map<Declaration,String> getImports(Node node,
@@ -71,11 +70,16 @@ public class MoveUtil {
         node.visit(new Visitor() {
             private void add(Declaration d, Tree.Identifier id) {
                 if (d!=null && id!=null) {
-                    String pn = d.getUnit().getPackage().getNameAsString();
+                    String pn = 
+                            d.getUnit()
+                             .getPackage()
+                             .getNameAsString();
                     if (d.isToplevel() &&
                             !pn.equals(packageName) &&
                             !pn.equals(Module.LANGUAGE_MODULE_NAME) &&
-                            (ncu==null || !importProposals().isImported(d, ncu))) {
+                            (ncu==null 
+                                || !importProposals()
+                                    .isImported(d, ncu))) {
                         imports.put(d, id.getText());
                         packages.add(pn);
                     }
@@ -107,27 +111,34 @@ public class MoveUtil {
         return getImportText(packages, imports, delim);
     }
 
-    public static String getImportText(Set<String> packages, Map<Declaration, String> imports, String delim) {
+    public static String getImportText(Set<String> packages, 
+            Map<Declaration, String> imports, String delim) {
         StringBuilder sb = new StringBuilder();
-        for (String p: packages) {
-            if (p.isEmpty()) {
+        for (String pkg: packages) {
+            if (pkg.isEmpty()) {
                 //can't import from default package
                 continue;
             }
-            sb.append("import ").append(p).append(" {")
+            sb.append("import ")
+              .append(escapePackageName(pkg))
+              .append(" {")
               .append(delim);
             boolean first = true;
-            for (Map.Entry<Declaration, String> e: imports.entrySet()) {
-                Declaration d = e.getKey();
-                String pn = d.getUnit().getPackage()
-                        .getQualifiedNameString();
-                if (pn.equals(p)) {
+            for (Map.Entry<Declaration, String> entry: 
+                    imports.entrySet()) {
+                Declaration d = entry.getKey();
+                String pname = 
+                        d.getUnit()
+                         .getPackage()
+                         .getQualifiedNameString();
+                if (pname.equals(pkg)) {
                     if (!first) {
                         sb.append(",").append(delim);
                     }
-                    sb.append(utilJ2C().indents().getDefaultIndent());
+                    sb.append(utilJ2C().indents()
+                            .getDefaultIndent());
                     String name = d.getName();
-                    String alias = e.getValue();
+                    String alias = entry.getValue();
                     if (!name.equals(alias)) {
                         sb.append(alias).append("=");
                     }
@@ -135,25 +146,39 @@ public class MoveUtil {
                     first = false;
                 }
             }
-            sb.append(delim).append("}").append(delim);
+            sb.append(delim)
+              .append("}")
+              .append(delim);
         }
         return sb.toString();
     }
 
-    public static void refactorProjectImportsAndDocLinks(Tree.Declaration node,
-            IFile originalFile, IFile targetFile, CompositeChange change, 
+    public static void refactorProjectImportsAndDocLinks(
+            Tree.Declaration node,
+            IFile originalFile, IFile targetFile, 
+            CompositeChange change, 
             String originalPackage, String targetPackage) {
         if (!originalPackage.equals(targetPackage)) {
-            for (PhasedUnit pu: getAllUnits(originalFile.getProject())) {
+            List<PhasedUnit> units = 
+                    getAllUnits(originalFile.getProject());
+            for (PhasedUnit pu: units) {
 //                if (!node.getUnit().equals(pu.getUnit())) {
-                    IFile file = vfsJ2C().getIFileVirtualFile(pu.getUnitFile()).getNativeResource();
-                    if (!file.equals(originalFile) && !file.equals(targetFile)) {
-                        TextFileChange tfc = new TextFileChange("Fix Import", file);
+                    IFile file = 
+                            vfsJ2C().getIFileVirtualFile(pu.getUnitFile())
+                                .getNativeResource();
+                    if (!file.equals(originalFile) 
+                            && !file.equals(targetFile)) {
+                        TextFileChange tfc = 
+                                new TextFileChange("Fix Import", 
+                                        file);
                         tfc.setEdit(new MultiTextEdit());
-                        CompilationUnit rootNode = pu.getCompilationUnit();
-                        refactorImports(node, originalPackage, targetPackage, 
+                        Tree.CompilationUnit rootNode = 
+                                pu.getCompilationUnit();
+                        refactorImports(node, 
+                                originalPackage, targetPackage, 
                                 rootNode, tfc);
-                        refactorDocLinks(node, targetPackage, rootNode, tfc);
+                        refactorDocLinks(node, targetPackage, 
+                                rootNode, tfc);
                         if (tfc.getEdit().hasChildren()) {
                             change.add(tfc);
                         }
@@ -163,14 +188,23 @@ public class MoveUtil {
         }
     }
 
-    public static boolean isUnsharedUsedLocally(Tree.Declaration node,
-            IFile originalFile, String originalPackage, String targetPackage) {
+    public static boolean isUnsharedUsedLocally(
+            Tree.Declaration node, IFile originalFile, 
+            String originalPackage, String targetPackage) {
         Declaration dec = node.getDeclarationModel();
-        if (!dec.isShared() && !originalPackage.equals(targetPackage)) {
-            for (PhasedUnit pu: getAllUnits(originalFile.getProject())) {
-                Tree.CompilationUnit cu = pu.getCompilationUnit();
-                String pn = cu.getUnit().getPackage().getNameAsString();
-                if (pn.equals(originalPackage) && isUsedInUnit(cu, dec)) {
+        if (!dec.isShared() 
+                && !originalPackage.equals(targetPackage)) {
+            List<PhasedUnit> units = 
+                    getAllUnits(originalFile.getProject());
+            for (PhasedUnit pu: units) {
+                Tree.CompilationUnit cu = 
+                        pu.getCompilationUnit();
+                String pn = 
+                        cu.getUnit()
+                            .getPackage()
+                            .getNameAsString();
+                if (pn.equals(originalPackage) 
+                        && isUsedInUnit(cu, dec)) {
                     return true;
                 }
             }
@@ -179,12 +213,17 @@ public class MoveUtil {
     }
     
     public static void refactorImports(Tree.Declaration node, 
-            final String originalPackage, final String targetPackage, 
+            String originalPackage, String targetPackage, 
             Tree.CompilationUnit cu, final TextChange tc) {
-        final Declaration dec = node.getDeclarationModel();
-        String pn = cu.getUnit().getPackage().getNameAsString();
-        boolean inOriginalPackage = pn.equals(originalPackage);
-        boolean inNewPackage = pn.equals(targetPackage);
+        Declaration dec = node.getDeclarationModel();
+        String pname = 
+                cu.getUnit()
+                    .getPackage()
+                    .getNameAsString();
+        boolean inOriginalPackage = 
+                pname.equals(originalPackage);
+        boolean inNewPackage = 
+                pname.equals(targetPackage);
         boolean foundOriginal = 
                 removeImport(originalPackage, dec, cu, tc, 
                         Collections.<String>emptySet());
@@ -203,7 +242,7 @@ public class MoveUtil {
         final Declaration dec = node.getDeclarationModel();
         cu.visit(new Visitor() {
             @Override
-            public void visit(DocLink that) {
+            public void visit(Tree.DocLink that) {
                 super.visit(that);
                 if (that.getBase()!=null &&
                         that.getBase().equals(dec)) {
@@ -213,20 +252,26 @@ public class MoveUtil {
                             .equals(targetPackage);
                     if (that.getPkg() == null) {
                         if (!inTargetPackage) {
-                            Region region = DocLinks.nameRegion(that,0);
-                            tc.addEdit(new InsertEdit(region.getOffset(), 
+                            Region region = 
+                                    DocLinks.nameRegion(that,0);
+                            tc.addEdit(new InsertEdit(
+                                    region.getOffset(), 
                                     targetPackage + "::"));
                         }
                     }
                     else {
-                        Region region = DocLinks.packageRegion(that);
+                        Region region = 
+                                DocLinks.packageRegion(that);
                         if (inTargetPackage) {
-                            tc.addEdit(new DeleteEdit(region.getOffset(), 
+                            tc.addEdit(new DeleteEdit(
+                                    region.getOffset(), 
                                     region.getLength()+2));
                         }
                         else {
-                            tc.addEdit(new ReplaceEdit(region.getOffset(), 
-                                    region.getLength(), targetPackage));
+                            tc.addEdit(new ReplaceEdit(
+                                    region.getOffset(), 
+                                    region.getLength(), 
+                                    targetPackage));
                         }
                     }
                 }
@@ -265,32 +310,40 @@ public class MoveUtil {
         return used;
     }
 
-    public static boolean removeImport(String originalPackage, final Declaration dec,
-            Tree.CompilationUnit cu, TextChange tc, Set<String> packages) {
+    public static boolean removeImport(String originalPackage, 
+            Declaration dec, Tree.CompilationUnit cu, 
+            TextChange tc, Set<String> packages) {
         boolean foundOriginal = false;
         Tree.ImportList il = cu.getImportList();
         for (Tree.Import imp: il.getImports()) {
-            Referenceable model = imp.getImportPath().getModel();
+            Referenceable model = 
+                    imp.getImportPath()
+                        .getModel();
             if (model!=null) {
-                if (model.getNameAsString().equals(originalPackage)) {
+                if (model.getNameAsString()
+                        .equals(originalPackage)) {
                     Tree.ImportMemberOrTypeList imtl = 
                             imp.getImportMemberOrTypeList();
                     if (imtl!=null) {
-                        List<ImportMemberOrType> imts = 
+                        List<Tree.ImportMemberOrType> imts = 
                                 imtl.getImportMemberOrTypes();
                         for (int j=0; j<imts.size(); j++) {
-                            Tree.ImportMemberOrType imt = imts.get(j);
-                            Declaration d = imt.getDeclarationModel();
+                            Tree.ImportMemberOrType imt = 
+                                    imts.get(j);
+                            Declaration d = 
+                                    imt.getDeclarationModel();
                             if (d!=null && d.equals(dec)) {
                                 int offset;
                                 int length;
                                 if (j>0) {
-                                    offset = imts.get(j-1).getEndIndex();
+                                    offset = imts.get(j-1)
+                                            .getEndIndex();
                                     length = imt.getEndIndex()-offset;
                                 }
                                 else if (j<imts.size()-1) {
                                     offset = imt.getStartIndex();
-                                    length = imts.get(j+1).getStartIndex()-offset;
+                                    length = imts.get(j+1)
+                                            .getStartIndex()-offset;
                                 }
                                 else {
                                     if (packages.contains(originalPackage)) { 
@@ -318,17 +371,26 @@ public class MoveUtil {
         return foundOriginal;
     }
 
-    private static void addImport(String targetPackage, Declaration dec, 
-            Tree.CompilationUnit cu, TextChange tc) {
+    private static void addImport(String targetPackage, 
+            Declaration dec, Tree.CompilationUnit cu, 
+            TextChange tc) {
         String name = dec.getName();
-        String delim = utilJ2C().indents().getDefaultLineDelimiter(getDocument(tc));
-        String indent = utilJ2C().indents().getDefaultIndent();
-        boolean foundMoved = false;
+        String delim = 
+                utilJ2C().indents()
+                    .getDefaultLineDelimiter(
+                            getDocument(tc));
+        String indent = 
+                utilJ2C().indents()
+                    .getDefaultIndent();
         Tree.ImportList il = cu.getImportList();
         for (Tree.Import i: il.getImports()) {
-            Referenceable model = i.getImportPath().getModel();
+            Referenceable model = 
+                    i.getImportPath()
+                        .getModel();
             if (model!=null) {
-                if (model.getNameAsString().equals(targetPackage)) {
+                if (model.getNameAsString()
+                        .equals(targetPackage)) {
+                    //add to the existing import statement
                     Tree.ImportMemberOrTypeList imtl = 
                             i.getImportMemberOrTypeList();
                     if (imtl!=null) {
@@ -345,22 +407,30 @@ public class MoveUtil {
                             }
                         }
                         else {
-                            offset = imts.get(imts.size()-1).getEndIndex();
+                            offset = imts.get(imts.size()-1)
+                                    .getEndIndex();
                             addition = "," + delim + indent + name;
                         }
                         //TODO: the alias!
                         tc.addEdit(new InsertEdit(offset, addition));
-                        foundMoved = true;
                     }
-                    break;
+                    return;
                 }
             }
         }
-        if (!foundMoved) {
-            String text = "import " + targetPackage + 
-                    " {" + delim + indent + name + delim + "}" + delim;
-            tc.addEdit(new InsertEdit(0, text));
-        }
+        
+        //else create a whole new import statement
+        StringBuilder sb = new StringBuilder();
+        sb.append("import ")
+          .append(escapePackageName(targetPackage))
+          .append(" {")
+          .append(delim)
+          .append(indent)
+          .append(name)
+          .append(delim)
+          .append("}")
+          .append(delim);
+        tc.addEdit(new InsertEdit(0, sb.toString()));
     }
 
     static TextChange createEditorChange(CeylonEditor editor,
@@ -378,7 +448,8 @@ public class MoveUtil {
     public static boolean canMoveDeclaration(CeylonEditor editor) {
         Node node = editor.getSelectedNode();
         if (node instanceof Tree.Declaration) {
-            Declaration d = ((Tree.Declaration) node).getDeclarationModel();
+            Tree.Declaration dn = (Tree.Declaration) node;
+            Declaration d = dn.getDeclarationModel();
             return d!=null && d.isToplevel();
         }
         else {
@@ -389,7 +460,8 @@ public class MoveUtil {
     public static String getDeclarationName(CeylonEditor editor) {
         Node node = editor.getSelectedNode();
         if (node instanceof Tree.Declaration) {
-            return ((Tree.Declaration) node).getIdentifier().getText();
+            Tree.Declaration dn = (Tree.Declaration) node;
+            return dn.getIdentifier().getText();
         }
         else {
             return null;
@@ -406,18 +478,20 @@ public class MoveUtil {
     }
 
     static IStructuredSelection getSelection() {
-        IEditorPart ed = EditorUtil.getCurrentEditor();
+        IEditorPart ed = getCurrentEditor();
         if (ed!=null) {
             IEditorInput input = ed.getEditorInput();
             if (input instanceof IFileEditorInput) {
-                return new StructuredSelection(((IFileEditorInput) input).getFile());
+                IFileEditorInput fei = (IFileEditorInput) input;
+                IFile file = fei.getFile();
+                return new StructuredSelection(file);
             }
         }
         return null;
     }
     
     //TODO: move to escaping!
-    public static String escapePackageName(final String newName) {
+    public static String escapePackageName(String newName) {
         StringTokenizer tokenizer = 
                 new StringTokenizer(newName, ".");
         StringBuilder builder = new StringBuilder();
@@ -428,8 +502,7 @@ public class MoveUtil {
             builder.append(escaping_.get_()
                     .escape(tokenizer.nextToken()));
         }
-        final String escapedName = builder.toString();
-        return escapedName;
+        return builder.toString();
     }
 
 }

@@ -15,7 +15,6 @@ import java.io.InputStreamReader;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Status;
@@ -51,7 +50,6 @@ import org.eclipse.ui.wizards.IWizardDescriptor;
 import com.redhat.ceylon.eclipse.code.select.PackageSelectionDialog;
 import com.redhat.ceylon.eclipse.code.wizard.EditDialog;
 import com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard;
-import com.redhat.ceylon.ide.common.util.escaping_;
 
 /*
  * TODO: this class is a huge copy/paste job of NewUnitWizardPage
@@ -107,15 +105,21 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
 
     private void createTitle(Composite composite) {
         Label title = new Label(composite, SWT.LEFT);  
-        String name = ((MoveToNewUnitRefactoring)getRefactoring()).getNode()
-                .getDeclarationModel().getName();
+        MoveToNewUnitRefactoring refactoring = 
+                (MoveToNewUnitRefactoring)
+                    getRefactoring();
+        String name = 
+                refactoring.getNode()
+                    .getDeclarationModel()
+                    .getName();
         title.setText("Move '" + name + "' to a new source file.");
         GridData gd = new GridData();
         gd.horizontalSpan=4;
         title.setLayoutData(gd);
         GridData gd2 = new GridData(GridData.FILL_HORIZONTAL);
         gd2.horizontalSpan=4;
-        new Label(composite, SWT.SEPARATOR|SWT.HORIZONTAL).setLayoutData(gd2);
+        new Label(composite, SWT.SEPARATOR|SWT.HORIZONTAL)
+            .setLayoutData(gd2);
     }
     
     void createSeparator(Composite composite) {
@@ -191,7 +195,8 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (sourceDir==null) {
-                    MessageDialog.openWarning(getShell(), "No Source Folder", 
+                    MessageDialog.openWarning(getShell(), 
+                            "No Source Folder", 
                             getSelectSourceFolderMessage());
                 }
                 else {
@@ -228,7 +233,9 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
         fgd.grabExcessHorizontalSpace = true;
         folder.setLayoutData(fgd);
         if (sourceDir!=null) {
-            String folderName = sourceDir.getPath().toPortableString();
+            String folderName = 
+                    sourceDir.getPath()
+                        .toPortableString();
             folder.setText(folderName);
         }        
         folder.addModifyListener(new ModifyListener() {
@@ -236,7 +243,8 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
             public void modifyText(ModifyEvent e) {
                 setSourceDir(folder.getText());
                 if (sourceDir!=null && packageNameIsLegal()) {
-                    packageFragment = sourceDir.getPackageFragment(packageName);
+                    packageFragment = 
+                            sourceDir.getPackageFragment(packageName);
                 }
                 if (sourceDir==null) {
                     setErrorMessage(getSelectSourceFolderMessage());
@@ -255,10 +263,15 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
             private void setSourceDir(String folderName) {
                 try {
                     sourceDir = null;
-                    for (IJavaProject jp: JavaCore.create(ResourcesPlugin.getWorkspace().getRoot())
-                            .getJavaProjects()) {
-                        for (IPackageFragmentRoot pfr: jp.getPackageFragmentRoots()) {
-                            if (pfr.getPath().toPortableString().equals(folderName)) {
+                    IJavaProject[] projects = 
+                            JavaCore.create(getWorkspace().getRoot())
+                                .getJavaProjects();
+                    for (IJavaProject jp: projects) {
+                        for (IPackageFragmentRoot pfr: 
+                                jp.getPackageFragmentRoots()) {
+                            if (pfr.getPath()
+                                    .toPortableString()
+                                    .equals(folderName)) {
                                 sourceDir = pfr;
                                 return;
                             }
@@ -279,13 +292,18 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
         selectFolder.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                IPackageFragmentRoot pfr = getSourceContainer(getShell(), 
-                        ResourcesPlugin.getWorkspace().getRoot(), sourceDir);
+                IPackageFragmentRoot pfr = 
+                        getSourceContainer(getShell(), 
+                                getWorkspace().getRoot(), 
+                                sourceDir);
                 if (pfr!=null) {
                     sourceDir = pfr;
-                    String folderName = sourceDir.getPath().toPortableString();
+                    String folderName = 
+                            sourceDir.getPath()
+                                .toPortableString();
                     folder.setText(folderName);
-                    packageFragment = sourceDir.getPackageFragment(packageName);
+                    packageFragment = 
+                            sourceDir.getPackageFragment(packageName);
                     setPageComplete(isComplete());
                 }
                 if (sourceDir==null) {
@@ -316,12 +334,17 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
         link.addSelectionListener(new SelectionListener() {            
             @Override
             public void widgetSelected(SelectionEvent e) {
-                IPackageFragmentRoot pfr = (IPackageFragmentRoot) openSourceFolderWizard();
+                IPackageFragmentRoot pfr = 
+                        (IPackageFragmentRoot) 
+                            openSourceFolderWizard();
                 if (pfr!=null) {
                     sourceDir = pfr;
-                    String folderName = sourceDir.getPath().toPortableString();
+                    String folderName = 
+                            sourceDir.getPath()
+                                .toPortableString();
                     folder.setText(folderName);
-                    packageFragment = sourceDir.getPackageFragment(packageName);
+                    packageFragment = 
+                            sourceDir.getPackageFragment(packageName);
                     setPageComplete(isComplete());
                 }
                 if (sourceDir==null) {
@@ -363,7 +386,9 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
                 IPackageFragment pfr = wiz.getPackageFragment();
                 if (pfr!=null) {
                     sourceDir = wiz.getSourceFolder();
-                    String folderName = sourceDir.getPath().toPortableString();
+                    String folderName = 
+                            sourceDir.getPath()
+                                .toPortableString();
                     folder.setText(folderName);
                     pkg.setText(pfr.getElementName());
                     packageFragment = pfr;
@@ -409,7 +434,8 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
             public void modifyText(ModifyEvent e) {
                 packageName = pkg.getText();
                 if (sourceDir!=null && packageNameIsLegal()) {
-                    packageFragment = sourceDir.getPackageFragment(packageName);
+                    packageFragment = 
+                            sourceDir.getPackageFragment(packageName);
                 }
                 if (!packageNameIsLegal()) {
                     setErrorMessage(getIllegalPackageNameMessage());
@@ -441,17 +467,20 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (sourceDir==null) {
-                    MessageDialog.openWarning(getShell(), "No Source Folder", 
+                    MessageDialog.openWarning(getShell(), 
+                            "No Source Folder", 
                             getSelectSourceFolderMessage());
                 }
                 else {
                     IPackageFragment result = 
-                            PackageSelectionDialog.selectPackage(getShell(), sourceDir);
+                            PackageSelectionDialog.selectPackage(
+                                    getShell(), sourceDir);
                     if (result!=null) {
                         packageName = result.getElementName();
                         pkg.setText(packageName);
                         if (sourceDir!=null) {
-                            packageFragment = sourceDir.getPackageFragment(packageName);
+                            packageFragment = 
+                                    sourceDir.getPackageFragment(packageName);
                         }
                         setPageComplete(isComplete());
                     }
@@ -478,15 +507,20 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
 
     private NewPackageWizard openPackageWizard() {
         IWizardDescriptor descriptor = 
-                getWorkbench().getNewWizardRegistry()
-                    .findWizard(PLUGIN_ID + ".newPackageWizard");
+                getWorkbench()
+                    .getNewWizardRegistry()
+                    .findWizard(PLUGIN_ID 
+                            + ".newPackageWizard");
         if (descriptor!=null) {
             try {
                 NewPackageWizard wizard = 
-                        (NewPackageWizard) descriptor.createWizard();
+                        (NewPackageWizard) 
+                            descriptor.createWizard();
                 wizard.init(workbench, selection);
                 WizardDialog wd = 
-                        new WizardDialog(Display.getCurrent().getActiveShell(), 
+                        new WizardDialog(
+                                Display.getCurrent()
+                                    .getActiveShell(), 
                                 wizard);
                 wd.setTitle(wizard.getWindowTitle());
                 wd.open();
@@ -501,15 +535,19 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
     
     private IJavaElement openSourceFolderWizard() {
         IWizardDescriptor descriptor = 
-                getWorkbench().getNewWizardRegistry()
+                getWorkbench()
+                    .getNewWizardRegistry()
                     .findWizard("org.eclipse.jdt.ui.wizards.NewSourceFolderCreationWizard");
         if (descriptor!=null) {
             try {
                 NewSourceFolderCreationWizard wizard = 
-                        (NewSourceFolderCreationWizard) descriptor.createWizard();
+                        (NewSourceFolderCreationWizard) 
+                            descriptor.createWizard();
                 wizard.init(workbench, selection);
                 WizardDialog wd = 
-                        new WizardDialog(Display.getCurrent().getActiveShell(), 
+                        new WizardDialog(
+                                Display.getCurrent()
+                                    .getActiveShell(), 
                                 wizard);
                 wd.setTitle(wizard.getWindowTitle());
                 wd.open();
@@ -578,7 +616,8 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
         else if (je instanceof IPackageFragment) {
             packageFragment = (IPackageFragment) je;
             packageName = packageFragment.getElementName();
-            sourceDir = (IPackageFragmentRoot) packageFragment.getAncestor(PACKAGE_FRAGMENT_ROOT);
+            sourceDir = (IPackageFragmentRoot) 
+                    packageFragment.getAncestor(PACKAGE_FRAGMENT_ROOT);
         }
     }
     
@@ -590,15 +629,22 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
     boolean isComplete() {
         return packageNameIsLegal() && unitNameIsLegal() &&
                 sourceDir!=null &&
-                sourceDir.getPackageFragment(packageFragment.getElementName())
-                        .equals(packageFragment);
+                sourceDir.getPackageFragment(
+                        packageFragment.getElementName())
+                            .equals(packageFragment);
     }
     
     public IFile getFile() {
         String fileName = unitName;
-        if (!fileName.endsWith(".ceylon")) fileName += ".ceylon";
-        IPath path = packageFragment.getPath().append(fileName);
-        IProject project = sourceDir.getJavaProject().getProject();
+        if (!fileName.endsWith(".ceylon")) {
+            fileName += ".ceylon";
+        }
+        IPath path = 
+                packageFragment.getPath()
+                    .append(fileName);
+        IProject project = 
+                sourceDir.getJavaProject()
+                    .getProject();
         return project.getFile(path.makeRelativeTo(project.getFullPath()));
     }
     
@@ -635,7 +681,8 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
             try {
                 stream = file.getContents();
                 BufferedReader reader = 
-                        new BufferedReader(new InputStreamReader(stream));
+                        new BufferedReader(
+                                new InputStreamReader(stream));
                 String line;
                 while ((line = reader.readLine())!=null) {
                     sb.append(line)
@@ -647,7 +694,9 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
             }
             finally {
                 try {
-                    if (stream!=null) stream.close();
+                    if (stream!=null) {
+                        stream.close();
+                    }
                 }
                 catch (IOException ioe) {
                     ioe.printStackTrace();
@@ -682,7 +731,8 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
     }
 
     private IFile getHeaderFile() {
-        return sourceDir.getJavaProject().getProject()
+        return sourceDir.getJavaProject()
+                .getProject()
                 .getFile("header.ceylon");
     }
 
@@ -703,13 +753,10 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
         return "Please select a source folder.";
     }
     
-    private static final String KEYWORDS 
-            = escaping_.get_().concatenateKeywords("|");
-
     boolean packageNameIsLegal(String packageName) {
         return packageName.isEmpty() || 
-            packageName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$") &&
-            !packageName.matches(".*\\b("+KEYWORDS+")\\b.*");
+                packageName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$") /*&&
+                !packageName.matches(KEYWORD_PATTERN)*/;
     }
     
     private boolean packageNameIsDiscouraged() {
@@ -746,9 +793,13 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
                 return;
             }
             for (String file: getFileNames()) {
-                IPath path = packageFragment.getPath()
-                        .append(file).addFileExtension("ceylon");
-                if (getWorkspace().getRoot().getFile(path)
+                IPath path = 
+                        packageFragment.getPath()
+                            .append(file)
+                            .addFileExtension("ceylon");
+                if (getWorkspace()
+                        .getRoot()
+                        .getFile(path)
                         .exists()) {
                     setMessage("Existing unit will not be overwritten: " + 
                             path.toPortableString(), 
@@ -758,8 +809,12 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
                 }
             }
             MoveToNewUnitRefactoring refactoring = 
-                    (MoveToNewUnitRefactoring) getRefactoring();
-            refactoring.setTargetProject(getPackageFragment().getResource().getProject());
+                    (MoveToNewUnitRefactoring) 
+                        getRefactoring();
+            refactoring.setTargetProject(
+                    getPackageFragment()
+                        .getResource()
+                        .getProject());
             refactoring.setTargetFile(getFile());
             refactoring.setTargetPackage(getPackageFragment());
             refactoring.setIncludePreamble(isIncludePreamble());
@@ -768,7 +823,8 @@ public class MoveToNewUnitWizardPage extends UserInputWizardPage {
     }
 
     String getDiscouragedNamespaceMessage() {
-        return "Discouraged namespace: " + packageName.split("\\.")[0];
+        return "Discouraged namespace: " 
+                + packageName.split("\\.")[0];
     }
 
     String[] getFileNames() {

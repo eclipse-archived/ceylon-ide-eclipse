@@ -65,7 +65,7 @@ final class NewModuleWizardPage extends NewUnitWizardPage {
 
     @Override
     String getIllegalPackageNameMessageStart() {
-        return "Please enter a legal package name.";
+        return "Please enter a legal module name.";
     }
 
     @Override
