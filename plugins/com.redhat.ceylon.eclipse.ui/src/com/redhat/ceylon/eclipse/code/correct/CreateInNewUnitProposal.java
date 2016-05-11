@@ -154,7 +154,7 @@ class CreateInNewUnitProposal implements ICompletionProposal,
         }
         String imps = importsJ2C().importCleaner().createImports(
                 new CeylonList<>(TypeDescriptor.klass(Declaration.class), imports),
-                doc);
+                new EclipseDocument(doc));
         if (!imps.isEmpty()) {
             definition = imps + delim + delim + definition;
         }

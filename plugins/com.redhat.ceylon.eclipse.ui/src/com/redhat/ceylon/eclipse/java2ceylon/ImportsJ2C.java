@@ -15,7 +15,7 @@ public interface ImportsJ2C {
 
     AbstractModuleImportUtil<IFile, IProject, IDocument, InsertEdit, TextEdit, TextChange> importUtil();
 
-    AbstractImportsCleaner<IDocument, InsertEdit, TextEdit, TextChange> importCleaner();
+    AbstractImportsCleaner importCleaner();
 
     void cleanImports(CeylonParseController parseController, IDocument doc);
 

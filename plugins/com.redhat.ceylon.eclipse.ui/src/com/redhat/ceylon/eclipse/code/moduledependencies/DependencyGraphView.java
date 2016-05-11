@@ -89,6 +89,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.CeylonProjectBuild;
 import com.redhat.ceylon.ide.common.model.ModelListener;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies.Dependency;
@@ -854,5 +855,13 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, Mode
             CeylonProject<IProject, IResource, IFolder, IFile> project) {
         return null;
     }
-    
+
+    @Override
+    public Object buildMessagesChanged(
+            CeylonProject<IProject,IResource,IFolder,IFile> project,
+            ceylon.language.Iterable<? extends CeylonProjectBuild<IProject,IResource,IFolder,IFile>.SourceFileMessage,? extends Object> frontendMessages,
+            ceylon.language.Iterable<? extends CeylonProjectBuild<IProject,IResource,IFolder,IFile>.SourceFileMessage,? extends Object> backMessages,
+            ceylon.language.Iterable<? extends CeylonProjectBuild<IProject,IResource,IFolder,IFile>.ProjectMessage,? extends Object> projectMessages) {
+        return null;
+    }
 }

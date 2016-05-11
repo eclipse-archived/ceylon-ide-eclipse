@@ -20,7 +20,7 @@ public class importsJ2C implements ImportsJ2C {
     }
     
     @Override
-    public AbstractImportsCleaner<IDocument, InsertEdit, TextEdit, TextChange> importCleaner() {
+    public AbstractImportsCleaner importCleaner() {
         return eclipseImportsCleaner_.get_();
     }
 
