@@ -781,11 +781,11 @@ public class CeylonParseController
     }
 
     /*
-     * returns true is the the last AST was parsed *and* typechecked
-     * until the end (=> stage == TYPE_ANALYSIS)
+     * returns true is the the last AST was parsed *and* 
+     * typechecked until the end (=> stage == TYPE_ANALYSIS)
      */
     public PhasedUnit parseAndTypecheck(
-                    IDocument doc,
+                    final IDocument doc,
                     long waitForModelInSeconds,
                     final IProgressMonitor monitor,
                     final Stager stager) {
@@ -1011,7 +1011,9 @@ public class CeylonParseController
                                         builtPhasedUnit);
                         rootNode = 
                                 phasedUnit.getCompilationUnit();
-                        dirty = false;
+                        if (doc.get().equals(code)) {
+                            dirty = false;
+                        }
                         if (finalProject!=null 
                                 && !ceylonEnabled) {
                             rootNode.visit(new Visitor() {
