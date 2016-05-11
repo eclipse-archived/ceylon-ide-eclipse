@@ -164,7 +164,8 @@ public class MoveUtil {
             for (PhasedUnit pu: units) {
 //                if (!node.getUnit().equals(pu.getUnit())) {
                     IFile file = 
-                            vfsJ2C().getIFileVirtualFile(pu.getUnitFile())
+                            vfsJ2C()
+                                .getIFileVirtualFile(pu.getUnitFile())
                                 .getNativeResource();
                     if (!file.equals(originalFile) 
                             && !file.equals(targetFile)) {
@@ -214,7 +215,7 @@ public class MoveUtil {
     
     public static void refactorImports(Tree.Declaration node, 
             String originalPackage, String targetPackage, 
-            Tree.CompilationUnit cu, final TextChange tc) {
+            Tree.CompilationUnit cu, TextChange tc) {
         Declaration dec = node.getDeclarationModel();
         String pname = 
                 cu.getUnit()
