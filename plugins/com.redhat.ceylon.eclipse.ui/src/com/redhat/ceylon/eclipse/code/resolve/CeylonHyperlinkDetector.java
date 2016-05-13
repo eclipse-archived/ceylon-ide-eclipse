@@ -21,7 +21,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
-import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
 import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
@@ -159,8 +158,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
             ExternalPhasedUnit phasedUnit = 
                     binaryUnit.getPhasedUnit();
             if (phasedUnit != null) {
-                ExternalSourceFile sourceFile = 
-                        phasedUnit.getUnit();
+                Unit sourceFile = phasedUnit.getUnit();
                 if (sourceFile != null) {
                     String sourceRelativePath = 
                             toJavaString(binaryUnit.getCeylonModule()

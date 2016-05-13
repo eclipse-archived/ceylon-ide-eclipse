@@ -36,6 +36,9 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 @Deprecated
 public class ModuleImportUtil {
 
+    private static final List<ModuleVersionNode> NO_MODULE_VERSIONS = 
+            Collections.<ModuleVersionNode>emptyList();
+
     public static void exportModuleImports(IProject project, 
             Module target, String moduleName) {
         ProjectPhasedUnit<IProject,IResource,IFolder,IFile> unit = 
@@ -90,7 +93,7 @@ public class ModuleImportUtil {
         ModuleVersionNode versionNode =
                 new ModuleVersionNode(
                         new ModuleNode(moduleName,
-                                Collections.<ModuleVersionNode>emptyList()),
+                            NO_MODULE_VERSIONS),
                             moduleVersion);
         int offset =
                 addModuleImports(project, target,
@@ -100,7 +103,10 @@ public class ModuleImportUtil {
                 getDescriptorPhasedUnit(project, target);
         gotoLocation(unit.getUnit(),
                 offset + moduleName.length() + 
-                        utilJ2C().indents().getDefaultIndent().length() + 10,
+                        utilJ2C().indents()
+                            .getDefaultIndent()
+                            .length() 
+                       + 10,
                 moduleVersion.length());
     }
     
@@ -215,8 +221,8 @@ public class ModuleImportUtil {
         return textFileChange.getEdit().getOffset();
     }
 
-    private static ProjectPhasedUnit<IProject,IResource,IFolder,IFile> getDescriptorPhasedUnit(
-            IProject project, Module module) {
+    private static ProjectPhasedUnit<IProject,IResource,IFolder,IFile> 
+    getDescriptorPhasedUnit(IProject project, Module module) {
         Unit unit = module.getUnit();
         if (unit instanceof ProjectSourceFile) {
             ProjectSourceFile<IProject,IResource,IFolder,IFile> ceylonUnit =
@@ -241,7 +247,9 @@ public class ModuleImportUtil {
                     .get(iml.getImportModules().size() - 1)
                     .getEndIndex();
         }
-        String newline = utilJ2C().indents().getDefaultLineDelimiter(doc);
+        String newline = 
+                utilJ2C().indents()
+                    .getDefaultLineDelimiter(doc);
         StringBuilder importModule = new StringBuilder();
         appendImportStatement(importModule, false, backend,
                 moduleName, moduleVersion, newline);

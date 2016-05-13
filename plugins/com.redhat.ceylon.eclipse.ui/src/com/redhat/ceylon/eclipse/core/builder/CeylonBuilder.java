@@ -3586,7 +3586,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
         String virtualPath = virtualFile.getPath();
         if (virtualPath.contains("!/")) { // TODO : this test could be replaced by an instanceof if the ZipEntryVirtualFile was public
-            CeylonUnit ceylonUnit = getUnit(virtualFile);
+            Unit ceylonUnit = getUnit(virtualFile);
             if (ceylonUnit != null) {
                 return ceylonUnit.getPackage();
             }
@@ -3594,15 +3594,18 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return null;
     }    
 
-
-    public static SourceFile getUnit(VirtualFile virtualFile) {
+    public static CeylonUnit getUnit(VirtualFile virtualFile) {
         if (vfsJ2C().instanceOfIFileVirtualFile(virtualFile)) {
-            IFile file = vfsJ2C().getIFileVirtualFile(virtualFile).getNativeResource();
+            IFile file = 
+                    vfsJ2C()
+                        .getIFileVirtualFile(virtualFile)
+                        .getNativeResource();
             Package p = getPackage(file);
             if (p != null) {
                 for (Unit u : p.getUnits()) {
                     if (u instanceof SourceFile && 
-                            u.getFilename().equals(file.getName())) {
+                            u.getFilename()
+                             .equals(file.getName())) {
                         return (SourceFile) u;
                     }
                 }

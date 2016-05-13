@@ -287,7 +287,7 @@ public class CeylonParseController
             FolderVirtualFile<IProject,IResource,IFolder,IFile> srcDir, 
             Tree.CompilationUnit cu, Package pkg, 
             ModuleManager moduleManager, 
-            ModuleSourceMapper moduleSourceMapper, 
+            BaseIdeModuleSourceMapper moduleSourceMapper, 
             TypeChecker typeChecker, List<CommonToken> tokens,
             ProjectPhasedUnit<IProject,IResource,IFolder,IFile> savedPhasedUnit) {
         EditedPhasedUnit<IProject, IResource, IFolder, IFile> editedPhasedUnit = 
@@ -391,6 +391,7 @@ public class CeylonParseController
                     newEditedPhasedUnit(file, srcDir, 
                             rootNode, pkg, 
                             phasedUnits.getModuleManager(), 
+                            (BaseIdeModuleSourceMapper)
                             phasedUnits.getModuleSourceMapper(), 
                             typeChecker, tokens, 
                             (ProjectPhasedUnit) 
@@ -400,7 +401,8 @@ public class CeylonParseController
             newPhasedUnit = 
                     newEditedPhasedUnit(file, srcDir, 
                             rootNode, pkg, 
-                            phasedUnits.getModuleManager(), 
+                            phasedUnits.getModuleManager(),
+                            (BaseIdeModuleSourceMapper)
                             phasedUnits.getModuleSourceMapper(), 
                             typeChecker, tokens, 
                             null);

@@ -5,6 +5,8 @@ import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeDeclaration;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeHeader;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.openInEditor;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEditor;
 
@@ -36,7 +38,6 @@ import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
 import com.redhat.ceylon.ide.common.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
@@ -127,15 +128,19 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                             boolean hasFoundAJavaImplementation = false;
                             if (dec.isNative()) {
                                 if (declarationUnit instanceof EditedSourceFile) {
-                                    ProjectSourceFile<IProject, IResource, IFolder, IFile> projectSourceFile = ((EditedSourceFile)declarationUnit).getOriginalSourceFile();
+                                    ProjectSourceFile<IProject, IResource, IFolder, IFile> projectSourceFile = 
+                                            ((EditedSourceFile)declarationUnit).getOriginalSourceFile();
                                     if (projectSourceFile != null) {
 
                                         Declaration modelDeclaration = null;
-                                        Declaration modelHeaderDeclaration = ModelUtil.getNativeHeader(projectSourceFile.getPackage(), dec.getName());
+                                        Declaration modelHeaderDeclaration = 
+                                                getNativeHeader(projectSourceFile.getPackage(), 
+                                                        dec.getName());
                                         if (modelHeaderDeclaration != null) {
-                                            List<Declaration> overloads = modelHeaderDeclaration.getOverloads();
+                                            List<Declaration> overloads = 
+                                                    modelHeaderDeclaration.getOverloads();
                                             if (overloads != null) {
-                                                for (Declaration packageDeclarationOverload : overloads) {
+                                                for (Declaration packageDeclarationOverload: overloads) {
                                                     if (packageDeclarationOverload.equals(dec)) {
                                                         modelDeclaration = packageDeclarationOverload;
                                                         break;
@@ -151,12 +156,18 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                                     }
                                 }
                                 
-                                Declaration javaOverload = ModelUtil.getNativeDeclaration(dec, Backend.Java.asSet());
+                                Declaration javaOverload = 
+                                        getNativeDeclaration(dec, 
+                                                Backend.Java.asSet());
                                 if (javaOverload != null) {
-                                    if (javaOverload.getUnit() instanceof IJavaModelAware) {
+                                    if (javaOverload.getUnit() 
+                                            instanceof IJavaModelAware) {
                                         dec = javaOverload;
                                         declarationUnit = dec.getUnit();
-                                        jp = ((IJavaModelAware<IProject, ITypeRoot, IJavaElement>)declarationUnit).getTypeRoot().getJavaProject();
+                                        IJavaModelAware<IProject, ITypeRoot, IJavaElement> javaModelAware = 
+                                                (IJavaModelAware<IProject, ITypeRoot, IJavaElement>) 
+                                                    declarationUnit;
+                                        jp = javaModelAware.getTypeRoot().getJavaProject();
                                         hasFoundAJavaImplementation = true;
                                     }
                                 }
@@ -167,13 +178,15 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                         }
                     }
                     else {
-                        final IJavaModelAware<IProject, ITypeRoot, IJavaElement> havaModelAware = 
-                                (IJavaModelAware<IProject, ITypeRoot, IJavaElement>)declarationUnit;
-                        jp = havaModelAware.getTypeRoot().getJavaProject();
+                        final IJavaModelAware<IProject, ITypeRoot, IJavaElement> javaModelAware = 
+                                (IJavaModelAware<IProject, ITypeRoot, IJavaElement>)
+                                    declarationUnit;
+                        jp = javaModelAware.getTypeRoot().getJavaProject();
                     }
                     if (declarationUnit instanceof CeylonBinaryUnit) {
                         CeylonBinaryUnit<IProject,ITypeRoot,IJavaElement> ceylonBinaryUnit = 
-                                (CeylonBinaryUnit<IProject,ITypeRoot,IJavaElement>) declarationUnit;
+                                (CeylonBinaryUnit<IProject,ITypeRoot,IJavaElement>)
+                                    declarationUnit;
                         String path = toJavaString(ceylonBinaryUnit.getSourceRelativePath());
                         if (! JavaCore.isJavaLikeFileName(path)) {
                             return null; 
