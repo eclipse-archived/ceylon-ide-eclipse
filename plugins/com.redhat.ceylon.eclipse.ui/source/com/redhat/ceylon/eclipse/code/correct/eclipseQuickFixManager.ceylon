@@ -11,7 +11,8 @@ import com.redhat.ceylon.ide.common.correct {
     SpecifyTypeQuickFix,
     convertForToWhileQuickFix,
     joinIfStatementsQuickFix,
-    splitIfStatementQuickFix
+    splitIfStatementQuickFix,
+    verboseRefinementQuickFix
 }
 import com.redhat.ceylon.ide.common.model {
     BaseCeylonProject
@@ -151,8 +152,8 @@ object eclipseQuickFixManager
         }
         operatorQuickFix.addParenthesesProposals(data, file, oe);
         
-        verboseRefinementQuickFix.addVerboseRefinementProposal(data, file, statement);
-        verboseRefinementQuickFix.addShortcutRefinementProposal(data, file, statement);
+        verboseRefinementQuickFix.addVerboseRefinementProposal(data, statement);
+        verboseRefinementQuickFix.addShortcutRefinementProposal(data, statement);
         
         addAnnotations.addContextualAnnotationProposals(data, declaration, doc, currentOffset);
         specifyTypeQuickFix.addTypingProposals(data, file, declaration);

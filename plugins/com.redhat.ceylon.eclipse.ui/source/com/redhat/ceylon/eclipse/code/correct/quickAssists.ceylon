@@ -3,7 +3,6 @@ import com.redhat.ceylon.eclipse.code.complete {
 }
 import com.redhat.ceylon.ide.common.correct {
     OperatorQuickFix,
-    VerboseRefinementQuickFix,
     AssignToFieldQuickFix,
     ChangeToIfQuickFix,
     ConvertToDefaultConstructorQuickFix,
@@ -48,11 +47,6 @@ import org.eclipse.text.edits {
 object operatorQuickFix
         satisfies OperatorQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
                 & EclipseGenericQuickFix {
-}
-
-object verboseRefinementQuickFix
-        satisfies VerboseRefinementQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
-        & EclipseGenericQuickFix {   
 }
 
 object assignToFieldQuickFix
