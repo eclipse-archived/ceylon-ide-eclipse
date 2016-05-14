@@ -6,6 +6,7 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -17,6 +18,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.correct.LinkedModeCompletionProposal;
 import com.redhat.ceylon.eclipse.code.correct.LinkedModeImporter;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
 import com.redhat.ceylon.ide.common.util.escaping_;
@@ -35,14 +37,19 @@ public abstract class ExtractLinkedMode extends RefactorLinkedMode {
     @Override
     public void done() {
         if (isEnabled()) {
-            setName(getNewNameFromNamePosition());
-            if (isShowPreview() || forceWizardMode()) {
-                try {
-                    revertChanges();
-                    openPreview();
-                } 
-                catch (Exception e) {
-                    e.printStackTrace();
+            IProject project = 
+                    editor.getParseController()
+                        .getProject();
+            if (CeylonNature.isEnabled(project)) {
+                setName(getNewNameFromNamePosition());
+                if (isShowPreview() || forceWizardMode()) {
+                    try {
+                        revertChanges();
+                        openPreview();
+                    } 
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
             super.done();

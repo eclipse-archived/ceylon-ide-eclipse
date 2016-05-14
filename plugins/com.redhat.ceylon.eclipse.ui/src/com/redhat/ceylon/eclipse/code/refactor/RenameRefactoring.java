@@ -270,7 +270,13 @@ public class RenameRefactoring extends AbstractRefactoring {
         return declaration instanceof Declaration &&
                 declaration.getName()!=null &&
                 project != null &&
-                inSameProject(declaration);
+                (inSameProject(declaration) || inSameUnit());
+    }
+
+    private boolean inSameUnit() {
+        return getEditable() && 
+                declaration.getUnit()
+                    .equals(rootNode.getUnit());
     }
 
     public int getCount() {

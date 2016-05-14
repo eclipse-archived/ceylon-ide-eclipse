@@ -9,6 +9,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 
 import java.util.List;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
@@ -35,6 +36,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
@@ -81,30 +83,35 @@ public final class RenameLinkedMode
     @Override
     public void done() {
         if (isEnabled()) {
-            try {
-                hideEditorActivity();
-                setName(getNewNameFromNamePosition());
-                revertChanges();
-                if (isShowPreview()) {
-                    openPreview();
-                }
-                else {
-                    IWorkbenchPartSite site = 
-                            editor.getSite();
-                    new RefactoringExecutionHelper(
-                            refactoring,
-                            RefactoringStatus.WARNING,
-                            getSaveMode(),
-                            site.getShell(),
-                            site.getWorkbenchWindow())
+            IProject project = 
+                    editor.getParseController()
+                        .getProject();
+            if (CeylonNature.isEnabled(project)) {
+                try {
+                    hideEditorActivity();
+                    setName(getNewNameFromNamePosition());
+                    revertChanges();
+                    if (isShowPreview()) {
+                        openPreview();
+                    }
+                    else {
+                        IWorkbenchPartSite site = 
+                                editor.getSite();
+                        new RefactoringExecutionHelper(
+                                refactoring,
+                                RefactoringStatus.WARNING,
+                                getSaveMode(),
+                                site.getShell(),
+                                site.getWorkbenchWindow())
                         .perform(false, true);
+                    }
+                } 
+                catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } 
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-            finally {
-                unhideEditorActivity();
+                finally {
+                    unhideEditorActivity();
+                }
             }
             super.done();
         }

@@ -6,7 +6,6 @@ import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.swt.widgets.Shell;
@@ -23,20 +22,23 @@ public final class ExtractFunctionLinkedMode
     
     public ExtractFunctionLinkedMode(CeylonEditor editor) {
         super(editor);
-        this.refactoring = refactorJ2C().newExtractFunctionRefactoring(editor);
+        this.refactoring = 
+                refactorJ2C()
+                    .newExtractFunctionRefactoring(editor);
     }
     
     public ExtractFunctionLinkedMode(CeylonEditor editor, Tree.Declaration target) {
         super(editor);
-        this.refactoring = refactorJ2C().newExtractFunctionRefactoring(editor, target);
+        this.refactoring = 
+                refactorJ2C()
+                    .newExtractFunctionRefactoring(editor, target);
     }
     
     @Override
     protected int performInitialChange(IDocument document) {
         try {
             NullProgressMonitor pm = new NullProgressMonitor();
-            Change change = refactoring.createChange(pm);
-            change.perform(pm);
+            refactoring.createChange(pm).perform(pm);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -118,7 +120,8 @@ public final class ExtractFunctionLinkedMode
         new ExtractFunctionRefactoringAction(editor) {
             @Override
             public Refactoring createRefactoring() {
-                return (Refactoring) ExtractFunctionLinkedMode.this.refactoring;
+                return (Refactoring) 
+                    ExtractFunctionLinkedMode.this.refactoring;
             }
             @Override
             public RefactoringWizard createWizard(Refactoring refactoring) {
@@ -135,7 +138,8 @@ public final class ExtractFunctionLinkedMode
         new ExtractFunctionRefactoringAction(editor) {
             @Override
             public Refactoring createRefactoring() {
-                return (Refactoring) ExtractFunctionLinkedMode.this.refactoring;
+                return (Refactoring) 
+                    ExtractFunctionLinkedMode.this.refactoring;
             }
         }.run();
     }

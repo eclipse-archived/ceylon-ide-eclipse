@@ -29,7 +29,9 @@ public final class ExtractValueLinkedMode
     
     public ExtractValueLinkedMode(CeylonEditor editor) {
         super(editor);
-        this.refactoring = refactorJ2C().newExtractValueRefactoring(editor);
+        this.refactoring = 
+                refactorJ2C()
+                    .newExtractValueRefactoring(editor);
     }
     
     @Override
@@ -119,7 +121,8 @@ public final class ExtractValueLinkedMode
         new RenameRefactoringAction(editor) {
             @Override
             public Refactoring createRefactoring() {
-                return (Refactoring) ExtractValueLinkedMode.this.refactoring;
+                return (Refactoring) 
+                    ExtractValueLinkedMode.this.refactoring;
             }
             @Override
             public RefactoringWizard createWizard(Refactoring refactoring) {
@@ -136,7 +139,8 @@ public final class ExtractValueLinkedMode
         new ExtractValueRefactoringAction(editor) {
             @Override
             public Refactoring createRefactoring() {
-                return (Refactoring) ExtractValueLinkedMode.this.refactoring;
+                return (Refactoring) 
+                    ExtractValueLinkedMode.this.refactoring;
             }
         }.run();
     }

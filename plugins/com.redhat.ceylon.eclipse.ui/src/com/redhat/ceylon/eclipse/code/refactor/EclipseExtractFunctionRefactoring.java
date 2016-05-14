@@ -21,9 +21,11 @@ import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.ide.common.refactoring.DefaultRegion;
@@ -35,6 +37,7 @@ import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 
 import ceylon.interop.java.CeylonIterable;
+import ceylon.language.empty_;
 
 public class EclipseExtractFunctionRefactoring extends AbstractRefactoring implements ExtractLinkedModeEnabled {
 
@@ -81,20 +84,27 @@ public class EclipseExtractFunctionRefactoring extends AbstractRefactoring imple
         if (newName == null) {
             newName = "do";
         }
+        CeylonParseController parseController = 
+                ce.getParseController();
+        PhasedUnits projectPhasedUnits = 
+                getProjectPhasedUnits(project);
         refactoring = createExtractFunctionRefactoring_
                 .createExtractFunctionRefactoring(
                         Java2CeylonProxies.correctJ2C()
                             .newDocument(document),
                         selection.getOffset(),
-                        selection.getOffset() + selection.getLength(),
-                        ce.getParseController().getTypecheckedRootNode(),
-                        ce.getParseController().getTokens(), 
+                        selection.getOffset() 
+                            + selection.getLength(),
+                        parseController.getTypecheckedRootNode(),
+                        parseController.getTokens(), 
                         target, 
-                        new CeylonIterable<PhasedUnit>(
+                        projectPhasedUnits==null ?
+                            (ceylon.language.Iterable) 
+                                empty_.get_() :
+                            new CeylonIterable<PhasedUnit>(
                                 TypeDescriptor.klass(PhasedUnit.class),
-                                getProjectPhasedUnits(project)
-                                    .getPhasedUnits()),
-                        ce.getParseController()
+                                projectPhasedUnits.getPhasedUnits()),
+                        parseController
                             .getLastPhasedUnit()
                             .getUnitFile(),
                         new ceylon.language.String(newName));
