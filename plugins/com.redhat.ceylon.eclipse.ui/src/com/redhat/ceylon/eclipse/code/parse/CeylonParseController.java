@@ -31,6 +31,7 @@ import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getPreferences;
 import static com.redhat.ceylon.eclipse.util.PathUtils.toCommonPath;
+import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static java.util.Arrays.asList;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -229,21 +230,40 @@ public class CeylonParseController
     private FileVirtualFile<IProject,IResource,IFolder,IFile> 
     createSourceCodeVirtualFile(String contents, 
             IPath path) {
-        if (path == null) {
-            return new SourceCodeVirtualFile<IProject,IResource,IFolder,IFile>(
-                    TypeDescriptor.klass(IProject.class),
-                    TypeDescriptor.klass(IResource.class),
-                    TypeDescriptor.klass(IFolder.class),
-                    TypeDescriptor.klass(IFile.class),
-                    contents);
-        } 
-        else {
-            return new SourceCodeVirtualFile<IProject,IResource,IFolder,IFile>(
-                    TypeDescriptor.klass(IProject.class),
-                    TypeDescriptor.klass(IResource.class),
-                    TypeDescriptor.klass(IFolder.class),
-                    TypeDescriptor.klass(IFile.class),
-                    contents, toCommonPath(path));
+        return new SourceCodeVirtualFile<IProject,IResource,IFolder,IFile>(
+                TypeDescriptor.klass(IProject.class),
+                TypeDescriptor.klass(IResource.class),
+                TypeDescriptor.klass(IFolder.class),
+                TypeDescriptor.klass(IFile.class),
+                contents, 
+                path==null ? null : toCommonPath(path),
+                project, getFile(), 
+                toCeylonString(getCharset()));
+    }
+
+    private IFile getFile() {
+        return project==null || filePath==null ? null : 
+            project.getFile(filePath);
+    }
+
+    private String getCharset() {
+        IFile file = getFile();
+        try {
+            if (file==null) {
+                if (project==null) {
+                    return getWorkspace().getRoot()
+                            .getDefaultCharset();
+                }
+                else {
+                    return project.getDefaultCharset();
+                }
+            }
+            else {
+                return file.getCharset();
+            }
+        } catch (CoreException e) {
+            e.printStackTrace();
+            return System.getProperty("file.encoding");
         }
     }
 
