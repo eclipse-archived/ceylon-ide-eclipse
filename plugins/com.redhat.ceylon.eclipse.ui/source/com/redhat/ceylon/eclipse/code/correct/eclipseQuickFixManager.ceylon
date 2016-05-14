@@ -60,7 +60,7 @@ shared class EclipseQuickFixData(ProblemLocation location,
     shared Collection<ICompletionProposal> proposals,
     shared CeylonEditor editor,
     shared actual BaseCeylonProject ceylonProject,
-    IDocument document)
+    IDocument doc)
         satisfies QuickFixData {
     
     errorCode => location.problemId;
@@ -68,7 +68,7 @@ shared class EclipseQuickFixData(ProblemLocation location,
     problemLength => location.length;
     
     phasedUnit => editor.parseController.lastPhasedUnit;
-    doc = EclipseDocument(document);
+    document = EclipseDocument(doc);
     
     shared actual void addQuickFix(String desc, CommonTextChange change,
         DefaultRegion? selection) {
@@ -105,7 +105,6 @@ object eclipseQuickFixManager
     appendMemberReferenceQuickFix => eclipseAppendMemberReferenceQuickFix;
     changeTypeQuickFix => eclipseChangeTypeQuickFix;
     addSatisfiesQuickFix => eclipseAddSatisfiesQuickFix;
-    addSpreadToVariadicParameterQuickFix => eclipseAddSpreadToVariadicParameterQuickFix;
     addTypeParameterQuickFix => eclipseAddTypeParameterQuickFix;
     shadowReferenceQuickFix => eclipseShadowReferenceQuickFix;
     changeInitialCaseQuickFix => eclipseChangeInitialCaseQuickFix;
