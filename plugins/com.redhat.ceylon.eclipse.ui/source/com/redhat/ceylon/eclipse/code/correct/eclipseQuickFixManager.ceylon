@@ -100,7 +100,6 @@ object eclipseQuickFixManager
     addParameterListQuickFix => eclipseAddParameterListQuickFix;
     addParameterQuickFix => eclipseAddParameterQuickFix;
     addInitializerQuickFix => eclipseAddInitializerQuickFix;
-    addConstructorQuickFix => eclipseAddConstructorQuickFix;
     changeDeclarationQuickFix => eclipseChangeDeclarationQuickFix;
     fixAliasQuickFix => eclipseFixAliasQuickFix;
     appendMemberReferenceQuickFix => eclipseAppendMemberReferenceQuickFix;
