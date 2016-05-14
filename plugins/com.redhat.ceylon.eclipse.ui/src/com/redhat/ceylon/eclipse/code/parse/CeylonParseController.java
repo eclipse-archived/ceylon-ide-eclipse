@@ -299,7 +299,10 @@ public class CeylonParseController
                         file, srcDir, 
                         cu, pkg, 
                         moduleManager, moduleSourceMapper,
-                        typeChecker, tokens, savedPhasedUnit);
+                        typeChecker, tokens, savedPhasedUnit,
+                        project, 
+                        project==null || filePath==null ? null :
+                            project.getFile(filePath));
         if (savedPhasedUnit != null) {
             savedPhasedUnit.addWorkingCopy(editedPhasedUnit);
         }

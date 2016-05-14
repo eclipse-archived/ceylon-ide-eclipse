@@ -104,9 +104,10 @@ shared interface EclipseAbstractQuickFix
     shared actual TextChange newTextChange(String desc, PhasedUnit|IFile|IDocument u) {
         if (is IDocument u) {
             return DocumentChange(desc, u);
-        } else if (is PhasedUnit u){
-            assert(is ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> u);
-            return TextFileChange(desc, u.resourceFile);
+        } else if (is PhasedUnit u) {
+            assert (is ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> u,
+                    exists file = u.resourceFile);
+            return TextFileChange(desc, file);
         } else {
             return TextFileChange(desc, u);
         }
@@ -116,7 +117,9 @@ shared interface EclipseAbstractQuickFix
         if (is ModifiableSourceFile<IProject, IResource, IFolder, IFile> u) {
             return u.phasedUnit;
         }
-        return null;
+        else {
+            return null;
+        }
     }
     
     shared actual IFile? getFile<NativeFile>(IResourceAware<out Anything,out Anything,NativeFile> pu, EclipseQuickFixData data) {
