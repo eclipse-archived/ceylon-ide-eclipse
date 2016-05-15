@@ -76,71 +76,7 @@ import org.eclipse.text.edits {
     TextEdit
 }
 
-shared class EclipseQuickFixData(ProblemLocation location,
-    shared actual Tree.CompilationUnit rootNode,
-    shared actual Node node,
-    shared IProject project,
-    shared Collection<ICompletionProposal> proposals,
-    shared CeylonEditor editor,
-    shared actual BaseCeylonProject ceylonProject,
-    IDocument doc)
-        satisfies QuickFixData {
-    
-    errorCode => location.problemId;
-    problemOffset => location.offset;
-    problemLength => location.length;
-    
-    phasedUnit => editor.parseController.lastPhasedUnit;
-    document = EclipseDocument(doc);
-    
-    shared actual void addQuickFix(String desc, CommonTextChange change,
-        DefaultRegion? selection, Boolean qualifiedNameIsPath) {
-        
-        if (is EclipseTextChange change) {
-            value region 
-                    = if (exists selection)
-                    then Region(selection.start, selection.length)
-                    else null;
-            proposals.add(CorrectionProposal(desc, 
-                change.nativeChange, region, 
-                qualifiedNameIsPath));
-        }
-    }
-    
-    shared actual void addInitializerQuickFix(String desc, CommonTextChange change,
-        DefaultRegion selection, Unit unit, Scope scope, Type? type) {
-        
-        if (is EclipseTextChange change) {
-            proposals.add(EclipseInitializerProposal {
-                name = desc;
-                change = change.nativeChange;
-                unit = unit;
-                scope = scope;
-                type = type;
-                selection = Region(selection.start, selection.length);
-                image = CeylonResources.\iMINOR_CHANGE;
-                exitPos = -1;
-            });
-        }
-    }
 
-    shared actual void addParameterQuickFix(String desc, CommonTextChange change,
-        DefaultRegion selection, Unit unit, Scope scope, Type? type, Integer exitPos) {
-        
-        if (is EclipseTextChange change) {
-            proposals.add(EclipseInitializerProposal {
-                name = desc;
-                change = change.nativeChange;
-                unit = unit;
-                scope = scope;
-                type = type;
-                selection = Region(selection.start, selection.length);
-                image = CeylonResources.\iADD_CORR;
-                exitPos = exitPos;
-            });
-        }
-    }
-}
 
 object eclipseQuickFixManager
         extends IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,IFile,ICompletionProposal,EclipseQuickFixData,LinkedModeModel>() {
