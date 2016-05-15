@@ -72,27 +72,4 @@ shared interface EclipseDocumentChanges
                doc.get(info.offset, info.length);
 }
 
-shared class EclipseDocument(shared IDocument document) 
-        satisfies CommonDocument {
-    
-    getLineContent(Integer line)
-            => let (info = document.getLineInformation(line))
-            document.get(info.offset, info.length);
 
-    getLineStartOffset(Integer line)
-            => document.getLineInformation(line).offset;
-    
-    getLineEndOffset(Integer line)
-            => document.getLineInformation(line).offset
-             + document.getLineInformation(line).length;
-    
-    getLineOfOffset(Integer offset)
-            => document.getLineOfOffset(offset);
-    
-    getText(Integer offset, Integer length)
-            => document.get(offset, length);
-    
-    getDefaultLineDelimiter()
-            => eclipseIndents.getDefaultLineDelimiter(document);
-    
-}
