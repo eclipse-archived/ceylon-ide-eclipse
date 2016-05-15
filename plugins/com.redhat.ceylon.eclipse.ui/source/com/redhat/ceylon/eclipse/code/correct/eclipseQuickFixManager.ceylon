@@ -12,7 +12,8 @@ import com.redhat.ceylon.ide.common.correct {
     convertForToWhileQuickFix,
     joinIfStatementsQuickFix,
     splitIfStatementQuickFix,
-    verboseRefinementQuickFix
+    verboseRefinementQuickFix,
+    addParameterQuickFix
 }
 import com.redhat.ceylon.ide.common.model {
     BaseCeylonProject
@@ -52,6 +53,14 @@ import com.redhat.ceylon.eclipse.platform {
 import com.redhat.ceylon.ide.common.refactoring {
     DefaultRegion
 }
+import com.redhat.ceylon.eclipse.ui {
+    CeylonResources
+}
+import com.redhat.ceylon.model.typechecker.model {
+    Unit,
+    Type,
+    Scope
+}
 
 shared class EclipseQuickFixData(ProblemLocation location,
     shared actual Tree.CompilationUnit rootNode,
@@ -74,13 +83,47 @@ shared class EclipseQuickFixData(ProblemLocation location,
         DefaultRegion? selection) {
         
         if (is EclipseTextChange change) {
-            value region = if (exists selection)
-                           then Region(selection.start, selection.length)
-                           else null;
+            value region 
+                    = if (exists selection)
+                    then Region(selection.start, selection.length)
+                    else null;
             proposals.add(CorrectionProposal(desc, change.nativeChange, region));
         }
     }
     
+    shared actual void addInitializerQuickFix(String desc, CommonTextChange change,
+        DefaultRegion selection, Unit unit, Scope scope, Type? type) {
+        
+        if (is EclipseTextChange change) {
+            proposals.add(EclipseInitializerProposal {
+                name = desc;
+                change = change.nativeChange;
+                unit = unit;
+                scope = scope;
+                type = type;
+                selection = Region(selection.start, selection.length);
+                image = CeylonResources.\iMINOR_CHANGE;
+                exitPos = -1;
+            });
+        }
+    }
+
+    shared actual void addParameterQuickFix(String desc, CommonTextChange change,
+        DefaultRegion selection, Unit unit, Scope scope, Type? type, Integer exitPos) {
+        
+        if (is EclipseTextChange change) {
+            proposals.add(EclipseInitializerProposal {
+                name = desc;
+                change = change.nativeChange;
+                unit = unit;
+                scope = scope;
+                type = type;
+                selection = Region(selection.start, selection.length);
+                image = CeylonResources.\iADD_CORR;
+                exitPos = exitPos;
+            });
+        }
+    }
 }
 
 object eclipseQuickFixManager
@@ -98,8 +141,6 @@ object eclipseQuickFixManager
     exportModuleImportQuickFix => eclipseExportModuleImportQuickFix;
     addPunctuationQuickFix => eclipseAddPunctuationQuickFix;
     addParameterListQuickFix => eclipseAddParameterListQuickFix;
-    addParameterQuickFix => eclipseAddParameterQuickFix;
-    addInitializerQuickFix => eclipseAddInitializerQuickFix;
     changeDeclarationQuickFix => eclipseChangeDeclarationQuickFix;
     fixAliasQuickFix => eclipseFixAliasQuickFix;
     appendMemberReferenceQuickFix => eclipseAppendMemberReferenceQuickFix;
@@ -170,7 +211,7 @@ object eclipseQuickFixManager
         assertExistsDeclarationQuickFix.addAssertExistsDeclarationProposals(data, file, declaration);
         splitDeclarationQuickFix.addSplitDeclarationProposals(data, file, declaration, statement);
         joinDeclarationQuickFix.addJoinDeclarationProposal(data, file, statement);
-        addParameterQuickFix.addParameterProposals(data, file);
+        addParameterQuickFix.addParameterProposals(data);
 
         eclipseMiscQuickFix.addArgumentProposals(data, file, namedArgument);
 
