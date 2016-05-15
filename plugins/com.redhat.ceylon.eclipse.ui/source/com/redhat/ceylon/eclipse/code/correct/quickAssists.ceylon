@@ -6,7 +6,6 @@ import com.redhat.ceylon.ide.common.correct {
     AssignToFieldQuickFix,
     ConvertToDefaultConstructorQuickFix,
     AssertExistsDeclarationQuickFix,
-    SplitDeclarationQuickFix,
     JoinDeclarationQuickFix,
     ConvertThenElseToIfElse,
     ConvertIfElseToThenElseQuickFix,
@@ -60,11 +59,6 @@ object convertToDefaultConstructorQuickFix
 
 object assertExistsDeclarationQuickFix
         satisfies AssertExistsDeclarationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
-        & EclipseGenericQuickFix {   
-}
-
-object splitDeclarationQuickFix
-        satisfies SplitDeclarationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
         & EclipseGenericQuickFix {   
 }
 

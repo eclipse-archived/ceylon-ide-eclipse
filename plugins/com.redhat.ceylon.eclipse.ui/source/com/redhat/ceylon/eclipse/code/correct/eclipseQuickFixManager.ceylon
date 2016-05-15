@@ -15,7 +15,8 @@ import com.redhat.ceylon.ide.common.correct {
     verboseRefinementQuickFix,
     addParameterQuickFix,
     miscQuickFixes,
-    changeToIfQuickFix
+    changeToIfQuickFix,
+    splitDeclarationQuickFix
 }
 import com.redhat.ceylon.ide.common.model {
     BaseCeylonProject
@@ -141,13 +142,10 @@ object eclipseQuickFixManager
     createEnumQuickFix => eclipseCreateEnumQuickFix;
     refineFormalMembersQuickFix => eclipseRefineFormalMembersQuickFix;
     exportModuleImportQuickFix => eclipseExportModuleImportQuickFix;
-    fixAliasQuickFix => eclipseFixAliasQuickFix;
     appendMemberReferenceQuickFix => eclipseAppendMemberReferenceQuickFix;
     changeTypeQuickFix => eclipseChangeTypeQuickFix;
     addSatisfiesQuickFix => eclipseAddSatisfiesQuickFix;
     addTypeParameterQuickFix => eclipseAddTypeParameterQuickFix;
-    shadowReferenceQuickFix => eclipseShadowReferenceQuickFix;
-    fixMultilineStringIndentationQuickFix => eclipseFixMultilineStringIndentationQuickFix;
     addModuleImportQuickFix => eclipseAddModuleImportQuickFix;
     renameDescriptorQuickFix => eclipseRenameDescriptorQuickFix;
     changeRefiningTypeQuickType => eclipseChangeRefiningTypeQuickType;
@@ -207,7 +205,7 @@ object eclipseQuickFixManager
 
         convertToClassQuickFix.addConvertToClassProposal(data, declaration);
         assertExistsDeclarationQuickFix.addAssertExistsDeclarationProposals(data, file, declaration);
-        splitDeclarationQuickFix.addSplitDeclarationProposals(data, file, declaration, statement);
+        splitDeclarationQuickFix.addSplitDeclarationProposals(data, declaration, statement);
         joinDeclarationQuickFix.addJoinDeclarationProposal(data, file, statement);
         addParameterQuickFix.addParameterProposals(data);
 
