@@ -74,12 +74,12 @@ class AddRemoveAnnotionProposal(dec, annotation, desc, change, region)
     TextChange change;
     Region? region;
     
-    shared actual Boolean equals(Object obj) {
-        if (is AddRemoveAnnotionProposal obj) {
-            value that = obj;
-            return that.dec.equals(dec) && that.annotation.equals(annotation);
+    shared actual Boolean equals(Object that) {
+        if (is AddRemoveAnnotionProposal that) {
+            return that.dec==dec && 
+                    that.annotation==annotation;
         } else {
-            return super.equals(obj);
+            return super.equals(that);
         }
     }
     

@@ -157,13 +157,7 @@ object eclipseQuickFixManager
     exportModuleImportQuickFix => eclipseExportModuleImportQuickFix;
     changeTypeQuickFix => eclipseChangeTypeQuickFix;
     addSatisfiesQuickFix => eclipseAddSatisfiesQuickFix;
-    addTypeParameterQuickFix => eclipseAddTypeParameterQuickFix;
     addModuleImportQuickFix => eclipseAddModuleImportQuickFix;
-    renameDescriptorQuickFix => eclipseRenameDescriptorQuickFix;
-    changeRefiningTypeQuickType => eclipseChangeRefiningTypeQuickType;
-    switchQuickFix => eclipseSwitchQuickFix;
-    changeToQuickFix => eclipseChangeToQuickFix;
-    addNamedArgumentQuickFix => eclipseAddNamedArgumentQuickFix;
     assignToLocalQuickFix => eclipseAssignToLocalQuickFix;
     
     shared actual void addImportProposals(Collection<ICompletionProposal> proposals, EclipseQuickFixData data) {

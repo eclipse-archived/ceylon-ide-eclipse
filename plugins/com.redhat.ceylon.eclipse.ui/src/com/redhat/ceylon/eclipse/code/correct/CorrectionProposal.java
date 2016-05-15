@@ -84,7 +84,12 @@ class CorrectionProposal
 
     public CorrectionProposal(String name, Change change, Region selection, 
             boolean qualifiedNameIsPath) {
-        this(name, change, selection, MINOR_CHANGE);
+        this(name, change, selection, MINOR_CHANGE, qualifiedNameIsPath);
+    }
+
+    public CorrectionProposal(String name, Change change, Region selection,  Image image,
+            boolean qualifiedNameIsPath) {
+        this(name, change, selection, image);
         this.qualifiedNameIsPath = qualifiedNameIsPath;
     }
 
