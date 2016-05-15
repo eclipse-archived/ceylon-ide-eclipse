@@ -13,7 +13,8 @@ import com.redhat.ceylon.ide.common.correct {
     joinIfStatementsQuickFix,
     splitIfStatementQuickFix,
     verboseRefinementQuickFix,
-    addParameterQuickFix
+    addParameterQuickFix,
+    miscQuickFixes
 }
 import com.redhat.ceylon.ide.common.model {
     BaseCeylonProject
@@ -139,8 +140,6 @@ object eclipseQuickFixManager
     createEnumQuickFix => eclipseCreateEnumQuickFix;
     refineFormalMembersQuickFix => eclipseRefineFormalMembersQuickFix;
     exportModuleImportQuickFix => eclipseExportModuleImportQuickFix;
-    addPunctuationQuickFix => eclipseAddPunctuationQuickFix;
-    addParameterListQuickFix => eclipseAddParameterListQuickFix;
     changeDeclarationQuickFix => eclipseChangeDeclarationQuickFix;
     fixAliasQuickFix => eclipseFixAliasQuickFix;
     appendMemberReferenceQuickFix => eclipseAppendMemberReferenceQuickFix;
@@ -148,7 +147,6 @@ object eclipseQuickFixManager
     addSatisfiesQuickFix => eclipseAddSatisfiesQuickFix;
     addTypeParameterQuickFix => eclipseAddTypeParameterQuickFix;
     shadowReferenceQuickFix => eclipseShadowReferenceQuickFix;
-    changeInitialCaseQuickFix => eclipseChangeInitialCaseQuickFix;
     fixMultilineStringIndentationQuickFix => eclipseFixMultilineStringIndentationQuickFix;
     addModuleImportQuickFix => eclipseAddModuleImportQuickFix;
     renameDescriptorQuickFix => eclipseRenameDescriptorQuickFix;
@@ -197,9 +195,9 @@ object eclipseQuickFixManager
         addAnnotations.addContextualAnnotationProposals(data, declaration, doc, currentOffset);
         specifyTypeQuickFix.addTypingProposals(data, file, declaration);
         
-        eclipseMiscQuickFix.addAnonymousFunctionProposals(data, file);
+        miscQuickFixes.addAnonymousFunctionProposals(data);
         
-        eclipseMiscQuickFix.addDeclarationProposals(data, file, declaration, currentOffset);
+        miscQuickFixes.addDeclarationProposals(data, declaration, currentOffset);
         
         assignToFieldQuickFix.addAssignToFieldProposal(data, file, statement, declaration);
         
@@ -213,7 +211,7 @@ object eclipseQuickFixManager
         joinDeclarationQuickFix.addJoinDeclarationProposal(data, file, statement);
         addParameterQuickFix.addParameterProposals(data);
 
-        eclipseMiscQuickFix.addArgumentProposals(data, file, namedArgument);
+        miscQuickFixes.addArgumentProposals(data, namedArgument);
 
         convertThenElseToIfElse.addConvertToIfElseProposal(data, file, doc, statement);
         convertIfElseToThenElse.addConvertToThenElseProposal(data, file, doc, statement);
