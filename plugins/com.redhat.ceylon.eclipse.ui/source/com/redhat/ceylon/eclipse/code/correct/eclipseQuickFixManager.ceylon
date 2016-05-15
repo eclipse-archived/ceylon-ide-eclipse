@@ -5,6 +5,12 @@ import com.redhat.ceylon.compiler.typechecker.tree {
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
 }
+import com.redhat.ceylon.eclipse.platform {
+    EclipseTextChange
+}
+import com.redhat.ceylon.eclipse.ui {
+    CeylonResources
+}
 import com.redhat.ceylon.ide.common.correct {
     IdeQuickFixManager,
     QuickFixData,
@@ -16,10 +22,32 @@ import com.redhat.ceylon.ide.common.correct {
     addParameterQuickFix,
     miscQuickFixes,
     changeToIfQuickFix,
-    splitDeclarationQuickFix
+    splitDeclarationQuickFix,
+    expandTypeQuickFix,
+    convertStringQuickFix,
+    assignToFieldQuickFix,
+    joinDeclarationQuickFix,
+    operatorQuickFix,
+    convertToDefaultConstructorQuickFix,
+    convertSwitchToIfQuickFix,
+    invertIfElseQuickFix,
+    convertIfElseToThenElseQuickFix,
+    convertThenElseToIfElse,
+    assertExistsDeclarationQuickFix
 }
 import com.redhat.ceylon.ide.common.model {
     BaseCeylonProject
+}
+import com.redhat.ceylon.ide.common.platform {
+    CommonTextChange=TextChange
+}
+import com.redhat.ceylon.ide.common.refactoring {
+    DefaultRegion
+}
+import com.redhat.ceylon.model.typechecker.model {
+    Unit,
+    Type,
+    Scope
 }
 
 import java.util {
@@ -47,23 +75,6 @@ import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
 }
-import com.redhat.ceylon.ide.common.platform {
-    CommonTextChange=TextChange
-}
-import com.redhat.ceylon.eclipse.platform {
-    EclipseTextChange
-}
-import com.redhat.ceylon.ide.common.refactoring {
-    DefaultRegion
-}
-import com.redhat.ceylon.eclipse.ui {
-    CeylonResources
-}
-import com.redhat.ceylon.model.typechecker.model {
-    Unit,
-    Type,
-    Scope
-}
 
 shared class EclipseQuickFixData(ProblemLocation location,
     shared actual Tree.CompilationUnit rootNode,
@@ -83,14 +94,16 @@ shared class EclipseQuickFixData(ProblemLocation location,
     document = EclipseDocument(doc);
     
     shared actual void addQuickFix(String desc, CommonTextChange change,
-        DefaultRegion? selection) {
+        DefaultRegion? selection, Boolean qualifiedNameIsPath) {
         
         if (is EclipseTextChange change) {
             value region 
                     = if (exists selection)
                     then Region(selection.start, selection.length)
                     else null;
-            proposals.add(CorrectionProposal(desc, change.nativeChange, region));
+            proposals.add(CorrectionProposal(desc, 
+                change.nativeChange, region, 
+                qualifiedNameIsPath));
         }
     }
     
@@ -142,7 +155,6 @@ object eclipseQuickFixManager
     createEnumQuickFix => eclipseCreateEnumQuickFix;
     refineFormalMembersQuickFix => eclipseRefineFormalMembersQuickFix;
     exportModuleImportQuickFix => eclipseExportModuleImportQuickFix;
-    appendMemberReferenceQuickFix => eclipseAppendMemberReferenceQuickFix;
     changeTypeQuickFix => eclipseChangeTypeQuickFix;
     addSatisfiesQuickFix => eclipseAddSatisfiesQuickFix;
     addTypeParameterQuickFix => eclipseAddTypeParameterQuickFix;
@@ -181,11 +193,11 @@ object eclipseQuickFixManager
         assignToLocalQuickFix.addProposal(data, file, currentOffset);
         
         if (is Tree.BinaryOperatorExpression oe) {
-            operatorQuickFix.addReverseOperatorProposal(data, file, oe);
-            operatorQuickFix.addInvertOperatorProposal(data, file, oe);
-            operatorQuickFix.addSwapBinaryOperandsProposal(data, file, oe);
+            operatorQuickFix.addReverseOperatorProposal(data,  oe);
+            operatorQuickFix.addInvertOperatorProposal(data, oe);
+            operatorQuickFix.addSwapBinaryOperandsProposal(data, oe);
         }
-        operatorQuickFix.addParenthesesProposals(data, file, oe);
+        operatorQuickFix.addParenthesesProposals(data, oe);
         
         verboseRefinementQuickFix.addVerboseRefinementProposal(data, statement);
         verboseRefinementQuickFix.addShortcutRefinementProposal(data, statement);
@@ -197,26 +209,27 @@ object eclipseQuickFixManager
         
         miscQuickFixes.addDeclarationProposals(data, declaration, currentOffset);
         
-        assignToFieldQuickFix.addAssignToFieldProposal(data, file, statement, declaration);
+        assignToFieldQuickFix.addAssignToFieldProposal(data, statement, declaration);
         
         changeToIfQuickFix.addChangeToIfProposal(data, statement);
         
-        convertToDefaultConstructorQuickFix.addConvertToDefaultConstructorProposal(data, file, statement);
+        convertToDefaultConstructorQuickFix.addConvertToDefaultConstructorProposal(data, statement);
 
         convertToClassQuickFix.addConvertToClassProposal(data, declaration);
-        assertExistsDeclarationQuickFix.addAssertExistsDeclarationProposals(data, file, declaration);
+        assertExistsDeclarationQuickFix.addAssertExistsDeclarationProposals(data, declaration);
         splitDeclarationQuickFix.addSplitDeclarationProposals(data, declaration, statement);
-        joinDeclarationQuickFix.addJoinDeclarationProposal(data, file, statement);
+        joinDeclarationQuickFix.addJoinDeclarationProposal(data, statement);
         addParameterQuickFix.addParameterProposals(data);
 
         miscQuickFixes.addArgumentProposals(data, namedArgument);
 
-        convertThenElseToIfElse.addConvertToIfElseProposal(data, file, doc, statement);
-        convertIfElseToThenElse.addConvertToThenElseProposal(data, file, doc, statement);
-        invertIfElseQuickFix.addInvertIfElseProposal(data, file, doc, statement);
+        value document = EclipseDocument(doc);
+        convertThenElseToIfElse.addConvertToIfElseProposal(data, document, statement);
+        convertIfElseToThenElseQuickFix.addConvertToThenElseProposal(data, document, statement);
+        invertIfElseQuickFix.addInvertIfElseProposal(data, document, statement);
         
-        convertSwitchToIfQuickFix.addConvertSwitchToIfProposal(data, file, statement);
-        convertSwitchToIfQuickFix.addConvertIfToSwitchProposal(data, file, statement);
+        convertSwitchToIfQuickFix.addConvertSwitchToIfProposal(data, statement);
+        convertSwitchToIfQuickFix.addConvertIfToSwitchProposal(data, statement);
         
         splitIfStatementQuickFix.addSplitIfStatementProposal(data, statement);
         joinIfStatementsQuickFix.addJoinIfStatementsProposal(data, statement);
@@ -228,13 +241,19 @@ object eclipseQuickFixManager
         refineFormalMembersQuickFix.addRefineFormalMembersProposal(data, false);
         refineEqualsHashQuickFix.addRefineEqualsHashProposal(data, file, currentOffset);
         
-        convertStringQuickFix.addConvertToVerbatimProposal(data, file);
-        convertStringQuickFix.addConvertFromVerbatimProposal(data, file);
-        convertStringQuickFix.addConvertToConcatenationProposal(data, file);
-        convertStringQuickFix.addConvertToInterpolationProposal(data, file);
+        convertStringQuickFix.addConvertToVerbatimProposal(data);
+        convertStringQuickFix.addConvertFromVerbatimProposal(data);
+        convertStringQuickFix.addConvertToConcatenationProposal(data);
+        convertStringQuickFix.addConvertToInterpolationProposal(data);
         
-        value selectionStart = data.editor.selection.offset;
-        value selectionStop = data.editor.selection.offset + data.editor.selection.length;
-        expandTypeQuickFix.addExpandTypeProposal(data, file, statement, selectionStart, selectionStop);
+        expandTypeQuickFix.addExpandTypeProposal {
+            data = data;
+            node = statement;
+            selectionStart 
+                    = data.editor.selection.offset;
+            selectionStop 
+                    = data.editor.selection.offset 
+                    + data.editor.selection.length;
+        };
     }
 }

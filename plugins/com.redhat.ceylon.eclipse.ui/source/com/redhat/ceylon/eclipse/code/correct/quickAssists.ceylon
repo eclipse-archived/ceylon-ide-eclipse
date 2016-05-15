@@ -2,19 +2,8 @@ import com.redhat.ceylon.eclipse.code.complete {
     RefinementCompletionProposal
 }
 import com.redhat.ceylon.ide.common.correct {
-    OperatorQuickFix,
-    AssignToFieldQuickFix,
-    ConvertToDefaultConstructorQuickFix,
-    AssertExistsDeclarationQuickFix,
-    JoinDeclarationQuickFix,
-    ConvertThenElseToIfElse,
-    ConvertIfElseToThenElseQuickFix,
-    InvertIfElseQuickFix,
-    ConvertSwitchToIfQuickFix,
     AddThrowsAnnotationQuickFix,
-    RefineEqualsHashQuickFix,
-    ConvertStringQuickFix,
-    ExpandTypeQuickFix
+    RefineEqualsHashQuickFix
 }
 import com.redhat.ceylon.ide.common.refactoring {
     DefaultRegion
@@ -42,51 +31,6 @@ import org.eclipse.text.edits {
     TextEdit
 }
 
-object operatorQuickFix
-        satisfies OperatorQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
-                & EclipseGenericQuickFix {
-}
-
-object assignToFieldQuickFix
-        satisfies AssignToFieldQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
-        & EclipseGenericQuickFix {
-}
-
-object convertToDefaultConstructorQuickFix
-        satisfies ConvertToDefaultConstructorQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
-        & EclipseGenericQuickFix {   
-}
-
-object assertExistsDeclarationQuickFix
-        satisfies AssertExistsDeclarationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
-        & EclipseGenericQuickFix {   
-}
-
-object joinDeclarationQuickFix
-        satisfies JoinDeclarationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
-        & EclipseGenericQuickFix {   
-}
-
-object convertThenElseToIfElse
-        satisfies ConvertThenElseToIfElse<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
-        & EclipseGenericQuickFix {   
-}
-
-object convertIfElseToThenElse
-        satisfies ConvertIfElseToThenElseQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
-        & EclipseGenericQuickFix {   
-}
-
-object invertIfElseQuickFix
-        satisfies InvertIfElseQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
-        & EclipseGenericQuickFix {
-}
-
-object convertSwitchToIfQuickFix
-        satisfies ConvertSwitchToIfQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
-        & EclipseGenericQuickFix {
-}
-
 object addThrowsAnnotationQuickFix
         satisfies AddThrowsAnnotationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
         & EclipseGenericQuickFix {
@@ -111,14 +55,4 @@ object refineEqualsHashQuickFix
         data.proposals.add(proposal); 
     }
 
-}
-
-object convertStringQuickFix
-        satisfies ConvertStringQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
-        & EclipseGenericQuickFix {
-}
-
-object expandTypeQuickFix
-        satisfies ExpandTypeQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
-        & EclipseGenericQuickFix {
 }

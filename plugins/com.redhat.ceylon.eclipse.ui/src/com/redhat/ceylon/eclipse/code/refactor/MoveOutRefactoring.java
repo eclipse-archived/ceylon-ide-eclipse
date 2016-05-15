@@ -174,7 +174,8 @@ public class MoveOutRefactoring extends AbstractRefactoring {
             String indent, String originalIndent, String delim) {
         Unit unit = declaration.getUnit();
         String qtype =
-                owner.getDeclarationModel().getType()
+                owner.getDeclarationModel()
+                    .getType()
                     .asSourceCodeString(unit);
         StringBuilder sb = new StringBuilder();
         if (declaration instanceof Tree.AnyMethod) {

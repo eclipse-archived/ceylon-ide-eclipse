@@ -48,6 +48,8 @@ class CorrectionProposal
     private final Image image;
     private final Region selection;
 
+    private boolean qualifiedNameIsPath;
+
     /**
      * Constructs a change correction proposal.
      * 
@@ -78,6 +80,12 @@ class CorrectionProposal
      */
     public CorrectionProposal(String name, Change change, Region selection) {
         this(name, change, selection, MINOR_CHANGE);
+    }
+
+    public CorrectionProposal(String name, Change change, Region selection, 
+            boolean qualifiedNameIsPath) {
+        this(name, change, selection, MINOR_CHANGE);
+        this.qualifiedNameIsPath = qualifiedNameIsPath;
     }
 
     @Override
@@ -132,7 +140,8 @@ class CorrectionProposal
 
     @Override
     public StyledString getStyledDisplayString() {
-        return styleProposal(getDisplayString(), false);
+        return styleProposal(getDisplayString(), 
+                qualifiedNameIsPath);
     }
     
     /**
