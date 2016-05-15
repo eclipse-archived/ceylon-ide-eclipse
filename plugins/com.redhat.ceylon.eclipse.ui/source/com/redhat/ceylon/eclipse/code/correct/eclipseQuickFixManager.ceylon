@@ -14,7 +14,8 @@ import com.redhat.ceylon.ide.common.correct {
     splitIfStatementQuickFix,
     verboseRefinementQuickFix,
     addParameterQuickFix,
-    miscQuickFixes
+    miscQuickFixes,
+    changeToIfQuickFix
 }
 import com.redhat.ceylon.ide.common.model {
     BaseCeylonProject
@@ -140,7 +141,6 @@ object eclipseQuickFixManager
     createEnumQuickFix => eclipseCreateEnumQuickFix;
     refineFormalMembersQuickFix => eclipseRefineFormalMembersQuickFix;
     exportModuleImportQuickFix => eclipseExportModuleImportQuickFix;
-    changeDeclarationQuickFix => eclipseChangeDeclarationQuickFix;
     fixAliasQuickFix => eclipseFixAliasQuickFix;
     appendMemberReferenceQuickFix => eclipseAppendMemberReferenceQuickFix;
     changeTypeQuickFix => eclipseChangeTypeQuickFix;
@@ -201,7 +201,7 @@ object eclipseQuickFixManager
         
         assignToFieldQuickFix.addAssignToFieldProposal(data, file, statement, declaration);
         
-        changeToIfQuickFix.addChangeToIfProposal(data, file, statement);
+        changeToIfQuickFix.addChangeToIfProposal(data, statement);
         
         convertToDefaultConstructorQuickFix.addConvertToDefaultConstructorProposal(data, file, statement);
 

@@ -4,7 +4,6 @@ import com.redhat.ceylon.eclipse.code.complete {
 import com.redhat.ceylon.ide.common.correct {
     OperatorQuickFix,
     AssignToFieldQuickFix,
-    ChangeToIfQuickFix,
     ConvertToDefaultConstructorQuickFix,
     AssertExistsDeclarationQuickFix,
     SplitDeclarationQuickFix,
@@ -52,11 +51,6 @@ object operatorQuickFix
 object assignToFieldQuickFix
         satisfies AssignToFieldQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
         & EclipseGenericQuickFix {
-}
-
-object changeToIfQuickFix
-        satisfies ChangeToIfQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
-        & EclipseGenericQuickFix {   
 }
 
 object convertToDefaultConstructorQuickFix
