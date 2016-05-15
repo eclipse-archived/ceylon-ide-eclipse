@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.code.correct;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
+import static com.redhat.ceylon.eclipse.util.Highlights.styleProposal;
 
 import java.util.Collection;
 
@@ -15,8 +16,10 @@ import org.eclipse.jdt.internal.ui.refactoring.actions.RefactoringStarter;
 import org.eclipse.jdt.internal.ui.refactoring.reorg.RenamePackageWizard;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.quickassist.IQuickAssistInvocationContext;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.participants.RenameRefactoring;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -24,7 +27,9 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 
-final class MoveDirProposal implements ICompletionProposal {
+final class MoveDirProposal 
+        implements ICompletionProposal,
+                   ICompletionProposalExtension6 {
     
     private final IQuickAssistInvocationContext invocationContext;
     private final String pn;
@@ -56,6 +61,11 @@ final class MoveDirProposal implements ICompletionProposal {
         return "Rename and move to '" + pn + "'";
     }
 
+    @Override
+    public StyledString getStyledDisplayString() {
+        return styleProposal(getDisplayString(), true);
+    }
+    
     @Override
     public IContextInformation getContextInformation() {
         return null;
