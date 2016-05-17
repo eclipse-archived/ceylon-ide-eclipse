@@ -1,22 +1,17 @@
 package com.redhat.ceylon.eclipse.code.imports;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.text.edits.InsertEdit;
-import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.java2ceylon.ImportsJ2C;
 import com.redhat.ceylon.ide.common.imports.AbstractImportsCleaner;
-import com.redhat.ceylon.ide.common.imports.AbstractModuleImportUtil;
+import com.redhat.ceylon.ide.common.imports.moduleImportUtil_;
 
 public class importsJ2C implements ImportsJ2C {
 
     @Override
-    public AbstractModuleImportUtil<IFile, IProject, IDocument, InsertEdit, TextEdit, TextChange> importUtil() {
-        return eclipseModuleImportUtils_.get_();
+    public moduleImportUtil_ importUtil() {
+        return moduleImportUtil_.get_();
     }
     
     @Override

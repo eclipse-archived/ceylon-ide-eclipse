@@ -66,10 +66,8 @@ object eclipseQuickFixManager
     declareLocalQuickFix => eclipseDeclareLocalQuickFix;
     createEnumQuickFix => eclipseCreateEnumQuickFix;
     refineFormalMembersQuickFix => eclipseRefineFormalMembersQuickFix;
-    exportModuleImportQuickFix => eclipseExportModuleImportQuickFix;
     changeTypeQuickFix => eclipseChangeTypeQuickFix;
     addSatisfiesQuickFix => eclipseAddSatisfiesQuickFix;
-    addModuleImportQuickFix => eclipseAddModuleImportQuickFix;
     assignToLocalQuickFix => eclipseAssignToLocalQuickFix;
     
     shared actual void addImportProposals(Collection<ICompletionProposal> proposals, EclipseQuickFixData data) {

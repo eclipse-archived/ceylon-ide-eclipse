@@ -301,7 +301,7 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
                                 target.getNameAsString() + "' contains it already.");
                     } else {
                         importsJ2C().importUtil()
-                            .addModuleImport(moduleMap.get(target), target, moduleName, moduleVersion);
+                            .addModuleImport(target, moduleName, moduleVersion);
                     }
                 }
             }

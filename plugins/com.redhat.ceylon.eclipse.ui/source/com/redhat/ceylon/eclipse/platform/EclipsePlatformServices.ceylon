@@ -50,6 +50,12 @@ import org.eclipse.text.edits {
     EReplaceEdit=ReplaceEdit,
     EDeleteEdit=DeleteEdit
 }
+import com.redhat.ceylon.model.typechecker.model {
+    Unit
+}
+import com.redhat.ceylon.eclipse.code.editor {
+    Navigation
+}
 
 object eclipsePlatformServices satisfies PlatformServices {
     
@@ -78,6 +84,8 @@ object eclipsePlatformServices satisfies PlatformServices {
     
     createCompositeChange(String desc) => EclipseCompositeChange(desc);
     
+    gotoLocation(Unit unit, Integer offset, Integer length)
+            => Navigation.gotoLocation(unit, offset, length);
 }
 
 shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit input)
@@ -123,6 +131,8 @@ shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit input)
     initMultiEdit() => nativeChange.edit = MultiTextEdit();
     
     apply() => EditorUtil.performChange(nativeChange);
+    
+    offset => nativeChange.edit.offset;
 }
 
 shared class EclipseCompositeChange(String desc) 

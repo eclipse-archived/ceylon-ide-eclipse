@@ -1,51 +1,54 @@
-import java.util {
-    Collection
+import com.redhat.ceylon.compiler.typechecker.tree {
+    Tree,
+    Node
 }
-import com.redhat.ceylon.ide.common.model {
-    BaseCeylonProject
+import com.redhat.ceylon.eclipse.code.editor {
+    CeylonEditor
 }
 import com.redhat.ceylon.eclipse.platform {
     EclipseTextChange
 }
-import org.eclipse.jface.text {
-    Region,
-    IDocument
+import com.redhat.ceylon.eclipse.ui {
+    CeylonResources
+}
+import com.redhat.ceylon.eclipse.util {
+    Highlights
+}
+import com.redhat.ceylon.ide.common.correct {
+    QuickFixData,
+    exportModuleImportQuickFix
+}
+import com.redhat.ceylon.ide.common.model {
+    BaseCeylonProject
 }
 import com.redhat.ceylon.ide.common.platform {
     CommonTextChange=TextChange
+}
+import com.redhat.ceylon.ide.common.refactoring {
+    DefaultRegion
 }
 import com.redhat.ceylon.model.typechecker.model {
     Unit,
     Type,
     Scope
 }
-import com.redhat.ceylon.eclipse.ui {
-    CeylonResources
+
+import java.util {
+    Collection
+}
+
+import org.eclipse.core.resources {
+    IProject
+}
+import org.eclipse.jface.text {
+    Region,
+    IDocument
 }
 import org.eclipse.jface.text.contentassist {
     ICompletionProposal
 }
-import com.redhat.ceylon.ide.common.correct {
-    QuickFixData
-}
-import com.redhat.ceylon.eclipse.code.editor {
-    CeylonEditor
-}
-import org.eclipse.core.resources {
-    IProject
-}
-import com.redhat.ceylon.compiler.typechecker.tree {
-    Tree,
-    Node
-}
-import com.redhat.ceylon.ide.common.refactoring {
-    DefaultRegion
-}
 import org.eclipse.jface.viewers {
     StyledString
-}
-import com.redhat.ceylon.eclipse.util {
-    Highlights
 }
 
 shared class EclipseQuickFixData(ProblemLocation location,
@@ -127,5 +130,27 @@ shared class EclipseQuickFixData(ProblemLocation location,
                 }
             });
         }
+    }
+    
+    shared actual void addExportModuleImportProposal(Unit u, String description,
+        String name, String version) {
+        
+        proposals.add(object extends ExportModuleImportProposal(description) {
+            shared actual void apply(IDocument doc) {
+                exportModuleImportQuickFix.applyChanges(outer, u, name);
+            }
+        });
+    }
+    
+    shared actual void addModuleImportProposal(Unit u, String description,
+        String name, String version) {
+
+        proposals.add(EclipseAddModuleImportProposal {
+            desc = description;
+            data = this;
+            unit = u;
+            name = name;
+            version = version;
+        });
     }
 }

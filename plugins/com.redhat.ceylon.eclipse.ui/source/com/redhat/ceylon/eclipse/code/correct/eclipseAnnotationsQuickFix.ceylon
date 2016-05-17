@@ -1,12 +1,6 @@
-import com.redhat.ceylon.eclipse.code.imports {
-    eclipseModuleImportUtils
-}
 import com.redhat.ceylon.ide.common.correct {
     AddAnnotationQuickFix,
     RemoveAnnotationQuickFix
-}
-import com.redhat.ceylon.ide.common.imports {
-    AbstractModuleImportUtil
 }
 import com.redhat.ceylon.model.typechecker.model {
     Referenceable,
@@ -56,12 +50,9 @@ shared object eclipseAnnotationsQuickFix
         }
     }
     
-    shared actual AbstractModuleImportUtil<IFile,IProject,IDocument,InsertEdit,TextEdit,TextChange> moduleImportUtil
-            => eclipseModuleImportUtils;
-    
     shared actual void newCorrectionQuickFix(String desc, TextChange change,
-        Region? selection)
-            => CorrectionProposal(desc, change, selection);
+        Region? selection, EclipseQuickFixData data)
+            => data.proposals.add(CorrectionProposal(desc, change, selection));
     
 }
 

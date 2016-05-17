@@ -87,7 +87,7 @@ public class PackageCompletions {
         @Override
         public void apply(IDocument document) {
             super.apply(document);
-            importsJ2C().importUtil().addModuleImport(controller.getProject(), 
+            importsJ2C().importUtil().addModuleImport(
                     controller.getLastPhasedUnit().getPackage().getModule(),
                     version.getModule(), version.getVersion());
         }

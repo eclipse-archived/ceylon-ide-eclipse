@@ -8,9 +8,6 @@ import com.redhat.ceylon.eclipse.code.html {
     HTML,
     HTMLPrinter
 }
-import com.redhat.ceylon.eclipse.code.imports {
-    eclipseModuleImportUtils
-}
 import com.redhat.ceylon.eclipse.util {
     Nodes,
     Highlights
@@ -19,9 +16,6 @@ import com.redhat.ceylon.ide.common.doc {
     DocGenerator,
     Icons,
     Colors
-}
-import com.redhat.ceylon.ide.common.imports {
-    AbstractModuleImportUtil
 }
 import com.redhat.ceylon.ide.common.model {
     CeylonUnit
@@ -235,8 +229,6 @@ class EclipseDocGenerator(CeylonEditor? editor)
     
     shared IInformationControlCreator informationPresenterControlCreator 
             => CeylonEnrichedInformationControlCreator(editor);
-    shared actual AbstractModuleImportUtil<out Anything,out Anything,out Anything,out Anything,out Anything,out Anything> moduleImportUtil
-            => eclipseModuleImportUtils;
     
     supportsQuickAssists => true;
 }
