@@ -1,15 +1,5 @@
 import com.redhat.ceylon.compiler.typechecker.tree {
-    Node,
     Tree
-}
-import com.redhat.ceylon.eclipse.code.editor {
-    CeylonEditor
-}
-import com.redhat.ceylon.eclipse.platform {
-    EclipseTextChange
-}
-import com.redhat.ceylon.eclipse.ui {
-    CeylonResources
 }
 import com.redhat.ceylon.ide.common.correct {
     IdeQuickFixManager,
@@ -34,20 +24,6 @@ import com.redhat.ceylon.ide.common.correct {
     convertIfElseToThenElseQuickFix,
     convertThenElseToIfElse,
     assertExistsDeclarationQuickFix
-}
-import com.redhat.ceylon.ide.common.model {
-    BaseCeylonProject
-}
-import com.redhat.ceylon.ide.common.platform {
-    CommonTextChange=TextChange
-}
-import com.redhat.ceylon.ide.common.refactoring {
-    DefaultRegion
-}
-import com.redhat.ceylon.model.typechecker.model {
-    Unit,
-    Type,
-    Scope
 }
 
 import java.util {
@@ -153,10 +129,9 @@ object eclipseQuickFixManager
 
         miscQuickFixes.addArgumentProposals(data, namedArgument);
 
-        value document = EclipseDocument(doc);
-        convertThenElseToIfElse.addConvertToIfElseProposal(data, document, statement);
-        convertIfElseToThenElseQuickFix.addConvertToThenElseProposal(data, document, statement);
-        invertIfElseQuickFix.addInvertIfElseProposal(data, document, statement);
+        convertThenElseToIfElse.addConvertToIfElseProposal(data, statement);
+        convertIfElseToThenElseQuickFix.addConvertToThenElseProposal(data, statement);
+        invertIfElseQuickFix.addInvertIfElseProposal(data, statement);
         
         convertSwitchToIfQuickFix.addConvertSwitchToIfProposal(data, statement);
         convertSwitchToIfQuickFix.addConvertIfToSwitchProposal(data, statement);
