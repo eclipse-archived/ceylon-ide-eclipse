@@ -69,7 +69,7 @@ shared class EclipseQuickFixData(ProblemLocation location,
     phasedUnit => editor.parseController.lastPhasedUnit;
     document = EclipseDocument(doc);
     
-    shared actual void addQuickFix(String desc, CommonTextChange change,
+    shared actual void addQuickFix(String desc, CommonTextChange|Callable<Anything, []> change,
         DefaultRegion? selection, Boolean qualifiedNameIsPath) {
         
         if (is EclipseTextChange change) {
@@ -80,6 +80,12 @@ shared class EclipseQuickFixData(ProblemLocation location,
             proposals.add(CorrectionProposal(desc,
                     change.nativeChange, region,
                     qualifiedNameIsPath));
+        } else if (is Callable<Anything, []> callback = change) {
+            proposals.add(object extends CorrectionProposal(desc, null, null) {
+                shared actual void apply(IDocument? iDocument) {
+                    callback();
+                }
+            });
         }
     }
     
