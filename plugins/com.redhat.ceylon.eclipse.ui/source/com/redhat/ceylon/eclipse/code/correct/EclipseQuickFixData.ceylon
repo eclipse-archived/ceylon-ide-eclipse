@@ -30,7 +30,8 @@ import com.redhat.ceylon.ide.common.refactoring {
 import com.redhat.ceylon.model.typechecker.model {
     Unit,
     Type,
-    Scope
+    Scope,
+    Referenceable
 }
 
 import java.util {
@@ -72,13 +73,13 @@ shared class EclipseQuickFixData(ProblemLocation location,
         DefaultRegion? selection, Boolean qualifiedNameIsPath) {
         
         if (is EclipseTextChange change) {
-            value region 
+            value region
                     = if (exists selection)
                     then Region(selection.start, selection.length)
                     else null;
-            proposals.add(CorrectionProposal(desc, 
-                change.nativeChange, region, 
-                qualifiedNameIsPath));
+            proposals.add(CorrectionProposal(desc,
+                    change.nativeChange, region,
+                    qualifiedNameIsPath));
         }
     }
     
@@ -87,48 +88,48 @@ shared class EclipseQuickFixData(ProblemLocation location,
         
         if (is EclipseTextChange change) {
             proposals.add(EclipseInitializerProposal {
-                name = desc;
-                change = change.nativeChange;
-                unit = unit;
-                scope = scope;
-                type = type;
-                selection = Region(selection.start, selection.length);
-                image = CeylonResources.\iMINOR_CHANGE;
-                exitPos = -1;
-            });
+                    name = desc;
+                    change = change.nativeChange;
+                    unit = unit;
+                    scope = scope;
+                    type = type;
+                    selection = Region(selection.start, selection.length);
+                    image = CeylonResources.\iMINOR_CHANGE;
+                    exitPos = -1;
+                });
         }
     }
-
+    
     shared actual void addParameterQuickFix(String desc, CommonTextChange change,
         DefaultRegion selection, Unit unit, Scope scope, Type? type, Integer exitPos) {
         
         if (is EclipseTextChange change) {
             proposals.add(EclipseInitializerProposal {
-                name = desc;
-                change = change.nativeChange;
-                unit = unit;
-                scope = scope;
-                type = type;
-                selection = Region(selection.start, selection.length);
-                image = CeylonResources.\iADD_CORR;
-                exitPos = exitPos;
-            });
+                    name = desc;
+                    change = change.nativeChange;
+                    unit = unit;
+                    scope = scope;
+                    type = type;
+                    selection = Region(selection.start, selection.length);
+                    image = CeylonResources.\iADD_CORR;
+                    exitPos = exitPos;
+                });
         }
     }
     
-    shared actual void addParameterListQuickFix(String desc, CommonTextChange change, 
+    shared actual void addParameterListQuickFix(String desc, CommonTextChange change,
         DefaultRegion selection) {
         
         if (is EclipseTextChange ch = change) {
-            proposals.add(object extends CorrectionProposal(desc, 
-                ch.nativeChange, 
-                Region(selection.start, selection.length)) {
-                shared actual StyledString styledDisplayString {
-                    String hint = CorrectionUtil.shortcut("com.redhat.ceylon.eclipse.ui.action.addParameterList");
-                    return Highlights.styleProposal(displayString, false)
+            proposals.add(object extends CorrectionProposal(desc,
+                    ch.nativeChange,
+                    Region(selection.start, selection.length)) {
+                    shared actual StyledString styledDisplayString {
+                        String hint = CorrectionUtil.shortcut("com.redhat.ceylon.eclipse.ui.action.addParameterList");
+                        return Highlights.styleProposal(displayString, false)
                             .append(hint, StyledString.\iQUALIFIER_STYLER);
-                }
-            });
+                    }
+                });
         }
     }
     
@@ -136,21 +137,39 @@ shared class EclipseQuickFixData(ProblemLocation location,
         String name, String version) {
         
         proposals.add(object extends ExportModuleImportProposal(description) {
-            shared actual void apply(IDocument doc) {
-                exportModuleImportQuickFix.applyChanges(outer, u, name);
-            }
-        });
+                shared actual void apply(IDocument doc) {
+                    exportModuleImportQuickFix.applyChanges(outer, u, name);
+                }
+            });
     }
     
     shared actual void addModuleImportProposal(Unit u, String description,
         String name, String version) {
-
+        
         proposals.add(EclipseAddModuleImportProposal {
-            desc = description;
-            data = this;
-            unit = u;
-            name = name;
-            version = version;
-        });
+                desc = description;
+                data = this;
+                unit = u;
+                name = name;
+                version = version;
+            });
+    }
+    
+    shared actual void addAnnotationProposal(Referenceable declaration,
+        String text, String description, CommonTextChange change,
+        DefaultRegion? selection) {
+        
+        assert (is EclipseTextChange change);
+        
+        value region = if (exists selection)
+                       then Region(selection.start, selection.length)
+                       else null;
+        
+        value proposal = AddRemoveAnnotionProposal(declaration, text, description,
+            change.nativeChange, region);
+        
+        if (!proposals.contains(proposal)) {
+            proposals.add(proposal);
+        }
     }
 }

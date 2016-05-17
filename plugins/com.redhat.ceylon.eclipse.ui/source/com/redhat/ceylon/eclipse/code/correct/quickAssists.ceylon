@@ -2,7 +2,6 @@ import com.redhat.ceylon.eclipse.code.complete {
     RefinementCompletionProposal
 }
 import com.redhat.ceylon.ide.common.correct {
-    AddThrowsAnnotationQuickFix,
     RefineEqualsHashQuickFix
 }
 import com.redhat.ceylon.ide.common.refactoring {
@@ -10,7 +9,6 @@ import com.redhat.ceylon.ide.common.refactoring {
 }
 
 import org.eclipse.core.resources {
-    IProject,
     IFile
 }
 import org.eclipse.jface.text {
@@ -29,13 +27,6 @@ import org.eclipse.ltk.core.refactoring {
 import org.eclipse.text.edits {
     InsertEdit,
     TextEdit
-}
-
-object addThrowsAnnotationQuickFix
-        satisfies AddThrowsAnnotationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
-        & EclipseGenericQuickFix {
-    
-    addAnnotationsQuickFix => eclipseAnnotationsQuickFix;
 }
 
 object refineEqualsHashQuickFix

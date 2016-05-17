@@ -22,10 +22,10 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.java2ceylon.CorrectJ2C;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.ide.common.correct.AddAnnotationQuickFix;
 import com.redhat.ceylon.ide.common.correct.IdeQuickFixManager;
 import com.redhat.ceylon.ide.common.correct.ImportProposals;
 import com.redhat.ceylon.ide.common.correct.QuickFixData;
+import com.redhat.ceylon.ide.common.correct.addAnnotationQuickFix_;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.platform.CommonDocument;
 
@@ -37,12 +37,12 @@ public class correctJ2C implements CorrectJ2C {
     }
     
     @Override
-    public IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,IFile,ICompletionProposal,? extends QuickFixData,LinkedModeModel> eclipseQuickFixManager() {
+    public IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IFile,ICompletionProposal,? extends QuickFixData,LinkedModeModel> eclipseQuickFixManager() {
         return eclipseQuickFixManager_.get_();
     }
     
-    public AddAnnotationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,? extends QuickFixData,ICompletionProposal> addAnnotationsQuickFix() {
-        return eclipseAnnotationsQuickFix_.get_();
+    public addAnnotationQuickFix_ addAnnotationsQuickFix() {
+        return addAnnotationQuickFix_.get_();
     }
     
     @Override

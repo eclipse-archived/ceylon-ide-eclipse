@@ -23,7 +23,9 @@ import com.redhat.ceylon.ide.common.correct {
     invertIfElseQuickFix,
     convertIfElseToThenElseQuickFix,
     convertThenElseToIfElse,
-    assertExistsDeclarationQuickFix
+    assertExistsDeclarationQuickFix,
+    addAnnotationQuickFix,
+    addThrowsAnnotationQuickFix
 }
 
 import java.util {
@@ -31,7 +33,6 @@ import java.util {
 }
 
 import org.eclipse.core.resources {
-    IProject,
     IFile
 }
 import org.eclipse.jface.text {
@@ -52,15 +53,11 @@ import org.eclipse.text.edits {
     TextEdit
 }
 
-
-
 object eclipseQuickFixManager
-        extends IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,IFile,ICompletionProposal,EclipseQuickFixData,LinkedModeModel>() {
+        extends IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IFile,ICompletionProposal,EclipseQuickFixData,LinkedModeModel>() {
     
     importProposals => eclipseImportProposals;
     
-    addAnnotations => eclipseAnnotationsQuickFix;
-    removeAnnotations => eclipseAnnotationsQuickFix;
     createQuickFix => eclipseCreateQuickFix;
     changeReferenceQuickFix => eclipseChangeReferenceQuickFix;
     declareLocalQuickFix => eclipseDeclareLocalQuickFix;
@@ -106,7 +103,7 @@ object eclipseQuickFixManager
         verboseRefinementQuickFix.addVerboseRefinementProposal(data, statement);
         verboseRefinementQuickFix.addShortcutRefinementProposal(data, statement);
         
-        addAnnotations.addContextualAnnotationProposals(data, declaration, doc, currentOffset);
+        addAnnotationQuickFix.addContextualAnnotationProposals(data, declaration, currentOffset);
         specifyTypeQuickFix.addTypingProposals(data, file, declaration);
         
         miscQuickFixes.addAnonymousFunctionProposals(data);
@@ -139,7 +136,7 @@ object eclipseQuickFixManager
         
         convertForToWhileQuickFix.addConvertForToWhileProposal(data, statement);
         
-        addThrowsAnnotationQuickFix.addThrowsAnnotationProposal(data, file, doc, statement);
+        addThrowsAnnotationQuickFix.addThrowsAnnotationProposal(data, statement);
         
         refineFormalMembersQuickFix.addRefineFormalMembersProposal(data, false);
         refineEqualsHashQuickFix.addRefineEqualsHashProposal(data, file, currentOffset);

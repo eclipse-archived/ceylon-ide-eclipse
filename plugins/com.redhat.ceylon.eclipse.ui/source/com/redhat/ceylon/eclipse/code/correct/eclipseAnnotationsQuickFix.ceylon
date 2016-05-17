@@ -1,59 +1,12 @@
-import com.redhat.ceylon.ide.common.correct {
-    AddAnnotationQuickFix,
-    RemoveAnnotationQuickFix
-}
 import com.redhat.ceylon.model.typechecker.model {
-    Referenceable,
-    Declaration
+    Referenceable
 }
 
-import org.eclipse.core.resources {
-    IProject,
-    IFile
-}
 import org.eclipse.jface.text {
-    IDocument,
     Region
-}
-import org.eclipse.jface.text.contentassist {
-    ICompletionProposal
 }
 import org.eclipse.ltk.core.refactoring {
     TextChange
-}
-import org.eclipse.text.edits {
-    InsertEdit,
-    TextEdit
-}
-
-shared object eclipseAnnotationsQuickFix
-        satisfies AddAnnotationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,IProject,EclipseQuickFixData,ICompletionProposal>
-                & RemoveAnnotationQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
-                & EclipseDocumentChanges
-                & EclipseAbstractQuickFix {
-    
-    shared actual void newAddAnnotationQuickFix(Referenceable dec, String text,
-        String desc, Integer offset, TextChange change, Region? selection, EclipseQuickFixData data) {
-        
-        value proposal = AddRemoveAnnotionProposal(dec, text, desc, change, selection);
-        if (!data.proposals.contains(proposal)) {
-            data.proposals.add(proposal);
-        }
-    }
-
-    shared actual void newRemoveAnnotationQuickFix(Declaration dec, String annotation,
-        String desc, Integer offset, TextChange change, Region selection, EclipseQuickFixData data) {
-        
-        value proposal = AddRemoveAnnotionProposal(dec, annotation, desc, change, selection);
-        if (!data.proposals.contains(proposal)) {
-            data.proposals.add(proposal);
-        }
-    }
-    
-    shared actual void newCorrectionQuickFix(String desc, TextChange change,
-        Region? selection, EclipseQuickFixData data)
-            => data.proposals.add(CorrectionProposal(desc, change, selection));
-    
 }
 
 class AddRemoveAnnotionProposal(dec, annotation, desc, change, region)

@@ -31,6 +31,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
+import com.redhat.ceylon.eclipse.platform.platformJ2C;
+import com.redhat.ceylon.ide.common.platform.CommonDocument;
+import com.redhat.ceylon.ide.common.platform.TextEdit;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -556,18 +559,26 @@ public class ExtractInterfaceRefactoring extends AbstractRefactoring {
     }
 
     private void addSharedAndActualAnnotations(TextChange originalUnitChange) {
+        CommonDocument platformDoc = new correctJ2C().newDocument(document);
+        
         for (Tree.TypedDeclaration member : extractedMembers) {
             if (!member.getDeclarationModel().isShared()) {
-                InsertEdit createInsertAnnotationEdit = new correctJ2C()
+                TextEdit createInsertAnnotationEdit = new correctJ2C()
                         .addAnnotationsQuickFix()
-                        .createInsertAnnotationEdit("shared", member, document);
-                originalUnitChange.addEdit(createInsertAnnotationEdit);
+                        .createInsertAnnotationEdit("shared", member, platformDoc);
+                originalUnitChange.addEdit(new InsertEdit(
+                        (int) createInsertAnnotationEdit.getStart(),
+                        createInsertAnnotationEdit.getText()
+                ));
             }
             if (!member.getDeclarationModel().isActual()) {
-                InsertEdit createInsertAnnotationEdit = new correctJ2C()
+                TextEdit createInsertAnnotationEdit = new correctJ2C()
                         .addAnnotationsQuickFix()
-                        .createInsertAnnotationEdit("actual", member, document);
-                originalUnitChange.addEdit(createInsertAnnotationEdit);
+                        .createInsertAnnotationEdit("actual", member, platformDoc);
+                originalUnitChange.addEdit(new InsertEdit(
+                        (int) createInsertAnnotationEdit.getStart(),
+                        createInsertAnnotationEdit.getText()
+                ));
             }
         }
     }
