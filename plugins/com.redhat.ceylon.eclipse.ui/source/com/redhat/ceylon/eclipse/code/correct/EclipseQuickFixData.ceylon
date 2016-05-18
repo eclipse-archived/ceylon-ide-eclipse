@@ -33,7 +33,8 @@ import com.redhat.ceylon.model.typechecker.model {
     Type,
     Scope,
     Referenceable,
-    TypeDeclaration
+    TypeDeclaration,
+    Declaration
 }
 
 import java.util {
@@ -223,4 +224,32 @@ shared class EclipseQuickFixData(ProblemLocation location,
             => if (exists reg)
                then Region(reg.start, reg.length)
                else null;
+    
+    shared actual void addCreateParameterProposal(String description, 
+        Declaration dec, Type? type, DefaultRegion selection, Icons icon,
+        CommonTextChange change, Integer exitPos) {
+        
+        if (is EclipseTextChange change) {
+            value image = eclipseIcons.fromIcons(icon) else CeylonResources.addCorr;
+            proposals.add(
+                CreateParameterProposal(description, dec, type,
+                    toRegion(selection), image, change.nativeChange, exitPos)
+            );
+        }
+    }
+    
+    shared actual void addCreateQuickFix(String description, Scope scope, 
+        Unit unit, Type? returnType, Icons icon, CommonTextChange change,
+        Integer exitPos, DefaultRegion selection) {
+        
+        if (is EclipseTextChange change) {
+            value image = eclipseIcons.fromIcons(icon) else CeylonResources.addCorr;
+            proposals.add(
+                CreateProposal(description, scope, unit, returnType, image,
+                    change.nativeChange, exitPos, toRegion(selection))
+            );
+        }
+    }
+    
+    
 }

@@ -59,7 +59,6 @@ object eclipseQuickFixManager
     
     importProposals => eclipseImportProposals;
     
-    createQuickFix => eclipseCreateQuickFix;
     declareLocalQuickFix => eclipseDeclareLocalQuickFix;
     refineFormalMembersQuickFix => eclipseRefineFormalMembersQuickFix;
     assignToLocalQuickFix => eclipseAssignToLocalQuickFix;
