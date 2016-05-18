@@ -31,7 +31,8 @@ import com.redhat.ceylon.model.typechecker.model {
     Unit,
     Type,
     Scope,
-    Referenceable
+    Referenceable,
+    TypeDeclaration
 }
 
 import java.util {
@@ -50,6 +51,9 @@ import org.eclipse.jface.text.contentassist {
 }
 import org.eclipse.jface.viewers {
     StyledString
+}
+import org.eclipse.ltk.core.refactoring {
+    CompositeChange
 }
 
 shared class EclipseQuickFixData(ProblemLocation location,
@@ -176,6 +180,27 @@ shared class EclipseQuickFixData(ProblemLocation location,
         
         if (!proposals.contains(proposal)) {
             proposals.add(proposal);
+        }
+    }
+    
+    shared actual void addSatisfiesProposal(TypeDeclaration typeParam, 
+        String description, String missingSatisfiedTypeText,
+        CommonTextChange change, DefaultRegion? region) {
+        
+        if (is EclipseTextChange change) {
+            value composite = CompositeChange(change.nativeChange.name);
+            composite.add(change.nativeChange);
+            
+            value reg = if (exists region)
+                        then Region(region.start, region.length)
+                        else null;
+            
+            value proposal = AddSatisfiesProposal(typeParam, description, 
+                missingSatisfiedTypeText, composite, reg);
+            
+            if (!proposals.contains(proposal)) {
+                proposals.add(proposal);
+            }
         }
     }
 }

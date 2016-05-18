@@ -1,42 +1,9 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.asIntersectionTypeString;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.Region;
-import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.Change;
-import org.eclipse.ltk.core.refactoring.CompositeChange;
-import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.text.edits.InsertEdit;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraint;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypeConstraintList;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.ide.common.model.ModifiableSourceFile;
-import com.redhat.ceylon.ide.common.search.FindContainerVisitor;
-import com.redhat.ceylon.ide.common.typechecker.ModifiablePhasedUnit;
-import com.redhat.ceylon.ide.common.util.FindDeclarationNodeVisitor;
-import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Generic;
-import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.TypeParameter;
-import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.Value;
 
 /**
  * Add generic type constraints proposal for following code:
@@ -59,7 +26,7 @@ import com.redhat.ceylon.model.typechecker.model.Value;
  * </pre>
  */
 public class AddSatisfiesProposal extends CorrectionProposal {
-
+/*
     @Deprecated
     public static void addSatisfiesProposals(
             Tree.CompilationUnit rootNode, Node node, 
@@ -550,7 +517,7 @@ public class AddSatisfiesProposal extends CorrectionProposal {
 //        }
 
         return stTypeParams;
-    }
+    }*/
     
     private final TypeDeclaration typeParam;
     private final String missingSatisfiedTypeText;
