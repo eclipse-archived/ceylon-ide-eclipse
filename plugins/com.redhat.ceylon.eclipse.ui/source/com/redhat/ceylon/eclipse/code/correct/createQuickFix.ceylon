@@ -1,5 +1,5 @@
-import com.redhat.ceylon.eclipse.ui {
-    CeylonResources
+import com.redhat.ceylon.eclipse.util {
+    eclipseIcons
 }
 import com.redhat.ceylon.ide.common.correct {
     CreateQuickFix,
@@ -41,13 +41,10 @@ object eclipseCreateQuickFix
             => eclipseCreateParameterQuickFix;
     
     shared actual void newCreateQuickFix(EclipseQuickFixData data, String desc, Scope scope,
-        Unit unit, Type? returnType, Icons image, TextChange change, Integer exitPos, Region selection) {
+        Unit unit, Type? returnType, Icons icon, TextChange change, Integer exitPos, Region selection) {
         
-        value icon = switch(image)
-        case (Icons.localClass) CeylonResources.\iLOCAL_CLASS
-        case (Icons.localMethod) CeylonResources.\iLOCAL_METHOD
-        else CeylonResources.\iLOCAL_ATTRIBUTE;
+        value image = eclipseIcons.fromIcons(icon);
         
-        data.proposals.add(CreateProposal(desc, scope, unit, returnType, icon, change, exitPos, selection));
+        data.proposals.add(CreateProposal(desc, scope, unit, returnType, image, change, exitPos, selection));
     }
 }

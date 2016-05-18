@@ -12,7 +12,8 @@ import com.redhat.ceylon.eclipse.ui {
     CeylonResources
 }
 import com.redhat.ceylon.eclipse.util {
-    Highlights
+    Highlights,
+    eclipseIcons
 }
 import com.redhat.ceylon.ide.common.correct {
     QuickFixData,
@@ -77,20 +78,14 @@ shared class EclipseQuickFixData(ProblemLocation location,
     document = EclipseDocument(doc);
     
     shared actual void addQuickFix(String desc, CommonTextChange|Callable<Anything, []> change,
-        DefaultRegion? selection, Boolean qualifiedNameIsPath, Icons? image) {
+        DefaultRegion? selection, Boolean qualifiedNameIsPath, Icons? icon) {
         
-        value icon = if (exists image)
-        then (
-            switch (image)
-            case (Icons.classes) CeylonResources.\iCLASS
-            case (Icons.interfaces) CeylonResources.\iINTERFACE
-            else CeylonResources.\iATTRIBUTE
-        ) else null;
+        value image = eclipseIcons.fromIcons(icon);
         
         if (is EclipseTextChange change) {
             value region = toRegion(selection);
             proposals.add(CorrectionProposal(desc,
-                    change.nativeChange, region, icon,
+                    change.nativeChange, region, image,
                     qualifiedNameIsPath));
         } else if (is Callable<Anything, []> callback = change) {
             proposals.add(object extends CorrectionProposal(desc, null, null) {
