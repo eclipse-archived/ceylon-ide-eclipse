@@ -55,6 +55,9 @@ import org.eclipse.jface.viewers {
 import org.eclipse.ltk.core.refactoring {
     CompositeChange
 }
+import com.redhat.ceylon.ide.common.doc {
+    Icons
+}
 
 shared class EclipseQuickFixData(ProblemLocation location,
     shared actual Tree.CompilationUnit rootNode,
@@ -74,15 +77,20 @@ shared class EclipseQuickFixData(ProblemLocation location,
     document = EclipseDocument(doc);
     
     shared actual void addQuickFix(String desc, CommonTextChange|Callable<Anything, []> change,
-        DefaultRegion? selection, Boolean qualifiedNameIsPath) {
+        DefaultRegion? selection, Boolean qualifiedNameIsPath, Icons? image) {
+        
+        value icon = if (exists image)
+        then (
+            switch (image)
+            case (Icons.classes) CeylonResources.\iCLASS
+            case (Icons.interfaces) CeylonResources.\iINTERFACE
+            else CeylonResources.\iATTRIBUTE
+        ) else null;
         
         if (is EclipseTextChange change) {
-            value region
-                    = if (exists selection)
-                    then Region(selection.start, selection.length)
-                    else null;
+            value region = toRegion(selection);
             proposals.add(CorrectionProposal(desc,
-                    change.nativeChange, region,
+                    change.nativeChange, region, icon,
                     qualifiedNameIsPath));
         } else if (is Callable<Anything, []> callback = change) {
             proposals.add(object extends CorrectionProposal(desc, null, null) {
@@ -133,7 +141,7 @@ shared class EclipseQuickFixData(ProblemLocation location,
         if (is EclipseTextChange ch = change) {
             proposals.add(object extends CorrectionProposal(desc,
                     ch.nativeChange,
-                    Region(selection.start, selection.length)) {
+                    toRegion(selection)) {
                     shared actual StyledString styledDisplayString {
                         String hint = CorrectionUtil.shortcut("com.redhat.ceylon.eclipse.ui.action.addParameterList");
                         return Highlights.styleProposal(displayString, false)
@@ -171,9 +179,7 @@ shared class EclipseQuickFixData(ProblemLocation location,
         
         assert (is EclipseTextChange change);
         
-        value region = if (exists selection)
-                       then Region(selection.start, selection.length)
-                       else null;
+        value region = toRegion(selection);
         
         value proposal = AddRemoveAnnotionProposal(declaration, text, description,
             change.nativeChange, region);
@@ -191,9 +197,7 @@ shared class EclipseQuickFixData(ProblemLocation location,
             value composite = CompositeChange(change.nativeChange.name);
             composite.add(change.nativeChange);
             
-            value reg = if (exists region)
-                        then Region(region.start, region.length)
-                        else null;
+            value reg = toRegion(region);
             
             value proposal = AddSatisfiesProposal(typeParam, description, 
                 missingSatisfiedTypeText, composite, reg);
@@ -203,4 +207,25 @@ shared class EclipseQuickFixData(ProblemLocation location,
             }
         }
     }
+    
+    shared actual void addChangeTypeProposal(String description, 
+        CommonTextChange change, DefaultRegion selection, Unit unit) {
+        
+        if (is EclipseTextChange change) {
+            value region = toRegion(selection);
+            proposals.add(ChangeTypeProposal(description, region, unit,
+                change.nativeChange));
+        }
+    }
+    
+    shared actual void addConvertToClassProposal(String description, 
+        Tree.ObjectDefinition declaration) {
+        
+        proposals.add(EclipseConvertToClassProposal(description, editor, declaration));
+    }
+    
+    Region? toRegion(DefaultRegion? reg)
+            => if (exists reg)
+               then Region(reg.start, reg.length)
+               else null;
 }

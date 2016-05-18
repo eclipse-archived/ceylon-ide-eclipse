@@ -25,7 +25,8 @@ import com.redhat.ceylon.ide.common.correct {
     convertThenElseToIfElse,
     assertExistsDeclarationQuickFix,
     addAnnotationQuickFix,
-    addThrowsAnnotationQuickFix
+    addThrowsAnnotationQuickFix,
+    convertToClassQuickFix
 }
 
 import java.util {
@@ -60,9 +61,7 @@ object eclipseQuickFixManager
     
     createQuickFix => eclipseCreateQuickFix;
     declareLocalQuickFix => eclipseDeclareLocalQuickFix;
-    createEnumQuickFix => eclipseCreateEnumQuickFix;
     refineFormalMembersQuickFix => eclipseRefineFormalMembersQuickFix;
-    changeTypeQuickFix => eclipseChangeTypeQuickFix;
     assignToLocalQuickFix => eclipseAssignToLocalQuickFix;
     
     shared actual void addImportProposals(Collection<ICompletionProposal> proposals, EclipseQuickFixData data) {

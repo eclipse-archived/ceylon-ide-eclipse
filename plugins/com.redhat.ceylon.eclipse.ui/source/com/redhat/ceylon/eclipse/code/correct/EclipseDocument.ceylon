@@ -35,4 +35,5 @@ shared class EclipseDocument(shared IDocument document)
     
     indentWithSpaces => eclipseIndents.indentWithSpaces;
     
+    size => document.length;
 }
