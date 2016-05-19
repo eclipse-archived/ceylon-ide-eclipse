@@ -36,7 +36,6 @@ import com.redhat.ceylon.eclipse.ui {
     CeylonPlugin
 }
 import com.redhat.ceylon.eclipse.util {
-    eclipseIndents,
     wrapProgressMonitor,
     EclipseProgressMonitorChild
 }
@@ -194,8 +193,6 @@ shared class EclipseCompletionManager(CeylonEditor editor)
             else (validator = ParameterContextValidator(editor));
     
     errorMessage => "No completions available";
-    
-    indents => eclipseIndents;
     
     newParametersCompletionProposal(
             Integer offset, String prefix, String desc, String text, 

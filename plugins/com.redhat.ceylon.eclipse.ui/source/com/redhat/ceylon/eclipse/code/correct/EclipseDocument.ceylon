@@ -1,11 +1,10 @@
-import org.eclipse.jface.text {
-    IDocument
-}
 import com.redhat.ceylon.ide.common.platform {
     CommonDocument
 }
-import com.redhat.ceylon.eclipse.util {
-    eclipseIndents
+
+import org.eclipse.jface.text {
+    IDocument,
+    IDocumentExtension4
 }
 
 shared class EclipseDocument(shared IDocument document) 
@@ -29,11 +28,10 @@ shared class EclipseDocument(shared IDocument document)
             => document.get(offset, length);
     
     defaultLineDelimiter
-            => eclipseIndents.getDefaultLineDelimiter(document);
-    
-    indentSpaces => eclipseIndents.indentSpaces;
-    
-    indentWithSpaces => eclipseIndents.indentWithSpaces;
-    
+            => if (is IDocumentExtension4 document)
+                then document.defaultLineDelimiter
+                else operatingSystem.newline;
+
+
     size => document.length;
 }

@@ -86,6 +86,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
 import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.typechecker.util.WarningSuppressionVisitor;
+import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
 import com.redhat.ceylon.eclipse.code.editor.AnnotationCreator;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler.Stager;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
@@ -99,6 +100,7 @@ import com.redhat.ceylon.ide.common.model.BaseIdeModuleManager;
 import com.redhat.ceylon.ide.common.model.BaseIdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.IdeModuleManager;
+import com.redhat.ceylon.ide.common.platform.CommonDocument;
 import com.redhat.ceylon.ide.common.settings.CompletionOptions;
 import com.redhat.ceylon.ide.common.typechecker.EditedPhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.IdePhasedUnit;
@@ -1137,5 +1139,10 @@ public class CeylonParseController
                 .getBoolean(ENABLE_COMPLETION_FILTERS));
 
         return options;
+    }
+
+    @Override
+    public CommonDocument getCommonDocument() {
+        return new correctJ2C().newDocument(getDocument());
     }    
 }

@@ -1,10 +1,6 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.text.edits.InsertEdit;
-import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.eclipse.java2ceylon.EditorJ2C;
 import com.redhat.ceylon.ide.common.editor.formatAction_;

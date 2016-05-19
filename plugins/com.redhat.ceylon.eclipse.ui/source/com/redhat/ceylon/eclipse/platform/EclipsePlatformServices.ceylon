@@ -8,7 +8,6 @@ import com.redhat.ceylon.eclipse.code.editor {
     Navigation
 }
 import com.redhat.ceylon.eclipse.util {
-    eclipseIndents,
     EditorUtil
 }
 import com.redhat.ceylon.ide.common.platform {
@@ -26,8 +25,7 @@ import com.redhat.ceylon.ide.common.typechecker {
     ModifiablePhasedUnit
 }
 import com.redhat.ceylon.ide.common.util {
-    unsafeCast,
-    Indents
+    unsafeCast
 }
 import com.redhat.ceylon.model.typechecker.model {
     Unit
@@ -38,6 +36,9 @@ import org.eclipse.core.resources {
     IFolder,
     IResource,
     IFile
+}
+import org.eclipse.jface.preference {
+    IPreferenceStore
 }
 import org.eclipse.ltk.core.refactoring {
     TextFileChange,
@@ -51,6 +52,15 @@ import org.eclipse.text.edits {
     EInsertEdit=InsertEdit,
     EReplaceEdit=ReplaceEdit,
     EDeleteEdit=DeleteEdit
+}
+import org.eclipse.ui.editors.text {
+    EditorsUI
+}
+import org.eclipse.ui.texteditor {
+    AbstractDecoratedTextEditorPreferenceConstants {
+        editorTabWidth,
+        editorSpacesForTabs
+    }
 }
 
 object eclipsePlatformServices satisfies PlatformServices {
@@ -67,9 +77,6 @@ object eclipsePlatformServices satisfies PlatformServices {
             => unsafeCast<VfsServices<NativeProject,NativeResource,NativeFolder,NativeFile>>
                     (eclipseVfsServices);
     
-    shared actual Indents<IDocument> indents<IDocument>() 
-            => unsafeCast<Indents<IDocument>>(eclipseIndents);
-    
     createTextChange(String desc, CommonDocument|PhasedUnit input)
             => EclipseTextChange(desc, input);
     
@@ -77,6 +84,15 @@ object eclipsePlatformServices satisfies PlatformServices {
     
     gotoLocation(Unit unit, Integer offset, Integer length)
             => Navigation.gotoLocation(unit, offset, length);
+    
+    indentSpaces 
+            =>let(IPreferenceStore? store = EditorsUI.preferenceStore)
+                (store?.getInt(editorTabWidth) else 4);
+
+    indentWithSpaces
+            => let(IPreferenceStore? store = EditorsUI.preferenceStore)
+                (store?.getBoolean(editorSpacesForTabs) else false);
+
 }
 
 shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit|ETextChange input)
