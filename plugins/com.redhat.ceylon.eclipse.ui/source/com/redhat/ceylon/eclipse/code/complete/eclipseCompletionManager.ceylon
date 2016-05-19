@@ -105,9 +105,12 @@ shared class EclipseCompletionManager(CeylonEditor editor)
     value noCompletions = ObjectArray<ICompletionProposal>(0);
     
     completionProposalAutoActivationCharacters =
-            javaString(CeylonPlugin.preferences.getString(CeylonPreferenceInitializer.\iAUTO_ACTIVATION_CHARS)).toCharArray();
+            javaString(CeylonPlugin.preferences.getString(
+                CeylonPreferenceInitializer.\iAUTO_ACTIVATION_CHARS))
+                    .toCharArray();
     
-    contextInformationAutoActivationCharacters = javaString(",(;{").toCharArray();
+    contextInformationAutoActivationCharacters 
+            = javaString(",(;{").toCharArray();
     
     shared actual ObjectArray<ICompletionProposal> computeCompletionProposals(
             ITextViewer viewer, Integer offset) {
@@ -131,7 +134,8 @@ shared class EclipseCompletionManager(CeylonEditor editor)
         }
         lastOffset = offset;
         lastOffsetAcrossSessions = offset;
-        class Runnable() satisfies IRunnableWithProgress {
+        
+        object runnable satisfies IRunnableWithProgress {
             shared variable ICompletionProposal?[] _contentProposals = [];
             
             shared actual void run(IProgressMonitor monitor) {
@@ -154,13 +158,13 @@ shared class EclipseCompletionManager(CeylonEditor editor)
             }
         }
         
-        Runnable runnable = Runnable();
         try {
             if (secondLevel) {
                 runnable.run(NullProgressMonitor());
             } else {
-                PlatformUI.workbench.activeWorkbenchWindow.run(
-                        true, true, runnable);
+                PlatformUI.workbench
+                        .activeWorkbenchWindow.run(
+                                true, true, runnable);
             }
         } catch (Exception e) {
             e.printStackTrace();
