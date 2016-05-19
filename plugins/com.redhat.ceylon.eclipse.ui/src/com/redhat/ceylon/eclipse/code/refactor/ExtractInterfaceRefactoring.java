@@ -31,7 +31,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
-import com.redhat.ceylon.eclipse.platform.platformJ2C;
 import com.redhat.ceylon.ide.common.platform.CommonDocument;
 import com.redhat.ceylon.ide.common.platform.TextEdit;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;

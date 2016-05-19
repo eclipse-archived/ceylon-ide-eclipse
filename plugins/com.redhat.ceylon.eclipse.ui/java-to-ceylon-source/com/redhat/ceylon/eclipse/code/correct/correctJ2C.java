@@ -25,6 +25,7 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.ide.common.correct.IdeQuickFixManager;
 import com.redhat.ceylon.ide.common.correct.QuickFixData;
 import com.redhat.ceylon.ide.common.correct.addAnnotationQuickFix_;
+import com.redhat.ceylon.ide.common.correct.assignToLocalQuickFix_;
 import com.redhat.ceylon.ide.common.correct.importProposals_;
 import com.redhat.ceylon.ide.common.correct.refineEqualsHashQuickFix_;
 import com.redhat.ceylon.ide.common.correct.refineFormalMembersQuickFix_;
@@ -89,7 +90,7 @@ public class correctJ2C implements CorrectJ2C {
         EclipseQuickFixData data = new EclipseQuickFixData(null, rootNode, 
                 node, project, proposals, editor, ceylonProject, doc);
 
-        eclipseQuickFixManager_.get_().addQuickAssists(data, file, doc, statement, declaration, argument, imp, oe, currentOffset);
+        eclipseQuickFixManager_.get_().addQuickAssists(data, statement, declaration, argument, imp, oe, currentOffset);
     }
 
     @Override
@@ -130,7 +131,7 @@ public class correctJ2C implements CorrectJ2C {
         IProject project = EditorUtil.getProject(ce.getEditorInput());
         EclipseQuickFixData data = (EclipseQuickFixData) newData(rootNode, node, list, ce, project, doc);
        
-        eclipseAssignToLocalQuickFix_.get_().addProposal(data);
+        assignToLocalQuickFix_.get_().addProposal(data);
     }
     
     Object newData(CompilationUnit rootNode, Node node,

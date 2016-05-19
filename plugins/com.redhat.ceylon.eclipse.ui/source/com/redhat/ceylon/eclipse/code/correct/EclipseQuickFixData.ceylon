@@ -88,6 +88,7 @@ shared class EclipseQuickFixData(ProblemLocation location,
     
     phasedUnit => editor.parseController.lastPhasedUnit;
     document = EclipseDocument(doc);
+    editorSelection => DefaultRegion(editor.selection.offset, editor.selection.length);
     
     shared actual void addQuickFix(String desc, CommonTextChange|Callable<Anything, []> change,
         DefaultRegion? selection, Boolean qualifiedNameIsPath, Icons? icon) {
@@ -307,5 +308,7 @@ shared class EclipseQuickFixData(ProblemLocation location,
         }
     }
     
-    
+    shared actual void addAssignToLocalProposal(String description) {
+        proposals.add(EclipseAssignToLocalProposal(this, description));
+    }
 }

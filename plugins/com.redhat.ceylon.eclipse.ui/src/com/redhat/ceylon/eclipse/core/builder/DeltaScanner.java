@@ -1,7 +1,6 @@
 package com.redhat.ceylon.eclipse.core.builder;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRootFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInSourceFolder;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isResourceFile;
@@ -11,11 +10,9 @@ import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 
 import java.io.File;
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;

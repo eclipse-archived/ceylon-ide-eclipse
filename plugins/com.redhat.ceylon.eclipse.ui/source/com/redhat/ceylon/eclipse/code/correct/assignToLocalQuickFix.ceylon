@@ -10,7 +10,6 @@ import com.redhat.ceylon.eclipse.ui {
     CeylonResources
 }
 import com.redhat.ceylon.ide.common.correct {
-    AssignToLocalQuickFix,
     AssignToLocalProposal
 }
 import com.redhat.ceylon.model.typechecker.model {
@@ -33,14 +32,6 @@ import org.eclipse.jface.text.link {
 }
 import org.eclipse.jface.viewers {
     StyledString
-}
-
-object eclipseAssignToLocalQuickFix
-        satisfies AssignToLocalQuickFix<EclipseQuickFixData> {
-    
-    shared actual void newProposal(EclipseQuickFixData data, String desc) {
-        data.proposals.add(EclipseAssignToLocalProposal(data, desc));
-    }
 }
 
 class EclipseAssignToLocalProposal(EclipseQuickFixData data, String desc)
