@@ -2,8 +2,7 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     Tree
 }
 import com.redhat.ceylon.eclipse.code.correct {
-    EclipseDocumentChanges,
-    eclipseImportProposals
+    EclipseDocument
 }
 import com.redhat.ceylon.eclipse.code.outline {
     CeylonLabelProvider
@@ -18,56 +17,30 @@ import com.redhat.ceylon.eclipse.util {
 import com.redhat.ceylon.ide.common.completion {
     FunctionCompletionProposal
 }
-import com.redhat.ceylon.ide.common.correct {
-    ImportProposals
-}
 import com.redhat.ceylon.model.typechecker.model {
     Declaration
 }
 
-import org.eclipse.core.resources {
-    IFile
-}
-import org.eclipse.core.runtime {
-    NullProgressMonitor
-}
 import org.eclipse.jface.text {
     IDocument
-}
-import org.eclipse.jface.text.contentassist {
-    ICompletionProposal
 }
 import org.eclipse.jface.viewers {
     StyledString
 }
-import org.eclipse.ltk.core.refactoring {
-    TextChange,
-    DocumentChange
-}
 import org.eclipse.swt.graphics {
-    Image,
-    Point
-}
-import org.eclipse.text.edits {
-    InsertEdit,
-    TextEdit
+    Image
 }
 
 class EclipseFunctionCompletionProposal
         (Integer offset, String prefix, String desc, String text, Declaration declaration, Tree.CompilationUnit rootNode)
-        extends FunctionCompletionProposal<ICompletionProposal, IFile, IDocument, InsertEdit, TextEdit, TextChange, Point>
-        (offset, prefix, desc, text, declaration, rootNode)
-        satisfies EclipseDocumentChanges & EclipseCompletionProposal {
+        extends FunctionCompletionProposal(offset, prefix, desc, text, declaration, rootNode)
+        satisfies EclipseCompletionProposal {
     
     shared actual variable String? currentPrefix = prefix;
     shared actual variable Boolean toggleOverwriteInternal = false;
-
-    shared actual ImportProposals<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange> importProposals
-            => eclipseImportProposals;
     
     shared actual void apply(IDocument doc) {
-        value change = DocumentChange("Complete Invocation", doc);
-        createChange(change, doc).perform(NullProgressMonitor());
+        createChange(EclipseDocument(doc)).apply();
     }
     
     shared actual Image image {

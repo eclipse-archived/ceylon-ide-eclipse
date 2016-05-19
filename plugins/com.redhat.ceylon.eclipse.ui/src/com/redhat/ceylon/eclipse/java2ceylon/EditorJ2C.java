@@ -1,16 +1,12 @@
 package com.redhat.ceylon.eclipse.java2ceylon;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.text.edits.InsertEdit;
-import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.ide.common.editor.AbstractFormatAction;
+import com.redhat.ceylon.ide.common.editor.formatAction_;
 
 public interface EditorJ2C {
-    AbstractFormatAction<IDocument,InsertEdit,TextEdit,TextChange> eclipseFormatAction();
+    formatAction_ eclipseFormatAction();
 
     Action newEclipseTerminateStatementAction(CeylonEditor editor);
 }

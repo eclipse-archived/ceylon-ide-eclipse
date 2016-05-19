@@ -1,14 +1,18 @@
-import com.redhat.ceylon.compiler.typechecker.context {
-    PhasedUnit
-}
 import com.redhat.ceylon.eclipse.code.correct {
-    EclipseDocumentChanges
+    EclipseDocument
 }
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
 }
+import com.redhat.ceylon.eclipse.platform {
+    EclipseCompositeChange
+}
 import com.redhat.ceylon.eclipse.util {
     EditorUtil
+}
+import com.redhat.ceylon.ide.common.platform {
+    CommonDocument,
+    CompositeChange
 }
 import com.redhat.ceylon.ide.common.refactoring {
     InlineRefactoring,
@@ -24,20 +28,9 @@ import com.redhat.ceylon.model.typechecker.model {
 import org.eclipse.core.runtime {
     IProgressMonitor
 }
-import org.eclipse.jface.text {
-    IDocument
-}
-import org.eclipse.jface.text.contentassist {
-    ICompletionProposal
-}
 import org.eclipse.ltk.core.refactoring {
-    TextChange,
-    CompositeChange,
-    RefactoringStatus
-}
-import org.eclipse.text.edits {
-    InsertEdit,
-    TextEdit
+    RefactoringStatus,
+    Change
 }
 import org.eclipse.ui {
     IEditorPart
@@ -64,8 +57,7 @@ EclipseInlineRefactoring? newEclipseInlineRefactoring(IEditorPart editor) {
 
 class EclipseInlineRefactoring(CeylonEditor editorPart, shared Declaration declaration)
         extends EclipseAbstractRefactoring<CompositeChange>(editorPart)
-        satisfies InlineRefactoring<ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange,CompositeChange>
-                & EclipseDocumentChanges {
+        satisfies InlineRefactoring {
 
     variable Boolean delete = true;
     variable Boolean justOne = false;
@@ -82,9 +74,9 @@ class EclipseInlineRefactoring(CeylonEditor editorPart, shared Declaration decla
         
         shared actual Boolean justOne => outer.justOne;
         
-        shared actual IDocument doc {
+        shared actual CommonDocument doc {
             if (exists _ = super.document) {
-                return _;
+                return EclipseDocument(_);
             }
             throw Exception("Can't find document");
         }
@@ -97,9 +89,6 @@ class EclipseInlineRefactoring(CeylonEditor editorPart, shared Declaration decla
         return this;
     }
 
-    addChangeToChange(CompositeChange change, TextChange tc)
-            => change.add(tc);
-    
     shared actual RefactoringStatus checkFinalConditions(IProgressMonitor mon)
             => RefactoringStatus();
     
@@ -117,12 +106,11 @@ class EclipseInlineRefactoring(CeylonEditor editorPart, shared Declaration decla
         }
     }
 
-    createChange(IProgressMonitor? iProgressMonitor)
-            => build(CompositeChange(name));
+    shared actual Change createChange(IProgressMonitor? iProgressMonitor) {
+        value change = EclipseCompositeChange(name);
+        build(change);
+        return change.nativeChange;
+    }
 
-    newFileChange(PhasedUnit pu) => newTextFileChange(pu);
-    
-    newDocChange(IDocument doc) => newDocumentChange();
-    
-    shared actual String name => (super of InlineRefactoring<ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange,CompositeChange>).name;
+    shared actual String name => (super of InlineRefactoring).name;
 }

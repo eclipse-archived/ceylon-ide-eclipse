@@ -1,6 +1,5 @@
 import com.redhat.ceylon.eclipse.code.correct {
-    EclipseDocumentChanges,
-    eclipseImportProposals
+    EclipseDocument
 }
 import com.redhat.ceylon.eclipse.code.outline {
     CeylonLabelProvider
@@ -18,8 +17,8 @@ import com.redhat.ceylon.eclipse.util {
 import com.redhat.ceylon.ide.common.completion {
     ImportedModulePackageProposal
 }
-import com.redhat.ceylon.ide.common.correct {
-    ImportProposals
+import com.redhat.ceylon.ide.common.refactoring {
+    DefaultRegion
 }
 import com.redhat.ceylon.model.typechecker.model {
     Package,
@@ -32,9 +31,6 @@ import java.lang {
     JCharacter=Character
 }
 
-import org.eclipse.core.resources {
-    IFile
-}
 import org.eclipse.jface.text {
     IDocument,
     DocumentEvent,
@@ -52,41 +48,32 @@ import org.eclipse.jface.text.link {
 import org.eclipse.jface.viewers {
     StyledString
 }
-import org.eclipse.ltk.core.refactoring {
-    TextChange
-}
 import org.eclipse.swt.graphics {
     Point,
     Image
 }
-import org.eclipse.text.edits {
-    InsertEdit,
-    TextEdit
-}
 
 class EclipseImportedModulePackageProposal(Integer offset, String prefix, String memberPackageSubname, Boolean withBody,
                 String fullPackageName, CeylonParseController controller, Package candidate)
-                extends ImportedModulePackageProposal<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange,Point,LinkedModeModel,CeylonParseController>
+                extends ImportedModulePackageProposal<ICompletionProposal,IDocument,LinkedModeModel,CeylonParseController>
                 (offset, prefix, memberPackageSubname, withBody, fullPackageName, candidate, controller)
-                satisfies EclipseDocumentChanges & EclipseCompletionProposal{
+                satisfies EclipseCompletionProposal{
 
     shared actual variable String? currentPrefix = prefix;
     shared actual variable Boolean toggleOverwriteInternal = false;
     shared actual Boolean toggleOverwrite => toggleOverwriteInternal;
-    shared actual ImportProposals<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange> importProposals
-            => eclipseImportProposals;
 
     shared actual Boolean qualifiedNameIsPath => true;
     
     shared actual Image image => CeylonResources.\iPACKAGE;
     
-    shared actual void apply(IDocument doc) => applyInternal(doc);
+    shared actual void apply(IDocument doc) => applyInternal(EclipseDocument(doc));
     
-    shared actual ICompletionProposal newPackageMemberCompletionProposal(Declaration d, Point selection, LinkedModeModel lm) 
+    shared actual ICompletionProposal newPackageMemberCompletionProposal(Declaration d, DefaultRegion selection, LinkedModeModel lm) 
             => object satisfies IEclipseCompletionProposal2And6 {
         function length(IDocument document) {
             variable value length = 0;
-            variable value i = selection.x;
+            variable value i = selection.start;
             try {
                 while (i<document.length &&
                     (JCharacter.isJavaIdentifierPart(document.getChar(i)) ||
@@ -103,7 +90,7 @@ class EclipseImportedModulePackageProposal(Integer offset, String prefix, String
         
         shared actual void apply(IDocument document) {
             try {
-                document.replace(selection.x,
+                document.replace(selection.start,
                     length(document),
                     d.name);
             }
@@ -143,7 +130,7 @@ class EclipseImportedModulePackageProposal(Integer offset, String prefix, String
         }
         
         shared actual Boolean validate(IDocument document, Integer currentOffset, DocumentEvent? documentEvent) {
-            value start = selection.x;
+            value start = selection.start;
             if (currentOffset<start) {
                 return false;
             }

@@ -1,10 +1,6 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -14,8 +10,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.text.edits.InsertEdit;
-import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.ide.common.refactoring.ExtractParameterRefactoring;
 import com.redhat.ceylon.ide.common.util.escaping_;
@@ -50,8 +44,8 @@ public class ExtractParameterInputPage extends UserInputWizardPage {
     }
     
     @SuppressWarnings("unchecked")
-    private ExtractParameterRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> getExtractParameterRefactoring() {
-        return (ExtractParameterRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion>) getRefactoring();
+    private ExtractParameterRefactoring<IRegion> getExtractParameterRefactoring() {
+        return (ExtractParameterRefactoring<IRegion>) getRefactoring();
     }
 
     void validateIdentifier(String name) {

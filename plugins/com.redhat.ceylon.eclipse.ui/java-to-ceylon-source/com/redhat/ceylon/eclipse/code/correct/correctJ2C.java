@@ -4,17 +4,17 @@ import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.link.LinkedModeModel;
-import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.text.edits.InsertEdit;
-import org.eclipse.text.edits.TextEdit;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
+import org.eclipse.text.edits.MultiTextEdit;
 
+import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -23,21 +23,28 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.java2ceylon.CorrectJ2C;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.ide.common.correct.IdeQuickFixManager;
-import com.redhat.ceylon.ide.common.correct.ImportProposals;
 import com.redhat.ceylon.ide.common.correct.QuickFixData;
 import com.redhat.ceylon.ide.common.correct.addAnnotationQuickFix_;
+import com.redhat.ceylon.ide.common.correct.importProposals_;
+import com.redhat.ceylon.ide.common.correct.refineEqualsHashQuickFix_;
+import com.redhat.ceylon.ide.common.correct.refineFormalMembersQuickFix_;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.platform.CommonDocument;
+import com.redhat.ceylon.ide.common.platform.DeleteEdit;
+import com.redhat.ceylon.ide.common.platform.InsertEdit;
+import com.redhat.ceylon.ide.common.platform.ReplaceEdit;
+import com.redhat.ceylon.ide.common.platform.TextEdit;
+import com.redhat.ceylon.ide.common.util.toJavaList_;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 
 public class correctJ2C implements CorrectJ2C {
     @Override
-    public ImportProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange>
-        importProposals() {
-        return eclipseImportProposals_.get_();
+    public importProposals_ importProposals() {
+        return importProposals_.get_();
     }
     
     @Override
-    public IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IFile,ICompletionProposal,? extends QuickFixData,LinkedModeModel> eclipseQuickFixManager() {
+    public IdeQuickFixManager<IDocument,ICompletionProposal,LinkedModeModel,? extends QuickFixData> eclipseQuickFixManager() {
         return eclipseQuickFixManager_.get_();
     }
     
@@ -60,7 +67,7 @@ public class correctJ2C implements CorrectJ2C {
         EclipseQuickFixData data = new EclipseQuickFixData(problem, rootNode, 
                 node, project, proposals, editor, ceylonProject, doc);
 
-        eclipseQuickFixManager_.get_().addQuickFixes(data, tc, file);
+        eclipseQuickFixManager_.get_().addQuickFixes(data, tc);
     }
 
     @Override
@@ -96,7 +103,7 @@ public class correctJ2C implements CorrectJ2C {
         IDocument doc = EditorUtil.getDocument(ce.getEditorInput());
         EclipseQuickFixData data = (EclipseQuickFixData) newData(rootNode, node, list, ce, project, doc);
 
-        eclipseRefineFormalMembersQuickFix_.get_()
+        refineFormalMembersQuickFix_.get_()
             .addRefineFormalMembersProposal(data, false);
     }
 
@@ -110,10 +117,9 @@ public class correctJ2C implements CorrectJ2C {
         
         IDocument doc = EditorUtil.getDocument(ce.getEditorInput());
         EclipseQuickFixData data = (EclipseQuickFixData) newData(rootNode, node, list, ce, project, doc);
-        IFile file = EditorUtil.getFile(ce.getEditorInput());
 
         refineEqualsHashQuickFix_.get_()
-            .addRefineEqualsHashProposal(data, file, ce.getSelection().getOffset());        
+            .addRefineEqualsHashProposal(data, ce.getSelection().getOffset());        
     }
 
     @Override
@@ -123,9 +129,8 @@ public class correctJ2C implements CorrectJ2C {
         IDocument doc = EditorUtil.getDocument(ce.getEditorInput());
         IProject project = EditorUtil.getProject(ce.getEditorInput());
         EclipseQuickFixData data = (EclipseQuickFixData) newData(rootNode, node, list, ce, project, doc);
-        IFile file = EditorUtil.getFile(ce.getEditorInput());
        
-        eclipseAssignToLocalQuickFix_.get_().addProposal(data, file);
+        eclipseAssignToLocalQuickFix_.get_().addProposal(data);
     }
     
     Object newData(CompilationUnit rootNode, Node node,
@@ -144,5 +149,59 @@ public class correctJ2C implements CorrectJ2C {
     @Override
     public CommonDocument newDocument(IDocument nativeDoc) {
         return new EclipseDocument(nativeDoc);
+    }
+
+    @Override
+    public void importEdits(Object editOrChange, CompilationUnit rootNode,
+            Set<com.redhat.ceylon.model.typechecker.model.Declaration> declarations,
+            Collection<String> aliases,
+            IDocument doc) {
+
+        List<InsertEdit> edits = toJavaList_.toJavaList(
+                TypeDescriptor.klass(InsertEdit.class),
+                importProposals_.get_().importEdits(rootNode, declarations, aliases,
+                        null, newDocument(doc))
+        );
+
+        for (InsertEdit importEdit: edits) {
+            org.eclipse.text.edits.InsertEdit ie = 
+                    new org.eclipse.text.edits.InsertEdit(
+                            (int) importEdit.getStart(), importEdit.getText());
+            
+            if (editOrChange instanceof MultiTextEdit) {
+                ((MultiTextEdit) editOrChange).addChild(ie);                
+            } else if (editOrChange instanceof TextFileChange) {
+                ((TextFileChange) editOrChange).addEdit(ie);
+            }
+        }
+    }
+
+    @Override
+    public void importEditForMove(TextFileChange change,
+            CompilationUnit rootNode, Set<Declaration> declarations,
+            Collection<String> aliases, String newName, String oldName,
+            IDocument doc) {
+
+        List<TextEdit> edits = toJavaList_.toJavaList(
+                TypeDescriptor.klass(InsertEdit.class),
+                importProposals_.get_().importEditForMove(rootNode, declarations,
+                        aliases, newName, oldName, newDocument(doc))
+        );
+
+        for (TextEdit importEdit: edits) {
+            if (importEdit instanceof InsertEdit) {
+                change.addEdit(new org.eclipse.text.edits.InsertEdit(
+                        (int) importEdit.getStart(), importEdit.getText()));
+            } else if (importEdit instanceof ReplaceEdit) {
+                change.addEdit(new org.eclipse.text.edits.ReplaceEdit(
+                        (int) importEdit.getStart(),
+                        (int) importEdit.getLength(),
+                        importEdit.getText()));
+            } else if (importEdit instanceof DeleteEdit) {
+                change.addEdit(new org.eclipse.text.edits.DeleteEdit(
+                        (int) importEdit.getStart(),
+                        (int) importEdit.getLength()));
+            }
+        }
     }
 }

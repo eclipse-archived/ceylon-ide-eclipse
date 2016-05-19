@@ -5,27 +5,22 @@ import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringArray;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
-import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.text.edits.InsertEdit;
-import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.platform.platformJ2C;
 import com.redhat.ceylon.ide.common.refactoring.ExtractValueRefactoring;
 import com.redhat.ceylon.model.typechecker.model.Type;
 
 public final class ExtractValueLinkedMode 
         extends ExtractLinkedMode {
         
-    private final ExtractValueRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion> refactoring;
+    private final ExtractValueRefactoring<IRegion> refactoring;
     
     public ExtractValueLinkedMode(CeylonEditor editor) {
         super(editor);
@@ -36,11 +31,11 @@ public final class ExtractValueLinkedMode
     
     @Override
     protected int performInitialChange(IDocument document) {
-        DocumentChange change =
-                new DocumentChange("Extract Value",
-                        document);
+        com.redhat.ceylon.ide.common.platform.TextChange change
+            = new platformJ2C().newChange("Extract Value", 
+                new correctJ2C().newDocument(document));
         refactoring.build(change);
-        EditorUtil.performChange(change);
+        change.apply();
         return 0;
     }
     

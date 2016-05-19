@@ -21,16 +21,15 @@ import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.platform.platformJ2C;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.ide.common.platform.ReplaceEdit;
+import com.redhat.ceylon.ide.common.platform.TextChange;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Type;
@@ -61,18 +60,18 @@ public class TypeProposal
 
     @Override
     public void apply(IDocument document) {
-        final DocumentChange change =
-                new DocumentChange("Specify Type", document);
-        change.setEdit(new MultiTextEdit());
+        TextChange change = new platformJ2C().newChange("Specify Type", 
+                new correctJ2C().newDocument(document));
+        change.initMultiEdit();
         HashSet<Declaration> decs =
                 new HashSet<Declaration>();
         if (type!=null) {
             importProposals().importType(decs, type, rootNode);
         }
-        int il = (int) importProposals().applyImports(change, decs, rootNode, document);
+        int il = (int) importProposals().applyImports(change, decs, rootNode, change.getDocument());
         change.addEdit(new ReplaceEdit(offset,
                 getCurrentLength(document), text));
-        EditorUtil.performChange(change);
+        change.apply();
         selection = new Point(offset+il, text.length());
     }
 

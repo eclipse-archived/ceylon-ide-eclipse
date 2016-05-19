@@ -40,6 +40,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.platform.platformJ2C;
 import com.redhat.ceylon.eclipse.util.DocLinks;
 import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -57,9 +58,11 @@ public class MoveUtil {
         Map<Declaration, String> imports = 
                 getImports(node, p.getNameAsString(), ncu, 
                         packages);
+        com.redhat.ceylon.ide.common.platform.TextChange change
+            = new platformJ2C().newChange("", fc);
         return (int) importProposals()
-                .applyImportsWithAliases(fc, imports, ncu, 
-                        doc, declaration);
+                .applyImportsWithAliases(change, imports, ncu, 
+                        change.getDocument(), declaration);
     }
 
     public static Map<Declaration,String> getImports(Node node,

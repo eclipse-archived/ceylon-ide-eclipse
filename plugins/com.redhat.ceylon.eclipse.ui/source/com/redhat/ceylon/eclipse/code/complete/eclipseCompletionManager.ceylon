@@ -88,7 +88,7 @@ import org.eclipse.ui {
     PlatformUI
 }
 
-EclipseCompletionManager dummyInstance 
+shared EclipseCompletionManager dummyInstance 
         = EclipseCompletionManager(CeylonEditor());
 
 shared class EclipseCompletionManager(CeylonEditor editor) 
@@ -227,6 +227,7 @@ shared class EclipseCompletionManager(CeylonEditor editor)
                 completionManager = this;
             };
     
+    // TODO replace with EclipseRefinementCompletionProposal (and finish rewriting it)
     newRefinementCompletionProposal(Integer offset, 
         String prefix, Reference? pr, String desc, String text, 
         CeylonParseController cmp, Declaration dec, Scope scope, 

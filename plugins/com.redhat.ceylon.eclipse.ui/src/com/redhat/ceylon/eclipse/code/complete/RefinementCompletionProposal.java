@@ -2,12 +2,6 @@ package com.redhat.ceylon.eclipse.code.complete;
 
 import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendPositionalArgs;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getInlineFunctionDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getInlineFunctionTextFor;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getTextFor;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getAssignableLiterals;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getCurrentSpecifierRegion;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getProposedName;
@@ -22,7 +16,6 @@ import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDeco
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getRefinementIcon;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getCompletionFont;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getPreferences;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
@@ -57,30 +50,26 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.eclipse.platform.platformJ2C;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
+import com.redhat.ceylon.ide.common.platform.TextChange;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
 import com.redhat.ceylon.model.typechecker.model.Function;
-import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Functional;
-import com.redhat.ceylon.model.typechecker.model.Generic;
-import com.redhat.ceylon.model.typechecker.model.Interface;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.NothingType;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.Reference;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
@@ -120,109 +109,109 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     public static Image FORMAL_REFINEMENT =
             imageRegistry().get(CEYLON_FORMAL_REFINEMENT);
     
-    @Deprecated
-    static void addRefinementProposal(int offset,
-            Declaration dec, ClassOrInterface ci,
-            Node node, Scope scope, String prefix,
-            CeylonParseController cpc, IDocument doc, 
-            List<ICompletionProposal> result,
-            boolean preamble) {
-        boolean isInterface = scope instanceof Interface;
-        Reference pr = getRefinedProducedReference(scope, dec);
-        Unit unit = node.getUnit();
-        result.add(new RefinementCompletionProposal(offset,
-                prefix, pr,
-                getRefinementDescriptionFor(dec, pr, unit), 
-                getRefinementTextFor(dec, pr, unit,
-                        isInterface, ci,
-                        utilJ2C().indents().getDefaultLineDelimiter(doc)
-                            + utilJ2C().indents().getIndent(node, doc),
-                        true, preamble), 
-                cpc, dec, scope, false, true));
-    }
-    
-    @Deprecated
-    static void addNamedArgumentProposal(int offset,
-            String prefix,
-            CeylonParseController cpc,
-            List<ICompletionProposal> result,
-            Declaration dec, Scope scope) {
-        //TODO: type argument substitution using the
-        //     Reference of the primary node
-        Unit unit = cpc.getLastCompilationUnit().getUnit();
-        result.add(new RefinementCompletionProposal(offset,
-                prefix,
-                dec.getReference(), //TODO: this needs to do type arg substitution
-                getDescriptionFor(dec, unit), 
-                getTextFor(dec, unit) + " = nothing;", 
-                cpc, dec, scope, true, false));
-    }
-
-    @Deprecated
-    static void addInlineFunctionProposal(int offset,
-            Declaration dec, Scope scope, Node node,
-            String prefix, CeylonParseController cpc,
-            IDocument doc,
-            List<ICompletionProposal> result) {
-        //TODO: type argument substitution using the
-        //      Reference of the primary node
-        if (dec.isParameter()) {
-            FunctionOrValue fov = (FunctionOrValue) dec;
-            Parameter p = fov.getInitializerParameter();
-            Unit unit = node.getUnit();
-            result.add(new RefinementCompletionProposal(
-                    offset, prefix,
-                    dec.getReference(), //TODO: this needs to do type arg substitution
-                    getInlineFunctionDescriptionFor(p, null, unit),
-                    getInlineFunctionTextFor(p, null, unit,
-                            utilJ2C().indents().getDefaultLineDelimiter(doc) +
-                            utilJ2C().indents().getIndent(node, doc)),
-                    cpc, dec, scope, false, false));
-        }
-    }
-
-    @Deprecated
-    public static Reference getRefinedProducedReference(
-            Scope scope, Declaration d) {
-        return refinedProducedReference(
-                scope.getDeclaringType(d), d);
-    }
-
-    @Deprecated
-   public static Reference getRefinedProducedReference(
-            Type superType, Declaration d) {
-        if (superType.isIntersection()) {
-            for (Type pt: superType.getSatisfiedTypes()) {
-                Reference result =
-                        getRefinedProducedReference(pt, d);
-                if (result!=null) return result;
-            }
-            return null; //never happens?
-        }
-        else {
-            Type declaringType = 
-                    superType.getDeclaration()
-                        .getDeclaringType(d);
-            if (declaringType==null) return null;
-            Type outerType = 
-                    superType.getSupertype(
-                            declaringType.getDeclaration());
-            return refinedProducedReference(outerType, d);
-        }
-    }
-    
-    @Deprecated
-    private static Reference refinedProducedReference(
-            Type outerType, Declaration d) {
-        List<Type> params = new ArrayList<Type>();
-        if (d instanceof Generic) {
-            Generic g = (Generic) d;
-            for (TypeParameter tp: g.getTypeParameters()) {
-                params.add(tp.getType());
-            }
-        }
-        return d.appliedReference(outerType, params);
-    }
+//    @Deprecated
+//    static void addRefinementProposal(int offset,
+//            Declaration dec, ClassOrInterface ci,
+//            Node node, Scope scope, String prefix,
+//            CeylonParseController cpc, IDocument doc, 
+//            List<ICompletionProposal> result,
+//            boolean preamble) {
+//        boolean isInterface = scope instanceof Interface;
+//        Reference pr = getRefinedProducedReference(scope, dec);
+//        Unit unit = node.getUnit();
+//        result.add(new RefinementCompletionProposal(offset,
+//                prefix, pr,
+//                getRefinementDescriptionFor(dec, pr, unit), 
+//                getRefinementTextFor(dec, pr, unit,
+//                        isInterface, ci,
+//                        utilJ2C().indents().getDefaultLineDelimiter(doc)
+//                            + utilJ2C().indents().getIndent(node, doc),
+//                        true, preamble), 
+//                cpc, dec, scope, false, true));
+//    }
+//    
+//    @Deprecated
+//    static void addNamedArgumentProposal(int offset,
+//            String prefix,
+//            CeylonParseController cpc,
+//            List<ICompletionProposal> result,
+//            Declaration dec, Scope scope) {
+//        //TODO: type argument substitution using the
+//        //     Reference of the primary node
+//        Unit unit = cpc.getLastCompilationUnit().getUnit();
+//        result.add(new RefinementCompletionProposal(offset,
+//                prefix,
+//                dec.getReference(), //TODO: this needs to do type arg substitution
+//                getDescriptionFor(dec, unit), 
+//                getTextFor(dec, unit) + " = nothing;", 
+//                cpc, dec, scope, true, false));
+//    }
+//
+//    @Deprecated
+//    static void addInlineFunctionProposal(int offset,
+//            Declaration dec, Scope scope, Node node,
+//            String prefix, CeylonParseController cpc,
+//            IDocument doc,
+//            List<ICompletionProposal> result) {
+//        //TODO: type argument substitution using the
+//        //      Reference of the primary node
+//        if (dec.isParameter()) {
+//            FunctionOrValue fov = (FunctionOrValue) dec;
+//            Parameter p = fov.getInitializerParameter();
+//            Unit unit = node.getUnit();
+//            result.add(new RefinementCompletionProposal(
+//                    offset, prefix,
+//                    dec.getReference(), //TODO: this needs to do type arg substitution
+//                    getInlineFunctionDescriptionFor(p, null, unit),
+//                    getInlineFunctionTextFor(p, null, unit,
+//                            utilJ2C().indents().getDefaultLineDelimiter(doc) +
+//                            utilJ2C().indents().getIndent(node, doc)),
+//                    cpc, dec, scope, false, false));
+//        }
+//    }
+//
+//    @Deprecated
+//    public static Reference getRefinedProducedReference(
+//            Scope scope, Declaration d) {
+//        return refinedProducedReference(
+//                scope.getDeclaringType(d), d);
+//    }
+//
+//    @Deprecated
+//   public static Reference getRefinedProducedReference(
+//            Type superType, Declaration d) {
+//        if (superType.isIntersection()) {
+//            for (Type pt: superType.getSatisfiedTypes()) {
+//                Reference result =
+//                        getRefinedProducedReference(pt, d);
+//                if (result!=null) return result;
+//            }
+//            return null; //never happens?
+//        }
+//        else {
+//            Type declaringType = 
+//                    superType.getDeclaration()
+//                        .getDeclaringType(d);
+//            if (declaringType==null) return null;
+//            Type outerType = 
+//                    superType.getSupertype(
+//                            declaringType.getDeclaration());
+//            return refinedProducedReference(outerType, d);
+//        }
+//    }
+//    
+//    @Deprecated
+//    private static Reference refinedProducedReference(
+//            Type outerType, Declaration d) {
+//        List<Type> params = new ArrayList<Type>();
+//        if (d instanceof Generic) {
+//            Generic g = (Generic) d;
+//            for (TypeParameter tp: g.getTypeParameters()) {
+//                params.add(tp.getType());
+//            }
+//        }
+//        return d.appliedReference(outerType, params);
+//    }
     
     private final CeylonParseController cpc;
     private final Declaration declaration;
@@ -231,6 +220,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     private final Scope scope;
     private boolean explicitReturnType;
 
+    @Deprecated
     RefinementCompletionProposal(int offset,
             String prefix, Reference pr,
             String desc, String text,
@@ -319,6 +309,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         DocumentChange change = 
                 new DocumentChange("Complete Refinement",
                         document);
+        TextChange commonChange = 
+                new platformJ2C().newChange("Complete Refinement", change);
         change.setEdit(new MultiTextEdit());
         HashSet<Declaration> decs =
                 new HashSet<Declaration>();
@@ -329,7 +321,8 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         else {
             importProposals().importParameterTypes(declaration, cu, decs);
         }
-        int il = (int) importProposals().applyImports(change, decs, cu, document);
+        int il = (int) importProposals().applyImports(commonChange, decs,
+                cu, commonChange.getDocument());
         change.addEdit(createEdit(document));
         offset+=il;
         return change;

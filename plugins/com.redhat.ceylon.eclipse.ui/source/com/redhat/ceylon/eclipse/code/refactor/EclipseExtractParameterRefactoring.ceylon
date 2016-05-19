@@ -1,10 +1,6 @@
 import com.redhat.ceylon.compiler.typechecker.tree {
     Tree
 }
-import com.redhat.ceylon.eclipse.code.correct {
-    eclipseImportProposals,
-    EclipseDocumentChanges
-}
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
 }
@@ -22,36 +18,30 @@ import com.redhat.ceylon.model.typechecker.model {
     Type
 }
 
-import org.eclipse.core.resources {
-    IFile
-}
 import org.eclipse.core.runtime {
     IProgressMonitor
 }
 import org.eclipse.jface.text {
     IRegion,
-    IDocument,
     Region
-}
-import org.eclipse.jface.text.contentassist {
-    ICompletionProposal
 }
 import org.eclipse.ltk.core.refactoring {
     RefactoringStatus,
-    TextChange
+    Change,
+    ETextChange=TextChange
 }
-import org.eclipse.text.edits {
-    InsertEdit,
-    TextEdit
+import com.redhat.ceylon.eclipse.platform {
+    EclipseTextChange
+}
+import com.redhat.ceylon.ide.common.platform {
+    TextChange
 }
 
 class EclipseExtractParameterRefactoring(CeylonEditor editorPart) 
         extends EclipseAbstractRefactoring<TextChange>(editorPart)
-        satisfies ExtractParameterRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion>
-        & EclipseDocumentChanges
+        satisfies ExtractParameterRefactoring<IRegion>
         & EclipseExtractLinkedModeEnabled {
     
-    importProposals => eclipseImportProposals;
     
     shared actual variable String? internalNewName = null;
     shared actual variable Boolean canBeInferred = false;
@@ -87,15 +77,15 @@ class EclipseExtractParameterRefactoring(CeylonEditor editorPart)
     checkInitialConditions(IProgressMonitor? monitor)
             => RefactoringStatus();
     
-    shared actual TextChange createChange(IProgressMonitor? monitor) {
-        TextChange tc = newLocalChange();
+    shared actual Change createChange(IProgressMonitor? monitor) {
+        value tc = newLocalChange();
         extractInFile(tc);
         return tc;
     }
     
     newRegion(Integer start, Integer length) => Region(start, length);
     
-    extractInFile(TextChange tfc) => build(tfc);
+    extractInFile(ETextChange tfc) => build(EclipseTextChange("", tfc));
     
-    shared actual String name => (super of ExtractParameterRefactoring<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange, IRegion>).name;
+    shared actual String name => (super of ExtractParameterRefactoring<IRegion>).name;
 }

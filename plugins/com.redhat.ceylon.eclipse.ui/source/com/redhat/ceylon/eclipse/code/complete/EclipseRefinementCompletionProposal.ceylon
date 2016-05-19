@@ -1,7 +1,3 @@
-import com.redhat.ceylon.eclipse.code.correct {
-    EclipseDocumentChanges,
-    eclipseImportProposals
-}
 import com.redhat.ceylon.eclipse.code.outline {
     CeylonLabelProvider
 }
@@ -20,9 +16,6 @@ import com.redhat.ceylon.ide.common.completion {
     getProposedName,
     appendPositionalArgs
 }
-import com.redhat.ceylon.ide.common.correct {
-    ImportProposals
-}
 import com.redhat.ceylon.model.typechecker.model {
     Declaration,
     Scope,
@@ -36,9 +29,6 @@ import java.lang {
     JCharacter=Character
 }
 
-import org.eclipse.core.resources {
-    IFile
-}
 import org.eclipse.jface.text {
     IDocument,
     BadLocationException,
@@ -57,32 +47,22 @@ import org.eclipse.jface.text.link {
 import org.eclipse.jface.viewers {
     StyledString
 }
-import org.eclipse.ltk.core.refactoring {
-    TextChange
-}
 import org.eclipse.swt.graphics {
     Point,
     Image
-}
-import org.eclipse.text.edits {
-    InsertEdit,
-    TextEdit
 }
 
 class EclipseRefinementCompletionProposal(Integer _offset, String prefix, Reference pr, String desc, 
         String text, CeylonParseController cpc, Declaration declaration, Scope scope,
         Boolean fullType, Boolean explicitReturnType)
-        extends RefinementCompletionProposal<CeylonParseController, ICompletionProposal, IFile,
-                IDocument, InsertEdit, TextEdit, TextChange, Point, LinkedModeModel>
+        extends RefinementCompletionProposal<CeylonParseController, ICompletionProposal,
+                IDocument, LinkedModeModel>
                 (_offset, prefix, pr, desc, text, cpc, declaration, scope, fullType, explicitReturnType)
-        satisfies EclipseDocumentChanges & EclipseCompletionProposal {
+        satisfies EclipseCompletionProposal {
 
     shared actual variable String? currentPrefix = prefix;
     
     shared actual Image image => CeylonLabelProvider.getRefinementIcon(declaration);
-    
-    shared actual ImportProposals<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange> importProposals
-            => eclipseImportProposals;
     
     shared IRegion getCurrentSpecifierRegion(IDocument document, Integer offset) {
         Integer start = offset;

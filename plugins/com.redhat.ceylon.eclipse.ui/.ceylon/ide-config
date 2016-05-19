@@ -1,0 +1,9 @@
+
+[project]
+compile-jvm=true
+compile-js=false
+system-repository=
+
+[converter]
+use-values=true
+transform-getters=true

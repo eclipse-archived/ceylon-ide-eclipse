@@ -2,8 +2,7 @@ import com.redhat.ceylon.eclipse.code.complete {
     EInvocationCompletionProposal=InvocationCompletionProposal
 }
 import com.redhat.ceylon.eclipse.code.correct {
-    EclipseDocumentChanges,
-    eclipseImportProposals
+    EclipseDocument
 }
 import com.redhat.ceylon.eclipse.code.hover {
     DocumentationHover
@@ -29,9 +28,6 @@ import com.redhat.ceylon.ide.common.completion {
     getProposedName,
     appendPositionalArgs
 }
-import com.redhat.ceylon.ide.common.correct {
-    ImportProposals
-}
 import com.redhat.ceylon.model.typechecker.model {
     Declaration,
     Reference,
@@ -41,9 +37,6 @@ import com.redhat.ceylon.model.typechecker.model {
     Unit
 }
 
-import org.eclipse.core.resources {
-    IFile
-}
 import org.eclipse.core.runtime {
     NullProgressMonitor
 }
@@ -64,17 +57,9 @@ import org.eclipse.jface.text.link {
 import org.eclipse.jface.viewers {
     StyledString
 }
-import org.eclipse.ltk.core.refactoring {
-    TextChange,
-    DocumentChange
-}
 import org.eclipse.swt.graphics {
     Point,
     Image
-}
-import org.eclipse.text.edits {
-    InsertEdit,
-    TextEdit
 }
 
 class EclipseInvocationCompletionProposal(Integer _offset, String prefix, 
@@ -84,24 +69,20 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
             Boolean positionalInvocation, Boolean namedInvocation, 
             Boolean inheritance, Boolean qualified, Declaration? qualifyingValue,
             EclipseCompletionManager completionManager)
-        extends InvocationCompletionProposal<CeylonParseController, ICompletionProposal, IFile,
-                IDocument, InsertEdit, TextEdit, TextChange, Point, LinkedModeModel>
+        extends InvocationCompletionProposal<CeylonParseController,ICompletionProposal,IDocument,LinkedModeModel>
                 (_offset, prefix, description, text, dec, producedReference, scope, cpc.lastCompilationUnit,
     includeDefaulted, positionalInvocation, namedInvocation, inheritance, qualified, qualifyingValue, completionManager)
-        satisfies EclipseDocumentChanges & EclipseCompletionProposal {
+        satisfies EclipseCompletionProposal {
     
     shared actual variable String? currentPrefix = prefix;
     shared actual variable Boolean toggleOverwriteInternal = false;
 
-    shared actual ImportProposals<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange> importProposals
-            => eclipseImportProposals;
-
     shared actual void apply(IDocument doc) {
-        value change = DocumentChange("Complete Invocation", doc);
-        createChange(change, doc).perform(NullProgressMonitor());
+        value commonDocument = EclipseDocument(doc);
+        createChange(commonDocument).apply();
         
         if (CeylonPlugin.preferences.getBoolean(CeylonPreferenceInitializer.\iLINKED_MODE_ARGUMENTS)) {
-            activeLinkedMode(doc, cpc);
+            activeLinkedMode(commonDocument, cpc);
         }
     }
     

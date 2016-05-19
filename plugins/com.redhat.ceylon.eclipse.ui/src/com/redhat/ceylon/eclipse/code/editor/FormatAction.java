@@ -1,7 +1,8 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.editorJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,13 +20,13 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
-import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Body;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
+import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
 import com.redhat.ceylon.eclipse.code.style.CeylonStyle;
@@ -103,17 +104,17 @@ final class FormatAction extends Action {
                 /* inherit = */ false,
                 /* baseDir = */ pc.getProject().getLocation().toOSString());
         
-        TextChange change = editorJ2C().eclipseFormatAction().format(pc.getParsedRootNode(),
-                pc.getTokens(), document, document.getLength(),
+        com.redhat.ceylon.ide.common.platform.TextChange change = editorJ2C().eclipseFormatAction().format(pc.getParsedRootNode(),
+                pc.getTokens(), new correctJ2C().newDocument(document), document.getLength(),
                 new DefaultRegion(ts.getOffset(), ts.getLength()),
                 CeylonStyle.getEclipseWsOptions(document),
                 options);
         
-        EditorUtil.performChange(change);
+        change.apply();
         
         selectionProvider.setSelection(new TextSelection(
-                change.getEdit().getOffset(),
-                change.getEdit().getLength()));
+                (int) change.getOffset(),
+                (int) change.getLength()));
     }
     
     @Deprecated

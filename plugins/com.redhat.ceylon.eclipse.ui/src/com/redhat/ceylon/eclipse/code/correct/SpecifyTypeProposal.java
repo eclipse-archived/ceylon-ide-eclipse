@@ -5,7 +5,6 @@ import static com.redhat.ceylon.eclipse.code.correct.SpecifyTypeArgumentsProposa
 import static com.redhat.ceylon.eclipse.code.correct.TypeProposal.getTypeProposals;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.REVEAL;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static org.eclipse.jface.text.link.LinkedPositionGroup.NO_STOP;
 
@@ -24,18 +23,18 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.platform.platformJ2C;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
+import com.redhat.ceylon.ide.common.platform.ReplaceEdit;
+import com.redhat.ceylon.ide.common.platform.TextChange;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
 
@@ -72,16 +71,15 @@ public class SpecifyTypeProposal implements ICompletionProposal,
         }
         if (editor==null) {
             if (typeNode instanceof Tree.LocalModifier) {
-                DocumentChange change = 
-                        new DocumentChange("Specify Type", document);
-                change.setEdit(new MultiTextEdit());
+                TextChange change = new platformJ2C().newChange("Specify Type", document);
+                change.initMultiEdit();
                 HashSet<Declaration> decs = new HashSet<Declaration>();
                 importProposals().importType(decs, infType, rootNode);
-                int il = (int) importProposals().applyImports(change, decs, rootNode, document);
+                int il = (int) importProposals().applyImports(change, decs, rootNode, change.getDocument());
                 String typeName = 
                         infType.asSourceCodeString(rootNode.getUnit());
                 change.addEdit(new ReplaceEdit(offset, length, typeName));
-                performChange(change);
+                change.apply();
                 offset += il;
                 length = typeName.length();
                 selection = new Point(offset, length);

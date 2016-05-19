@@ -2,16 +2,14 @@ package com.redhat.ceylon.eclipse.java2ceylon;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.link.LinkedModeModel;
-import org.eclipse.ltk.core.refactoring.TextChange;
-import org.eclipse.text.edits.InsertEdit;
-import org.eclipse.text.edits.TextEdit;
+import org.eclipse.ltk.core.refactoring.TextFileChange;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
@@ -25,14 +23,14 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.correct.ProblemLocation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.ide.common.correct.IdeQuickFixManager;
-import com.redhat.ceylon.ide.common.correct.ImportProposals;
 import com.redhat.ceylon.ide.common.correct.QuickFixData;
+import com.redhat.ceylon.ide.common.correct.importProposals_;
 import com.redhat.ceylon.ide.common.platform.CommonDocument;
 
 public interface CorrectJ2C {
-    ImportProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange> importProposals();
+    importProposals_ importProposals();
 
-    IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IFile,ICompletionProposal,? extends QuickFixData,LinkedModeModel> eclipseQuickFixManager();
+    IdeQuickFixManager<IDocument,ICompletionProposal,LinkedModeModel,? extends QuickFixData> eclipseQuickFixManager();
 
     void addQuickFixes(
         ProblemLocation problem,
@@ -82,4 +80,17 @@ public interface CorrectJ2C {
             CeylonEditor ce);
     
     CommonDocument newDocument(IDocument nativeDoc);
+    
+    void importEdits(Object editOrChange,
+            CompilationUnit rootNode,
+            Set<com.redhat.ceylon.model.typechecker.model.Declaration> declarations,
+            Collection<String> aliases,
+            IDocument doc);
+    
+    void importEditForMove(TextFileChange change,
+            CompilationUnit rootNode,
+            Set<com.redhat.ceylon.model.typechecker.model.Declaration> declarations,
+            Collection<String> aliases,
+            String newName, String oldName,
+            IDocument doc);
 }

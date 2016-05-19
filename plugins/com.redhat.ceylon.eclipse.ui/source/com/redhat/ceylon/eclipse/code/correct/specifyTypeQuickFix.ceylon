@@ -2,7 +2,8 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     Tree
 }
 import com.redhat.ceylon.eclipse.code.complete {
-    EclipseLinkedModeSupport
+    EclipseLinkedModeSupport,
+    dummyInstance
 }
 import com.redhat.ceylon.eclipse.ui {
     CeylonResources
@@ -13,15 +14,14 @@ import com.redhat.ceylon.eclipse.util {
 import com.redhat.ceylon.ide.common.correct {
     SpecifyTypeQuickFix
 }
+import com.redhat.ceylon.ide.common.platform {
+    CommonDocument
+}
 import com.redhat.ceylon.model.typechecker.model {
     Type
 }
 
-import org.eclipse.core.resources {
-    IFile
-}
 import org.eclipse.jface.text {
-    Region,
     IDocument
 }
 import org.eclipse.jface.text.contentassist {
@@ -35,31 +35,21 @@ import org.eclipse.jface.text.link {
 import org.eclipse.jface.viewers {
     StyledString
 }
-import org.eclipse.ltk.core.refactoring {
-    TextChange
-}
 import org.eclipse.swt.graphics {
     Point,
     Image
 }
-import org.eclipse.text.edits {
-    InsertEdit,
-    TextEdit
-}
 
 object eclipseSpecifyTypeQuickFix
-        satisfies SpecifyTypeQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal,LinkedModeModel>
-                & EclipseAbstractQuickFix 
-                & EclipseDocumentChanges
+        satisfies SpecifyTypeQuickFix<IDocument,ICompletionProposal,LinkedModeModel>
                 & EclipseLinkedModeSupport {
     
-    shared actual void newSpecifyTypeProposal(String desc, Tree.Type type, 
-        Tree.CompilationUnit cu, Type infType, EclipseQuickFixData data) {
-        
-        data.proposals.add(EclipseSpecifyTypeProposal(desc, type, cu, infType, data));
-    }
+    completionManager => dummyInstance;
     
-    specifyTypeArgumentsQuickFix => eclipseSpecifyTypeArgumentsQuickFix;
+    shared actual IDocument getNativeDocument(CommonDocument doc) {
+        assert(is EclipseDocument doc);
+        return doc.document;
+    }
 }
 
 class EclipseSpecifyTypeProposal(
@@ -74,7 +64,7 @@ class EclipseSpecifyTypeProposal(
     shared actual void apply(IDocument doc) {
         // TODO sometimes the editor was null in SpecifyTypeProposal, but here
         // that's never true 
-        eclipseSpecifyTypeQuickFix.specifyType(doc, type, true, cu, infType);
+        eclipseSpecifyTypeQuickFix.specifyType(EclipseDocument(doc), type, true, cu, infType);
     }
     
     shared actual IContextInformation? contextInformation => null;

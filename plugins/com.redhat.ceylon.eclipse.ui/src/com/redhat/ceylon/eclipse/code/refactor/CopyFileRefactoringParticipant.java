@@ -40,6 +40,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ModuleDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.PackageDescriptor;
+import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public class CopyFileRefactoringParticipant extends CopyParticipant {
@@ -170,14 +171,8 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
                     change.addEdit(edit);
                 }
                 if (!imports.isEmpty()) {
-                    List<InsertEdit> list = 
-                            importProposals().importEdits(cu, 
-                                imports.keySet(), 
-                                imports.values(), 
-                                null, getDocument(change));
-                    for (TextEdit edit: list) {
-                        change.addEdit(edit);
-                    }
+                    new correctJ2C().importEdits(change, cu, imports.keySet(),
+                            imports.values(), getDocument(change));
                 }
                 Tree.Import toDelete = 
                         importProposals().findImportNode(cu, newName);

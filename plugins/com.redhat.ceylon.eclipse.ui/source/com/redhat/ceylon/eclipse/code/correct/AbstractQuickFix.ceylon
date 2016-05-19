@@ -1,12 +1,5 @@
-import com.redhat.ceylon.compiler.typechecker.context {
-    PhasedUnit
-}
 import com.redhat.ceylon.eclipse.code.complete {
-    EclipseCompletionManager,
     EclipseLinkedModeSupport
-}
-import com.redhat.ceylon.eclipse.code.editor {
-    CeylonEditor
 }
 import com.redhat.ceylon.eclipse.code.refactor {
     AbstractLinkedMode
@@ -15,46 +8,17 @@ import com.redhat.ceylon.eclipse.ui {
     CeylonResources
 }
 import com.redhat.ceylon.eclipse.util {
-    eclipseIndents,
-    EditorUtil,
     Highlights
 }
-import com.redhat.ceylon.ide.common.completion {
-    IdeCompletionManager
-}
 import com.redhat.ceylon.ide.common.correct {
-    AbstractQuickFix,
-    ImportProposals,
-    GenericQuickFix,
     AbstractLocalProposal
 }
-import com.redhat.ceylon.ide.common.model {
-    ModifiableSourceFile,
-    IResourceAware
-}
-import com.redhat.ceylon.ide.common.refactoring {
-    DefaultRegion
-}
-import com.redhat.ceylon.ide.common.typechecker {
-    ModifiablePhasedUnit
-}
-import com.redhat.ceylon.ide.common.util {
-    Indents
-}
 import com.redhat.ceylon.model.typechecker.model {
-    Unit,
     Type
 }
 
-import org.eclipse.core.resources {
-    IFile,
-    IProject,
-    IResource,
-    IFolder
-}
 import org.eclipse.jface.text {
-    IDocument,
-    Region
+    IDocument
 }
 import org.eclipse.jface.text.contentassist {
     ICompletionProposal,
@@ -68,84 +32,13 @@ import org.eclipse.jface.text.link {
 import org.eclipse.jface.viewers {
     StyledString
 }
-import org.eclipse.ltk.core.refactoring {
-    TextChange,
-    TextFileChange,
-    DocumentChange
-}
 import org.eclipse.swt.graphics {
     Point
-}
-import org.eclipse.text.edits {
-    InsertEdit,
-    TextEdit
-}
-
-shared interface EclipseAbstractQuickFix
-        satisfies AbstractQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal> {
-    
-    shared actual IdeCompletionManager<out Anything,out ICompletionProposal,IDocument> completionManager 
-            => EclipseCompletionManager(CeylonEditor());
-    
-    shared actual Integer getTextEditOffset(TextEdit change) => change.offset;
-    
-    //shared actual List<PhasedUnit> getUnits(IProject p) => CeylonList(CeylonBuilder.getUnits(p));
-    
-    shared actual ImportProposals<out Anything,out Anything,IDocument,InsertEdit,TextEdit,TextChange> importProposals
-            => eclipseImportProposals;
-    
-    shared actual Indents<IDocument> indents => eclipseIndents;
-    
-    shared actual Region newRegion(Integer start, Integer length) => Region(start, length);
-    
-    shared Region? toRegion(DefaultRegion? region) => 
-            if (exists region) then Region(region.start, region.length) else null;
-    
-    shared actual TextChange newTextChange(String desc, PhasedUnit|IFile|IDocument u) {
-        if (is IDocument u) {
-            return DocumentChange(desc, u);
-        } else if (is PhasedUnit u) {
-            assert (is ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> u,
-                    exists file = u.resourceFile);
-            return TextFileChange(desc, file);
-        } else {
-            return TextFileChange(desc, u);
-        }
-    }
-    
-    shared actual PhasedUnit? getPhasedUnit(Unit? u, EclipseQuickFixData data) {
-        if (is ModifiableSourceFile<IProject, IResource, IFolder, IFile> u) {
-            return u.phasedUnit;
-        }
-        else {
-            return null;
-        }
-    }
-    
-    shared actual IFile? getFile<NativeFile>(IResourceAware<out Anything,out Anything,NativeFile> pu, EclipseQuickFixData data) {
-        if (is IFile res = pu.resourceFile) {
-            return res;
-        }
-        return null;
-    }
-}
-
-interface EclipseGenericQuickFix 
-        satisfies EclipseAbstractQuickFix
-                & GenericQuickFix<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal>
-                & EclipseDocumentChanges {
-    
-    shared default actual void newProposal(EclipseQuickFixData data, String desc, 
-        TextChange change, DefaultRegion? region)
-            => data.proposals.add(CorrectionProposal(desc, change, 
-                if (exists region) then toRegion(region) else null));
 }
 
 abstract class EclipseLocalProposal(EclipseQuickFixData data, shared actual String displayString)
         extends AbstractLinkedMode(data.editor)
-        satisfies AbstractLocalProposal<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal,LinkedModeModel>
-                & EclipseAbstractQuickFix
-                & EclipseDocumentChanges
+        satisfies AbstractLocalProposal<IDocument,LinkedModeModel>
                 & EclipseLinkedModeSupport
                 & ICompletionProposal & ICompletionProposalExtension6 {
     
@@ -178,11 +71,10 @@ abstract class EclipseLocalProposal(EclipseQuickFixData data, shared actual Stri
     shared actual void apply(IDocument doc) {
         currentOffset = data.editor.selection.offset;
         
-        value change = performInitialChange(data, 
-            EditorUtil.getFile(data.editor.editorInput), currentOffset);
+        value change = performInitialChange(data, currentOffset);
         
         if (exists change) {
-            EditorUtil.performChange(change);
+            change.apply();
             value unit = data.editor.parseController.lastCompilationUnit.unit;
             if (exists lm = addLinkedPositions(doc, unit)) {
                 enterLinkedMode(doc, 2, exitPosition);

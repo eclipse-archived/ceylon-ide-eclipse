@@ -8,13 +8,12 @@ import java.util.Set;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.link.ILinkedModeListener;
 import org.eclipse.jface.text.link.LinkedModeModel;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.eclipse.platform.platformJ2C;
+import com.redhat.ceylon.ide.common.platform.TextChange;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
 
@@ -49,14 +48,13 @@ public class LinkedModeImporter implements ILinkedModeListener {
                     importProposals()
                         .importType(imports, type, rootNode);
                     if (!imports.isEmpty()) {
-                        DocumentChange change = 
-                                new DocumentChange("Import Type", 
+                        TextChange change = new platformJ2C().newChange("Import Type", 
                                         document);
-                        change.setEdit(new MultiTextEdit());
+                        change.initMultiEdit();
                         importProposals()
                             .applyImports(change, imports, 
-                                    rootNode, document);
-                        EditorUtil.performChange(change);
+                                    rootNode, change.getDocument());
+                        change.apply();
                     }
                 }
             });

@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importPropo
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,23 +31,22 @@ import org.eclipse.ltk.core.refactoring.participants.MoveParticipant;
 import org.eclipse.ltk.core.refactoring.participants.MoveProcessor;
 import org.eclipse.ltk.core.refactoring.participants.RefactoringProcessor;
 import org.eclipse.text.edits.DeleteEdit;
-import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
-import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberOrTypeExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseType;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
+import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class MoveFileRefactoringParticipant extends MoveParticipant {
 
@@ -381,12 +379,9 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
             Tree.CompilationUnit cu = 
                     movedPhasedUnit.getCompilationUnit();
             if (!imports.isEmpty()) {
-                List<InsertEdit> edits = importProposals().importEdits(cu, 
-                        imports.keySet(), imports.values(), null, 
+                new correctJ2C().importEdits(change, cu, 
+                        imports.keySet(), imports.values(),
                         EditorUtil.getDocument(change));
-                for (TextEdit edit: edits) {
-                    change.addEdit(edit);
-                }
             }
             Tree.Import toDelete = importProposals().findImportNode(cu, newName);
             if (toDelete!=null) {
@@ -418,16 +413,10 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                     changes.add(change);
                     fileChanges.put(path, change);
                 }
-                List<TextEdit> edits = 
-                        importProposals().importEditForMove(cu, 
-                                imports.keySet(), imports.values(), 
-                                newName, oldName, 
-                                EditorUtil.getDocument(change));
-                if (!edits.isEmpty()) {
-                    for (TextEdit edit: edits) {
-                        change.addEdit(edit);
-                    }
-                }
+                new correctJ2C().importEditForMove(change, cu, 
+                        imports.keySet(), imports.values(), 
+                        newName, oldName, 
+                        EditorUtil.getDocument(change));
             }
         }
         catch (Exception e) { 

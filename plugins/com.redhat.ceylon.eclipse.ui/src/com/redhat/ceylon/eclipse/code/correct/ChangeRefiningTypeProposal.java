@@ -24,6 +24,8 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.platform.platformJ2C;
+import com.redhat.ceylon.ide.common.platform.TextChange;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
@@ -77,8 +79,9 @@ public class ChangeRefiningTypeProposal {
                 int offset = node.getStartIndex();
                 int length = node.getDistance();
                 change.setEdit(new MultiTextEdit());
-                importProposals().applyImports(change, declarations, cu,
-                        getDocument(change));
+                TextChange chg2 = new platformJ2C().newChange(change.getName(), change);
+                importProposals().applyImports(chg2, declarations, cu,
+                        chg2.getDocument());
                 change.addEdit(new ReplaceEdit(
                         offset, length, type));
                 Region selection =
@@ -234,7 +237,8 @@ public class ChangeRefiningTypeProposal {
                 change.addEdit(new InsertEdit(offset,
                         buf.toString()));
             }
-            importProposals().applyImports(change, declarations, cu, getDocument(change));
+            TextChange chg2 = new platformJ2C().newChange(change.getName(), change);
+            importProposals().applyImports(chg2, declarations, cu, chg2.getDocument());
             if (change.getEdit().hasChildren()) {
                 Region selection =
                         new Region(list.getStartIndex()+1,

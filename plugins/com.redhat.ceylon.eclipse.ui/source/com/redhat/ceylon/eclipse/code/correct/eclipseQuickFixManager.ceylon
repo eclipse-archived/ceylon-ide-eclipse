@@ -4,7 +4,6 @@ import com.redhat.ceylon.compiler.typechecker.tree {
 import com.redhat.ceylon.ide.common.correct {
     IdeQuickFixManager,
     QuickFixData,
-    SpecifyTypeQuickFix,
     convertForToWhileQuickFix,
     joinIfStatementsQuickFix,
     splitIfStatementQuickFix,
@@ -26,7 +25,9 @@ import com.redhat.ceylon.ide.common.correct {
     assertExistsDeclarationQuickFix,
     addAnnotationQuickFix,
     addThrowsAnnotationQuickFix,
-    convertToClassQuickFix
+    convertToClassQuickFix,
+    refineFormalMembersQuickFix,
+    refineEqualsHashQuickFix
 }
 
 import java.util {
@@ -37,8 +38,7 @@ import org.eclipse.core.resources {
     IFile
 }
 import org.eclipse.jface.text {
-    IDocument,
-    Region
+    IDocument
 }
 import org.eclipse.jface.text.contentassist {
     ICompletionProposal
@@ -46,30 +46,20 @@ import org.eclipse.jface.text.contentassist {
 import org.eclipse.jface.text.link {
     LinkedModeModel
 }
-import org.eclipse.ltk.core.refactoring {
-    TextChange
-}
-import org.eclipse.text.edits {
-    InsertEdit,
-    TextEdit
-}
 
 object eclipseQuickFixManager
-        extends IdeQuickFixManager<IDocument,InsertEdit,TextEdit,TextChange,Region,IFile,ICompletionProposal,EclipseQuickFixData,LinkedModeModel>() {
-    
-    importProposals => eclipseImportProposals;
+        extends IdeQuickFixManager<IDocument,ICompletionProposal,LinkedModeModel,EclipseQuickFixData>() {
     
     declareLocalQuickFix => eclipseDeclareLocalQuickFix;
-    refineFormalMembersQuickFix => eclipseRefineFormalMembersQuickFix;
     assignToLocalQuickFix => eclipseAssignToLocalQuickFix;
     
-    shared actual void addImportProposals(Collection<ICompletionProposal> proposals, EclipseQuickFixData data) {
-        data.proposals.addAll(proposals);
+    shared actual void addImportProposals(Collection<ICompletionProposal> proposals, QuickFixData data) {
+        if (is EclipseQuickFixData data) {
+            data.proposals.addAll(proposals);
+        }
     }
     
-    shared actual SpecifyTypeQuickFix<IFile,IDocument,InsertEdit,TextEdit,
-        TextChange,Region,EclipseQuickFixData,ICompletionProposal,
-        LinkedModeModel> specifyTypeQuickFix => eclipseSpecifyTypeQuickFix;
+    specifyTypeQuickFix => eclipseSpecifyTypeQuickFix;
     
     shared actual void addCreateTypeParameterProposal<Data>(Data data,
         Tree.BaseType bt, String brokenName)
@@ -87,7 +77,7 @@ object eclipseQuickFixManager
         Tree.ImportMemberOrType? imp, Tree.OperatorExpression? oe,
         Integer currentOffset) {
         
-        assignToLocalQuickFix.addProposal(data, file, currentOffset);
+        assignToLocalQuickFix.addProposal(data, currentOffset);
         
         if (is Tree.BinaryOperatorExpression oe) {
             operatorQuickFix.addReverseOperatorProposal(data,  oe);
@@ -100,7 +90,7 @@ object eclipseQuickFixManager
         verboseRefinementQuickFix.addShortcutRefinementProposal(data, statement);
         
         addAnnotationQuickFix.addContextualAnnotationProposals(data, declaration, currentOffset);
-        specifyTypeQuickFix.addTypingProposals(data, file, declaration);
+        specifyTypeQuickFix.addTypingProposals(data, declaration);
         
         miscQuickFixes.addAnonymousFunctionProposals(data);
         
@@ -135,7 +125,7 @@ object eclipseQuickFixManager
         addThrowsAnnotationQuickFix.addThrowsAnnotationProposal(data, statement);
         
         refineFormalMembersQuickFix.addRefineFormalMembersProposal(data, false);
-        refineEqualsHashQuickFix.addRefineEqualsHashProposal(data, file, currentOffset);
+        refineEqualsHashQuickFix.addRefineEqualsHashProposal(data, currentOffset);
         
         convertStringQuickFix.addConvertToVerbatimProposal(data);
         convertStringQuickFix.addConvertFromVerbatimProposal(data);

@@ -7,12 +7,12 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.TextEdit;
 
 import com.redhat.ceylon.eclipse.java2ceylon.EditorJ2C;
-import com.redhat.ceylon.ide.common.editor.AbstractFormatAction;
+import com.redhat.ceylon.ide.common.editor.formatAction_;
 
 public class editorJ2C implements EditorJ2C {
     @Override
-    public AbstractFormatAction<IDocument,InsertEdit,TextEdit,TextChange> eclipseFormatAction() {
-        return eclipseFormatAction_.get_();
+    public formatAction_ eclipseFormatAction() {
+        return formatAction_.get_();
     }
     
     @Override

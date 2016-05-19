@@ -34,8 +34,6 @@ class EclipseConvertToClassProposal(String desc, CeylonEditor editor,
     Tree.ObjectDefinition declaration)
             extends AbstractLinkedModeAdapter(editor)
             satisfies ICompletionProposal
-                    & EclipseAbstractQuickFix
-                    & EclipseDocumentChanges
                     & AbstractConvertToClassProposal<ICompletionProposal,IDocument,LinkedModeModel>{
     
     shared actual String? additionalProposalInfo => null;

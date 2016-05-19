@@ -34,7 +34,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.LocalModifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.platform.platformJ2C;
 
 public class RevealInferredTypeHandler extends AbstractHandler {
 
@@ -116,7 +118,10 @@ public class RevealInferredTypeHandler extends AbstractHandler {
             
             try {
                 IDocument doc = tfc.getCurrentDocument(null);
-                importProposals().applyImports(tfc, imports, rootNode, doc);
+                com.redhat.ceylon.ide.common.platform.TextChange chg =
+                        new platformJ2C().newChange(tfc.getName(), tfc);
+                importProposals().applyImports(chg, imports, rootNode, 
+                        new correctJ2C().newDocument(doc));
 
                 PerformChangeOperation changeOperation = 
                         new PerformChangeOperation(tfc);

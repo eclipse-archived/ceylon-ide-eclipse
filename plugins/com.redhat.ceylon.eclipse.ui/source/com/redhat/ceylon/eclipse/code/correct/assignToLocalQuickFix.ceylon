@@ -22,11 +22,7 @@ import java.util {
     Collections
 }
 
-import org.eclipse.core.resources {
-    IFile
-}
 import org.eclipse.jface.text {
-    Region,
     IDocument
 }
 import org.eclipse.jface.text.contentassist {
@@ -38,18 +34,9 @@ import org.eclipse.jface.text.link {
 import org.eclipse.jface.viewers {
     StyledString
 }
-import org.eclipse.ltk.core.refactoring {
-    TextChange
-}
-import org.eclipse.text.edits {
-    InsertEdit,
-    TextEdit
-}
 
 object eclipseAssignToLocalQuickFix
-        satisfies AssignToLocalQuickFix<IFile,EclipseQuickFixData>
-                & EclipseAbstractQuickFix
-                & EclipseDocumentChanges {
+        satisfies AssignToLocalQuickFix<EclipseQuickFixData> {
     
     shared actual void newProposal(EclipseQuickFixData data, String desc) {
         data.proposals.add(EclipseAssignToLocalProposal(data, desc));
@@ -58,7 +45,7 @@ object eclipseAssignToLocalQuickFix
 
 class EclipseAssignToLocalProposal(EclipseQuickFixData data, String desc)
         extends EclipseLocalProposal(data, desc)
-        satisfies AssignToLocalProposal<IFile,IDocument,InsertEdit,TextEdit,TextChange,Region,EclipseQuickFixData,ICompletionProposal,LinkedModeModel> {
+        satisfies AssignToLocalProposal<IDocument,ICompletionProposal,LinkedModeModel> {
 
     shared actual ICompletionProposal[] toNameProposals(String[] names, 
         Integer offset, Unit unit, Integer seq) => [

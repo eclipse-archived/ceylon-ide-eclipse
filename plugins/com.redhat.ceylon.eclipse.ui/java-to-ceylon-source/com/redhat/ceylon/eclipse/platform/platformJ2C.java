@@ -1,11 +1,10 @@
 package com.redhat.ceylon.eclipse.platform;
 
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.Change;
 
 import com.redhat.ceylon.eclipse.java2ceylon.PlatformJ2C;
-import com.redhat.ceylon.ide.common.platform.CommonDocument;
 import com.redhat.ceylon.ide.common.platform.PlatformServices;
+import com.redhat.ceylon.ide.common.platform.TextChange;
 
 public class platformJ2C implements PlatformJ2C {
 
@@ -13,7 +12,6 @@ public class platformJ2C implements PlatformJ2C {
     public PlatformServices platformServices() {
         return eclipsePlatformServices_.get_();
     }
-    
 
     @Override
     public Change getNativeChange(Object commonChange) {
@@ -23,5 +21,12 @@ public class platformJ2C implements PlatformJ2C {
             return ((EclipseTextChange) commonChange).getNativeChange();
         }
         return null;
+    }
+
+
+
+    @Override
+    public TextChange newChange(String desc, Object doc) {
+        return new EclipseTextChange(desc, doc);
     }
 }

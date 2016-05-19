@@ -31,7 +31,9 @@ import org.eclipse.text.edits.MultiTextEdit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import com.redhat.ceylon.eclipse.platform.platformJ2C;
 import com.redhat.ceylon.ide.common.model.ModifiableSourceFile;
+import com.redhat.ceylon.ide.common.platform.TextChange;
 import com.redhat.ceylon.ide.common.typechecker.ModifiablePhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -70,9 +72,10 @@ class CreateTypeParameterProposal extends CorrectionProposal {
         HashSet<Declaration> decs = 
                 new HashSet<Declaration>();
         CompilationUnit cu = unit.getCompilationUnit();
+        TextChange chg2 = new platformJ2C().newChange(change.getName(), change);
         int il = (int) 
                 importProposals()
-                    .applyImports(change, decs, cu, doc);
+                    .applyImports(chg2, decs, cu, chg2.getDocument());
         change.addEdit(new InsertEdit(offset, def));
         if (constraints!=null) {
             int loc = getConstraintLoc(decNode);

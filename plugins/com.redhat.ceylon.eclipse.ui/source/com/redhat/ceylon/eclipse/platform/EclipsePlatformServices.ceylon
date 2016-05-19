@@ -2,15 +2,14 @@ import com.redhat.ceylon.compiler.typechecker.context {
     PhasedUnit
 }
 import com.redhat.ceylon.eclipse.code.correct {
-    eclipseImportProposals,
     EclipseDocument
+}
+import com.redhat.ceylon.eclipse.code.editor {
+    Navigation
 }
 import com.redhat.ceylon.eclipse.util {
     eclipseIndents,
     EditorUtil
-}
-import com.redhat.ceylon.ide.common.correct {
-    ImportProposals
 }
 import com.redhat.ceylon.ide.common.platform {
     PlatformServices,
@@ -29,6 +28,9 @@ import com.redhat.ceylon.ide.common.typechecker {
 import com.redhat.ceylon.ide.common.util {
     unsafeCast,
     Indents
+}
+import com.redhat.ceylon.model.typechecker.model {
+    Unit
 }
 
 import org.eclipse.core.resources {
@@ -50,12 +52,6 @@ import org.eclipse.text.edits {
     EReplaceEdit=ReplaceEdit,
     EDeleteEdit=DeleteEdit
 }
-import com.redhat.ceylon.model.typechecker.model {
-    Unit
-}
-import com.redhat.ceylon.eclipse.code.editor {
-    Navigation
-}
 
 object eclipsePlatformServices satisfies PlatformServices {
     
@@ -71,11 +67,6 @@ object eclipsePlatformServices satisfies PlatformServices {
             => unsafeCast<VfsServices<NativeProject,NativeResource,NativeFolder,NativeFile>>
                     (eclipseVfsServices);
     
-    shared actual ImportProposals<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange>
-            importProposals<IFile, ICompletionProposal, IDocument, InsertEdit, TextEdit, TextChange>() 
-            => unsafeCast<ImportProposals<IFile,ICompletionProposal,IDocument,InsertEdit,TextEdit,TextChange>>
-                    (eclipseImportProposals);
-    
     shared actual Indents<IDocument> indents<IDocument>() 
             => unsafeCast<Indents<IDocument>>(eclipseIndents);
     
@@ -88,7 +79,7 @@ object eclipsePlatformServices satisfies PlatformServices {
             => Navigation.gotoLocation(unit, offset, length);
 }
 
-shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit input)
+shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit|ETextChange input)
         satisfies TextChange {
     
     shared ETextChange nativeChange;
@@ -100,6 +91,10 @@ shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit input)
     }
     else if (is ModifiablePhasedUnit<IProject,IResource,IFolder,IFile> input) {
         nativeChange = TextFileChange(desc, input.resourceFile);
+        doc = EclipseDocument(EditorUtil.getDocument(nativeChange));
+    }
+    else if (is ETextChange input) {
+        nativeChange = input;
         doc = EclipseDocument(EditorUtil.getDocument(nativeChange));
     }
     else {
@@ -133,6 +128,7 @@ shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit input)
     apply() => EditorUtil.performChange(nativeChange);
     
     offset => nativeChange.edit.offset;
+    length => nativeChange.edit.length;
 }
 
 shared class EclipseCompositeChange(String desc) 

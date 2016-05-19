@@ -41,12 +41,18 @@ import org.eclipse.swt {
 import org.eclipse.swt.graphics {
     Point
 }
+import com.redhat.ceylon.ide.common.platform {
+    CommonDocument
+}
+import com.redhat.ceylon.eclipse.code.correct {
+    EclipseDocument
+}
 
 // see CompletionProposal
 interface EclipseCompletionProposal
         satisfies IEclipseCompletionProposal
                 & EclipseLinkedModeSupport
-                & CommonCompletionProposal<IDocument,Point> {
+                & CommonCompletionProposal {
     
     shared variable formal Boolean toggleOverwriteInternal;
     shared formal variable String? currentPrefix;
@@ -104,7 +110,7 @@ interface EclipseCompletionProposal
     }
 
     shared actual CharSequence getPrefixCompletionText(IDocument document, Integer completionOffset) {
-        return javaString(withoutDupeSemi(document));
+        return javaString(withoutDupeSemi(EclipseDocument(document)));
     }
     
     shared actual Integer getPrefixCompletionStart(IDocument document, Integer completionOffset) {
@@ -113,22 +119,15 @@ interface EclipseCompletionProposal
     
     shared actual IInformationControlCreator? informationControlCreator => null;
     
-    shared actual Point getSelection(IDocument document) => getSelectionInternal(document);
+    shared actual Point getSelection(IDocument document)
+            => let(reg=getSelectionInternal(EclipseDocument(document)))
+               Point(reg.start, reg.length);
     
     shared actual String completionMode => CeylonPlugin.preferences.getString(CeylonPreferenceInitializer.\iCOMPLETION);
     
-    shared actual Character getDocChar(IDocument doc, Integer offset) => doc.getChar(offset);
-    
-    shared actual Integer getDocLength(IDocument doc) => doc.length;
-    
-    shared actual String getDocSpan(IDocument doc, Integer start, Integer length)
-            => doc.get(start, length);
-    
-    shared actual Point newRegion(Integer start, Integer length) => Point(start, length);
-    shared actual Integer getRegionStart(Point region) => region.x;
-    shared actual Integer getRegionLength(Point region) => region.y;
-    
-    shared actual void replaceInDoc(IDocument doc, Integer start, Integer length, String newText) {
-        doc.replace(start, length, newText);
+    shared actual void replaceInDoc(CommonDocument doc, Integer start, Integer length, String newText) {
+        if (is EclipseDocument doc) {
+            doc.document.replace(start, length, newText);
+        }
     }
 }
