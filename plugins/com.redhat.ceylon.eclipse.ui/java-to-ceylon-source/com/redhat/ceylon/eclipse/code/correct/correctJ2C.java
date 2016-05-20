@@ -10,7 +10,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.MultiTextEdit;
 
@@ -22,10 +21,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.java2ceylon.CorrectJ2C;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.ide.common.correct.IdeQuickFixManager;
-import com.redhat.ceylon.ide.common.correct.QuickFixData;
 import com.redhat.ceylon.ide.common.correct.addAnnotationQuickFix_;
 import com.redhat.ceylon.ide.common.correct.assignToLocalQuickFix_;
+import com.redhat.ceylon.ide.common.correct.ideQuickFixManager_;
 import com.redhat.ceylon.ide.common.correct.importProposals_;
 import com.redhat.ceylon.ide.common.correct.refineEqualsHashQuickFix_;
 import com.redhat.ceylon.ide.common.correct.refineFormalMembersQuickFix_;
@@ -45,8 +43,8 @@ public class correctJ2C implements CorrectJ2C {
     }
     
     @Override
-    public IdeQuickFixManager<IDocument,ICompletionProposal,LinkedModeModel,? extends QuickFixData> eclipseQuickFixManager() {
-        return eclipseQuickFixManager_.get_();
+    public ideQuickFixManager_ eclipseQuickFixManager() {
+        return ideQuickFixManager_.get_();
     }
     
     public addAnnotationQuickFix_ addAnnotationsQuickFix() {
@@ -68,7 +66,7 @@ public class correctJ2C implements CorrectJ2C {
         EclipseQuickFixData data = new EclipseQuickFixData(problem, rootNode, 
                 node, project, proposals, editor, ceylonProject, doc);
 
-        eclipseQuickFixManager_.get_().addQuickFixes(data, tc);
+        ideQuickFixManager_.get_().addQuickFixes(data, tc);
     }
 
     @Override
@@ -90,7 +88,7 @@ public class correctJ2C implements CorrectJ2C {
         EclipseQuickFixData data = new EclipseQuickFixData(null, rootNode, 
                 node, project, proposals, editor, ceylonProject, doc);
 
-        eclipseQuickFixManager_.get_().addQuickAssists(data, statement, declaration, argument, imp, oe, currentOffset);
+        ideQuickFixManager_.get_().addQuickAssists(data, statement, declaration, argument, imp, oe, currentOffset);
     }
 
     @Override

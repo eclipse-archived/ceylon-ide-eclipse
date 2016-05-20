@@ -8,7 +8,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
@@ -22,15 +21,14 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.OperatorExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.correct.ProblemLocation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.ide.common.correct.IdeQuickFixManager;
-import com.redhat.ceylon.ide.common.correct.QuickFixData;
+import com.redhat.ceylon.ide.common.correct.ideQuickFixManager_;
 import com.redhat.ceylon.ide.common.correct.importProposals_;
 import com.redhat.ceylon.ide.common.platform.CommonDocument;
 
 public interface CorrectJ2C {
     importProposals_ importProposals();
 
-    IdeQuickFixManager<IDocument,ICompletionProposal,LinkedModeModel,? extends QuickFixData> eclipseQuickFixManager();
+    ideQuickFixManager_ eclipseQuickFixManager();
 
     void addQuickFixes(
         ProblemLocation problem,

@@ -10,8 +10,6 @@ import static com.redhat.ceylon.eclipse.code.correct.AssignToIfNonemptyProposal.
 import static com.redhat.ceylon.eclipse.code.correct.AssignToTryProposal.addAssignToTryProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertFunctionToGetterProposal.addConvertFunctionToGetterProposal;
 import static com.redhat.ceylon.eclipse.code.correct.ConvertGetterToFunctionProposal.addConvertGetterToFunctionProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ConvertToNamedArgumentsProposal.addConvertToNamedArgumentsProposal;
-import static com.redhat.ceylon.eclipse.code.correct.ConvertToPositionalArgumentsProposal.addConvertToPositionalArgumentsProposal;
 import static com.redhat.ceylon.eclipse.code.correct.DestructureProposal.addDestructureProposal;
 import static com.redhat.ceylon.eclipse.code.correct.MoveDirProposal.addMoveDirProposal;
 import static com.redhat.ceylon.eclipse.code.correct.PrintProposal.addPrintProposal;
@@ -816,10 +814,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             addAssignToAssertIsProposal(currentEditor, rootNode, proposals, node, currentOffset);
             addPrintProposal(rootNode, proposals, node, currentOffset);
             
-            addConvertToNamedArgumentsProposal(proposals, file, rootNode, 
-                    editor, currentOffset);
-            addConvertToPositionalArgumentsProposal(proposals, file, rootNode, 
-                    editor, currentOffset);
+//            addConvertToNamedArgumentsProposal(proposals, file, rootNode, 
+//                    editor, currentOffset);
+//            addConvertToPositionalArgumentsProposal(proposals, file, rootNode, 
+//                    editor, currentOffset);
             
             Tree.Statement statement = findStatement(rootNode, node);
             Tree.Declaration declaration = findDeclaration(rootNode, node);

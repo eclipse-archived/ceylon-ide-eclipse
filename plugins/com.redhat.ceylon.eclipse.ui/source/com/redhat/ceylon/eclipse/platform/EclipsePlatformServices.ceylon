@@ -19,7 +19,8 @@ import com.redhat.ceylon.ide.common.platform {
     InsertEdit,
     ReplaceEdit,
     CompositeChange,
-    CommonDocument
+    CommonDocument,
+    NoopLinkedMode
 }
 import com.redhat.ceylon.ide.common.typechecker {
     ModifiablePhasedUnit
@@ -92,7 +93,11 @@ object eclipsePlatformServices satisfies PlatformServices {
     indentWithSpaces
             => let(IPreferenceStore? store = EditorsUI.preferenceStore)
                 (store?.getBoolean(editorSpacesForTabs) else false);
-
+    
+    createLinkedMode(CommonDocument document)
+            => if (is EclipseDocument document)
+               then EclipseLinkedMode(document)
+               else NoopLinkedMode(document);
 }
 
 shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit|ETextChange input)

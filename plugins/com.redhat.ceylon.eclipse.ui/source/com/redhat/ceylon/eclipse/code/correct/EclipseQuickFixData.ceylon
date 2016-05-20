@@ -267,7 +267,7 @@ shared class EclipseQuickFixData(ProblemLocation location,
         Tree.Term term, Tree.BaseMemberExpression bme) {
         
         if (is EclipseTextChange change) {
-            proposals.add(DeclareLocalProposal(change.nativeChange, description,
+            proposals.add(DeclareLocalProposal(this, change.nativeChange, description,
                 term, bme, rootNode, editor));
         }
     }
