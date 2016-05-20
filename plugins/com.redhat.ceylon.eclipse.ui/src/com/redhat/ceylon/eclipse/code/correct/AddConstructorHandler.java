@@ -1,8 +1,7 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.AddConstructorProposal.addConstructorProposal;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.correctJ2C;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 
@@ -13,6 +12,7 @@ import org.antlr.runtime.CommonToken;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextSelection;
@@ -23,6 +23,9 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.ide.common.correct.QuickFixData;
+import com.redhat.ceylon.ide.common.correct.addConstructorQuickFix_;
 
 public class AddConstructorHandler extends AbstractHandler {
 
@@ -48,11 +51,16 @@ public class AddConstructorHandler extends AbstractHandler {
                                         start, end));
                 List<ICompletionProposal> list = 
                         new ArrayList<ICompletionProposal>();
-                addConstructorProposal(getFile(editor), list, node, rootNode);
+                IDocument doc = 
+                        ce.getCeylonSourceViewer()
+                          .getDocument();
+                IProject project = EditorUtil.getProject(ce.getEditorInput());
+                QuickFixData data = correctJ2C().newData(rootNode, node, list,
+                        ce, project, doc);
+                
+                addConstructorQuickFix_.get_().addConstructorProposal(data);
+
                 if (!list.isEmpty()) {
-                    IDocument doc = 
-                            ce.getCeylonSourceViewer()
-                              .getDocument();
                     ICompletionProposal proposal = list.get(0);
                     proposal.apply(doc);
                     Point point = proposal.getSelection(doc);

@@ -2,6 +2,9 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     Tree,
     Node
 }
+import com.redhat.ceylon.eclipse.code.complete {
+    RefinementCompletionProposal
+}
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
 }
@@ -12,13 +15,16 @@ import com.redhat.ceylon.eclipse.ui {
     CeylonResources
 }
 import com.redhat.ceylon.eclipse.util {
-    Highlights,
     eclipseIcons
 }
 import com.redhat.ceylon.ide.common.correct {
     QuickFixData,
     exportModuleImportQuickFix,
-    refineFormalMembersQuickFix
+    refineFormalMembersQuickFix,
+    QuickFixKind
+}
+import com.redhat.ceylon.ide.common.doc {
+    Icons
 }
 import com.redhat.ceylon.ide.common.model {
     BaseCeylonProject
@@ -48,6 +54,9 @@ import org.eclipse.core.resources {
         workspace
     }
 }
+import org.eclipse.core.runtime {
+    NullProgressMonitor
+}
 import org.eclipse.jface.text {
     Region,
     IDocument
@@ -61,15 +70,6 @@ import org.eclipse.jface.viewers {
 import org.eclipse.ltk.core.refactoring {
     CompositeChange,
     PerformChangeOperation
-}
-import com.redhat.ceylon.ide.common.doc {
-    Icons
-}
-import org.eclipse.core.runtime {
-    NullProgressMonitor
-}
-import com.redhat.ceylon.eclipse.code.complete {
-    RefinementCompletionProposal
 }
 
 shared class EclipseQuickFixData(ProblemLocation location,
@@ -91,15 +91,14 @@ shared class EclipseQuickFixData(ProblemLocation location,
     editorSelection => DefaultRegion(editor.selection.offset, editor.selection.length);
     
     shared actual void addQuickFix(String desc, CommonTextChange|Callable<Anything, []> change,
-        DefaultRegion? selection, Boolean qualifiedNameIsPath, Icons? icon) {
-        
-        value image = eclipseIcons.fromIcons(icon);
+        DefaultRegion? selection, Boolean qualifiedNameIsPath, Icons? icon,
+        QuickFixKind kind) {
         
         if (is EclipseTextChange change) {
-            value region = toRegion(selection);
-            proposals.add(CorrectionProposal(desc,
-                    change.nativeChange, region, image,
-                    qualifiedNameIsPath));
+            proposals.add(
+                proposalsFactory.createProposal(desc, change, selection,
+                    qualifiedNameIsPath, icon, kind)
+            );
         } else if (is Callable<Anything, []> callback = change) {
             proposals.add(object extends CorrectionProposal(desc, null, null) {
                 shared actual void apply(IDocument? iDocument) {
@@ -139,22 +138,6 @@ shared class EclipseQuickFixData(ProblemLocation location,
                     selection = Region(selection.start, selection.length);
                     image = CeylonResources.\iADD_CORR;
                     exitPos = exitPos;
-                });
-        }
-    }
-    
-    shared actual void addParameterListQuickFix(String desc, CommonTextChange change,
-        DefaultRegion selection) {
-        
-        if (is EclipseTextChange ch = change) {
-            proposals.add(object extends CorrectionProposal(desc,
-                    ch.nativeChange,
-                    toRegion(selection)) {
-                    shared actual StyledString styledDisplayString {
-                        String hint = CorrectionUtil.shortcut("com.redhat.ceylon.eclipse.ui.action.addParameterList");
-                        return Highlights.styleProposal(displayString, false)
-                            .append(hint, StyledString.\iQUALIFIER_STYLER);
-                    }
                 });
         }
     }

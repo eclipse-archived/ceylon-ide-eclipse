@@ -21,6 +21,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.java2ceylon.CorrectJ2C;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
+import com.redhat.ceylon.ide.common.correct.QuickFixData;
 import com.redhat.ceylon.ide.common.correct.addAnnotationQuickFix_;
 import com.redhat.ceylon.ide.common.correct.assignToLocalQuickFix_;
 import com.redhat.ceylon.ide.common.correct.ideQuickFixManager_;
@@ -100,7 +101,7 @@ public class correctJ2C implements CorrectJ2C {
             IProject project) {
 
         IDocument doc = EditorUtil.getDocument(ce.getEditorInput());
-        EclipseQuickFixData data = (EclipseQuickFixData) newData(rootNode, node, list, ce, project, doc);
+        QuickFixData data = newData(rootNode, node, list, ce, project, doc);
 
         refineFormalMembersQuickFix_.get_()
             .addRefineFormalMembersProposal(data, false);
@@ -115,7 +116,7 @@ public class correctJ2C implements CorrectJ2C {
             IProject project) {
         
         IDocument doc = EditorUtil.getDocument(ce.getEditorInput());
-        EclipseQuickFixData data = (EclipseQuickFixData) newData(rootNode, node, list, ce, project, doc);
+        QuickFixData data = newData(rootNode, node, list, ce, project, doc);
 
         refineEqualsHashQuickFix_.get_()
             .addRefineEqualsHashProposal(data, ce.getSelection().getOffset());        
@@ -127,12 +128,13 @@ public class correctJ2C implements CorrectJ2C {
 
         IDocument doc = EditorUtil.getDocument(ce.getEditorInput());
         IProject project = EditorUtil.getProject(ce.getEditorInput());
-        EclipseQuickFixData data = (EclipseQuickFixData) newData(rootNode, node, list, ce, project, doc);
+        QuickFixData data = newData(rootNode, node, list, ce, project, doc);
        
         assignToLocalQuickFix_.get_().addProposal(data);
     }
     
-    Object newData(CompilationUnit rootNode, Node node,
+    @Override
+    public QuickFixData newData(CompilationUnit rootNode, Node node,
             List<ICompletionProposal> list, CeylonEditor ce,
             IProject project, IDocument doc) {
         

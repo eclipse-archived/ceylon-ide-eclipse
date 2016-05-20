@@ -21,6 +21,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.OperatorExpression;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
 import com.redhat.ceylon.eclipse.code.correct.ProblemLocation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.ide.common.correct.QuickFixData;
 import com.redhat.ceylon.ide.common.correct.ideQuickFixManager_;
 import com.redhat.ceylon.ide.common.correct.importProposals_;
 import com.redhat.ceylon.ide.common.platform.CommonDocument;
@@ -91,4 +92,8 @@ public interface CorrectJ2C {
             Collection<String> aliases,
             String newName, String oldName,
             IDocument doc);
+
+    QuickFixData newData(CompilationUnit rootNode, Node node,
+            List<ICompletionProposal> proposals, CeylonEditor ce,
+            IProject project, IDocument doc);
 }
