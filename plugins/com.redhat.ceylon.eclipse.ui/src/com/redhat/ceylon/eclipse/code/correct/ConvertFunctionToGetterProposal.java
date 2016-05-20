@@ -27,6 +27,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.MethodDeclaration;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.refactor.RenameRefactoring;
+import com.redhat.ceylon.ide.common.correct.FindInvocationVisitor;
 import com.redhat.ceylon.model.typechecker.model.Function;
 
 class ConvertFunctionToGetterProposal extends CorrectionProposal {
@@ -93,10 +94,10 @@ class ConvertFunctionToGetterProposal extends CorrectionProposal {
                 FindInvocationVisitor fiv = 
                         new FindInvocationVisitor(node);
                 fiv.visit(root);
-                if (fiv.result != null && 
-                        fiv.result.getPrimary() == node) {
+                if (fiv.getResult() != null && 
+                        fiv.getResult().getPrimary() == node) {
                     Tree.PositionalArgumentList pal = 
-                            fiv.result.getPositionalArgumentList();
+                            fiv.getResult().getPositionalArgumentList();
                     startIndex = pal.getStartIndex();
                     endIndex = pal.getEndIndex();
                 }

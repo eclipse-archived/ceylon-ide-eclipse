@@ -19,7 +19,6 @@ import com.redhat.ceylon.eclipse.util {
 }
 import com.redhat.ceylon.ide.common.correct {
     QuickFixData,
-    exportModuleImportQuickFix,
     refineFormalMembersQuickFix,
     QuickFixKind
 }
@@ -40,7 +39,6 @@ import com.redhat.ceylon.model.typechecker.model {
     Type,
     Scope,
     Referenceable,
-    TypeDeclaration,
     Declaration
 }
 
@@ -68,7 +66,6 @@ import org.eclipse.jface.viewers {
     StyledString
 }
 import org.eclipse.ltk.core.refactoring {
-    CompositeChange,
     PerformChangeOperation
 }
 
@@ -142,16 +139,6 @@ shared class EclipseQuickFixData(ProblemLocation location,
         }
     }
     
-    shared actual void addExportModuleImportProposal(Unit u, String description,
-        String name, String version) {
-        
-        proposals.add(object extends ExportModuleImportProposal(description) {
-                shared actual void apply(IDocument doc) {
-                    exportModuleImportQuickFix.applyChanges(outer, u, name);
-                }
-            });
-    }
-    
     shared actual void addModuleImportProposal(Unit u, String description,
         String name, String version) {
         
@@ -177,25 +164,6 @@ shared class EclipseQuickFixData(ProblemLocation location,
         
         if (!proposals.contains(proposal)) {
             proposals.add(proposal);
-        }
-    }
-    
-    shared actual void addSatisfiesProposal(TypeDeclaration typeParam, 
-        String description, String missingSatisfiedTypeText,
-        CommonTextChange change, DefaultRegion? region) {
-        
-        if (is EclipseTextChange change) {
-            value composite = CompositeChange(change.nativeChange.name);
-            composite.add(change.nativeChange);
-            
-            value reg = toRegion(region);
-            
-            value proposal = AddSatisfiesProposal(typeParam, description, 
-                missingSatisfiedTypeText, composite, reg);
-            
-            if (!proposals.contains(proposal)) {
-                proposals.add(proposal);
-            }
         }
     }
     
@@ -273,10 +241,6 @@ shared class EclipseQuickFixData(ProblemLocation location,
         };
         proposals.add(proposal);
     }
-    
-    shared actual void addSpecifyTypeProposal(String description, Tree.Type type,
-        Tree.CompilationUnit cu, Type infType)
-            => proposals.add(EclipseSpecifyTypeProposal(description, type, cu, infType, this));
     
     shared actual void addRefineEqualsHashProposal(String description, CommonTextChange change) {
         if (is EclipseTextChange _chg = change) {

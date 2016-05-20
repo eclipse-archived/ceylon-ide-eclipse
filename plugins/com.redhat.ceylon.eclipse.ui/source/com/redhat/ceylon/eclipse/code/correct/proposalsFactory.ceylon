@@ -1,5 +1,7 @@
 import org.eclipse.jface.text.contentassist {
-    ICompletionProposal
+    ICompletionProposal,
+    ICompletionProposalExtension6,
+    IContextInformation
 }
 import com.redhat.ceylon.ide.common.correct {
     QuickFixKind,
@@ -29,7 +31,8 @@ import org.eclipse.jface.text {
     Region
 }
 import org.eclipse.swt.graphics {
-    Image
+    Image,
+    Point
 }
 import org.eclipse.ltk.core.refactoring {
     TextChange
@@ -60,7 +63,7 @@ object proposalsFactory {
         Icons? icon,
         QuickFixKind kind) {
         
-        value image = eclipseIcons.fromIcons(icon) else CeylonResources.minorChange;
+        value myImage = eclipseIcons.fromIcons(icon) else CeylonResources.minorChange;
         
         if (is EclipseTextChange change) {
             value region = toRegion(selection);
@@ -71,12 +74,31 @@ object proposalsFactory {
             else createGenericChangeProposal;
             
             return builder(description, change.nativeChange, region,
-                image, qualifiedNameIsPath);
+                myImage, qualifiedNameIsPath);
+            
         } else if (is Callable<Anything, []> callback = change) {
-            return object extends CorrectionProposal(description, null, null) {
-                shared actual void apply(IDocument? iDocument) {
-                    callback();
-                }
+            
+            return object satisfies ICompletionProposal
+                                  & ICompletionProposalExtension6 {
+                
+                apply(IDocument? iDocument) => callback();
+                
+                shared actual String? additionalProposalInfo => null;
+                
+                shared actual IContextInformation? contextInformation => null;
+                
+                displayString => description;
+                
+                shared actual Point? getSelection(IDocument iDocument)
+                        => if (exists selection)
+                           then Point(selection.start, selection.end)
+                           else null;
+                
+                image => myImage;
+                
+                styledDisplayString
+                        => styleProposal(displayString, qualifiedNameIsPath);
+                
             };
         }
 

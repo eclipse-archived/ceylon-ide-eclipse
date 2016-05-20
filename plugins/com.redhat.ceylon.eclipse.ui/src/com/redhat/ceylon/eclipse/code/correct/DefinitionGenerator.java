@@ -238,19 +238,19 @@ public abstract class DefinitionGenerator {
         }
     }
 
-    static LinkedHashMap<String,Type> getParameters(
-            FindArgumentsVisitor fav) {
-        if (fav.positionalArgs!=null) {
-            return getParametersFromPositionalArgs(
-                    fav.positionalArgs);
-        }
-        else if (fav.namedArgs!=null) {
-            return getParametersFromNamedArgs(
-                    fav.namedArgs);
-        }
-        else {
-            return null;
-        }
-    }
+//    static LinkedHashMap<String,Type> getParameters(
+//            FindArgumentsVisitor fav) {
+//        if (fav.positionalArgs!=null) {
+//            return getParametersFromPositionalArgs(
+//                    fav.positionalArgs);
+//        }
+//        else if (fav.namedArgs!=null) {
+//            return getParametersFromNamedArgs(
+//                    fav.namedArgs);
+//        }
+//        else {
+//            return null;
+//        }
+//    }
 
 }

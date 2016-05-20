@@ -29,7 +29,8 @@ import com.redhat.ceylon.ide.common.util {
     unsafeCast
 }
 import com.redhat.ceylon.model.typechecker.model {
-    Unit
+    Unit,
+    Type
 }
 
 import org.eclipse.core.resources {
@@ -62,6 +63,12 @@ import org.eclipse.ui.texteditor {
         editorTabWidth,
         editorSpacesForTabs
     }
+}
+import com.redhat.ceylon.compiler.typechecker.tree {
+    Tree
+}
+import com.redhat.ceylon.eclipse.code.complete {
+    dummyInstance
 }
 
 object eclipsePlatformServices satisfies PlatformServices {
@@ -98,6 +105,17 @@ object eclipsePlatformServices satisfies PlatformServices {
             => if (is EclipseDocument document)
                then EclipseLinkedMode(document)
                else NoopLinkedMode(document);
+    
+    // TODO this method is temporary, until completionManager becomes an object in ide-common!
+    shared actual Anything getTypeProposals(CommonDocument document, 
+        Integer offset, Integer length, Type infType,
+        Tree.CompilationUnit rootNode, String? kind) {
+        
+        assert(is EclipseDocument document);
+        return dummyInstance.getTypeProposals(document.document,
+            offset, length, infType, rootNode, kind);
+    }
+    
 }
 
 shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit|ETextChange input)

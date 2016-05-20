@@ -18,6 +18,7 @@ shared object eclipseIcons {
          case(Icons.localClass) CeylonResources.localClass
          case(Icons.localMethod) CeylonResources.localMethod
          case(Icons.imports) CeylonResources.\iimport
+         case(Icons.reveal) CeylonResources.reveal
          else null;
     }
 }
