@@ -12,7 +12,7 @@ import org.eclipse.swt.browser.LocationListener;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.correct.EclipseDocument;
+import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.debug.hover.ExpressionInformationControlCreator.ExpressionInformationControl;
@@ -144,7 +144,7 @@ final class CeylonLocationListener implements LocationListener {
                 if (node instanceof Tree.Type) {
                     Tree.Type type = (Tree.Type) node;
                     specifyTypeQuickFix_.get_().specifyType(
-                        new EclipseDocument(document),
+                        new correctJ2C().newDocument(document),
                         type,
                         true,
                         rn,

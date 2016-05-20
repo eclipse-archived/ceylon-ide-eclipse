@@ -2,9 +2,6 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     Tree,
     Node
 }
-import com.redhat.ceylon.eclipse.code.complete {
-    RefinementCompletionProposal
-}
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
 }
@@ -19,7 +16,6 @@ import com.redhat.ceylon.eclipse.util {
 }
 import com.redhat.ceylon.ide.common.correct {
     QuickFixData,
-    refineFormalMembersQuickFix,
     QuickFixKind
 }
 import com.redhat.ceylon.ide.common.doc {
@@ -38,7 +34,6 @@ import com.redhat.ceylon.model.typechecker.model {
     Unit,
     Type,
     Scope,
-    Referenceable,
     Declaration
 }
 
@@ -47,13 +42,7 @@ import java.util {
 }
 
 import org.eclipse.core.resources {
-    IProject,
-    ResourcesPlugin {
-        workspace
-    }
-}
-import org.eclipse.core.runtime {
-    NullProgressMonitor
+    IProject
 }
 import org.eclipse.jface.text {
     Region,
@@ -61,12 +50,6 @@ import org.eclipse.jface.text {
 }
 import org.eclipse.jface.text.contentassist {
     ICompletionProposal
-}
-import org.eclipse.jface.viewers {
-    StyledString
-}
-import org.eclipse.ltk.core.refactoring {
-    PerformChangeOperation
 }
 
 shared class EclipseQuickFixData(ProblemLocation location,
@@ -91,13 +74,15 @@ shared class EclipseQuickFixData(ProblemLocation location,
         DefaultRegion? selection, Boolean qualifiedNameIsPath, Icons? icon,
         QuickFixKind kind) {
         
+        value myImage = eclipseIcons.fromIcons(icon) else CeylonResources.minorChange;
+
         if (is EclipseTextChange change) {
             proposals.add(
                 proposalsFactory.createProposal(desc, change, selection,
-                    qualifiedNameIsPath, icon, kind)
+                    qualifiedNameIsPath, myImage, kind)
             );
         } else if (is Callable<Anything, []> callback = change) {
-            proposals.add(object extends CorrectionProposal(desc, null, null) {
+            proposals.add(object extends CorrectionProposal(desc, null, null, myImage, qualifiedNameIsPath) {
                 shared actual void apply(IDocument? iDocument) {
                     callback();
                 }
@@ -136,34 +121,6 @@ shared class EclipseQuickFixData(ProblemLocation location,
                     image = CeylonResources.\iADD_CORR;
                     exitPos = exitPos;
                 });
-        }
-    }
-    
-    shared actual void addModuleImportProposal(Unit u, String description,
-        String name, String version) {
-        
-        proposals.add(EclipseAddModuleImportProposal {
-                desc = description;
-                data = this;
-                unit = u;
-                name = name;
-                version = version;
-            });
-    }
-    
-    shared actual void addAnnotationProposal(Referenceable declaration,
-        String text, String description, CommonTextChange change,
-        DefaultRegion? selection) {
-        
-        assert (is EclipseTextChange change);
-        
-        value region = toRegion(selection);
-        
-        value proposal = AddRemoveAnnotionProposal(declaration, text, description,
-            change.nativeChange, region);
-        
-        if (!proposals.contains(proposal)) {
-            proposals.add(proposal);
         }
     }
     
@@ -220,38 +177,6 @@ shared class EclipseQuickFixData(ProblemLocation location,
         if (is EclipseTextChange change) {
             proposals.add(DeclareLocalProposal(this, change.nativeChange, description,
                 term, bme, rootNode, editor));
-        }
-    }
-    
-    shared actual void addRefineFormalMembersProposal(String description) {
-        value proposal = object extends RefineFormalMembersProposal(outer, description) {
-            shared actual void apply(IDocument document) {
-                value change = refineFormalMembersQuickFix.refineFormalMembers {
-                    data = outer;
-                    editorOffset = outer.editor.selection.offset;
-                };
-                if (is EclipseTextChange change) {
-                    change.nativeChange.initializeValidationData(null);
-                    workspace.run(
-                        PerformChangeOperation(change.nativeChange),
-                        NullProgressMonitor()
-                    );
-                }
-            }
-        };
-        proposals.add(proposal);
-    }
-    
-    shared actual void addRefineEqualsHashProposal(String description, CommonTextChange change) {
-        if (is EclipseTextChange _chg = change) {
-            value proposal = object extends CorrectionProposal(description, _chg.nativeChange, 
-                null, RefinementCompletionProposal.\iDEFAULT_REFINEMENT) {
-                
-                styledDisplayString =>
-                        let(hint=CorrectionUtil.shortcut("com.redhat.ceylon.eclipse.ui.action.refineEqualsHash"))
-                        super.styledDisplayString.append(hint, StyledString.\iQUALIFIER_STYLER);
-            };
-            proposals.add(proposal); 
         }
     }
     

@@ -1,12 +1,22 @@
-import org.eclipse.jface.text.contentassist {
-    ICompletionProposal,
-    ICompletionProposalExtension6,
-    IContextInformation
+import com.redhat.ceylon.eclipse.code.correct {
+    CorrectionUtil {
+        shortcut
+    }
+}
+import com.redhat.ceylon.eclipse.platform {
+    EclipseTextChange
+}
+import com.redhat.ceylon.eclipse.util {
+    Highlights {
+        styleProposal
+    }
 }
 import com.redhat.ceylon.ide.common.correct {
     QuickFixKind,
     addConstructor,
-    addParameterList
+    addParameterList,
+    addRefineEqualsHash,
+    addRefineFormal
 }
 import com.redhat.ceylon.ide.common.platform {
     CommonTextChange=TextChange
@@ -14,41 +24,27 @@ import com.redhat.ceylon.ide.common.platform {
 import com.redhat.ceylon.ide.common.refactoring {
     DefaultRegion
 }
-import com.redhat.ceylon.ide.common.doc {
-    Icons
-}
-import com.redhat.ceylon.eclipse.platform {
-    EclipseTextChange
-}
-import com.redhat.ceylon.eclipse.util {
-    eclipseIcons,
-    Highlights {
-        styleProposal
-    }
-}
+
 import org.eclipse.jface.text {
     IDocument,
     Region
 }
-import org.eclipse.swt.graphics {
-    Image,
-    Point
-}
-import org.eclipse.ltk.core.refactoring {
-    TextChange
+import org.eclipse.jface.text.contentassist {
+    ICompletionProposal,
+    ICompletionProposalExtension6,
+    IContextInformation
 }
 import org.eclipse.jface.viewers {
     StyledString {
         qualifierStyler
     }
 }
-import com.redhat.ceylon.eclipse.code.correct { 
-    CorrectionUtil {
-        shortcut
-    }
+import org.eclipse.ltk.core.refactoring {
+    TextChange
 }
-import com.redhat.ceylon.eclipse.ui {
-    CeylonResources
+import org.eclipse.swt.graphics {
+    Image,
+    Point
 }
 
 object proposalsFactory {
@@ -60,10 +56,9 @@ object proposalsFactory {
         CommonTextChange|Callable<Anything, []> change,
         DefaultRegion? selection,
         Boolean qualifiedNameIsPath,
-        Icons? icon,
+        Image myImage,
         QuickFixKind kind) {
         
-        value myImage = eclipseIcons.fromIcons(icon) else CeylonResources.minorChange;
         
         if (is EclipseTextChange change) {
             value region = toRegion(selection);
@@ -71,6 +66,8 @@ object proposalsFactory {
             Builder builder = switch (kind)
             case (addConstructor) createProposalWithShortcut("addConstructor")
             case (addParameterList) createProposalWithShortcut("addParameterList")
+            case (addRefineEqualsHash) createProposalWithShortcut("refineEqualsHash")
+            case (addRefineFormal) createProposalWithShortcut("refineFormalMembers")
             else createGenericChangeProposal;
             
             return builder(description, change.nativeChange, region,

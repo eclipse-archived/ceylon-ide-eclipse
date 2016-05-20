@@ -5,7 +5,8 @@ import com.redhat.ceylon.ide.common.doc {
     Icons
 }
 import com.redhat.ceylon.eclipse.ui {
-    CeylonResources
+    CeylonResources,
+    CeylonPlugin
 }
 
 shared object eclipseIcons {
@@ -19,6 +20,10 @@ shared object eclipseIcons {
          case(Icons.localMethod) CeylonResources.localMethod
          case(Icons.imports) CeylonResources.\iimport
          case(Icons.reveal) CeylonResources.reveal
+         case(Icons.refinement) CeylonPlugin.imageRegistry()
+                 .get(CeylonResources.ceylonDefaultRefinement)
+         case(Icons.formalRefinement) CeylonPlugin.imageRegistry()
+                 .get(CeylonResources.ceylonFormalRefinement)
          else null;
     }
 }

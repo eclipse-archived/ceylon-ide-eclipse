@@ -40,7 +40,7 @@ import org.eclipse.ui.part.ViewPart;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.browser.BrowserInput;
-import com.redhat.ceylon.eclipse.code.correct.EclipseDocument;
+import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
@@ -228,7 +228,7 @@ public class DocumentationView extends ViewPart {
             if (node instanceof Tree.Type) {
                 Tree.Type type = (Tree.Type) node;
                 specifyTypeQuickFix_.get_().specifyType(
-                    new EclipseDocument(parseController.getDocument()),
+                    new correctJ2C().newDocument(parseController.getDocument()),
                     type,
                     true,
                     rootNode,
