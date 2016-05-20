@@ -12,9 +12,10 @@ import org.eclipse.swt.browser.LocationListener;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl;
-import com.redhat.ceylon.eclipse.code.correct.SpecifyTypeProposal;
+import com.redhat.ceylon.eclipse.code.correct.EclipseDocument;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.ide.common.correct.specifyTypeQuickFix_;
 import com.redhat.ceylon.ide.common.doc.DocGenerator;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
@@ -139,9 +140,17 @@ final class CeylonLocationListener implements LocationListener {
                         controller.getLastCompilationUnit();
                 int offset = parseInt(location.substring(4));
                 Node node = findNode(rootNode, offset);
-                SpecifyTypeProposal
-                    .createProposal(rootNode, node, editor)
-                    .apply(document);
+                
+                if (node instanceof Tree.Type) {
+                    Tree.Type type = (Tree.Type) node;
+                    specifyTypeQuickFix_.get_().specifyType(
+                        new EclipseDocument(document),
+                        type,
+                        true,
+                        rootNode,
+                        type.getTypeModel()
+                    );
+                }
             }
             /*else if (location.startsWith("exv:")) {
                 DocumentationHover.close(control);
