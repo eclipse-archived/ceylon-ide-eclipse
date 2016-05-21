@@ -1,6 +1,3 @@
-import com.redhat.ceylon.eclipse.code.complete {
-    EclipseLinkedModeSupport
-}
 import com.redhat.ceylon.eclipse.code.refactor {
     AbstractLinkedMode
 }
@@ -26,7 +23,6 @@ import org.eclipse.jface.text.contentassist {
     IContextInformation
 }
 import org.eclipse.jface.text.link {
-    LinkedModeModel,
     LinkedPosition
 }
 import org.eclipse.jface.viewers {
@@ -35,12 +31,15 @@ import org.eclipse.jface.viewers {
 import org.eclipse.swt.graphics {
     Point
 }
+import com.redhat.ceylon.eclipse.platform {
+    EclipseLinkedMode
+}
 
 abstract class EclipseLocalProposal(EclipseQuickFixData data, shared actual String displayString)
         extends AbstractLinkedMode(data.editor)
-        satisfies AbstractLocalProposal<IDocument,LinkedModeModel>
-                & EclipseLinkedModeSupport
-                & ICompletionProposal & ICompletionProposalExtension6 {
+        satisfies AbstractLocalProposal
+                & ICompletionProposal
+                & ICompletionProposalExtension6 {
     
     shared actual variable Integer currentOffset = -1;
     
@@ -53,8 +52,6 @@ abstract class EclipseLocalProposal(EclipseQuickFixData data, shared actual Stri
     shared actual variable Type? type = null;
     
     hintTemplate => "Enter type and name for new local {0}";
-    
-    newLinkedMode() => linkedModeModel;
     
     shared actual void updatePopupLocation() {
         LinkedPosition? pos = currentLinkedPosition;
@@ -76,10 +73,11 @@ abstract class EclipseLocalProposal(EclipseQuickFixData data, shared actual Stri
         if (exists change) {
             change.apply();
             value unit = data.editor.parseController.lastCompilationUnit.unit;
-            if (exists lm = addLinkedPositions(doc, unit)) {
-                enterLinkedMode(doc, 2, exitPosition);
-                openPopup();
-            }
+            assert(is EclipseDocument edoc = data.document);
+            value lm = EclipseLinkedMode(edoc, linkedModeModel);
+            addLinkedPositions(lm, unit);
+            enterLinkedMode(doc, 2, exitPosition);
+            openPopup();
         }
     }
     

@@ -1,29 +1,25 @@
-import com.redhat.ceylon.eclipse.code.complete {
-    EclipseLinkedModeSupport
-}
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
 }
 import com.redhat.ceylon.eclipse.code.refactor {
     AbstractLinkedMode
 }
-
-import org.eclipse.jface.text {
-    IDocument
-}
-import org.eclipse.jface.text.link {
-    LinkedModeModel
+import com.redhat.ceylon.eclipse.platform {
+    EclipseLinkedMode
 }
 
-abstract class AbstractLinkedModeAdapter(CeylonEditor ceylonEditor)
-        extends AbstractLinkedMode(ceylonEditor) 
-        satisfies EclipseLinkedModeSupport {
+class AbstractLinkedModeAdapter(hintTemplate, ceylonEditor, document)
+        extends AbstractLinkedMode(ceylonEditor) {
     
-    shared actual void installLinkedMode(IDocument doc, LinkedModeModel lm, 
-        Object owner, Integer exitSeqNumber, Integer exitPosition) {
-        
-        enterLinkedMode(doc, exitSeqNumber, exitPosition);
-    }
+    CeylonEditor ceylonEditor;
+    EclipseDocument document;
+    shared actual String hintTemplate;
     
-    shared actual LinkedModeModel newLinkedMode() => linkedModeModel;
+    variable EclipseLinkedMode? lm = null;
+
+    shared EclipseLinkedMode linkedMode
+        => lm else (lm = EclipseLinkedMode(document, linkedModeModel));
+    
+    // this is only to make the function `shared`
+    shared actual void openPopup() => super.openPopup();
 }

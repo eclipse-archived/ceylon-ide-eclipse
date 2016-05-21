@@ -21,14 +21,8 @@ import java.util {
     Collections
 }
 
-import org.eclipse.jface.text {
-    IDocument
-}
 import org.eclipse.jface.text.contentassist {
     ICompletionProposal
-}
-import org.eclipse.jface.text.link {
-    LinkedModeModel
 }
 import org.eclipse.jface.viewers {
     StyledString
@@ -36,7 +30,7 @@ import org.eclipse.jface.viewers {
 
 class EclipseAssignToLocalProposal(EclipseQuickFixData data, String desc)
         extends EclipseLocalProposal(data, desc)
-        satisfies AssignToLocalProposal<IDocument,ICompletionProposal,LinkedModeModel> {
+        satisfies AssignToLocalProposal<ICompletionProposal> {
 
     shared actual ICompletionProposal[] toNameProposals(String[] names, 
         Integer offset, Unit unit, Integer seq) => [

@@ -1,5 +1,4 @@
 import com.redhat.ceylon.eclipse.code.complete {
-    EclipseLinkedModeSupport,
     IEclipseCompletionProposal2And6,
     CompletionUtil
 }
@@ -56,7 +55,6 @@ import org.eclipse.jface.text.contentassist {
     IContextInformation
 }
 import org.eclipse.jface.text.link {
-    LinkedModeModel,
     LinkedPositionGroup
 }
 import org.eclipse.jface.viewers {
@@ -80,8 +78,7 @@ class EclipseInitializerProposal(
     Image image,
     variable Integer exitPos) 
         extends CorrectionProposal(name, change, selection, image)
-        satisfies AbstractInitializerQuickFix<LinkedModeModel, IDocument, ICompletionProposal>
-                & EclipseLinkedModeSupport {
+        satisfies AbstractInitializerQuickFix<ICompletionProposal> {
 
     shared actual ICompletionProposal newNestedCompletionProposal(
         Declaration dec, Integer offset)
@@ -135,7 +132,7 @@ class EclipseInitializerProposal(
             }
             Integer exitSeq = exitPos>=0 then 1 else LinkedPositionGroup.\iNO_STOP;
 
-            addInitializer(document, DefaultRegion(point.x, point.y), type, 
+            addInitializer(EclipseDocument(document), DefaultRegion(point.x, point.y), type, 
                 unit, scope, exitSeq, adjustedExitPos);
         }
     }

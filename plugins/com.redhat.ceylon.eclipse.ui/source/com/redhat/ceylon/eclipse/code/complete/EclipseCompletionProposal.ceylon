@@ -51,7 +51,6 @@ import com.redhat.ceylon.eclipse.code.correct {
 // see CompletionProposal
 interface EclipseCompletionProposal
         satisfies IEclipseCompletionProposal
-                & EclipseLinkedModeSupport
                 & CommonCompletionProposal {
     
     shared variable formal Boolean toggleOverwriteInternal;
