@@ -1,6 +1,12 @@
 import com.redhat.ceylon.compiler.typechecker.context {
     PhasedUnit
 }
+import com.redhat.ceylon.compiler.typechecker.tree {
+    Tree
+}
+import com.redhat.ceylon.eclipse.code.complete {
+    eclipseCompletionManager
+}
 import com.redhat.ceylon.eclipse.code.correct {
     EclipseDocument
 }
@@ -64,12 +70,6 @@ import org.eclipse.ui.texteditor {
         editorSpacesForTabs
     }
 }
-import com.redhat.ceylon.compiler.typechecker.tree {
-    Tree
-}
-import com.redhat.ceylon.eclipse.code.complete {
-    dummyInstance
-}
 
 object eclipsePlatformServices satisfies PlatformServices {
     
@@ -112,7 +112,7 @@ object eclipsePlatformServices satisfies PlatformServices {
         Tree.CompilationUnit rootNode, String? kind) {
         
         assert(is EclipseDocument document);
-        return dummyInstance.getTypeProposals(document.document,
+        return eclipseCompletionManager.getTypeProposals(document.document,
             offset, length, infType, rootNode, kind);
     }
     

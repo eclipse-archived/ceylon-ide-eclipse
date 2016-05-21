@@ -19,7 +19,7 @@ public class completionJ2C implements CompletionJ2C {
 
     @Override
     public IdeCompletionManager<CeylonParseController, ICompletionProposal, IDocument> dummyCompletionManager() {
-        return dummyInstance_.get_();
+        return eclipseCompletionManager_.get_();
     }
 
     /* (non-Javadoc)
@@ -27,7 +27,7 @@ public class completionJ2C implements CompletionJ2C {
      */
     @Override
     public EclipseCompletionProcessor newCompletionProcessor(CeylonEditor editor) {
-        return new EclipseCompletionManager(editor);
+        return new CeylonCompletionProcessor(editor);
     }
     
     /* (non-Javadoc)
