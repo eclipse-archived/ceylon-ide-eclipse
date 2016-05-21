@@ -16,7 +16,7 @@ import com.redhat.ceylon.model.typechecker.model.Scope;
 
 public interface CompletionJ2C {
 
-    IdeCompletionManager<CeylonParseController, ICompletionProposal, IDocument> dummyCompletionManager();
+    IdeCompletionManager<ICompletionProposal> dummyCompletionManager();
 
     EclipseCompletionProcessor newCompletionProcessor(CeylonEditor editor);
 

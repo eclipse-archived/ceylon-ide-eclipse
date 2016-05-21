@@ -119,7 +119,7 @@ import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
 public class CeylonParseController 
-        implements LocalAnalysisResult<IDocument> {
+        implements LocalAnalysisResult {
     
     /**
      * The project containing the source being parsed. May be 

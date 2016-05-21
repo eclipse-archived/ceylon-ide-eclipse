@@ -26,9 +26,9 @@ import org.eclipse.jface.text.link {
     LinkedPosition
 }
 
-class EclipseLinkedMode(EclipseDocument document) extends LinkedMode(document) {
+shared class EclipseLinkedMode(EclipseDocument document) extends LinkedMode(document) {
     
-    value model = LinkedModeModel();
+    shared LinkedModeModel model = LinkedModeModel();
     
     shared actual void addEditableRegion(Integer start, Integer length,
         Integer exitSeqNumber, Anything proposals) {

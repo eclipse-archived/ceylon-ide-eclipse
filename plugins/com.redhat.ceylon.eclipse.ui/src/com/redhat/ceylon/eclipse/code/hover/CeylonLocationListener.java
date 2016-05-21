@@ -77,7 +77,7 @@ final class CeylonLocationListener implements LocationListener {
     }
     
     private void handleLink(String location) {
-        DocGenerator<IDocument> gen = hoverJ2C().getDocGenerator();
+        DocGenerator gen = hoverJ2C().getDocGenerator();
         if (location.startsWith("dec:")) {
             Referenceable target = 
                     gen.getLinkedModel(

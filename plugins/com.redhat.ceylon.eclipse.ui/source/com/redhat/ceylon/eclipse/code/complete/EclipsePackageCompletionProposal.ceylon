@@ -4,8 +4,8 @@ import com.redhat.ceylon.eclipse.code.correct {
 import com.redhat.ceylon.eclipse.code.outline {
     CeylonLabelProvider
 }
-import com.redhat.ceylon.eclipse.code.parse {
-    CeylonParseController
+import com.redhat.ceylon.eclipse.platform {
+    EclipseLinkedMode
 }
 import com.redhat.ceylon.eclipse.ui {
     CeylonResources,
@@ -17,8 +17,14 @@ import com.redhat.ceylon.eclipse.util {
 import com.redhat.ceylon.ide.common.completion {
     ImportedModulePackageProposal
 }
+import com.redhat.ceylon.ide.common.platform {
+    LinkedMode
+}
 import com.redhat.ceylon.ide.common.refactoring {
     DefaultRegion
+}
+import com.redhat.ceylon.ide.common.typechecker {
+    LocalAnalysisResult
 }
 import com.redhat.ceylon.model.typechecker.model {
     Package,
@@ -42,7 +48,6 @@ import org.eclipse.jface.text.contentassist {
     IContextInformation
 }
 import org.eclipse.jface.text.link {
-    LinkedModeModel,
     ILinkedModeListener
 }
 import org.eclipse.jface.viewers {
@@ -54,8 +59,8 @@ import org.eclipse.swt.graphics {
 }
 
 class EclipseImportedModulePackageProposal(Integer offset, String prefix, String memberPackageSubname, Boolean withBody,
-                String fullPackageName, CeylonParseController controller, Package candidate)
-                extends ImportedModulePackageProposal<ICompletionProposal,IDocument,LinkedModeModel,CeylonParseController>
+                String fullPackageName, LocalAnalysisResult controller, Package candidate)
+                extends ImportedModulePackageProposal<ICompletionProposal>
                 (offset, prefix, memberPackageSubname, withBody, fullPackageName, candidate, controller)
                 satisfies EclipseCompletionProposal{
 
@@ -69,7 +74,7 @@ class EclipseImportedModulePackageProposal(Integer offset, String prefix, String
     
     shared actual void apply(IDocument doc) => applyInternal(EclipseDocument(doc));
     
-    shared actual ICompletionProposal newPackageMemberCompletionProposal(Declaration d, DefaultRegion selection, LinkedModeModel lm) 
+    shared actual ICompletionProposal newPackageMemberCompletionProposal(Declaration d, DefaultRegion selection, LinkedMode lm) 
             => object satisfies IEclipseCompletionProposal2And6 {
         function length(IDocument document) {
             variable value length = 0;
@@ -97,7 +102,9 @@ class EclipseImportedModulePackageProposal(Integer offset, String prefix, String
             catch (BadLocationException e) {
                 e.printStackTrace();
             }
-            lm.exit(ILinkedModeListener.\iUPDATE_CARET);
+            
+            assert(is EclipseLinkedMode lm);
+            lm.model.exit(ILinkedModeListener.\iUPDATE_CARET);
         }
         
         shared actual void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {

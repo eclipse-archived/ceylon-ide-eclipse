@@ -40,10 +40,8 @@ final class DeclareLocalProposal extends CorrectionProposal {
         super.apply(document);
         declareLocalQuickFix_.get_().enableLinkedMode(
                 TypeDescriptor.klass(ICompletionProposal.class),
-                TypeDescriptor.klass(IDocument.class),
                 data,
                 term,
-                document,
                 new completionJ2C().dummyCompletionManager()
         );
 //        Type type = term.getTypeModel();

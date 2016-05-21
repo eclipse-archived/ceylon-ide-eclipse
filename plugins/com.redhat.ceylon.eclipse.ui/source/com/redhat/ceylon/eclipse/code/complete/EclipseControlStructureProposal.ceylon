@@ -5,14 +5,11 @@ import com.redhat.ceylon.compiler.typechecker.tree {
 import com.redhat.ceylon.eclipse.code.correct {
     EclipseDocument
 }
-import com.redhat.ceylon.eclipse.code.parse {
-    CeylonParseController
-}
 import com.redhat.ceylon.eclipse.ui {
     CeylonResources
 }
-import com.redhat.ceylon.ide.common.completion {
-    ControlStructureProposal
+import com.redhat.ceylon.ide.common.typechecker {
+    LocalAnalysisResult
 }
 import com.redhat.ceylon.model.typechecker.model {
     Declaration
@@ -24,16 +21,16 @@ import org.eclipse.jface.text {
 import org.eclipse.jface.text.contentassist {
     ICompletionProposal
 }
-import org.eclipse.jface.text.link {
-    LinkedModeModel
-}
 import org.eclipse.swt.graphics {
     Image
 }
+import com.redhat.ceylon.ide.common.completion {
+    ControlStructureProposal
+}
 
 class EclipseControlStructureProposal(Integer offset, String prefix, String desc,
-    String text, Declaration declaration, CeylonParseController cpc, Node? node)
-        extends ControlStructureProposal<CeylonParseController,ICompletionProposal,IDocument,LinkedModeModel>
+    String text, Declaration declaration, LocalAnalysisResult cpc, Node? node)
+        extends ControlStructureProposal<ICompletionProposal>
         (offset, prefix, desc, text, node, declaration, cpc)
                 satisfies EclipseCompletionProposal {
             

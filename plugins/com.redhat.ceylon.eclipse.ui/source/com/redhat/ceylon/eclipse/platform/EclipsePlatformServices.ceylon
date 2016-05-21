@@ -112,7 +112,7 @@ object eclipsePlatformServices satisfies PlatformServices {
         Tree.CompilationUnit rootNode, String? kind) {
         
         assert(is EclipseDocument document);
-        return eclipseCompletionManager.getTypeProposals(document.document,
+        return eclipseCompletionManager.getTypeProposals(document,
             offset, length, infType, rootNode, kind);
     }
     

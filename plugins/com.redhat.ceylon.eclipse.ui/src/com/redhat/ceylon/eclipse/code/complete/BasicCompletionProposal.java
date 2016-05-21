@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.ide.common.typechecker.LocalAnalysisResult;
 import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Scope;
@@ -48,10 +49,10 @@ class BasicCompletionProposal extends CompletionProposal {
     
     BasicCompletionProposal(int offset, String prefix, 
             String desc, String text, Declaration dec, 
-            CeylonParseController cpc) {
+            LocalAnalysisResult cpc) {
         super(offset, prefix, getImageForDeclaration(dec), 
                 desc, text);
-        this.cpc = cpc;
+        this.cpc = (CeylonParseController) cpc;
         this.declaration = dec;
     }
     

@@ -45,8 +45,7 @@ import org.eclipse.core.runtime {
 import org.eclipse.jface.text {
     IRegion,
     ITextViewer,
-    IInformationControlCreator,
-    IDocument
+    IInformationControlCreator
 }
 
 object eclipseDocGenerator extends EclipseDocGenerator(null) {
@@ -55,7 +54,7 @@ object eclipseDocGenerator extends EclipseDocGenerator(null) {
 
 class EclipseDocGenerator(CeylonEditor? editor) 
         extends SourceInfoHover(editor)
-        satisfies DocGenerator<IDocument>{
+        satisfies DocGenerator {
     
     shared actual String? getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
         if (exists editor, exists prov = editor.selectionProvider) {
@@ -216,10 +215,10 @@ class EclipseDocGenerator(CeylonEditor? editor)
                 then ceylonFileName 
                 else u.filename;
     
-    highlight(String text, LocalAnalysisResult<IDocument> cmp) 
+    highlight(String text, LocalAnalysisResult cmp) 
             => HTML.highlightLine(text);
     
-    markdown(String text, LocalAnalysisResult<IDocument> cmp, Scope? linkScope, Unit? unit) 
+    markdown(String text, LocalAnalysisResult cmp, Scope? linkScope, Unit? unit) 
             => DocumentationHover.markdown(text, linkScope, unit);
     
     printer => DocumentationHover.\iPRINTER;

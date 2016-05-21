@@ -28,6 +28,9 @@ import com.redhat.ceylon.ide.common.completion {
     getProposedName,
     appendPositionalArgs
 }
+import com.redhat.ceylon.ide.common.typechecker {
+    LocalAnalysisResult
+}
 import com.redhat.ceylon.model.typechecker.model {
     Declaration,
     Reference,
@@ -51,9 +54,6 @@ import org.eclipse.jface.text.contentassist {
     ICompletionProposal,
     IContextInformation
 }
-import org.eclipse.jface.text.link {
-    LinkedModeModel
-}
 import org.eclipse.jface.viewers {
     StyledString
 }
@@ -65,10 +65,10 @@ import org.eclipse.swt.graphics {
 class EclipseInvocationCompletionProposal(Integer _offset, String prefix, 
             String description, String text, Declaration dec,
             Reference? producedReference, Scope scope, 
-            CeylonParseController cpc, Boolean includeDefaulted,
+            LocalAnalysisResult cpc, Boolean includeDefaulted,
             Boolean positionalInvocation, Boolean namedInvocation, 
             Boolean inheritance, Boolean qualified, Declaration? qualifyingValue)
-        extends InvocationCompletionProposal<CeylonParseController,ICompletionProposal,IDocument,LinkedModeModel>
+        extends InvocationCompletionProposal<ICompletionProposal>
                 (_offset, prefix, description, text, dec, producedReference, scope, cpc.lastCompilationUnit,
     includeDefaulted, positionalInvocation, namedInvocation, inheritance, qualified, qualifyingValue, eclipseCompletionManager)
         satisfies EclipseCompletionProposal {
@@ -102,9 +102,11 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
         return false;
     }
     
-    shared actual String? additionalProposalInfo
-            => DocumentationHover.getDocumentationFor(cpc, dec, 
-                producedReference, NullProgressMonitor());
+    shared actual String? additionalProposalInfo {
+        assert(is CeylonParseController cpc);
+        return DocumentationHover.getDocumentationFor(cpc, dec, 
+            producedReference, NullProgressMonitor());        
+    }
 
     shared actual IContextInformation? contextInformation {
         if (namedInvocation || positionalInvocation) {

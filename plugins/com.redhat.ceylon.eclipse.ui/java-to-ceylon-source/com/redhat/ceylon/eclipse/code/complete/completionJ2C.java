@@ -18,7 +18,7 @@ import com.redhat.ceylon.model.typechecker.model.Scope;
 public class completionJ2C implements CompletionJ2C {
 
     @Override
-    public IdeCompletionManager<CeylonParseController, ICompletionProposal, IDocument> dummyCompletionManager() {
+    public IdeCompletionManager<ICompletionProposal> dummyCompletionManager() {
         return eclipseCompletionManager_.get_();
     }
 

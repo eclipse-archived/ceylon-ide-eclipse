@@ -15,7 +15,6 @@ import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
@@ -166,8 +165,8 @@ public class BestMatchHover
 //            return documentationHover.getInformationPresenterControlCreator();
 //        }
         if (hover instanceof DocGenerator) {
-            DocGenerator<IDocument> docGenerator =
-                    (DocGenerator<IDocument>) hover;
+            DocGenerator docGenerator =
+                    (DocGenerator) hover;
             return hoverJ2C()
                     .getInformationPresenterControlCreator(
                             docGenerator);

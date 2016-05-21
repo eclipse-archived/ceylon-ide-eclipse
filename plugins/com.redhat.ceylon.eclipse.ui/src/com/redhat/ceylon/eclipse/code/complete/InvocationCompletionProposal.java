@@ -19,6 +19,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.ide.common.typechecker.LocalAnalysisResult;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
@@ -1185,10 +1186,10 @@ class InvocationCompletionProposal extends CompletionProposal {
             extends InvocationCompletionProposal {
         ParameterInfo(int offset, Declaration dec, 
                 Reference producedReference,
-                Scope scope, CeylonParseController cpc, 
+                Scope scope, LocalAnalysisResult cpc, 
                 boolean namedInvocation) {
             super(offset, "", "show parameters", "", dec, 
-                    producedReference, scope, cpc, true, 
+                    producedReference, scope, (CeylonParseController) cpc, true, 
                     true, namedInvocation, false, false,
                     null);
         }

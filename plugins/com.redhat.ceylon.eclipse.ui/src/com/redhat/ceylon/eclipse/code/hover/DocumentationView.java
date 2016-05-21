@@ -17,7 +17,6 @@ import static org.eclipse.ui.PlatformUI.getWorkbench;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -54,7 +53,7 @@ import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
 public class DocumentationView extends ViewPart {
     
-    private DocGenerator<IDocument> gen
+    private DocGenerator gen
         = hoverJ2C().getDocGenerator();
 
     private static final Image GOTO_IMAGE = 

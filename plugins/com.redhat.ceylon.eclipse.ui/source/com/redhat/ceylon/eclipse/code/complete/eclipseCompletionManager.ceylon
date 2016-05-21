@@ -20,9 +20,6 @@ import com.redhat.ceylon.eclipse.code.editor {
 import com.redhat.ceylon.eclipse.code.outline {
     CeylonLabelProvider
 }
-import com.redhat.ceylon.eclipse.code.parse {
-    CeylonParseController
-}
 import com.redhat.ceylon.eclipse.code.preferences {
     CeylonPreferenceInitializer
 }
@@ -63,9 +60,15 @@ import org.eclipse.jface.text.contentassist {
 import org.eclipse.swt.graphics {
     Point
 }
+import com.redhat.ceylon.ide.common.typechecker {
+    LocalAnalysisResult
+}
+import com.redhat.ceylon.eclipse.code.parse {
+    CeylonParseController
+}
 
 shared object eclipseCompletionManager 
-        extends IdeCompletionManager<CeylonParseController,ICompletionProposal,IDocument>() {
+        extends IdeCompletionManager<ICompletionProposal>() {
     
     newParametersCompletionProposal(
             Integer offset, String prefix, String desc, String text, 
@@ -74,12 +77,9 @@ shared object eclipseCompletionManager
                     desc.string, text.string,
                     argTypes, node.scope, unit);
         
-    getDocumentSubstring(IDocument doc, Integer start, Integer length) 
-                => doc.get(start, length);
-    
     newInvocationCompletion(Integer offset, String prefix,
         String desc, String text, Declaration dec, 
-        Reference? pr, Scope scope, CeylonParseController cpc,
+        Reference? pr, Scope scope, LocalAnalysisResult cpc,
         Boolean includeDefaulted, Boolean positionalInvocation, 
         Boolean namedInvocation, Boolean inheritance, 
         Boolean qualified, Declaration? qualifyingDec) 
@@ -101,13 +101,16 @@ shared object eclipseCompletionManager
             };
     
     // TODO replace with EclipseRefinementCompletionProposal (and finish rewriting it)
-    newRefinementCompletionProposal(Integer offset, 
+    shared actual ICompletionProposal newRefinementCompletionProposal(Integer offset, 
         String prefix, Reference? pr, String desc, String text, 
-        CeylonParseController cmp, Declaration dec, Scope scope, 
-        Boolean fullType, Boolean explicitReturnType) 
-            => RefinementCompletionProposal(offset, prefix, 
+        LocalAnalysisResult cmp, Declaration dec, Scope scope, 
+        Boolean fullType, Boolean explicitReturnType) {
+        
+        assert(is CeylonParseController cmp);
+        return RefinementCompletionProposal(offset, prefix, 
                 pr, desc, text, cmp, dec, scope, fullType, 
                 explicitReturnType);
+    }
     
     newMemberNameCompletionProposal(Integer offset, 
         String prefix, String name, String unquotedName) 
@@ -138,7 +141,7 @@ shared object eclipseCompletionManager
 
     newBasicCompletionProposal(Integer offset, String prefix,
         String text, String escapedText, Declaration decl, 
-        CeylonParseController cpc)
+        LocalAnalysisResult cpc)
             => BasicCompletionProposal(offset, prefix, text, 
                 escapedText, decl, cpc);
     
@@ -158,7 +161,7 @@ shared object eclipseCompletionManager
                 offset, prefix, desc, text);
     
     newCurrentPackageProposal(Integer offset, String prefix, 
-        String packageName, CeylonParseController controller) 
+        String packageName, LocalAnalysisResult controller) 
             => CompletionProposal(offset, prefix, 
                 if (isModuleDescriptor(controller.lastCompilationUnit)) 
                 then CeylonResources.\iMODULE 
@@ -167,7 +170,7 @@ shared object eclipseCompletionManager
 
     newImportedModulePackageProposal(Integer offset, String prefix,
         String memberPackageSubname, Boolean withBody,
-        String fullPackageName, CeylonParseController controller,
+        String fullPackageName, LocalAnalysisResult controller,
         Package candidate) 
             => EclipseImportedModulePackageProposal {
                 offset = offset;
@@ -181,7 +184,7 @@ shared object eclipseCompletionManager
     
     newQueriedModulePackageProposal(Integer offset, String prefix,
         String memberPackageSubname, Boolean withBody,
-        String fullPackageName, CeylonParseController controller,
+        String fullPackageName, LocalAnalysisResult controller,
         ModuleVersionDetails version, Unit unit, ModuleSearchResult.ModuleDetails md) 
             => PackageCompletions.QueriedModulePackageProposal(offset, prefix,
                 memberPackageSubname, withBody, fullPackageName, 
@@ -189,7 +192,7 @@ shared object eclipseCompletionManager
     
     newModuleProposal(Integer offset, String prefix, Integer len, 
         String versioned, ModuleSearchResult.ModuleDetails mod, Boolean withBody,
-        ModuleVersionDetails version, String name, Node node, CeylonParseController cpc)
+        ModuleVersionDetails version, String name, Node node, LocalAnalysisResult cpc)
             => ModuleCompletions.ModuleProposal(
                 offset, prefix, len, versioned, mod, 
                 withBody, version, name, node);
@@ -207,13 +210,13 @@ shared object eclipseCompletionManager
 
     newParameterInfo(Integer offset, Declaration dec, 
         Reference producedReference, Scope scope, 
-        CeylonParseController cpc, Boolean namedInvocation)
+        LocalAnalysisResult cpc, Boolean namedInvocation)
             => InvocationCompletionProposal.ParameterInfo(
                 offset, dec, producedReference, scope, cpc, namedInvocation);
             
     newFunctionCompletionProposal(Integer offset, String prefix,
            String desc, String text, Declaration dec, Unit unit, 
-           CeylonParseController controller) 
+           LocalAnalysisResult controller) 
            => EclipseFunctionCompletionProposal {
                offset = offset;
                prefix = prefix;
@@ -225,7 +228,7 @@ shared object eclipseCompletionManager
 
     newControlStructureCompletionProposal(Integer offset, String prefix,
         String desc, String text, Declaration dec, 
-        CeylonParseController cpc, Node? node)
+        LocalAnalysisResult cpc, Node? node)
              => EclipseControlStructureProposal {
                  offset = offset;
                  prefix = prefix;
@@ -262,12 +265,13 @@ shared object eclipseCompletionManager
     
     shared ICompletionProposal[] getEclipseContentProposals(
         CeylonEditor editor,
-        CeylonParseController? controller, Integer offset,
+        LocalAnalysisResult? controller, Integer offset,
         ITextViewer? viewer, Boolean secondLevel, 
         Boolean returnedParamInfo, 
         EclipseProgressMonitorChild monitor) {
         
-        if (exists controller, exists viewer, 
+        if (is CeylonParseController controller,
+            exists viewer, 
             exists rn = controller.lastCompilationUnit, 
             exists t = controller.tokens, 
             exists pu = controller.parseAndTypecheck(

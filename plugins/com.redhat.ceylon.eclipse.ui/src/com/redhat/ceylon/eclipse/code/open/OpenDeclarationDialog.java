@@ -54,7 +54,6 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ILabelDecorator;
@@ -1376,7 +1375,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         Referenceable target = null;
         CeylonEditor editor = null;
         IEditorPart currentEditor = getCurrentEditor();
-        DocGenerator<IDocument> gen = hoverJ2C().getDocGenerator();
+        DocGenerator gen = hoverJ2C().getDocGenerator();
         if (currentEditor instanceof CeylonEditor) {
             editor = (CeylonEditor) currentEditor;
             target = gen.getLinkedModel(

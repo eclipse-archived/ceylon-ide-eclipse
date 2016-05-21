@@ -51,6 +51,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.LinkedMode;
+import com.redhat.ceylon.ide.common.typechecker.LocalAnalysisResult;
 import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.ImportList;
@@ -73,11 +74,11 @@ public class PackageCompletions {
         QueriedModulePackageProposal(int offset,
                 String prefix, String memberPackageSubname,
                 boolean withBody, String fullPackageName,
-                CeylonParseController controller,
+                LocalAnalysisResult controller,
                 ModuleVersionDetails version, Unit unit,
                 ModuleDetails md) {
             super(offset, prefix, memberPackageSubname,
-                    withBody, fullPackageName, controller);
+                    withBody, fullPackageName, (CeylonParseController) controller);
             this.fullPackageName = fullPackageName;
             this.version = version;
             this.unit = unit;
