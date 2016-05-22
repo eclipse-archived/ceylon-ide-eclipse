@@ -8,7 +8,7 @@ import com.redhat.ceylon.eclipse.ui {
     CeylonResources
 }
 import com.redhat.ceylon.ide.common.correct {
-    AbstractConvertToClassProposal
+    convertToClassQuickFix
 }
 
 import org.eclipse.jface.text {
@@ -26,8 +26,7 @@ import org.eclipse.swt.graphics {
 
 class EclipseConvertToClassProposal(String desc, CeylonEditor editor,
     Tree.ObjectDefinition declaration)
-            satisfies ICompletionProposal
-                    & AbstractConvertToClassProposal {
+            satisfies ICompletionProposal {
     
     shared actual String? additionalProposalInfo => null;
     
@@ -37,7 +36,11 @@ class EclipseConvertToClassProposal(String desc, CeylonEditor editor,
             ceylonEditor = editor;
             document = EclipseDocument(doc);
         };
-        applyChanges(EclipseDocument(doc), declaration, lm.linkedMode);
+        convertToClassQuickFix.applyChanges {
+            doc = EclipseDocument(doc);
+            node = declaration;
+            mode = lm.linkedMode;
+        };
         lm.openPopup();
     }
     
