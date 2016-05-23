@@ -7,12 +7,6 @@ import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.F
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.LEXICAL_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CHAIN_LINKED_MODE_ARGUMENTS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_COMPLETION_FILTERS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INEXACT_MATCHES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.LINKED_MODE_ARGUMENTS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMETER_TYPES_IN_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.allClasspathContainersInitialized;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.doWithSourceModel;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getInterpolatedCeylonSystemRepo;
@@ -29,7 +23,6 @@ import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManag
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.toFullPath;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getPreferences;
 import static com.redhat.ceylon.eclipse.util.PathUtils.toCommonPath;
 import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
@@ -58,7 +51,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 
 import com.redhat.ceylon.cmr.api.RepositoryManager;
@@ -101,7 +93,6 @@ import com.redhat.ceylon.ide.common.model.BaseIdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.IdeModuleManager;
 import com.redhat.ceylon.ide.common.platform.CommonDocument;
-import com.redhat.ceylon.ide.common.settings.CompletionOptions;
 import com.redhat.ceylon.ide.common.typechecker.EditedPhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.LocalAnalysisResult;
@@ -1118,27 +1109,6 @@ public class CeylonParseController
     public BaseCeylonProject getCeylonProject() {
         return modelJ2C().ceylonModel()
                     .getProject(project);
-    }
-
-    @Override
-    public CompletionOptions getOptions() {
-        CompletionOptions options = new CompletionOptions();
-        
-        IPreferenceStore prefs = getPreferences();
-        options.setParameterTypesInCompletion(prefs
-                .getBoolean(PARAMETER_TYPES_IN_COMPLETIONS));
-        options.setInexactMatches(prefs
-                .getString(INEXACT_MATCHES));
-        options.setCompletionMode(prefs
-                .getString(COMPLETION));
-        options.setLinkedModeArguments(prefs
-                .getBoolean(LINKED_MODE_ARGUMENTS));
-        options.setChainLinkedModeArguments(prefs
-                .getBoolean(CHAIN_LINKED_MODE_ARGUMENTS));
-        options.setEnableCompletionFilters(prefs
-                .getBoolean(ENABLE_COMPLETION_FILTERS));
-
-        return options;
     }
 
     @Override

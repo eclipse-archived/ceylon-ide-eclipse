@@ -18,7 +18,8 @@ import com.redhat.ceylon.eclipse.util {
 }
 import com.redhat.ceylon.ide.common.completion {
     getProposedName,
-    appendPositionalArgs
+    appendPositionalArgs,
+    ProposalsHolder
 }
 import com.redhat.ceylon.ide.common.correct {
     AbstractInitializerQuickFix
@@ -67,6 +68,9 @@ import org.eclipse.swt.graphics {
     Image,
     Point
 }
+import com.redhat.ceylon.eclipse.platform {
+    EclipseProposalsHolder
+}
 
 class EclipseInitializerProposal(
     String name, 
@@ -78,15 +82,23 @@ class EclipseInitializerProposal(
     Image image,
     variable Integer exitPos) 
         extends CorrectionProposal(name, change, selection, image)
-        satisfies AbstractInitializerQuickFix<ICompletionProposal> {
+        satisfies AbstractInitializerQuickFix {
 
-    shared actual ICompletionProposal newNestedCompletionProposal(
-        Declaration dec, Integer offset)
-            => NestedCompletionProposal(dec, offset);
+    shared actual void newNestedCompletionProposal(ProposalsHolder proposals,
+        Declaration dec, Integer offset) {
+        
+        if (is EclipseProposalsHolder proposals) {
+            proposals.add(NestedCompletionProposal(dec, offset));
+        }
+    }
     
-    shared actual ICompletionProposal newNestedLiteralCompletionProposal(
-        String val, Integer offset)
-            => NestedLiteralCompletionProposal(val, offset);
+    shared actual void newNestedLiteralCompletionProposal(ProposalsHolder proposals,
+        String val, Integer offset) {
+        
+        if (is EclipseProposalsHolder proposals) {
+            proposals.add(NestedLiteralCompletionProposal(val, offset));
+        }
+    }
     
     //we don't apply a selection because:
     //1. we're using linked mode anyway, and

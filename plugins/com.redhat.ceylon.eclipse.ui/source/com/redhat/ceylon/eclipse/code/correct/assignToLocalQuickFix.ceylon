@@ -27,29 +27,39 @@ import org.eclipse.jface.text.contentassist {
 import org.eclipse.jface.viewers {
     StyledString
 }
+import com.redhat.ceylon.ide.common.completion {
+    ProposalsHolder
+}
+import com.redhat.ceylon.eclipse.platform {
+    EclipseProposalsHolder
+}
 
 class EclipseAssignToLocalProposal(EclipseQuickFixData data, String desc)
         extends EclipseLocalProposal(data, desc)
-        satisfies AssignToLocalProposal<ICompletionProposal> {
+        satisfies AssignToLocalProposal {
 
-    shared actual ICompletionProposal[] toNameProposals(String[] names, 
-        Integer offset, Unit unit, Integer seq) => [
-            NullProposal(Collections.emptyList<ICompletionProposal>()),
-            *names.map(
-                (n) => LinkedModeCompletionProposal(n, offset, seq)
-            ).sequence()
-        ];
+    shared actual void toNameProposals(String[] names, ProposalsHolder proposals, 
+        Integer offset, Unit unit, Integer seq) {
+        
+        if (is EclipseProposalsHolder proposals) {
+            proposals.add(NullProposal(Collections.emptyList<ICompletionProposal>()));
+            names.each((n) => proposals.add(LinkedModeCompletionProposal(n, offset, seq)));
+        }
+    }
     
-    shared actual ICompletionProposal[] toProposals(<String|Type>[] types, 
+    shared actual void toProposals(<String|Type>[] types, ProposalsHolder proposals,
         Integer offset, Unit unit) {
         
-        return types.map((t) {
+        assert(is EclipseProposalsHolder proposals);
+        
+        types.each((t) {
             if (is String t) {
-                return LinkedModeCompletionProposal(t, offset, t, 0,
-                    CeylonLabelProvider.getDecoratedImage(CeylonResources.\iCEYLON_LITERAL, 0, false));
+                proposals.add(LinkedModeCompletionProposal(t, offset, t, 0,
+                    CeylonLabelProvider.getDecoratedImage(CeylonResources.\iCEYLON_LITERAL, 0, false)));
+            } else {
+                proposals.add(LinkedModeCompletionProposal(t, unit, offset, 0));
             }
-            return LinkedModeCompletionProposal(t, unit, offset, 0);
-        }).sequence();
+        });
     }
     
     styledDisplayString => 

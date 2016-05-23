@@ -227,10 +227,10 @@ public class DocumentationView extends ViewPart {
             if (node instanceof Tree.Type) {
                 Tree.Type type = (Tree.Type) node;
                 specifyTypeQuickFix_.get_().specifyType(
+                    rootNode,
                     new correctJ2C().newDocument(parseController.getDocument()),
                     type,
                     true,
-                    rootNode,
                     type.getTypeModel()
                 );
             }

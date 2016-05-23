@@ -1,14 +1,11 @@
 package com.redhat.ceylon.eclipse.code.correct;
 
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.Change;
 
-import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
-import com.redhat.ceylon.eclipse.code.complete.completionJ2C;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.ide.common.correct.QuickFixData;
 import com.redhat.ceylon.ide.common.correct.declareLocalQuickFix_;
@@ -38,12 +35,7 @@ final class DeclareLocalProposal extends CorrectionProposal {
 
     public void apply(IDocument document) {
         super.apply(document);
-        declareLocalQuickFix_.get_().enableLinkedMode(
-                TypeDescriptor.klass(ICompletionProposal.class),
-                data,
-                term,
-                new completionJ2C().dummyCompletionManager()
-        );
+        declareLocalQuickFix_.get_().enableLinkedMode(data, term);
 //        Type type = term.getTypeModel();
 //        if (type!=null && editor!=null) {
 //            LinkedModeModel linkedModeModel = new LinkedModeModel();

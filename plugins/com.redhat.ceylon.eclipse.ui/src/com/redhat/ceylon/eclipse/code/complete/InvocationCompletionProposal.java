@@ -31,7 +31,7 @@ import com.redhat.ceylon.model.typechecker.model.TypedReference;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
-class InvocationCompletionProposal extends CompletionProposal {
+public class InvocationCompletionProposal extends CompletionProposal {
     
     private static final List<Type> NO_TYPES = Collections.<Type>emptyList();
 
@@ -1182,9 +1182,9 @@ class InvocationCompletionProposal extends CompletionProposal {
         return false;
     }
     
-    static final class ParameterInfo 
+    public static final class ParameterInfo 
             extends InvocationCompletionProposal {
-        ParameterInfo(int offset, Declaration dec, 
+        public ParameterInfo(int offset, Declaration dec, 
                 Reference producedReference,
                 Scope scope, LocalAnalysisResult cpc, 
                 boolean namedInvocation) {

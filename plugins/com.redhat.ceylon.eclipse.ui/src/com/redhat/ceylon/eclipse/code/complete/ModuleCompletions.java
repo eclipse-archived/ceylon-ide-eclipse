@@ -49,11 +49,11 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class ModuleCompletions {
     
-    static final class ModuleDescriptorProposal extends CompletionProposal {
+    public static final class ModuleDescriptorProposal extends CompletionProposal {
         int selectionStart = -1;
         int selectionLength = -1;
 
-        ModuleDescriptorProposal(int offset, String prefix, String desc, String text,
+        public ModuleDescriptorProposal(int offset, String prefix, String desc, String text,
                 int selectionStart, int selectionLength) {
             super(offset, prefix, MODULE, desc, text);
             this.selectionStart = selectionStart;
@@ -83,7 +83,7 @@ public class ModuleCompletions {
         }
     }
 
-    static final class ModuleProposal extends CompletionProposal {
+    public static final class ModuleProposal extends CompletionProposal {
         private final int len;
         private final String versioned;
         private final ModuleDetails module;
@@ -92,7 +92,7 @@ public class ModuleCompletions {
         private final String name;
         private Node node;
 
-        ModuleProposal(int offset,
+        public ModuleProposal(int offset,
                 String prefix, int len,
                 String versioned,
                 ModuleDetails module,
@@ -233,10 +233,10 @@ public class ModuleCompletions {
         }
     }
     
-    static final class JDKModuleProposal extends CompletionProposal {
+    public static final class JDKModuleProposal extends CompletionProposal {
         private final String name;
 
-        JDKModuleProposal(int offset,
+        public JDKModuleProposal(int offset,
                 String prefix, int len,
                 String versioned, String name) {
             super(offset, prefix, MODULE, versioned, 

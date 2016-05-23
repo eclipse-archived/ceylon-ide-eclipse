@@ -72,7 +72,7 @@ import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
-class ParametersCompletionProposal extends CompletionProposal {
+public class ParametersCompletionProposal extends CompletionProposal {
     
     static final class ParameterContextInformation 
             implements IContextInformation {
@@ -424,7 +424,7 @@ class ParametersCompletionProposal extends CompletionProposal {
     private final Scope scope;
     private int argumentListOffset;
     
-    ParametersCompletionProposal(int offset, 
+    public ParametersCompletionProposal(int offset, 
             String desc, String text, 
             List<Type> argTypes, 
             Scope scope,

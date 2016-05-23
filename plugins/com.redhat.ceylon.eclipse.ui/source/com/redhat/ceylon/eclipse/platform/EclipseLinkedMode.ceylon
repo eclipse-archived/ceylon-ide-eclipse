@@ -12,13 +12,13 @@ import com.redhat.ceylon.eclipse.util {
     ELinkedMode=LinkedMode,
     EditorUtil
 }
+import com.redhat.ceylon.ide.common.completion {
+    ProposalsHolder
+}
 import com.redhat.ceylon.ide.common.platform {
     LinkedMode
 }
 
-import org.eclipse.jface.text.contentassist {
-    ICompletionProposal
-}
 import org.eclipse.jface.text.link {
     LinkedModeModel,
     ProposalPosition,
@@ -32,11 +32,11 @@ shared class EclipseLinkedMode(document, model = LinkedModeModel()) extends Link
     shared default LinkedModeModel model;
     
     shared actual void addEditableRegion(Integer start, Integer length,
-        Integer exitSeqNumber, Anything proposals) {
+        Integer exitSeqNumber, ProposalsHolder holder) {
         
-        if (is ICompletionProposal[] proposals) {
+        if (is EclipseProposalsHolder holder) {
             value linkedPosition = ProposalPosition(document.document, start,
-                length, exitSeqNumber, createJavaObjectArray(proposals));
+                length, exitSeqNumber, createJavaObjectArray(holder.proposals));
             ELinkedMode.addLinkedPosition(model, linkedPosition);
         }
     }

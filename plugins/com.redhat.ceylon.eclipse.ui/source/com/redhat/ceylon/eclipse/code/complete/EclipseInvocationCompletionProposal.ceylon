@@ -10,11 +10,11 @@ import com.redhat.ceylon.eclipse.code.hover {
 import com.redhat.ceylon.eclipse.code.outline {
     CeylonLabelProvider
 }
-import com.redhat.ceylon.eclipse.code.parse {
-    CeylonParseController
-}
 import com.redhat.ceylon.eclipse.code.preferences {
     CeylonPreferenceInitializer
+}
+import com.redhat.ceylon.eclipse.platform {
+    EclipseProposalsHolder
 }
 import com.redhat.ceylon.eclipse.ui {
     CeylonPlugin,
@@ -26,10 +26,8 @@ import com.redhat.ceylon.eclipse.util {
 import com.redhat.ceylon.ide.common.completion {
     InvocationCompletionProposal,
     getProposedName,
-    appendPositionalArgs
-}
-import com.redhat.ceylon.ide.common.typechecker {
-    LocalAnalysisResult
+    appendPositionalArgs,
+    ProposalsHolder
 }
 import com.redhat.ceylon.model.typechecker.model {
     Declaration,
@@ -51,7 +49,6 @@ import org.eclipse.jface.text {
     DocumentEvent
 }
 import org.eclipse.jface.text.contentassist {
-    ICompletionProposal,
     IContextInformation
 }
 import org.eclipse.jface.viewers {
@@ -62,15 +59,15 @@ import org.eclipse.swt.graphics {
     Image
 }
 
-class EclipseInvocationCompletionProposal(Integer _offset, String prefix, 
+shared class EclipseInvocationCompletionProposal(Integer _offset, String prefix, 
             String description, String text, Declaration dec,
             Reference? producedReference, Scope scope, 
-            LocalAnalysisResult cpc, Boolean includeDefaulted,
+            EclipseCompletionContext ctx, Boolean includeDefaulted,
             Boolean positionalInvocation, Boolean namedInvocation, 
             Boolean inheritance, Boolean qualified, Declaration? qualifyingValue)
-        extends InvocationCompletionProposal<ICompletionProposal>
-                (_offset, prefix, description, text, dec, producedReference, scope, cpc.lastCompilationUnit,
-    includeDefaulted, positionalInvocation, namedInvocation, inheritance, qualified, qualifyingValue, eclipseCompletionManager)
+        extends InvocationCompletionProposal
+                (_offset, prefix, description, text, dec, producedReference, scope, ctx.lastCompilationUnit,
+    includeDefaulted, positionalInvocation, namedInvocation, inheritance, qualified, qualifyingValue)
         satisfies EclipseCompletionProposal {
     
     shared actual variable String? currentPrefix = prefix;
@@ -81,7 +78,7 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
         createChange(commonDocument).apply();
         
         if (CeylonPlugin.preferences.getBoolean(CeylonPreferenceInitializer.\iLINKED_MODE_ARGUMENTS)) {
-            activeLinkedMode(commonDocument, cpc);
+            activeLinkedMode(commonDocument, ctx);
         }
     }
     
@@ -103,8 +100,7 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
     }
     
     shared actual String? additionalProposalInfo {
-        assert(is CeylonParseController cpc);
-        return DocumentationHover.getDocumentationFor(cpc, dec, 
+        return DocumentationHover.getDocumentationFor(ctx.cpc, dec, 
             producedReference, NullProgressMonitor());        
     }
 
@@ -118,7 +114,7 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
                             then this.offset
                             else offset - prefix.size + (text.firstOccurrence(if (namedInvocation) then '{' else '(') else -1);
                     
-                    value unit = cpc.lastCompilationUnit.unit;
+                    value unit = ctx.lastCompilationUnit.unit;
                     return EInvocationCompletionProposal.ParameterContextInformation(dec, producedReference,
                         unit, pls.get(0), argListOffset, includeDefaulted, namedInvocation);
                 }
@@ -130,12 +126,19 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
 
     shared default Boolean parameterInfo => false;
 
-    shared actual ICompletionProposal newNestedCompletionProposal(Declaration dec, Declaration? qualifier,
-        Integer loc, Integer index, Boolean basic, String op)
-            => NestedCompletionProposal(dec, qualifier, loc, index, basic, op);
+    shared actual void newNestedCompletionProposal(ProposalsHolder proposals, Declaration dec, Declaration? qualifier,
+        Integer loc, Integer index, Boolean basic, String op) {
+        
+        if (is EclipseProposalsHolder proposals) {
+            proposals.add(NestedCompletionProposal(dec, qualifier, loc, index, basic, op));
+        }
+    }
     
-    shared actual ICompletionProposal newNestedLiteralCompletionProposal(String val, Integer loc, Integer index)
-            => NestedLiteralCompletionProposal(val, loc, index);
+    shared actual void newNestedLiteralCompletionProposal(ProposalsHolder proposals, String val, Integer loc, Integer index) {
+        if (is EclipseProposalsHolder proposals) {
+            proposals.add(NestedLiteralCompletionProposal(val, loc, index));
+        }
+    }
     
     class NestedCompletionProposal(Declaration dec, Declaration? qualifier, Integer loc, Integer index, Boolean basic, String op) 
             satisfies IEclipseCompletionProposal2And6 {
@@ -167,7 +170,7 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
         
         String getText(Boolean description) {
             StringBuilder sb = StringBuilder().append(op);
-            Unit unit = cpc.lastCompilationUnit.unit;
+            Unit unit = ctx.lastCompilationUnit.unit;
             sb.append(getProposedName(qualifier, dec, unit));
             if (dec is Functional, !basic) {
                 appendPositionalArgs(dec, dec.reference, unit, sb, false, description, false);
@@ -232,7 +235,7 @@ class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
             }
             
             String filter = content.trimmed.lowercased;
-            value unit = cpc.lastCompilationUnit.unit;
+            value unit = ctx.lastCompilationUnit.unit;
             
             return ModelUtil.isNameMatching(content, dec)
                     || getProposedName(qualifier, dec, unit)

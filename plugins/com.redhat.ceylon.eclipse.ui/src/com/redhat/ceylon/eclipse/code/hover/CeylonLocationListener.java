@@ -144,10 +144,10 @@ final class CeylonLocationListener implements LocationListener {
                 if (node instanceof Tree.Type) {
                     Tree.Type type = (Tree.Type) node;
                     specifyTypeQuickFix_.get_().specifyType(
+                        rootNode,
                         new correctJ2C().newDocument(document),
                         type,
                         true,
-                        rootNode,
                         type.getTypeModel()
                     );
                 }

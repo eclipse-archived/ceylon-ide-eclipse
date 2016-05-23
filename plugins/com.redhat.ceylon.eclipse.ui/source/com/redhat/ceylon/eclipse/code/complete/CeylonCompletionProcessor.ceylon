@@ -1,48 +1,40 @@
-import com.redhat.ceylon.eclipse.code.editor {
-    CeylonEditor
-}
-import org.eclipse.jface.text.contentassist {
-    IContentAssistProcessor,
-    ICompletionProposal,
-    IContextInformation
-}
-import com.redhat.ceylon.eclipse.util {
-    wrapProgressMonitor
-}
-import com.redhat.ceylon.eclipse.code.parse {
-    CeylonParseController
-}
-import com.redhat.ceylon.eclipse.code.preferences {
-    CeylonPreferenceInitializer
-}
-import org.eclipse.jface.text {
-    ITextViewer,
-    BadLocationException,
-    IDocument
-}
-import java.lang {
-    ObjectArray
-}
-import org.eclipse.core.runtime {
-    IProgressMonitor,
-    NullProgressMonitor
-}
-import com.redhat.ceylon.eclipse.ui {
-    CeylonPlugin
+import ceylon.collection {
+    ArrayList
 }
 import ceylon.interop.java {
     javaString,
     createJavaObjectArray
 }
-import org.eclipse.ui {
-    PlatformUI
-}
-import org.eclipse.jface.operation {
-    IRunnableWithProgress
-}
+
 import com.redhat.ceylon.compiler.typechecker.tree {
     Visitor,
     Tree
+}
+import com.redhat.ceylon.eclipse.code.editor {
+    CeylonEditor
+}
+import com.redhat.ceylon.eclipse.code.parse {
+    CeylonParseController
+}
+import com.redhat.ceylon.eclipse.code.preferences {
+    CeylonPreferenceInitializer {
+        autoActivationChars
+    }
+}
+import com.redhat.ceylon.eclipse.ui {
+    CeylonPlugin {
+        preferences
+    }
+}
+import com.redhat.ceylon.eclipse.util {
+    wrapProgressMonitor,
+    EclipseProgressMonitorChild
+}
+import com.redhat.ceylon.ide.common.completion {
+    completionManager
+}
+import com.redhat.ceylon.ide.common.typechecker {
+    LocalAnalysisResult
 }
 import com.redhat.ceylon.model.typechecker.model {
     Declaration,
@@ -50,14 +42,34 @@ import com.redhat.ceylon.model.typechecker.model {
     Unit,
     Reference
 }
-import ceylon.collection {
-    ArrayList
+
+import java.lang {
+    ObjectArray
+}
+
+import org.eclipse.core.runtime {
+    IProgressMonitor,
+    NullProgressMonitor
+}
+import org.eclipse.jface.operation {
+    IRunnableWithProgress
+}
+import org.eclipse.jface.text {
+    ITextViewer,
+    BadLocationException,
+    IDocument
+}
+import org.eclipse.jface.text.contentassist {
+    IContentAssistProcessor,
+    ICompletionProposal,
+    IContextInformation
+}
+import org.eclipse.ui {
+    PlatformUI
 }
 
 class CeylonCompletionProcessor(CeylonEditor editor)
-        satisfies IContentAssistProcessor 
-                & EclipseCompletionProcessor {
-
+        satisfies IContentAssistProcessor & EclipseCompletionProcessor {
     
     variable ParameterContextValidator? validator = null;
     variable Boolean secondLevel = false;
@@ -66,25 +78,24 @@ class CeylonCompletionProcessor(CeylonEditor editor)
     variable Integer lastOffset = -1;
     
     value noCompletions = ObjectArray<ICompletionProposal>(0);
-
-    completionProposalAutoActivationCharacters =
-            javaString(CeylonPlugin.preferences.getString(
-        CeylonPreferenceInitializer.\iAUTO_ACTIVATION_CHARS))
-            .toCharArray();
     
-    contextInformationAutoActivationCharacters 
+    completionProposalAutoActivationCharacters =
+        javaString(preferences.getString(autoActivationChars)).toCharArray();
+    
+    contextInformationAutoActivationCharacters
             = javaString(",(;{").toCharArray();
     
-    shared actual ObjectArray<ICompletionProposal> computeCompletionProposals(
-        ITextViewer viewer, Integer offset) {
+    shared actual ObjectArray<ICompletionProposal>
+    computeCompletionProposals(ITextViewer viewer, Integer offset) {
+        
         if (offset != lastOffsetAcrossSessions) {
             returnedParamInfo = false;
             secondLevel = false;
         }
         try {
-            if (lastOffset >= 0, 
-                offset > 0, 
-                offset != lastOffset, 
+            if (lastOffset >= 0,
+                offset > 0,
+                offset != lastOffset,
                 !isIdentifierCharacter(viewer, offset)) {
                 return noCompletions;
             }
@@ -104,7 +115,7 @@ class CeylonCompletionProcessor(CeylonEditor editor)
             shared actual void run(IProgressMonitor monitor) {
                 try (progress = wrapProgressMonitor(monitor)
                     .Progress(-1, "Preparing completions...")) {
-                    _contentProposals = eclipseCompletionManager.getEclipseContentProposals {
+                    _contentProposals = getContentProposals {
                         editor = editor;
                         controller = editor.parseController;
                         offset = offset;
@@ -113,88 +124,118 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                         returnedParamInfo = returnedParamInfo;
                         monitor = progress.newChild(-1);
                     };
-                    if (_contentProposals.size == 1 && 
-                        _contentProposals.first 
-                    is InvocationCompletionProposal.ParameterInfo) {
+                    if (_contentProposals.size==1 &&
+                                _contentProposals.first is InvocationCompletionProposal.ParameterInfo) {
                         returnedParamInfo = true;
                     }
                 }
             }
         }
         
-        try {
-            if (secondLevel) {
-                runnable.run(NullProgressMonitor());
-            } else {
-                PlatformUI.workbench
-                        .activeWorkbenchWindow.run(
-                    true, true, runnable);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (secondLevel) {
+            runnable.run(NullProgressMonitor());
+        } else {
+            PlatformUI.workbench
+                .activeWorkbenchWindow.run(
+                true, true, runnable);
         }
+
         return createJavaObjectArray(runnable._contentProposals);
     }
     
-    shared actual ObjectArray<IContextInformation> 
-            computeContextInformation(ITextViewer viewer, Integer offset) {
+    ICompletionProposal[] getContentProposals(
+        CeylonEditor editor,
+        LocalAnalysisResult? controller, Integer offset,
+        ITextViewer? viewer, Boolean secondLevel, 
+        Boolean returnedParamInfo, 
+        EclipseProgressMonitorChild monitor) {
+        
+        if (is CeylonParseController controller,
+            exists viewer, 
+            exists rn = controller.lastCompilationUnit, 
+            exists t = controller.tokens, 
+            exists pu = controller.parseAndTypecheck(
+                viewer.document, 10, monitor.wrapped, null)) {
+            
+            editor.annotationCreator.updateAnnotations();
+            value ctx = EclipseCompletionContext(controller);
+            
+            completionManager.getContentProposals {
+                typecheckedRootNode = pu.compilationUnit;
+                ctx = ctx;
+                offset = offset;
+                line = CompletionUtil.getLine(offset, viewer);
+                secondLevel = secondLevel;
+                monitor = monitor;
+                returnedParamInfo = returnedParamInfo;
+                cancellable = monitor;
+            };
+            
+            return ctx.proposals.proposals.sequence();
+        }
+        else {
+            return [];
+        }
+    }
+
+    shared actual ObjectArray<IContextInformation>
+    computeContextInformation(ITextViewer viewer, Integer offset) {
+        
         CeylonParseController controller = editor.parseController;
         if (exists phasedUnit = controller.parseAndTypecheck(
-            viewer.document, 10, NullProgressMonitor(), null)) {
+                viewer.document, 10, NullProgressMonitor(), null)) {
+            
             return createJavaObjectArray<IContextInformation>(
                 computeParameterContextInformation {
                     offset = offset;
                     rootNode = controller.lastCompilationUnit;
                     viewer = viewer;
                 });
-            }
-            else {
-                return ObjectArray<IContextInformation>(0);
-            }
+        } else {
+            return ObjectArray<IContextInformation>(0);
         }
-        
-        contextInformationValidator 
-                => validator 
-        else (validator = ParameterContextValidator(editor));
-        
-        errorMessage => "No completions available";
-
-        
-        shared actual void sessionStarted() {
-            secondLevel = false;
-            lastOffset = -1;
-        }
-
-        Boolean isIdentifierCharacter(ITextViewer viewer, Integer offset) {
-            IDocument doc = viewer.document;
-            Character ch = doc.get(offset - 1, 1).first else ' ';
-            return ch.letter || ch.digit || ch=='_' || ch=='.';
-        }
-        
-        // see InvocationCompletionProposal.computeParameterContextInformation()
-        List<IContextInformation> computeParameterContextInformation(
-            Integer offset, Tree.CompilationUnit rootNode, ITextViewer viewer) {
-            ArrayList<IContextInformation> infos = ArrayList<IContextInformation>();
-            rootNode.visit(object extends Visitor() {
+    }
+    
+    contextInformationValidator
+            => validator
+                    else (validator = ParameterContextValidator(editor));
+    
+    errorMessage => "No completions available";
+    
+    shared actual void sessionStarted() {
+        secondLevel = false;
+        lastOffset = -1;
+    }
+    
+    Boolean isIdentifierCharacter(ITextViewer viewer, Integer offset) {
+        IDocument doc = viewer.document;
+        Character ch = doc.get(offset - 1, 1).first else ' ';
+        return ch.letter || ch.digit || ch=='_' || ch=='.';
+    }
+    
+    // see InvocationCompletionProposal.computeParameterContextInformation()
+    List<IContextInformation> computeParameterContextInformation(
+        Integer offset, Tree.CompilationUnit rootNode, ITextViewer viewer) {
+        ArrayList<IContextInformation> infos = ArrayList<IContextInformation>();
+        rootNode.visit(object extends Visitor() {
                 shared actual void visit(Tree.InvocationExpression that) {
-                    if (exists al 
-                        = that.positionalArgumentList 
-                    else that.namedArgumentList) {
+                    if (exists al
+                                = that.positionalArgumentList
+                                        else that.namedArgumentList) {
                         //TODO: should reuse logic for adjusting tokens
                         //      from CeylonContentProposer!!
-                        if (exists start = al.startIndex?.intValue(), 
-                            exists stop = al.endIndex?.intValue(), 
+                        if (exists start = al.startIndex?.intValue(),
+                            exists stop = al.endIndex?.intValue(),
                             offset > start) {
                             String string;
                             try {
-                                string = 
-                                        if (offset > stop) 
-                                then viewer.document
-                                        .get(stop, offset - stop)
-                                        .trimmed 
-                                else "";
-                            }
-                            catch (e) {
+                                string =
+                                    if (offset > stop)
+                                    then viewer.document
+                                            .get(stop, offset - stop)
+                                            .trimmed
+                                    else "";
+                            } catch (e) {
                                 return;
                             }
                             if (string.empty) {
@@ -205,8 +246,7 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                                 if (is Tree.MemberOrTypeExpression primary) {
                                     declaration = primary.declaration;
                                     target = primary.target;
-                                }
-                                else {
+                                } else {
                                     declaration = null;
                                     target = null;
                                 }
@@ -218,19 +258,18 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                                         //      Delete it to get a choice of all surrounding
                                         //      argument lists.
                                         infos.clear();
-                                        infos.add(InvocationCompletionProposal.ParameterContextInformation( // TODO migrate this?
-                                            declaration, target, unit,
-                                            pls.get(0), start, true, 
-                                            al is Tree.NamedArgumentList));
+                                        infos.add(InvocationCompletionProposal.ParameterContextInformation(// TODO migrate this?
+                                                declaration, target, unit,
+                                                pls.get(0), start, true,
+                                                al is Tree.NamedArgumentList));
                                     }
-                                }
-                                else if (exists type = primary.typeModel, 
+                                } else if (exists type = primary.typeModel,
                                     unit.isCallableType(type)) {
                                     value argTypes = unit.getCallableArgumentTypes(type);
                                     if (!argTypes.empty) {
-                                        infos.clear();                            	
+                                        infos.clear();
                                         infos.add(ParametersCompletionProposal.ParameterContextInformation(
-                                            argTypes, start, unit));
+                                                argTypes, start, unit));
                                     }
                                 }
                             }
@@ -242,5 +281,4 @@ class CeylonCompletionProcessor(CeylonEditor editor)
         );
         return infos;
     }
-
 }

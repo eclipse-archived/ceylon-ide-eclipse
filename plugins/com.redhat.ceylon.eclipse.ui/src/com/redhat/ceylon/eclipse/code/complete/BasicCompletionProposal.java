@@ -16,7 +16,7 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
-class BasicCompletionProposal extends CompletionProposal {
+public class BasicCompletionProposal extends CompletionProposal {
     
     @Deprecated
     static void addImportProposal(int offset, String prefix, 
@@ -47,12 +47,12 @@ class BasicCompletionProposal extends CompletionProposal {
     private final CeylonParseController cpc;
     private final Declaration declaration;
     
-    BasicCompletionProposal(int offset, String prefix, 
+    public BasicCompletionProposal(int offset, String prefix, 
             String desc, String text, Declaration dec, 
             LocalAnalysisResult cpc) {
         super(offset, prefix, getImageForDeclaration(dec), 
                 desc, text);
-        this.cpc = (CeylonParseController) cpc;
+        this.cpc = ((EclipseCompletionContext) cpc).getCpc();
         this.declaration = dec;
     }
     

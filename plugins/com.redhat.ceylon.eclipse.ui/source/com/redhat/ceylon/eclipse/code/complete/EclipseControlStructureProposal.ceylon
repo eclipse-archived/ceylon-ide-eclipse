@@ -5,8 +5,15 @@ import com.redhat.ceylon.compiler.typechecker.tree {
 import com.redhat.ceylon.eclipse.code.correct {
     EclipseDocument
 }
+import com.redhat.ceylon.eclipse.platform {
+    EclipseProposalsHolder
+}
 import com.redhat.ceylon.eclipse.ui {
     CeylonResources
+}
+import com.redhat.ceylon.ide.common.completion {
+    ControlStructureProposal,
+    ProposalsHolder
 }
 import com.redhat.ceylon.ide.common.typechecker {
     LocalAnalysisResult
@@ -18,19 +25,13 @@ import com.redhat.ceylon.model.typechecker.model {
 import org.eclipse.jface.text {
     IDocument
 }
-import org.eclipse.jface.text.contentassist {
-    ICompletionProposal
-}
 import org.eclipse.swt.graphics {
     Image
 }
-import com.redhat.ceylon.ide.common.completion {
-    ControlStructureProposal
-}
 
-class EclipseControlStructureProposal(Integer offset, String prefix, String desc,
+shared class EclipseControlStructureProposal(Integer offset, String prefix, String desc,
     String text, Declaration declaration, LocalAnalysisResult cpc, Node? node)
-        extends ControlStructureProposal<ICompletionProposal>
+        extends ControlStructureProposal
         (offset, prefix, desc, text, node, declaration, cpc)
                 satisfies EclipseCompletionProposal {
             
@@ -38,8 +39,11 @@ class EclipseControlStructureProposal(Integer offset, String prefix, String desc
     
     shared actual Image image => CeylonResources.\iMINOR_CHANGE;
     
-    shared actual ICompletionProposal newNameCompletion(String? name)
-            => CompletionProposal(offset, prefix, CeylonResources.\iLOCAL_NAME, name, name);
+    shared actual void newNameCompletion(ProposalsHolder proposals, String? name) {
+        if (is EclipseProposalsHolder proposals) {
+            proposals.add(CompletionProposal(offset, prefix, CeylonResources.\iLOCAL_NAME, name, name));
+        }
+    }
     
     shared actual variable Boolean toggleOverwriteInternal = false;
     

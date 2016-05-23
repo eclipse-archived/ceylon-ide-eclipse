@@ -49,7 +49,7 @@ import com.redhat.ceylon.eclipse.code.correct {
 }
 
 // see CompletionProposal
-interface EclipseCompletionProposal
+shared interface EclipseCompletionProposal
         satisfies IEclipseCompletionProposal
                 & CommonCompletionProposal {
     

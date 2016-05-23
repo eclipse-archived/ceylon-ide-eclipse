@@ -1,12 +1,6 @@
 import com.redhat.ceylon.compiler.typechecker.context {
     PhasedUnit
 }
-import com.redhat.ceylon.compiler.typechecker.tree {
-    Tree
-}
-import com.redhat.ceylon.eclipse.code.complete {
-    eclipseCompletionManager
-}
 import com.redhat.ceylon.eclipse.code.correct {
     EclipseDocument
 }
@@ -35,8 +29,7 @@ import com.redhat.ceylon.ide.common.util {
     unsafeCast
 }
 import com.redhat.ceylon.model.typechecker.model {
-    Unit,
-    Type
+    Unit
 }
 
 import org.eclipse.core.resources {
@@ -106,16 +99,7 @@ object eclipsePlatformServices satisfies PlatformServices {
                then EclipseLinkedMode(document)
                else NoopLinkedMode(document);
     
-    // TODO this method is temporary, until completionManager becomes an object in ide-common!
-    shared actual Anything getTypeProposals(CommonDocument document, 
-        Integer offset, Integer length, Type infType,
-        Tree.CompilationUnit rootNode, String? kind) {
-        
-        assert(is EclipseDocument document);
-        return eclipseCompletionManager.getTypeProposals(document,
-            offset, length, infType, rootNode, kind);
-    }
-    
+    completion => eclipseCompletionServices;
 }
 
 shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit|ETextChange input)

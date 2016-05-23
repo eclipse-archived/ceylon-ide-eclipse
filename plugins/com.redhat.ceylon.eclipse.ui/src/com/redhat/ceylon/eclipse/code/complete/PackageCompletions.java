@@ -63,7 +63,7 @@ import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class PackageCompletions {
 
-    static final class QueriedModulePackageProposal 
+    public static final class QueriedModulePackageProposal 
             extends PackageProposal {
         
         private final ModuleVersionDetails version;
@@ -71,7 +71,7 @@ public class PackageCompletions {
         private final ModuleDetails md;
         private String fullPackageName;
 
-        QueriedModulePackageProposal(int offset,
+        public QueriedModulePackageProposal(int offset,
                 String prefix, String memberPackageSubname,
                 boolean withBody, String fullPackageName,
                 LocalAnalysisResult controller,
@@ -106,7 +106,7 @@ public class PackageCompletions {
         }
     }
 
-    static final class ImportedModulePackageProposal extends
+    public static final class ImportedModulePackageProposal extends
             PackageProposal {
 
         private final class PackageMemberCompletionProposal
@@ -223,7 +223,7 @@ public class PackageCompletions {
 
         private final Package candidate;
 
-        ImportedModulePackageProposal(int offset, String prefix,
+        public ImportedModulePackageProposal(int offset, String prefix,
                 String memberPackageSubname, boolean withBody,
                 String fullPackageName, CeylonParseController controller,
                 Package candidate) {
@@ -284,9 +284,9 @@ public class PackageCompletions {
         }
     }
 
-    static final class PackageDescriptorProposal extends CompletionProposal {
+    public static final class PackageDescriptorProposal extends CompletionProposal {
         
-        PackageDescriptorProposal(int offset, String prefix, String desc, String text) {
+        public PackageDescriptorProposal(int offset, String prefix, String desc, String text) {
             super(offset, prefix, PACKAGE, desc, text);
         }
 
@@ -303,7 +303,7 @@ public class PackageCompletions {
         }
     }
 
-    static class PackageProposal extends CompletionProposal {
+    public static class PackageProposal extends CompletionProposal {
         protected final boolean withBody;
         protected final CeylonParseController controller;
 

@@ -92,7 +92,7 @@ public class KeywordCompletionProposal extends CompletionProposal {
         }
     }
     
-    KeywordCompletionProposal(int offset, String prefix, String keyword, String text) {
+    public KeywordCompletionProposal(int offset, String prefix, String keyword, String text) {
         super(offset, prefix, null, keyword, text);
     }
 

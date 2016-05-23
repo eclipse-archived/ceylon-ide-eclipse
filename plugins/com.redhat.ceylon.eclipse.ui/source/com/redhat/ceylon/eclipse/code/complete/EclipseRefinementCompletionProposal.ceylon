@@ -4,6 +4,9 @@ import com.redhat.ceylon.eclipse.code.outline {
 import com.redhat.ceylon.eclipse.code.parse {
     CeylonParseController
 }
+import com.redhat.ceylon.eclipse.platform {
+    EclipseProposalsHolder
+}
 import com.redhat.ceylon.eclipse.ui {
     CeylonPlugin,
     CeylonResources
@@ -14,7 +17,8 @@ import com.redhat.ceylon.eclipse.util {
 import com.redhat.ceylon.ide.common.completion {
     RefinementCompletionProposal,
     getProposedName,
-    appendPositionalArgs
+    appendPositionalArgs,
+    ProposalsHolder
 }
 import com.redhat.ceylon.model.typechecker.model {
     Declaration,
@@ -38,7 +42,6 @@ import org.eclipse.jface.text {
     DocumentEvent
 }
 import org.eclipse.jface.text.contentassist {
-    ICompletionProposal,
     IContextInformation
 }
 import org.eclipse.jface.viewers {
@@ -52,7 +55,7 @@ import org.eclipse.swt.graphics {
 class EclipseRefinementCompletionProposal(Integer _offset, String prefix, Reference pr, String desc, 
         String text, CeylonParseController cpc, Declaration declaration, Scope scope,
         Boolean fullType, Boolean explicitReturnType)
-        extends RefinementCompletionProposal<ICompletionProposal>
+        extends RefinementCompletionProposal
                 (_offset, prefix, pr, desc, text, cpc, declaration, scope, fullType, explicitReturnType)
         satisfies EclipseCompletionProposal {
 
@@ -205,11 +208,17 @@ class EclipseRefinementCompletionProposal(Integer _offset, String prefix, Refere
         }
     }
     
-    shared actual ICompletionProposal newNestedCompletionProposal(Declaration dec, Integer loc)
-            => NestedCompletionProposal(dec, loc, cpc.lastCompilationUnit.unit);
+    shared actual void newNestedCompletionProposal(ProposalsHolder proposals, Declaration dec, Integer loc) {
+        if (is EclipseProposalsHolder proposals) {
+            proposals.add(NestedCompletionProposal(dec, loc, cpc.lastCompilationUnit.unit));
+        }
+    }
     
-    shared actual ICompletionProposal newNestedLiteralCompletionProposal(String val, Integer loc)
-            => NestedLiteralCompletionProposal(val, loc);
+    shared actual void newNestedLiteralCompletionProposal(ProposalsHolder proposals, String val, Integer loc) {
+        if (is EclipseProposalsHolder proposals) {
+            proposals.add(NestedLiteralCompletionProposal(val, loc));
+        }
+    }
 
     shared actual variable Boolean toggleOverwriteInternal = false;
     

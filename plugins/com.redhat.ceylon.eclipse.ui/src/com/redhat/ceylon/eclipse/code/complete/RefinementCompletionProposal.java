@@ -221,7 +221,7 @@ public final class RefinementCompletionProposal extends CompletionProposal {
     private boolean explicitReturnType;
 
     @Deprecated
-    RefinementCompletionProposal(int offset,
+    public RefinementCompletionProposal(int offset,
             String prefix, Reference pr,
             String desc, String text,
             CeylonParseController cpc,

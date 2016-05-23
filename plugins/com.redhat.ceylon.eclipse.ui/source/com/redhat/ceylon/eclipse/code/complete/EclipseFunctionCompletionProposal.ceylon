@@ -31,7 +31,7 @@ import org.eclipse.swt.graphics {
     Image
 }
 
-class EclipseFunctionCompletionProposal
+shared class EclipseFunctionCompletionProposal
         (Integer offset, String prefix, String desc, String text, Declaration declaration, Tree.CompilationUnit rootNode)
         extends FunctionCompletionProposal(offset, prefix, desc, text, declaration, rootNode)
         satisfies EclipseCompletionProposal {
