@@ -38,9 +38,6 @@ import org.eclipse.core.resources {
     IResource,
     IFile
 }
-import org.eclipse.jface.preference {
-    IPreferenceStore
-}
 import org.eclipse.ltk.core.refactoring {
     TextFileChange,
     ETextChange=TextChange,
@@ -53,15 +50,6 @@ import org.eclipse.text.edits {
     EInsertEdit=InsertEdit,
     EReplaceEdit=ReplaceEdit,
     EDeleteEdit=DeleteEdit
-}
-import org.eclipse.ui.editors.text {
-    EditorsUI
-}
-import org.eclipse.ui.texteditor {
-    AbstractDecoratedTextEditorPreferenceConstants {
-        editorTabWidth,
-        editorSpacesForTabs
-    }
 }
 
 object eclipsePlatformServices satisfies PlatformServices {
@@ -78,21 +66,9 @@ object eclipsePlatformServices satisfies PlatformServices {
             => unsafeCast<VfsServices<NativeProject,NativeResource,NativeFolder,NativeFile>>
                     (eclipseVfsServices);
     
-    createTextChange(String desc, CommonDocument|PhasedUnit input)
-            => EclipseTextChange(desc, input);
-    
-    createCompositeChange(String desc) => EclipseCompositeChange(desc);
-    
     gotoLocation(Unit unit, Integer offset, Integer length)
             => Navigation.gotoLocation(unit, offset, length);
     
-    indentSpaces 
-            =>let(IPreferenceStore? store = EditorsUI.preferenceStore)
-                (store?.getInt(editorTabWidth) else 4);
-
-    indentWithSpaces
-            => let(IPreferenceStore? store = EditorsUI.preferenceStore)
-                (store?.getBoolean(editorSpacesForTabs) else false);
     
     createLinkedMode(CommonDocument document)
             => if (is EclipseDocument document)
@@ -100,6 +76,7 @@ object eclipsePlatformServices satisfies PlatformServices {
                else NoopLinkedMode(document);
     
     completion => eclipseCompletionServices;
+    document => eclipseDocumentServices;
 }
 
 shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit|ETextChange input)

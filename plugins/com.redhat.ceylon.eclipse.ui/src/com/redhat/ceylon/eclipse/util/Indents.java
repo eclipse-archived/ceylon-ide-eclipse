@@ -18,18 +18,18 @@ public class Indents {
     }
 
     public String getDefaultIndent() {
-        return new platformJ2C().platformServices().getDefaultIndent();
+        return new platformJ2C().platformServices().getDocument().getDefaultIndent();
     }
 
     public int getIndentSpaces() {
-        return (int) new platformJ2C().platformServices().getIndentSpaces();
+        return (int) new platformJ2C().platformServices().getDocument().getIndentSpaces();
     }
 
     public boolean getIndentWithSpaces() {
-        return new platformJ2C().platformServices().getIndentWithSpaces();
+        return new platformJ2C().platformServices().getDocument().getIndentWithSpaces();
     }
 
     public void initialIndent(StringBuilder builder) {
-        new platformJ2C().platformServices().initialIndent(builder);
+        new platformJ2C().platformServices().getDocument().initialIndent(builder);
     }
 }
