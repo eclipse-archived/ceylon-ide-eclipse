@@ -23,7 +23,8 @@ import com.redhat.ceylon.eclipse.code.complete {
     InvocationCompletionProposal,
     PackageCompletions,
     EclipseFunctionCompletionProposal,
-    EclipseCompletionContext
+    EclipseCompletionContext,
+    IEclipseCompletionProposal2And6
 }
 import com.redhat.ceylon.eclipse.code.correct {
     TypeProposal
@@ -32,7 +33,8 @@ import com.redhat.ceylon.eclipse.code.outline {
     CeylonLabelProvider
 }
 import com.redhat.ceylon.eclipse.ui {
-    CeylonResources
+    CeylonResources,
+    CeylonPlugin
 }
 import com.redhat.ceylon.ide.common.completion {
     isModuleDescriptor,
@@ -40,7 +42,8 @@ import com.redhat.ceylon.ide.common.completion {
     ProposalsHolder
 }
 import com.redhat.ceylon.ide.common.platform {
-    CompletionServices
+    CompletionServices,
+    TextChange
 }
 import com.redhat.ceylon.model.typechecker.model {
     Declaration,
@@ -56,13 +59,30 @@ import java.util {
 }
 
 import org.eclipse.jface.text {
-    IDocument
+    IDocument,
+    DocumentEvent,
+    ITextViewer
 }
 import org.eclipse.jface.text.contentassist {
-    ICompletionProposal
+    ICompletionProposal,
+    IContextInformation
 }
 import org.eclipse.swt.graphics {
-    Point
+    Point,
+    Image
+}
+import com.redhat.ceylon.ide.common.doc {
+    Icons
+}
+import com.redhat.ceylon.eclipse.util {
+    eclipseIcons,
+    Highlights
+}
+import org.eclipse.jface.viewers {
+    StyledString
+}
+import com.redhat.ceylon.ide.common.refactoring {
+    DefaultRegion
 }
 
 object eclipseCompletionServices satisfies CompletionServices {
@@ -313,6 +333,20 @@ object eclipseCompletionServices satisfies CompletionServices {
     }
     
     createProposalsHolder() => EclipseProposalsHolder();
+    
+    shared actual void addProposal(ProposalsHolder proposals, Icons|Declaration icon, 
+        String description, DefaultRegion region, String text, TextChange? change) {
+        
+        if (is EclipseProposalsHolder proposals,
+            is EclipseTextChange? change) {
+            
+            value image = switch (icon)
+            case (is Declaration) CeylonLabelProvider.getImageForDeclaration(icon)
+            else eclipseIcons.fromIcons(icon);
+            
+            proposals.add(GenericProposal(description, text, region, change, image));
+        }
+    }
 }
 
 shared class EclipseProposalsHolder() satisfies ProposalsHolder {
@@ -325,4 +359,45 @@ shared class EclipseProposalsHolder() satisfies ProposalsHolder {
     }
 
     size => proposals.size;
+}
+
+class GenericProposal(String description, String text, DefaultRegion region,
+    EclipseTextChange? change, shared actual Image? image)
+        satisfies IEclipseCompletionProposal2And6 {
+    
+    shared actual String? additionalProposalInfo => null;
+    
+    shared actual void apply(IDocument iDocument) {
+        iDocument.replace(region.start, region.length, text);
+        
+        if (exists change) {
+            change.apply();
+        }
+    }
+    
+    shared actual void apply(ITextViewer viewer, Character char,
+        Integer int, Integer int1) {
+        
+        apply(viewer.document);
+    }
+    
+    shared actual IContextInformation? contextInformation => null;
+    
+    shared actual String displayString => description;
+    
+    shared actual Point? getSelection(IDocument? iDocument) => null;
+    
+    shared actual void selected(ITextViewer? iTextViewer, Boolean boolean) {}
+    
+    shared actual StyledString styledDisplayString {
+        value result = StyledString();
+        Highlights.styleFragment(result, displayString, false, null,
+            CeylonPlugin.completionFont);
+        return result;
+    }
+    
+    shared actual void unselected(ITextViewer? iTextViewer) {}
+    
+    shared actual Boolean validate(IDocument? iDocument, Integer int,
+        DocumentEvent? documentEvent) => true; // TODO
 }

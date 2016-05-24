@@ -5,7 +5,8 @@ import com.redhat.ceylon.eclipse.code.correct {
     EclipseDocument
 }
 import com.redhat.ceylon.eclipse.code.editor {
-    Navigation
+    Navigation,
+    CeylonEditor
 }
 import com.redhat.ceylon.eclipse.util {
     EditorUtil
@@ -66,9 +67,12 @@ object eclipsePlatformServices satisfies PlatformServices {
             => unsafeCast<VfsServices<NativeProject,NativeResource,NativeFolder,NativeFile>>
                     (eclipseVfsServices);
     
-    gotoLocation(Unit unit, Integer offset, Integer length)
-            => Navigation.gotoLocation(unit, offset, length);
-    
+    shared actual EclipseDocument? gotoLocation(Unit unit, Integer offset, Integer length) {
+        if (is CeylonEditor editor = Navigation.gotoLocation(unit, offset, length)) {
+            return EclipseDocument(editor.ceylonSourceViewer.document);
+        }
+        return null;
+    }
     
     createLinkedMode(CommonDocument document)
             => if (is EclipseDocument document)
@@ -125,7 +129,11 @@ shared class EclipseTextChange(String desc, CommonDocument|PhasedUnit|ETextChang
     
     initMultiEdit() => nativeChange.edit = MultiTextEdit();
     
-    apply() => EditorUtil.performChange(nativeChange);
+    shared actual Boolean apply() {
+        value ret = EditorUtil.performChange(nativeChange);
+        doc.document = EditorUtil.getDocument(nativeChange);
+        return ret;
+    }
     
     offset => nativeChange.edit.offset;
     length => nativeChange.edit.length;

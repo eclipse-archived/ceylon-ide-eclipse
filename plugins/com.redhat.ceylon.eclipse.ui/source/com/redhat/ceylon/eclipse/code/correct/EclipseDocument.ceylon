@@ -7,7 +7,7 @@ import org.eclipse.jface.text {
     IDocumentExtension4
 }
 
-shared class EclipseDocument(shared IDocument document) 
+shared class EclipseDocument(shared variable IDocument document) 
         satisfies CommonDocument {
     
     getLineContent(Integer line)
@@ -28,10 +28,18 @@ shared class EclipseDocument(shared IDocument document)
             => document.get(offset, length);
     
     defaultLineDelimiter
-            => if (is IDocumentExtension4 document)
-                then document.defaultLineDelimiter
+            => if (is IDocumentExtension4 d = document)
+                then d.defaultLineDelimiter
                 else operatingSystem.newline;
 
-
     size => document.length;
+    
+    shared actual Boolean equals(Object that) {
+        if (is EclipseDocument that) {
+            return document==that.document;
+        }
+        else {
+            return false;
+        }
+    }
 }

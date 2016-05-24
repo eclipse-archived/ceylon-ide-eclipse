@@ -84,21 +84,21 @@ class EclipseInitializerProposal(
         extends CorrectionProposal(name, change, selection, image)
         satisfies AbstractInitializerQuickFix {
 
-    shared actual void newNestedCompletionProposal(ProposalsHolder proposals,
-        Declaration dec, Integer offset) {
-        
-        if (is EclipseProposalsHolder proposals) {
-            proposals.add(NestedCompletionProposal(dec, offset));
-        }
-    }
-    
-    shared actual void newNestedLiteralCompletionProposal(ProposalsHolder proposals,
-        String val, Integer offset) {
-        
-        if (is EclipseProposalsHolder proposals) {
-            proposals.add(NestedLiteralCompletionProposal(val, offset));
-        }
-    }
+    //shared actual void newNestedCompletionProposal(ProposalsHolder proposals,
+    //    Declaration dec, Integer offset) {
+    //    
+    //    if (is EclipseProposalsHolder proposals) {
+    //        proposals.add(NestedCompletionProposal(dec, offset));
+    //    }
+    //}
+    //
+    //shared actual void newNestedLiteralCompletionProposal(ProposalsHolder proposals,
+    //    String val, Integer offset) {
+    //    
+    //    if (is EclipseProposalsHolder proposals) {
+    //        proposals.add(NestedLiteralCompletionProposal(val, offset));
+    //    }
+    //}
     
     //we don't apply a selection because:
     //1. we're using linked mode anyway, and
