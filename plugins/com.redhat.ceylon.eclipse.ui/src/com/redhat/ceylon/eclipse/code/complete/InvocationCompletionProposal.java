@@ -1189,7 +1189,7 @@ public class InvocationCompletionProposal extends CompletionProposal {
                 Scope scope, LocalAnalysisResult cpc, 
                 boolean namedInvocation) {
             super(offset, "", "show parameters", "", dec, 
-                    producedReference, scope, (CeylonParseController) cpc, true, 
+                    producedReference, scope, ((EclipseCompletionContext) cpc).getCpc(), true, 
                     true, namedInvocation, false, false,
                     null);
         }
