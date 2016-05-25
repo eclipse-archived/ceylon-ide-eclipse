@@ -13,10 +13,7 @@ import com.redhat.ceylon.compiler.typechecker.tree {
 import com.redhat.ceylon.eclipse.code.complete {
     EclipseInvocationCompletionProposal,
     RefinementCompletionProposal,
-    BasicCompletionProposal,
     ParametersCompletionProposal,
-    KeywordCompletionProposal,
-    CompletionProposal,
     EclipseControlStructureProposal,
     ModuleCompletions,
     EclipseImportedModulePackageProposal,
@@ -24,7 +21,8 @@ import com.redhat.ceylon.eclipse.code.complete {
     PackageCompletions,
     EclipseFunctionCompletionProposal,
     EclipseCompletionContext,
-    IEclipseCompletionProposal2And6
+    IEclipseCompletionProposal2And6,
+    proposalFactory
 }
 import com.redhat.ceylon.eclipse.code.correct {
     TypeProposal
@@ -33,17 +31,26 @@ import com.redhat.ceylon.eclipse.code.outline {
     CeylonLabelProvider
 }
 import com.redhat.ceylon.eclipse.ui {
-    CeylonResources,
     CeylonPlugin
 }
+import com.redhat.ceylon.eclipse.util {
+    eclipseIcons,
+    Highlights
+}
 import com.redhat.ceylon.ide.common.completion {
-    isModuleDescriptor,
     CompletionContext,
-    ProposalsHolder
+    ProposalsHolder,
+    ProposalKind
+}
+import com.redhat.ceylon.ide.common.doc {
+    Icons
 }
 import com.redhat.ceylon.ide.common.platform {
     CompletionServices,
     TextChange
+}
+import com.redhat.ceylon.ide.common.refactoring {
+    DefaultRegion
 }
 import com.redhat.ceylon.model.typechecker.model {
     Declaration,
@@ -67,22 +74,12 @@ import org.eclipse.jface.text.contentassist {
     ICompletionProposal,
     IContextInformation
 }
-import org.eclipse.swt.graphics {
-    Point,
-    Image
-}
-import com.redhat.ceylon.ide.common.doc {
-    Icons
-}
-import com.redhat.ceylon.eclipse.util {
-    eclipseIcons,
-    Highlights
-}
 import org.eclipse.jface.viewers {
     StyledString
 }
-import com.redhat.ceylon.ide.common.refactoring {
-    DefaultRegion
+import org.eclipse.swt.graphics {
+    Point,
+    Image
 }
 
 object eclipseCompletionServices satisfies CompletionServices {
@@ -140,68 +137,12 @@ object eclipseCompletionServices satisfies CompletionServices {
         }
     }
     
-    shared actual void newMemberNameCompletionProposal(CompletionContext ctx, Integer offset, 
-        String prefix, String name, String unquotedName) {
-        
-        if (is EclipseCompletionContext ctx) {
-            ctx.proposals.add(CompletionProposal(offset, prefix, 
-                CeylonResources.\iLOCAL_NAME, 
-                unquotedName, name));
-        }
-    }
-    
-    shared actual void newKeywordCompletionProposal(CompletionContext ctx, Integer offset, 
-        String prefix, String keyword, String text) {
-        
-        if (is EclipseCompletionContext ctx) {
-            ctx.proposals.add(KeywordCompletionProposal(offset, prefix, keyword, text));
-        }
-    }
-    
-    shared actual ICompletionProposal newAnonFunctionProposal(CompletionContext ctx,
-        Integer _offset, Type? requiredType, Unit unit, 
-        String _text, String header, Boolean isVoid, 
-        Integer selectionStart, Integer selectionLength) {
-        
-        value largeCorrectionImage 
-                = CeylonLabelProvider.getDecoratedImage(
-            CeylonResources.\iCEYLON_CORRECTION, 
-            0, false);
-        return object 
-                extends CompletionProposal(_offset, "", 
-            largeCorrectionImage, _text, _text) {
-            getSelection(IDocument document) 
-                    => Point(selectionStart, selectionLength);
-        };
-    }
-    
-    shared actual void newBasicCompletionProposal(CompletionContext ctx, Integer offset, String prefix,
-        String text, String escapedText, Declaration decl) {
-        
-        if (is EclipseCompletionContext ctx) {
-            ctx.proposals.add(BasicCompletionProposal(offset, prefix, text, 
-                escapedText, decl, ctx));
-        }
-    }
-
     shared actual void newPackageDescriptorProposal(CompletionContext ctx, Integer offset, String prefix, 
         String desc, String text) {
         
         if (is EclipseCompletionContext ctx) {
             ctx.proposals.add(PackageCompletions.PackageDescriptorProposal(
                 offset, prefix, desc, text));
-        }
-    }
-    
-    shared actual void newCurrentPackageProposal(Integer offset, String prefix, 
-        String packageName, CompletionContext ctx) {
-        
-        if (is EclipseCompletionContext ctx) {
-            ctx.proposals.add(CompletionProposal(offset, prefix, 
-                if (isModuleDescriptor(ctx.lastCompilationUnit)) 
-                then CeylonResources.\iMODULE 
-                else CeylonResources.\iPACKAGE,
-                packageName, packageName));
         }
     }
     
@@ -334,17 +275,30 @@ object eclipseCompletionServices satisfies CompletionServices {
     
     createProposalsHolder() => EclipseProposalsHolder();
     
-    shared actual void addProposal(ProposalsHolder proposals, Icons|Declaration icon, 
-        String description, DefaultRegion region, String text, TextChange? change) {
+    shared actual void addNestedProposal(ProposalsHolder proposals, Icons|Declaration icon,
+        String description, DefaultRegion region, String text) {
         
-        if (is EclipseProposalsHolder proposals,
-            is EclipseTextChange? change) {
+        if (is EclipseProposalsHolder proposals) {
             
             value image = switch (icon)
             case (is Declaration) CeylonLabelProvider.getImageForDeclaration(icon)
             else eclipseIcons.fromIcons(icon);
             
-            proposals.add(GenericProposal(description, text, region, change, image));
+            proposals.add(GenericProposal(description, text, region, image));
+        }
+    }
+    
+    shared actual void addProposal(CompletionContext ctx, Integer offset, 
+        String prefix, Icons|Declaration icon, String description, String text,
+        ProposalKind kind, TextChange? additionalChange, DefaultRegion? selection) {
+        
+        if (is EclipseCompletionContext ctx) {
+            value point = if (exists selection)
+            then Point(selection.start, selection.length)
+            else null;
+            
+            ctx.proposals.add(proposalFactory.create(ctx, offset, prefix, icon,
+                description, text, kind, additionalChange, point));
         }
     }
 }
@@ -362,17 +316,13 @@ shared class EclipseProposalsHolder() satisfies ProposalsHolder {
 }
 
 class GenericProposal(String description, String text, DefaultRegion region,
-    EclipseTextChange? change, shared actual Image? image)
+    shared actual Image? image)
         satisfies IEclipseCompletionProposal2And6 {
     
     shared actual String? additionalProposalInfo => null;
     
     shared actual void apply(IDocument iDocument) {
         iDocument.replace(region.start, region.length, text);
-        
-        if (exists change) {
-            change.apply();
-        }
     }
     
     shared actual void apply(ITextViewer viewer, Character char,
