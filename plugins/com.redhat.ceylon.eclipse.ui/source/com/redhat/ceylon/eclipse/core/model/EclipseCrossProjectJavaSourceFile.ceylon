@@ -1,5 +1,6 @@
 import com.redhat.ceylon.ide.common.model {
-    JavaCompilationUnit
+    BaseCeylonProject,
+    CrossProjectJavaCompilationUnit
 }
 import com.redhat.ceylon.model.loader.model {
     LazyPackage
@@ -19,13 +20,14 @@ import org.eclipse.jdt.core {
     IJavaElement
 }
 
-shared class EclipseJavaCompilationUnit(
+shared class EclipseCrossProjectJavaCompilationUnit(
+    BaseCeylonProject ceylonProject,
     ITypeRoot typeRoot,
     String theFilename,
     String theRelativePath,
     String theFullPath,
     LazyPackage pkg)
-        extends JavaCompilationUnit<IProject, IFolder, IFile, ITypeRoot, IJavaElement>(typeRoot, theFilename, theRelativePath, theFullPath, pkg) 
+        extends CrossProjectJavaCompilationUnit<IProject, IFolder, IFile, ITypeRoot, IJavaElement>(ceylonProject, typeRoot, theFilename, theRelativePath, theFullPath, pkg) 
         satisfies EclipseJavaModelAware
         & EclipseJavaUnitUtils {
     shared actual variable SoftReference<EclipseJavaModelAware.ResolvedElements> resolvedElementsRef = 

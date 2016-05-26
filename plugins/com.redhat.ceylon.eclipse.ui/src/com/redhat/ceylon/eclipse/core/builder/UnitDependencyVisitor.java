@@ -22,6 +22,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
 import com.redhat.ceylon.ide.common.model.ICrossProjectReference;
+import com.redhat.ceylon.ide.common.model.IdeUnit;
 import com.redhat.ceylon.ide.common.model.JavaClassFile;
 import com.redhat.ceylon.ide.common.model.JavaCompilationUnit;
 import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
@@ -149,7 +150,7 @@ public class UnitDependencyVisitor extends Visitor {
             else if (declarationUnit instanceof ICrossProjectReference) {
                 ICrossProjectReference crossProjectReference = 
                         (ICrossProjectReference) declarationUnit;
-                ProjectSourceFile originalProjectSourceFile = 
+                IdeUnit originalProjectSourceFile = 
                         crossProjectReference.getOriginalSourceFile();
                 if (originalProjectSourceFile != null) {
                     originalProjectSourceFile.getDependentsOf()

@@ -38,7 +38,6 @@ import com.redhat.ceylon.model.loader.model {
 }
 import com.redhat.ceylon.model.typechecker.model {
     Modules,
-    Unit,
     Declaration,
     ClassOrInterface
 }
@@ -485,15 +484,7 @@ shared class JDTModelLoader
         }
         return super.isDeprecated(classMirror);
     }
-    shared actual ITypeRoot? getJavaClassRoot(ClassMirror classMirror) {
-        if (is JDTClass jdtClass=classMirror) {
-            IType? type = jdtClass.type;
-            if (exists type) {
-                return type.typeRoot;
-            }
-        }
-        return null;
-    }
+
     shared actual Boolean isOverloadingMethod(MethodMirror? methodMirror)  => 
             unsafeCast<JDTMethod>(methodMirror).overloadingMethod;
     
@@ -531,18 +522,6 @@ shared class JDTModelLoader
         }
         return false;
     }
-    
-    shared actual Unit newCeylonBinaryUnit(ITypeRoot typeRoot, String relativePath, String fileName, String fullPath, LazyPackage pkg) => 
-            EclipseCeylonBinaryUnit(typeRoot, fileName, relativePath, fullPath, pkg);
-
-    shared actual Unit newCrossProjectBinaryUnit(ITypeRoot typeRoot, String relativePath, String fileName, String fullPath, LazyPackage pkg) => 
-            EclipseCrossProjectBinaryUnit(typeRoot, fileName, relativePath, fullPath, pkg);
-
-    shared actual Unit newJavaClassFile(ITypeRoot typeRoot, String relativePath, String fileName, String fullPath, LazyPackage pkg) => 
-            EclipseJavaClassFile(typeRoot, fileName, relativePath, fullPath, pkg);
-
-    shared actual Unit newJavaCompilationUnit(ITypeRoot typeRoot, String relativePath, String fileName, String fullPath, LazyPackage pkg) => 
-            EclipseJavaCompilationUnit(typeRoot, fileName, relativePath, fullPath, pkg);
     
     shared actual String typeName(IType type) => type.elementName;
 

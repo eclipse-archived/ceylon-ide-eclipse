@@ -21,7 +21,8 @@ import com.redhat.ceylon.ide.common.platform {
     ReplaceEdit,
     CompositeChange,
     CommonDocument,
-    NoopLinkedMode
+    NoopLinkedMode,
+    JavaModelServices
 }
 import com.redhat.ceylon.ide.common.typechecker {
     ModifiablePhasedUnit
@@ -62,6 +63,11 @@ object eclipsePlatformServices satisfies PlatformServices {
             => unsafeCast<ModelServices<NativeProject,NativeResource,NativeFolder,NativeFile>>
                     (eclipseModelServices);
     
+    shared actual JavaModelServices<JavaClassRoot>
+            javaModel<JavaClassRoot>() 
+            => unsafeCast<JavaModelServices<JavaClassRoot>>
+            (eclipseJavaModelServices);
+
     shared actual VfsServices<NativeProject,NativeResource,NativeFolder,NativeFile> 
             vfs<NativeProject, NativeResource, NativeFolder, NativeFile>() 
             => unsafeCast<VfsServices<NativeProject,NativeResource,NativeFolder,NativeFile>>

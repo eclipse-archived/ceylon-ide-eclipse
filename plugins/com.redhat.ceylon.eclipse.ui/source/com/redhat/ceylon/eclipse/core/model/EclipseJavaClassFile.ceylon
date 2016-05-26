@@ -1,8 +1,8 @@
 import com.redhat.ceylon.ide.common.model {
     JavaClassFile
 }
-import com.redhat.ceylon.model.typechecker.model {
-    Package
+import com.redhat.ceylon.model.loader.model {
+    LazyPackage
 }
 
 import java.lang.ref {
@@ -23,7 +23,7 @@ shared class EclipseJavaClassFile(
     String theFilename,
     String theRelativePath,
     String theFullPath,
-    Package pkg)
+    LazyPackage pkg)
         extends JavaClassFile<IProject, IFolder, IFile, ITypeRoot, IJavaElement>(typeRoot, theFilename, theRelativePath, theFullPath, pkg) 
         satisfies EclipseJavaModelAware
         & EclipseJavaUnitUtils {
