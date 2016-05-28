@@ -61,35 +61,49 @@ shared class EclipseQuickFixData(ProblemLocation location,
     
     phasedUnit => editor.parseController.lastPhasedUnit;
     document = EclipseDocument(doc);
-    editorSelection => DefaultRegion(editor.selection.offset, editor.selection.length);
+    editorSelection => DefaultRegion {
+        start = editor.selection.offset;
+        length = editor.selection.length;
+    };
     
-    shared actual void addQuickFix(String desc, CommonTextChange|Callable<Anything, []> change,
-        DefaultRegion? selection, Boolean qualifiedNameIsPath, Icons? icon,
+    shared actual void addQuickFix(String desc, 
+        CommonTextChange|Anything() change,
+        DefaultRegion? selection, 
+        Boolean qualifiedNameIsPath, 
+        Icons? icon,
         QuickFixKind kind) {
         
-        value myImage = eclipseIcons.fromIcons(icon) else CeylonResources.minorChange;
+        value myImage 
+                = eclipseIcons.fromIcons(icon) 
+                else CeylonResources.minorChange;
 
         if (is EclipseTextChange change) {
             proposals.add(
-                proposalsFactory.createProposal(desc, change, selection,
-                    qualifiedNameIsPath, myImage, kind)
-            );
-        } else if (is Callable<Anything, []> callback = change) {
-            proposals.add(object extends CorrectionProposal(desc, null, null, myImage, qualifiedNameIsPath) {
-                shared actual void apply(IDocument? iDocument) {
-                    callback();
+                proposalsFactory.createProposal {
+                    description = desc;
+                    change = change;
+                    selection = selection;
+                    qualifiedNameIsPath = qualifiedNameIsPath;
+                    myImage = myImage;
+                    kind = kind;
                 }
+            );
+        } else if (is Anything() callback = change) {
+            proposals.add(object extends CorrectionProposal
+                (desc, null, null, myImage, qualifiedNameIsPath) {
+                apply(IDocument? doc) => callback();
             });
         }
     }
     
-    shared actual void addConvertToClassProposal(String description, 
-        Tree.ObjectDefinition declaration) {
+    addConvertToClassProposal(String description, 
+        Tree.ObjectDefinition declaration) 
+            => proposals.add(EclipseConvertToClassProposal {
+                desc = description;
+                editor = editor;
+                declaration = declaration;
+            });
         
-        proposals.add(EclipseConvertToClassProposal(description, editor, declaration));
-    }
-    
-    shared actual void addAssignToLocalProposal(String description) {
-        proposals.add(EclipseAssignToLocalProposal(this, description));
-    }
+    addAssignToLocalProposal(String description) 
+            => proposals.add(EclipseAssignToLocalProposal(this, description));
 }

@@ -64,16 +64,19 @@ object proposalsFactory {
             value region = toRegion(selection);
             
             Builder builder = switch (kind)
-            case (addConstructor) createProposalWithShortcut("addConstructor")
-            case (addParameterList) createProposalWithShortcut("addParameterList")
-            case (addRefineEqualsHash) createProposalWithShortcut("refineEqualsHash")
-            case (addRefineFormal) createProposalWithShortcut("refineFormalMembers")
+            case (addConstructor) 
+                createProposalWithShortcut("addConstructor")
+            case (addParameterList) 
+                createProposalWithShortcut("addParameterList")
+            case (addRefineEqualsHash) 
+                createProposalWithShortcut("refineEqualsHash")
+            case (addRefineFormal) 
+                createProposalWithShortcut("refineFormalMembers")
             else createGenericChangeProposal;
             
-            return builder(description, change.nativeChange, region,
-                myImage, qualifiedNameIsPath);
+            return builder(description, change.nativeChange, region, myImage, qualifiedNameIsPath);
             
-        } else if (is Callable<Anything, []> callback = change) {
+        } else if (is Anything() callback = change) {
             
             return object satisfies ICompletionProposal
                                   & ICompletionProposalExtension6 {
@@ -108,14 +111,12 @@ object proposalsFactory {
 
     ICompletionProposal createProposalWithShortcut
     (String name)
-    (String description,TextChange chg, Region? region, Image? img, Boolean qualifiedNameIsPath) {
-        
-        return object extends CorrectionProposal(description, chg, region, img, qualifiedNameIsPath) {
-             styledDisplayString
-                    => let (hint = shortcut("com.redhat.ceylon.eclipse.ui.action." + name))
-                       styleProposal(displayString, false).append(hint, qualifierStyler);
-        };
-    }
+    (String description,TextChange chg, Region? region, Image? img, Boolean qualifiedNameIsPath) 
+            => object extends CorrectionProposal(description, chg, region, img, qualifiedNameIsPath) {
+        styledDisplayString
+                => let (hint = shortcut("com.redhat.ceylon.eclipse.ui.action." + name))
+                styleProposal(displayString, false).append(hint, qualifierStyler);
+    };
     
     Region? toRegion(DefaultRegion? reg)
             => if (exists reg)
