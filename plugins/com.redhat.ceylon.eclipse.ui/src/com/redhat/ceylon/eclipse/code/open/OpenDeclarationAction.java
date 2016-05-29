@@ -29,7 +29,8 @@ public class OpenDeclarationAction extends Action {
     public OpenDeclarationAction(String text, IEditorPart editor) {
         super(text);
         this.editor = editor;
-        setActionDefinitionId(PLUGIN_ID + ".action.openDeclaration");
+        setActionDefinitionId(PLUGIN_ID 
+                + ".action.openDeclaration");
         setImageDescriptor(ICON);
     }
     
@@ -37,7 +38,9 @@ public class OpenDeclarationAction extends Action {
     public void run() {
         OpenDeclarationDialog dialog = 
                 new OpenDeclarationDialog(true, true, 
-                        getWorkbench().getActiveWorkbenchWindow().getShell(), 
+                        getWorkbench()
+                            .getActiveWorkbenchWindow()
+                            .getShell(),
                         "Open Declaration",
                         "&Type part of a name, with wildcard *, or a camel hump pattern, with . to display members:",
                         "&Select one or more declarations to open in editors:");

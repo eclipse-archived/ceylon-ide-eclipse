@@ -23,7 +23,8 @@ public class OpenDeclarationInHierarchyAction extends Action {
     public OpenDeclarationInHierarchyAction(String text, IEditorPart editor) {
         super(text);
         this.editor = editor;
-        setActionDefinitionId(PLUGIN_ID + ".action.openDeclarationInHierarchy");
+        setActionDefinitionId(PLUGIN_ID 
+                + ".action.openDeclarationInHierarchy");
 //        setImageDescriptor(CeylonPlugin.getInstance().getImageRegistry()
 //                .getDescriptor(CeylonResources.CEYLON_OPEN_DECLARATION));
     }
@@ -32,7 +33,9 @@ public class OpenDeclarationInHierarchyAction extends Action {
     public void run() {
         OpenDeclarationDialog dialog = 
                 new OpenDeclarationDialog(false, true, 
-                        getWorkbench().getActiveWorkbenchWindow().getShell(), 
+                        getWorkbench()
+                            .getActiveWorkbenchWindow()
+                            .getShell(),
                         "Open in Type Hierarchy View",
                         "&Type part of a name, with wildcard *, or a camel hump pattern, with . to display members:",
                         "&Select a declaration to open in hierarchy view:");

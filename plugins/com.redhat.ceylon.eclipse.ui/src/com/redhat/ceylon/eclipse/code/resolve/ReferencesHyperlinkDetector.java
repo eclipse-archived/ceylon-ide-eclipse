@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
+import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
@@ -10,11 +11,13 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
+import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
+import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
@@ -80,7 +83,43 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
 
         @Override
         public String getHyperlinkText() {
-            return "Go to Refined Declaration";
+            return "Refined Declaration";
+        }
+
+        @Override
+        public IRegion getHyperlinkRegion() {
+            return new Region(id.getStartIndex(), 
+                              id.getDistance());
+        }
+    }
+
+    private final class CeylonHierarchyLink implements IHyperlink {
+        private final Declaration dec;
+        private final Node id;
+
+        private CeylonHierarchyLink(Declaration dec, Node id) {
+            this.dec = dec;
+            this.id = id;
+        }
+
+        @Override
+        public void open() {
+            try {
+                showHierarchyView().focusOn(dec);
+            }
+            catch (PartInitException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public String getTypeLabel() {
+            return null;
+        }
+
+        @Override
+        public String getHyperlinkText() {
+            return "Type Hierarchy View";
         }
 
         @Override
@@ -125,9 +164,17 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
                                 if (refined!=null) {
                                     return new IHyperlink[] {
                                         new CeylonRefinementLink(refined, id),
-                                        new CeylonReferencesLink(referenceable, id)
+                                        new CeylonReferencesLink(referenceable, id),
+                                        new CeylonHierarchyLink(dec, id)
                                     };
                                 }
+                            }
+                            if (dec.isFormal() || dec.isDefault() ||
+                                    dec instanceof ClassOrInterface) {
+                                return new IHyperlink[] {
+                                    new CeylonReferencesLink(referenceable, id),
+                                    new CeylonHierarchyLink(dec, id)
+                                };
                             }
                         }
                         return new IHyperlink[] {
