@@ -82,7 +82,8 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
         CeylonPlugin.getPreferences()
             .addPropertyChangeListener(
                     propertyChangeListener);
-        getWorkbench().getThemeManager()
+        getWorkbench()
+            .getThemeManager()
             .addPropertyChangeListener(
                     propertyChangeListener);
     }
@@ -94,7 +95,8 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             CeylonPlugin.getPreferences()
                 .removePropertyChangeListener(
                         propertyChangeListener);
-            getWorkbench().getThemeManager()
+            getWorkbench()
+                .getThemeManager()
                 .removePropertyChangeListener(
                         propertyChangeListener);
             propertyChangeListener = null;
@@ -330,15 +332,24 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     @Override
     protected void fillToolbar(IToolBarManager tbm) {
         super.fillToolbar(tbm);
+        
         tbm.appendToGroup(GROUP_VIEWER_SETUP, 
                 new Separator(GROUP_LAYOUT));
         tbm.appendToGroup(GROUP_LAYOUT, fLayoutFlatAction);
         tbm.appendToGroup(GROUP_LAYOUT, fLayoutTreeAction);
-        tbm.appendToGroup(GROUP_VIEWER_SETUP, 
-                new Separator(GROUP_CATEGORIES));
-        tbm.appendToGroup(GROUP_CATEGORIES, fCategoriesAction);
         updateLayoutActions();
+        
         if (getLayout() != FLAG_LAYOUT_FLAT) {
+            
+            tbm.appendToGroup(GROUP_VIEWER_SETUP, 
+                    new Separator(GROUP_CATEGORIES));
+            tbm.appendToGroup(GROUP_CATEGORIES, fCategoriesAction);
+            fShowCategories = 
+                    getSettings()
+                        .getBoolean(KEY_CATEGORIES);
+            contentProvider.setShowCategories(fShowCategories);
+            updateCategoriesAction();
+            
             tbm.appendToGroup(GROUP_VIEWER_SETUP, 
                     new Separator(GROUP_GROUPING));
             tbm.appendToGroup(GROUP_GROUPING, 
@@ -362,14 +373,16 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
             }
             contentProvider.setLevel(fCurrentGrouping);
             updateGroupingActions();
-            fShowCategories = 
-                    getSettings()
-                        .getBoolean(KEY_CATEGORIES);
-            contentProvider.setShowCategories(fShowCategories);
+            
         }
+        
         getSite()
             .getActionBars()
             .updateActionBars();
+    }
+
+    private void updateCategoriesAction() {
+        fCategoriesAction.setChecked(fShowCategories);
     }
     
     @Override
@@ -494,6 +507,7 @@ public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     void setShowCategories() {
         fShowCategories = !fShowCategories;
         contentProvider.setShowCategories(fShowCategories);
+        updateCategoriesAction();
         getSettings().put(KEY_CATEGORIES, fShowCategories);
     }
 }
