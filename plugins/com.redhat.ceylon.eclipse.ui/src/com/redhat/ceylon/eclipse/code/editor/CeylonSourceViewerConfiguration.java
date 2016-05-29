@@ -66,6 +66,7 @@ import com.redhat.ceylon.eclipse.code.resolve.CeylonJavaBackendHyperlinkDetector
 import com.redhat.ceylon.eclipse.code.resolve.CeylonJavascriptBackendHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.resolve.CeylonNativeHeaderHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.resolve.JavaHyperlinkDetector;
+import com.redhat.ceylon.eclipse.code.resolve.ReferencesHyperlinkDetector;
 import com.redhat.ceylon.eclipse.code.search.ReferencesPopup;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
@@ -241,7 +242,9 @@ public class CeylonSourceViewerConfiguration
                             editor, controller), 
                     new CeylonJavascriptBackendHyperlinkDetector(
                             editor, controller), 
-                    new JavaHyperlinkDetector(controller) 
+                    new JavaHyperlinkDetector(controller),
+                    new ReferencesHyperlinkDetector(
+                            editor, controller)
                 };
         }
     }

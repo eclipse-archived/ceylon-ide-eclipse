@@ -26,7 +26,6 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
 import com.redhat.ceylon.ide.common.model.CeylonUnit;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
 abstract class AbstractFindAction extends Action 
@@ -146,7 +145,7 @@ abstract class AbstractFindAction extends Action
     }
     
     AbstractFindAction(String text, IEditorPart editor, 
-            Declaration dec) {
+            Referenceable dec) {
         super(text);
         shell = editor.getSite().getShell();
         project = editor==null ? null : getProject(editor);

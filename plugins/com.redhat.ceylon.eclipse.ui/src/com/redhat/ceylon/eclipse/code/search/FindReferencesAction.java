@@ -11,13 +11,13 @@ import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
 
 public class FindReferencesAction extends AbstractFindAction {
 
@@ -101,7 +101,7 @@ public class FindReferencesAction extends AbstractFindAction {
         setActionDefinitionId(PLUGIN_ID + ".action.findReferences");
     }
     
-    public FindReferencesAction(IEditorPart editor, Declaration dec) {
+    public FindReferencesAction(IEditorPart editor, Referenceable dec) {
         super("Find References", editor, dec);
         setActionDefinitionId(PLUGIN_ID + ".action.findReferences");
     }

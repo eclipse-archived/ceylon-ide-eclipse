@@ -66,8 +66,8 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                             " \u2014 " +
                             (supportedBackends.header() ?
                                     "native header" :
-                                        supportedBackends +
-                                        " backend implementation"));
+                                    supportedBackends +
+                                    " backend implementation"));
         }
 
         @Override
@@ -75,7 +75,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
             return new Region(id.getStartIndex(), id.getDistance());
         }
     }
-
+    
     @Override
     public IHyperlink[] detectHyperlinks(ITextViewer textViewer, 
             IRegion region, boolean canShowMultipleHyperlinks) {
@@ -140,7 +140,9 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                         return null;
                     }
                     else {
-                        return new IHyperlink[] { new CeylonNodeLink(r, id) };
+                        return new IHyperlink[] {
+                            new CeylonNodeLink(r, id)
+                        };
                     }
                 }
             }
