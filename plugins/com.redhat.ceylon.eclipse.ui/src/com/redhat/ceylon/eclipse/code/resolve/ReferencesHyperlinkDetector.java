@@ -98,7 +98,7 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
         }
     }
 
-    private final class CeylonReferencesLink implements IHyperlink {
+    /*private final class CeylonReferencesLink implements IHyperlink {
         private final Referenceable dec;
         private final Node id;
 
@@ -127,7 +127,7 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
             return new Region(id.getStartIndex(), 
                               id.getDistance());
         }
-    }
+    }*/
 
     private final class CeylonRefinementLink implements IHyperlink {
         private final Referenceable dec;
@@ -191,7 +191,7 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
         }
     }
 
-    private final class CeylonHierarchyLink implements IHyperlink {
+    /*private final class CeylonHierarchyLink implements IHyperlink {
         private final Declaration dec;
         private final Node id;
 
@@ -225,7 +225,7 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
             return new Region(id.getStartIndex(), 
                               id.getDistance());
         }
-    }
+    }*/
 
     @Override
     public IHyperlink[] detectHyperlinks(ITextViewer textViewer, 
@@ -269,8 +269,8 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
                                                 new CeylonQuickHierarchyLink(id),
                                                 new CeylonRefinementLink(refined, id),
                                                 new CeylonTypeLink(type, id),
-                                                new CeylonReferencesLink(referenceable, id),
-                                                new CeylonHierarchyLink(dec, id)
+//                                                new CeylonReferencesLink(referenceable, id),
+//                                                new CeylonHierarchyLink(dec, id)
                                             };
                                         }
                                     }
@@ -278,8 +278,8 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
                                         new CeylonQuickReferencesLink(id),
                                         new CeylonQuickHierarchyLink(id),
                                         new CeylonRefinementLink(refined, id),
-                                        new CeylonReferencesLink(referenceable, id),
-                                        new CeylonHierarchyLink(dec, id)
+//                                        new CeylonReferencesLink(referenceable, id),
+//                                        new CeylonHierarchyLink(dec, id)
                                     };
                                 }
                             }
@@ -292,16 +292,16 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
                                             new CeylonQuickReferencesLink(id),
                                             new CeylonQuickHierarchyLink(id),
                                             new CeylonTypeLink(type, id),
-                                            new CeylonReferencesLink(referenceable, id),
-                                            new CeylonHierarchyLink(dec, id)
+//                                            new CeylonReferencesLink(referenceable, id),
+//                                            new CeylonHierarchyLink(dec, id)
                                         };
                                     }
                                 }
                                 return new IHyperlink[] {
                                     new CeylonQuickReferencesLink(id),
                                     new CeylonQuickHierarchyLink(id),
-                                    new CeylonReferencesLink(referenceable, id),
-                                    new CeylonHierarchyLink(dec, id)
+//                                    new CeylonReferencesLink(referenceable, id),
+//                                    new CeylonHierarchyLink(dec, id)
                                 };
                             }
                             if (dec instanceof TypedDeclaration) {
@@ -310,18 +310,18 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
                                     return new IHyperlink[] {
                                         new CeylonQuickReferencesLink(id),
                                         new CeylonTypeLink(type, id),
-                                        new CeylonReferencesLink(referenceable, id)
+//                                        new CeylonReferencesLink(referenceable, id)
                                     };
                                 }
                             }
                             return new IHyperlink[] {
                                 new CeylonQuickReferencesLink(id),
-                                new CeylonReferencesLink(referenceable, id)
+//                                new CeylonReferencesLink(referenceable, id)
                             };
                         }
                         else {
                             return new IHyperlink[] {
-                                new CeylonReferencesLink(referenceable, id)
+//                                new CeylonReferencesLink(referenceable, id)
                             };
                         }
                     }
