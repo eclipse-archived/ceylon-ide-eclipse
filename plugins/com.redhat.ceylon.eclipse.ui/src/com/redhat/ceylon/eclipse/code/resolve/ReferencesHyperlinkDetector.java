@@ -221,7 +221,8 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
                     if (referenceable!=null) {
                         if (referenceable instanceof Declaration) {
                             Declaration dec = 
-                                    (Declaration) referenceable;
+                                    (Declaration) 
+                                        referenceable;
                             if (dec.isActual()) {
                                 Declaration refined = 
                                         dec.getRefinedDeclaration();
@@ -244,11 +245,16 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
                                     new CeylonHierarchyLink(dec, id)
                                 };
                             }
+                            return new IHyperlink[] {
+                                new CeylonQuickReferencesLink(id),
+                                new CeylonReferencesLink(referenceable, id)
+                            };
                         }
-                        return new IHyperlink[] {
-                            new CeylonQuickReferencesLink(id),
-                            new CeylonReferencesLink(referenceable, id)
-                        };
+                        else {
+                            return new IHyperlink[] {
+                                new CeylonReferencesLink(referenceable, id)
+                            };
+                        }
                     }
                     else {
                         return null;
