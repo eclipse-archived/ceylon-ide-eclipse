@@ -3,7 +3,6 @@ package com.redhat.ceylon.eclipse.code.resolve;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer.SHOW_HIERARCHY;
 import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer.SHOW_REFERENCES;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
-import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
@@ -14,12 +13,10 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
-import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.search.FindReferencesAction;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
@@ -320,9 +317,10 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
                             };
                         }
                         else {
-                            return new IHyperlink[] {
+                            return null;
+//                            return new IHyperlink[] {
 //                                new CeylonReferencesLink(referenceable, id)
-                            };
+//                            };
                         }
                     }
                     else {
