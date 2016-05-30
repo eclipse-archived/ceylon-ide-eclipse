@@ -91,10 +91,13 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                             region.getOffset(), 
                             region.getOffset() +
                             region.getLength());
-            if (node==null 
-                    || node instanceof Tree.Declaration
-                    || node instanceof Tree.ModuleDescriptor
-                    || node instanceof Tree.PackageDescriptor) {
+            if (node==null) {
+                return null;
+            }
+            else if (supportedBackends()==Backends.ANY &&
+                    (node instanceof Tree.Declaration || 
+                     node instanceof Tree.ModuleDescriptor || 
+                     node instanceof Tree.PackageDescriptor)) {
                 return null;
             }
             else {
