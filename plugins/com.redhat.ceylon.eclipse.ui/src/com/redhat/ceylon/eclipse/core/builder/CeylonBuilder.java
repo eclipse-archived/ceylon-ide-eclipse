@@ -1644,7 +1644,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
         } 
         else {
-            Unit unit = getJavaUnit(getProject(), srcFile);
+            Unit unit = getJavaUnit(currentFileCeylonProject.getIdeArtifact(), srcFile);
             if (unit instanceof JavaCompilationUnit) {
                 return unit.getDependentsOf();
             }
@@ -1774,7 +1774,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                             if (isJava(fileToUpdate)) {
                                 Unit toRemove = getJavaUnit(project, fileToUpdate);
                                 if(toRemove instanceof JavaUnit) {
-                                    ((JavaUnit) toRemove).remove();
+                                    ((JavaUnit) toRemove).update();
                                 }
                                 else {
                                     String packageName = getPackageName(fileToUpdate);
