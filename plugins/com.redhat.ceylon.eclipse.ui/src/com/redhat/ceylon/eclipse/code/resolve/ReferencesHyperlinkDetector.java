@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer.SHOW_HIERARCHY;
+import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer.SHOW_REFERENCES;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
@@ -31,6 +33,68 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
         this.controller = controller;
     }
     
+    private final class CeylonQuickReferencesLink implements IHyperlink {
+        private final Node id;
+
+        private CeylonQuickReferencesLink(Node id) {
+            this.id = id;
+        }
+
+        @Override
+        public void open() {
+            //TODO: if there is just one reference,
+            //      navigate straight to it?
+            editor.getCeylonSourceViewer()
+                .doOperation(SHOW_REFERENCES);
+        }
+
+        @Override
+        public String getTypeLabel() {
+            return null;
+        }
+
+        @Override
+        public String getHyperlinkText() {
+            return "Quick References";
+        }
+
+        @Override
+        public IRegion getHyperlinkRegion() {
+            return new Region(id.getStartIndex(), 
+                              id.getDistance());
+        }
+    }
+
+    private final class CeylonQuickHierarchyLink implements IHyperlink {
+        private final Node id;
+
+        private CeylonQuickHierarchyLink(Node id) {
+            this.id = id;
+        }
+
+        @Override
+        public void open() {
+            editor.getCeylonSourceViewer()
+                .doOperation(SHOW_HIERARCHY);
+        }
+
+        @Override
+        public String getTypeLabel() {
+            return null;
+        }
+
+        @Override
+        public String getHyperlinkText() {
+            return "Quick Hierarchy";
+        }
+
+        @Override
+        public IRegion getHyperlinkRegion() {
+            return new Region(id.getStartIndex(), 
+                              id.getDistance());
+        }
+    }
+
     private final class CeylonReferencesLink implements IHyperlink {
         private final Referenceable dec;
         private final Node id;
@@ -164,6 +228,8 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
                                 if (refined!=null) {
                                     return new IHyperlink[] {
                                         new CeylonRefinementLink(refined, id),
+                                        new CeylonQuickReferencesLink(id),
+                                        new CeylonQuickHierarchyLink(id),
                                         new CeylonReferencesLink(referenceable, id),
                                         new CeylonHierarchyLink(dec, id)
                                     };
@@ -172,12 +238,15 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
                             if (dec.isFormal() || dec.isDefault() ||
                                     dec instanceof ClassOrInterface) {
                                 return new IHyperlink[] {
+                                    new CeylonQuickReferencesLink(id),
+                                    new CeylonQuickHierarchyLink(id),
                                     new CeylonReferencesLink(referenceable, id),
                                     new CeylonHierarchyLink(dec, id)
                                 };
                             }
                         }
                         return new IHyperlink[] {
+                            new CeylonQuickReferencesLink(id),
                             new CeylonReferencesLink(referenceable, id)
                         };
                     }

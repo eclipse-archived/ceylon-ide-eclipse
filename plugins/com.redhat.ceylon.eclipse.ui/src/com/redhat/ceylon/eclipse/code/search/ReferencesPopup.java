@@ -10,6 +10,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_IMPORT;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FLAT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.imageRegistry;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 import static java.util.Collections.emptySet;
