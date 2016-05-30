@@ -137,7 +137,8 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                                 return null;
                             }
                         }
-                    } else { // Module or package descriptors
+                    }
+                    else { // Module or package descriptors
                         if (!supportedBackends.none()) {
                             return null;
                         }
