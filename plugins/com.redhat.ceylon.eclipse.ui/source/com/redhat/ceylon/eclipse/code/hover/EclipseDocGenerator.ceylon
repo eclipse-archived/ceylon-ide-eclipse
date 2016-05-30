@@ -9,7 +9,6 @@ import com.redhat.ceylon.eclipse.code.html {
     HTMLPrinter
 }
 import com.redhat.ceylon.eclipse.util {
-    Nodes,
     Highlights
 }
 import com.redhat.ceylon.ide.common.doc {
@@ -205,9 +204,6 @@ class EclipseDocGenerator(CeylonEditor? editor)
     
     getPhasedUnit(Unit u)
         => if (is CeylonUnit u) then u.phasedUnit else null;
-    
-    getReferencedNode(Declaration dec) 
-            => Nodes.getReferencedNode(dec);
     
     getUnitName(Unit u)
             => if (is CeylonUnit u, 
