@@ -18,6 +18,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
 import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
@@ -90,7 +91,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                             region.getOffset(), 
                             region.getOffset() +
                             region.getLength());
-            if (node==null) {
+            if (node==null || node instanceof Tree.Declaration) {
                 return null;
             }
             else {
