@@ -10,6 +10,8 @@ import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeDeclaration;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeHeader;
 
+import java.util.List;
+
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
@@ -80,81 +82,108 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
     @Override
     public IHyperlink[] detectHyperlinks(ITextViewer textViewer, 
             IRegion region, boolean canShowMultipleHyperlinks) {
-        if (controller==null ||
-                controller.getLastCompilationUnit()==null) {
+        if (controller==null) {
             return null;
         }
-        else {
-            Node node = 
-                    findNode(controller.getLastCompilationUnit(), 
-                            controller.getTokens(), 
-                            region.getOffset(), 
-                            region.getOffset() +
-                            region.getLength());
-            if (node==null) {
+        
+        Tree.CompilationUnit rootNode = 
+                controller.getLastCompilationUnit();
+        if (rootNode==null) {
+            return null;
+        }
+        
+        Backends supportedBackends = supportedBackends();
+        
+        Node node = 
+                findNode(rootNode, 
+                        controller.getTokens(), 
+                        region.getOffset(), 
+                        region.getOffset() +
+                        region.getLength());
+        if (node==null) {
+            return null;
+        }
+        else if (node instanceof Tree.Declaration) {
+            Tree.Declaration decNode = 
+                    (Tree.Declaration) node;
+            if (decNode.getDeclarationModel()
+                    .getNativeBackends()
+                    .equals(supportedBackends)) {
                 return null;
             }
-            else if (supportedBackends()==Backends.ANY &&
-                    (node instanceof Tree.Declaration || 
-                     node instanceof Tree.ModuleDescriptor || 
-                     node instanceof Tree.PackageDescriptor)) {
+        }
+        else if (node instanceof Tree.ImportPath) {
+            List<Tree.PackageDescriptor> packageDescriptors = 
+                    rootNode.getPackageDescriptors();
+            List<Tree.ModuleDescriptor> moduleDescriptors = 
+                    rootNode.getModuleDescriptors();
+            if (!packageDescriptors.isEmpty() &&
+                    packageDescriptors.get(0)
+                        .getImportPath()
+                            == node 
+             || !moduleDescriptors.isEmpty() &&
+                    moduleDescriptors.get(0)
+                        .getImportPath()
+                            == node) {
                 return null;
             }
-            else {
-                Node id = getIdentifyingNode(node);
-                if (id==null) {
+        }
+
+        Node id = getIdentifyingNode(node);
+        if (id==null) {
+            return null;
+        }
+        
+        Referenceable referenceable = 
+                getReferencedModel(node);
+        if (referenceable==null) {
+            return null;
+        }
+        if (referenceable instanceof Declaration) {
+            Declaration dec = 
+                    (Declaration) 
+                        referenceable;
+            if (dec instanceof TypedDeclaration) {
+                Declaration od = dec;
+                while (od!=null) {
+                    referenceable = dec = od;
+                    TypedDeclaration td = 
+                            (TypedDeclaration) od;
+                    od = td.getOriginalDeclaration();
+                }
+            }
+            if (dec.isNative()) {
+                if (supportedBackends.none()) {
                     return null;
                 }
                 else {
-                    Referenceable referenceable = 
-                            getReferencedModel(node);
-                    Backends supportedBackends = supportedBackends();
-                    if (referenceable instanceof Declaration) {
-                        Declaration dec = 
-                                (Declaration) 
-                                    referenceable;
-                        if (dec instanceof TypedDeclaration) {
-                            Declaration od = dec;
-                            while (od!=null) {
-                                referenceable = dec = od;
-                                TypedDeclaration td = 
-                                        (TypedDeclaration) od;
-                                od = td.getOriginalDeclaration();
-                            }
-                        }
-                        if (dec.isNative()) {
-                            if (supportedBackends.none()) {
-                                return null;
-                            }
-                            else {
-                                referenceable = 
-                                        resolveNative(referenceable, 
-                                                dec, supportedBackends);
-                            }
-                        }
-                        else {
-                            if (!supportedBackends.none()) {
-                                return null;
-                            }
-                        }
-                    }
-                    else { // Module or package descriptors
-                        if (!supportedBackends.none()) {
-                            return null;
-                        }
-                    }
-                    Node r = getReferencedNode(referenceable);
-                    if (r==null) {
-                        return null;
-                    }
-                    else {
-                        return new IHyperlink[] {
-                            new CeylonNodeLink(r, id)
-                        };
-                    }
+                    referenceable = 
+                            resolveNative(referenceable, 
+                                    dec, supportedBackends);
+                }
+            }
+            else {
+                if (!supportedBackends.none()) {
+                    return null;
                 }
             }
         }
+        else { // Module or package descriptors
+            if (!supportedBackends.none()) {
+                return null;
+            }
+        }
+        
+        Node r = getReferencedNode(referenceable);
+        if (r==null) {
+            return null;
+        }
+        else {
+            return new IHyperlink[] {
+                new CeylonNodeLink(r, id)
+            };
+        }
+        
     }
 
     private Referenceable resolveNative(

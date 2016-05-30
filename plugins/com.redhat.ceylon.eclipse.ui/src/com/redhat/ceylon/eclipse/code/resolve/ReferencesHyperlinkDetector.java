@@ -289,11 +289,11 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
                                     Type type = ((TypedDeclaration) dec).getType();
                                     if (!isTypeUnknown(type)) {
                                         return new IHyperlink[] {
-                                                new CeylonQuickReferencesLink(id),
-                                                new CeylonQuickHierarchyLink(id),
-                                                new CeylonTypeLink(type, id),
-                                                new CeylonReferencesLink(referenceable, id),
-                                                new CeylonHierarchyLink(dec, id)
+                                            new CeylonQuickReferencesLink(id),
+                                            new CeylonQuickHierarchyLink(id),
+                                            new CeylonTypeLink(type, id),
+                                            new CeylonReferencesLink(referenceable, id),
+                                            new CeylonHierarchyLink(dec, id)
                                         };
                                     }
                                 }
