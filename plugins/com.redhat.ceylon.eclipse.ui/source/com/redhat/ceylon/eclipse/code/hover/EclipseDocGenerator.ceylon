@@ -187,13 +187,13 @@ class EclipseDocGenerator(CeylonEditor? editor)
     
     shared actual String color(Object? what, Colors how) {
         value myColor = switch(how)
-        case (Colors.strings) HTMLPrinter.toHex(Highlights.getCurrentThemeColor(Highlights.\iSTRINGS))
-        case (Colors.annotations) HTMLPrinter.toHex(Highlights.getCurrentThemeColor(Highlights.\iANNOTATIONS))
-        case (Colors.annotationStrings) HTMLPrinter.toHex(Highlights.getCurrentThemeColor(Highlights.\iANNOTATION_STRINGS))
-        case (Colors.numbers) HTMLPrinter.toHex(Highlights.getCurrentThemeColor(Highlights.\iNUMBERS))
-        case (Colors.identifiers) HTMLPrinter.toHex(Highlights.getCurrentThemeColor(Highlights.\iIDENTIFIERS))
-        case (Colors.types) HTMLPrinter.toHex(Highlights.getCurrentThemeColor(Highlights.\iTYPES))
-        case (Colors.keywords) HTMLPrinter.toHex(Highlights.getCurrentThemeColor(Highlights.\iKEYWORDS))
+        case (Colors.strings) HTMLPrinter.toHex(Highlights.getCurrentThemeColor(Highlights.strings))
+        case (Colors.annotations) HTMLPrinter.toHex(Highlights.getCurrentThemeColor(Highlights.annotations))
+        case (Colors.annotationStrings) HTMLPrinter.toHex(Highlights.getCurrentThemeColor(Highlights.annotationStrings))
+        case (Colors.numbers) HTMLPrinter.toHex(Highlights.getCurrentThemeColor(Highlights.numbers))
+        case (Colors.identifiers) HTMLPrinter.toHex(Highlights.getCurrentThemeColor(Highlights.identifiers))
+        case (Colors.types) HTMLPrinter.toHex(Highlights.getCurrentThemeColor(Highlights.types))
+        case (Colors.keywords) HTMLPrinter.toHex(Highlights.getCurrentThemeColor(Highlights.keywords))
         ;
         
         return "<span style='color:``myColor``'>``what?.string else "null"``</span>";
