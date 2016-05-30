@@ -42,6 +42,7 @@ import com.redhat.ceylon.ide.common.model.CrossProjectBinaryUnit;
 import com.redhat.ceylon.ide.common.model.CrossProjectSourceFile;
 import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
 import com.redhat.ceylon.ide.common.model.ICrossProjectReference;
+import com.redhat.ceylon.ide.common.model.ICrossProjectCeylonReference;
 import com.redhat.ceylon.ide.common.model.JavaClassFile;
 import com.redhat.ceylon.ide.common.model.JavaCompilationUnit;
 import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
@@ -276,7 +277,7 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
             throw compilationError;
         }
 
-        Map<String, ICrossProjectReference> crossProjectReferences = new HashMap<>();
+        Map<String, ICrossProjectCeylonReference> crossProjectReferences = new HashMap<>();
         
         if (CeylonBuilder.loadDependenciesFromModelLoaderFirst(mainProject)) {
             IFile archiveFile = referencedCeylonProject.getFile("modules/referencedCeylonProject/1.0.0/referencedCeylonProject-1.0.0.car");
@@ -303,7 +304,7 @@ public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {
             crossProjectReferences.put(unit.getFullPath(), unit);
         }
 
-        for (Map.Entry<String, ICrossProjectReference> reference : crossProjectReferences.entrySet()) {
+        for (Map.Entry<String, ICrossProjectCeylonReference> reference : crossProjectReferences.entrySet()) {
             Assert.assertEquals("Eclipse Project Resource for Unit : " + reference.getKey(),
                     referencedCeylonProject,
                     reference.getValue().getResourceProject());
