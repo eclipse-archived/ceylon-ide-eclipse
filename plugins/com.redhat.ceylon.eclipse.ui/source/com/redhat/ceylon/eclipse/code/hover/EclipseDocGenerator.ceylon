@@ -202,9 +202,6 @@ class EclipseDocGenerator(CeylonEditor? editor)
     getLiveValue(Declaration dec, Unit unit)
             => DocumentationHover.getLiveValue(dec, unit);
     
-    getPhasedUnit(Unit u)
-        => if (is CeylonUnit u) then u.phasedUnit else null;
-    
     getUnitName(Unit u)
             => if (is CeylonUnit u, 
                     exists ceylonFileName=u.ceylonFileName)
