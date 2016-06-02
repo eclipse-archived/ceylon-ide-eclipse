@@ -11,6 +11,9 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.FLAT_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.imageRegistry;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCommandBinding;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getEnterBinding;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.triggersBinding;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 import static java.util.Collections.emptySet;
@@ -91,7 +94,6 @@ import com.redhat.ceylon.eclipse.code.outline.TreeViewMouseListener;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.eclipse.util.Highlights;
@@ -268,10 +270,10 @@ public final class ReferencesPopup extends PopupDialog
         setTitleText("Quick Find References");
         this.editor = editor;
         commandBinding = 
-                EditorUtil.getCommandBinding(PLUGIN_ID + 
+                getCommandBinding(PLUGIN_ID + 
                         ".editor.findReferences");
         findCommandBinding = 
-                EditorUtil.getCommandBinding(PLUGIN_ID + 
+                getCommandBinding(PLUGIN_ID + 
                         ".action.findReferences");
         setStatusText();
         create();
@@ -321,7 +323,7 @@ public final class ReferencesPopup extends PopupDialog
         if (builder.length()>0) {
             builder.append(" \u00b7 ");
         }
-        builder.append(EditorUtil.getEnterBinding())
+        builder.append(getEnterBinding())
             .append(" to open");
         if (builder.length()>0) {
             setInfoText(builder.toString());
@@ -682,12 +684,12 @@ public final class ReferencesPopup extends PopupDialog
     }
 
     private void triggerCommand(KeyEvent e) {
-        if (EditorUtil.triggersBinding(e, commandBinding)) {
+        if (triggersBinding(e, commandBinding)) {
             showingRefinements = !showingRefinements;
             setInput(null);
             e.doit=false;
         }
-        else if (EditorUtil.triggersBinding(e, findCommandBinding)) {
+        else if (triggersBinding(e, findCommandBinding)) {
             showingRefinements = !showingRefinements;
             new FindReferencesAction(editor).run();
             e.doit=false;
