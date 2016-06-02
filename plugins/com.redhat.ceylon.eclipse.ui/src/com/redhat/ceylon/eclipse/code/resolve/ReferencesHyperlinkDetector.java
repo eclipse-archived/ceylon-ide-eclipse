@@ -29,6 +29,7 @@ import com.redhat.ceylon.model.typechecker.model.Functional;
 import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 
 public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
@@ -84,9 +85,11 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
 
     private final class CeylonQuickRefinementsLink implements IHyperlink {
         private final Node id;
+        private Declaration dec;
 
-        private CeylonQuickRefinementsLink(Node id) {
+        private CeylonQuickRefinementsLink(Node id, Declaration dec) {
             this.id = id;
+            this.dec = dec;
         }
 
         @Override
@@ -110,7 +113,8 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
             String hint = 
                     CorrectionUtil.shortcut(
                             "com.redhat.ceylon.eclipse.ui.editor.findReferences");
-            return "Refinements" + hint + hint.substring(2);
+            return (dec instanceof TypeDeclaration ? "Subtypes" : "Refinements") 
+                    + hint + hint.substring(2);
         }
 
         @Override
@@ -346,8 +350,9 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
                                         referenceable;
                             List<IHyperlink> links = new ArrayList<>();
                             links.add(new CeylonQuickReferencesLink(id));
-                            if (dec.isFormal() || dec.isDefault()) {
-                                links.add(new CeylonQuickRefinementsLink(id));
+                            if (dec.isFormal() || dec.isDefault() 
+                                    || dec instanceof ClassOrInterface) {
+                                links.add(new CeylonQuickRefinementsLink(id, dec));
                             }
                             if (dec.isActual()) {
                                 Declaration refined = 
