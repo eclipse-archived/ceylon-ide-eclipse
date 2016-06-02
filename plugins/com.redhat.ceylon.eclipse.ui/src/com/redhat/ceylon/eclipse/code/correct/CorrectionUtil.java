@@ -25,7 +25,7 @@ import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
-class CorrectionUtil {
+public class CorrectionUtil {
     
     static int levenshteinDistance(String x, String y) {
         

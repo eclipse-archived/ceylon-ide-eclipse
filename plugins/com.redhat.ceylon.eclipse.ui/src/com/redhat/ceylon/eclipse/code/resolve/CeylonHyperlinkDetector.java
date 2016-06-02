@@ -21,6 +21,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.correct.CorrectionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
@@ -63,12 +64,14 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
         @Override
         public String getHyperlinkText() {
             Backends supportedBackends = supportedBackends();
+            String hint = CorrectionUtil.shortcut(
+                    "com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration");
             return "Ceylon Declaration" +
                     (supportedBackends.none() ?
-                            "" :
+                            hint :
                             " \u2014 " +
                             (supportedBackends.header() ?
-                                    "native header" :
+                                    "native header" + hint :
                                     supportedBackends +
                                     " backend implementation"));
         }

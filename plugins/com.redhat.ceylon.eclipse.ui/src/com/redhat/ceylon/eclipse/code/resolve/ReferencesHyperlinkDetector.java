@@ -15,10 +15,13 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.eclipse.code.correct.CorrectionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
@@ -55,7 +58,9 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
 
         @Override
         public String getHyperlinkText() {
-            return "Quick References";
+            return "Quick References" + 
+                    CorrectionUtil.shortcut(
+                            "com.redhat.ceylon.eclipse.ui.editor.findReferences");
         }
 
         @Override
@@ -85,7 +90,9 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
 
         @Override
         public String getHyperlinkText() {
-            return "Quick Hierarchy";
+            return "Quick Hierarchy" + 
+                    CorrectionUtil.shortcut(
+                            "com.redhat.ceylon.eclipse.ui.editor.hierarchy");
         }
 
         @Override
@@ -147,7 +154,40 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
 
         @Override
         public String getHyperlinkText() {
-            return "Refined Declaration";
+            return "Refined Declaration" + 
+                    CorrectionUtil.shortcut(
+                            "com.redhat.ceylon.eclipse.ui.action.openRefinedDeclaration");
+        }
+
+        @Override
+        public IRegion getHyperlinkRegion() {
+            return new Region(id.getStartIndex(), 
+                              id.getDistance());
+        }
+    }
+
+    private final class CeylonSuperclassLink implements IHyperlink {
+        private final Referenceable dec;
+        private final Node id;
+
+        private CeylonSuperclassLink(Referenceable dec, Node id) {
+            this.dec = dec;
+            this.id = id;
+        }
+
+        @Override
+        public void open() {
+            gotoDeclaration(dec);
+        }
+
+        @Override
+        public String getTypeLabel() {
+            return null;
+        }
+
+        @Override
+        public String getHyperlinkText() {
+            return "Superclass";
         }
 
         @Override
@@ -260,7 +300,9 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
                                 if (refined!=null) {
                                     if (dec instanceof TypedDeclaration) {
                                         Type type = ((TypedDeclaration) dec).getType();
-                                        if (!isTypeUnknown(type)) {
+                                        if (!isTypeUnknown(type) 
+                                                && !type.isUnion() 
+                                                && !type.isIntersection()) {
                                             return new IHyperlink[] {
                                                 new CeylonQuickReferencesLink(id),
                                                 new CeylonQuickHierarchyLink(id),
@@ -284,13 +326,28 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
                                     dec instanceof ClassOrInterface) {
                                 if (dec instanceof TypedDeclaration) {
                                     Type type = ((TypedDeclaration) dec).getType();
-                                    if (!isTypeUnknown(type)) {
+                                    if (!isTypeUnknown(type) 
+                                            && !type.isUnion() 
+                                            && !type.isIntersection()) {
                                         return new IHyperlink[] {
                                             new CeylonQuickReferencesLink(id),
                                             new CeylonQuickHierarchyLink(id),
                                             new CeylonTypeLink(type, id),
 //                                            new CeylonReferencesLink(referenceable, id),
 //                                            new CeylonHierarchyLink(dec, id)
+                                        };
+                                    }
+                                }
+                                if (dec instanceof Class) {
+                                    Type extendedType = 
+                                            ((Class) dec).getExtendedType();
+                                    if (!ModelUtil.isTypeUnknown(extendedType)) {
+                                        return new IHyperlink[] {
+                                            new CeylonQuickReferencesLink(id),
+                                            new CeylonQuickHierarchyLink(id),
+                                            new CeylonSuperclassLink(extendedType.getDeclaration(), id)
+    //                                      new CeylonReferencesLink(referenceable, id),
+    //                                      new CeylonHierarchyLink(dec, id)
                                         };
                                     }
                                 }
@@ -303,11 +360,23 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
                             }
                             if (dec instanceof TypedDeclaration) {
                                 Type type = ((TypedDeclaration) dec).getType();
-                                if (!isTypeUnknown(type)) {
+                                if (!isTypeUnknown(type) 
+                                        && !type.isUnion() 
+                                        && !type.isIntersection()) {
                                     return new IHyperlink[] {
                                         new CeylonQuickReferencesLink(id),
                                         new CeylonTypeLink(type, id),
 //                                        new CeylonReferencesLink(referenceable, id)
+                                    };
+                                }
+                            }
+                            if (dec instanceof Class) {
+                                Type extendedType = 
+                                        ((Class) dec).getExtendedType();
+                                if (!ModelUtil.isTypeUnknown(extendedType)) {
+                                    return new IHyperlink[] {
+                                        new CeylonQuickReferencesLink(id),
+                                        new CeylonSuperclassLink(extendedType.getDeclaration(), id)
                                     };
                                 }
                             }
