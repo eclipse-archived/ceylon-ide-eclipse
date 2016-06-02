@@ -162,6 +162,11 @@ public final class ReferencesPopup extends PopupDialog
                             .append(ce.getPathString(), COUNTER_STYLER);
                     }
                 }
+                Integer matchCount = matchCounts.get(ce);
+                if (matchCount!=null && matchCount>1) {
+                    label.append(" (" + matchCount + " matches)", 
+                            Highlights.ARROW_STYLER);
+                }
                 return label;
             }
             else {
@@ -846,6 +851,9 @@ public final class ReferencesPopup extends PopupDialog
     private ToolItem importsButton;
     private Action importsAction;
     
+    private HashMap<CeylonElement,Integer> matchCounts = 
+            new HashMap<CeylonElement,Integer>();
+    
     public void show(boolean refinements) {
         showingRefinements = refinements;
         setInput(null);
@@ -863,6 +871,7 @@ public final class ReferencesPopup extends PopupDialog
         if (declaration==null) {
             return;
         }
+        matchCounts.clear();
         type = declaration instanceof TypeDeclaration;
         String message;
         if (showingRefinements) {
@@ -958,10 +967,19 @@ public final class ReferencesPopup extends PopupDialog
                         CeylonSearchMatch.create(node, cu, 
                                 pu.getUnitFile());
                 if (includeImports || !match.isInImport()) {
-                    TreeNode matchNode = new TreeNode(match);
-                    matchNode.setParent(unitNode);
-                    allMatchesList.add(matchNode);
-                    unitList.add(matchNode);
+                    CeylonElement element = match.getElement();
+                    Integer count = matchCounts.get(element);
+                    if (count==null) {
+                        count = 1;
+                        TreeNode matchNode = new TreeNode(match);
+                        matchNode.setParent(unitNode);
+                        allMatchesList.add(matchNode);
+                        unitList.add(matchNode);
+                    }
+                    else {
+                        count += 1;
+                    }
+                    matchCounts.put(element, count);
                 }
             }
             if (!unitList.isEmpty()) {
