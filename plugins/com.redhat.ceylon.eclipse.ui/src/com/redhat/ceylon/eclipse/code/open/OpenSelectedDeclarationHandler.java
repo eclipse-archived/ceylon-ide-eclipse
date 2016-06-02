@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.open;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.resolveNative;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
@@ -12,11 +13,14 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 
 public class OpenSelectedDeclarationHandler extends AbstractHandler {
     
@@ -66,10 +70,33 @@ public class OpenSelectedDeclarationHandler extends AbstractHandler {
             CeylonEditor ce = (CeylonEditor) editor;
             Node selectedNode = 
                     getSelectedNode(getSelection(ce), ce);
-            Referenceable ref = 
+            Referenceable referenceable = 
                     getReferencedModel(selectedNode);
-            if (ref!=null) {
-                gotoDeclaration(ref);
+            if (referenceable instanceof Declaration) {
+                Declaration dec = 
+                        (Declaration) 
+                            referenceable;
+                //look for the "original" declaration, 
+                //ignoring narrowing synthetic declarations
+                if (dec instanceof TypedDeclaration) {
+                    Declaration od = dec;
+                    while (od!=null) {
+                        referenceable = dec = od;
+                        TypedDeclaration td = 
+                                (TypedDeclaration) od;
+                        od = td.getOriginalDeclaration();
+                    }
+                }
+                if (dec.isNative()) {
+                    //for native declarations, go to the
+                    //header
+                    referenceable = 
+                            resolveNative(dec, 
+                                    Backends.HEADER);
+                }
+            }
+            if (referenceable!=null) {
+                gotoDeclaration(referenceable);
             }
         }
         return null;

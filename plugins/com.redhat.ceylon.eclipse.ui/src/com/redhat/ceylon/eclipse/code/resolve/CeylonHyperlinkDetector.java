@@ -1,14 +1,11 @@
 package com.redhat.ceylon.eclipse.code.resolve;
 
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
+import static com.redhat.ceylon.eclipse.code.editor.Navigation.resolveNative;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
-import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeDeclaration;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeHeader;
 
 import java.util.List;
 
@@ -24,13 +21,9 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.correct.CorrectionUtil;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
-import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class CeylonHyperlinkDetector implements IHyperlinkDetector {
     private CeylonEditor editor;
@@ -112,6 +105,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
             if (decNode.getDeclarationModel()
                     .getNativeBackends()
                     .equals(supportedBackends)) {
+                //we're already at the declaration itself
                 return null;
             }
         }
@@ -128,6 +122,8 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                     moduleDescriptors.get(0)
                         .getImportPath()
                             == node) {
+                //we're already at the descriptor for
+                //the module or package
                 return null;
             }
         }
@@ -146,6 +142,8 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
             Declaration dec = 
                     (Declaration) 
                         referenceable;
+            //look for the "original" declaration, 
+            //ignoring narrowing synthetic declarations
             if (dec instanceof TypedDeclaration) {
                 Declaration od = dec;
                 while (od!=null) {
@@ -156,22 +154,25 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
                 }
             }
             if (dec.isNative()) {
-                if (supportedBackends.none()) {
-                    return null;
-                }
-                else {
-                    referenceable = 
-                            resolveNative(referenceable, 
-                                    dec, supportedBackends);
-                }
+                //for native declarations, each subclass of 
+                //this hyperlink detector resolves to a 
+                //different native header or impl
+                referenceable = 
+                            resolveNative(dec, 
+                                    supportedBackends);
             }
             else {
+                //for other declarations, the subclasses of
+                //this hyperlink detector are disabled
                 if (!supportedBackends.none()) {
                     return null;
                 }
             }
         }
-        else { // Module or package descriptors
+        else {
+            //for module or package descriptors, the 
+            //subclasses of this hyperlink detector are 
+            //disabled
             if (!supportedBackends.none()) {
                 return null;
             }
@@ -187,69 +188,6 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
             };
         }
         
-    }
-
-    private Referenceable resolveNative(
-            Referenceable referenceable, 
-            Declaration dec, Backends backends) {
-        Unit unit = dec.getUnit();
-        Scope containerToSearchHeaderIn = null;
-        if (unit instanceof CeylonBinaryUnit) {
-            CeylonBinaryUnit binaryUnit = 
-                    (CeylonBinaryUnit) unit;
-            ExternalPhasedUnit phasedUnit = 
-                    binaryUnit.getPhasedUnit();
-            if (phasedUnit != null) {
-                Unit sourceFile = phasedUnit.getUnit();
-                if (sourceFile != null) {
-                    String sourceRelativePath = 
-                            toJavaString(binaryUnit.getCeylonModule()
-                                .toSourceUnitRelativePath(
-                                        toCeylonString(unit.getRelativePath())));
-                    if (sourceRelativePath != null && 
-                            sourceRelativePath.endsWith(".ceylon")) {
-                        for (Declaration sourceDecl: 
-                                sourceFile.getDeclarations()) {
-                            if (sourceDecl.equals(dec)) {
-                                containerToSearchHeaderIn = 
-                                        sourceDecl.getContainer();
-                                break;
-                            }
-                        }
-                    } else {
-                        for (Declaration sourceDecl: 
-                                sourceFile.getDeclarations()) {
-                            if (sourceDecl.getQualifiedNameString()
-                                    .equals(dec.getQualifiedNameString())) {
-                                containerToSearchHeaderIn = 
-                                        sourceDecl.getContainer();
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            containerToSearchHeaderIn = dec.getContainer();
-        }
-
-        if (containerToSearchHeaderIn != null) {
-            Declaration headerDeclaration = 
-                    getNativeHeader(containerToSearchHeaderIn, 
-                            dec.getName());
-            if (headerDeclaration == null 
-                    || ! headerDeclaration.isNative()) return null;
-            if (backends.header()) {
-                referenceable = headerDeclaration;
-            } else {
-                if (headerDeclaration != null) {
-                    referenceable = 
-                            getNativeDeclaration(headerDeclaration, 
-                                    supportedBackends());
-                }
-            }
-        }
-        return referenceable;
     }
 
     public Backends supportedBackends() {

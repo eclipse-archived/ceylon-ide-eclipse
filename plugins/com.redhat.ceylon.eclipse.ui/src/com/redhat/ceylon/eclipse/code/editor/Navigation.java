@@ -1,16 +1,19 @@
 package com.redhat.ceylon.eclipse.code.editor;
 
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
+import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeDeclaration;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeHeader;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEditor;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.TOGGLE_SHOW_SELECTED_ELEMENT_ONLY;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +41,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.TextEditorAction;
 
+import com.redhat.ceylon.common.Backends;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -50,10 +54,12 @@ import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
 import com.redhat.ceylon.ide.common.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.IResourceAware;
 import com.redhat.ceylon.ide.common.model.JavaUnit;
+import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
 
@@ -431,6 +437,71 @@ public class Navigation {
             return javaModelAware.toJavaElement(declaration, utilJ2C().wrapProgressMonitor(monitor));
         }
         return null;
+    }
+
+    public static Referenceable resolveNative(
+            Declaration dec, Backends backends) {
+        if (backends.none()) {
+            return null;
+        }
+        Unit unit = dec.getUnit();
+        Scope containerToSearchHeaderIn = null;
+        if (unit instanceof CeylonBinaryUnit) {
+            CeylonBinaryUnit binaryUnit = 
+                    (CeylonBinaryUnit) unit;
+            ExternalPhasedUnit phasedUnit = 
+                    binaryUnit.getPhasedUnit();
+            if (phasedUnit != null) {
+                Unit sourceFile = phasedUnit.getUnit();
+                if (sourceFile != null) {
+                    String sourceRelativePath = 
+                            toJavaString(binaryUnit.getCeylonModule()
+                                .toSourceUnitRelativePath(
+                                        toCeylonString(unit.getRelativePath())));
+                    if (sourceRelativePath != null && 
+                            sourceRelativePath.endsWith(".ceylon")) {
+                        for (Declaration sourceDecl: 
+                                sourceFile.getDeclarations()) {
+                            if (sourceDecl.equals(dec)) {
+                                containerToSearchHeaderIn = 
+                                        sourceDecl.getContainer();
+                                break;
+                            }
+                        }
+                    } else {
+                        for (Declaration sourceDecl: 
+                                sourceFile.getDeclarations()) {
+                            if (sourceDecl.getQualifiedNameString()
+                                    .equals(dec.getQualifiedNameString())) {
+                                containerToSearchHeaderIn = 
+                                        sourceDecl.getContainer();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            containerToSearchHeaderIn = dec.getContainer();
+        }
+    
+        if (containerToSearchHeaderIn != null) {
+            Declaration headerDeclaration = 
+                    getNativeHeader(containerToSearchHeaderIn, 
+                            dec.getName());
+            if (headerDeclaration == null 
+                    || ! headerDeclaration.isNative()) return null;
+            if (backends.header()) {
+                dec = headerDeclaration;
+            } else {
+                if (headerDeclaration != null) {
+                    dec = 
+                            getNativeDeclaration(headerDeclaration, 
+                                    backends);
+                }
+            }
+        }
+        return dec;
     }
 
 }
