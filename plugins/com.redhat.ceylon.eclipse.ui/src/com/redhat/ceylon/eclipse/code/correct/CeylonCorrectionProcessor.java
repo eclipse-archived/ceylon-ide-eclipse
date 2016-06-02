@@ -520,8 +520,10 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         int end = start + problem.getLength();
         Node node = findNode(rootNode, null, start, end);
 
+        ISourceViewer sourceViewer = context.getSourceViewer();
         correctJ2C().addQuickFixes(problem, rootNode, node, project, proposals,
-                getCurrentCeylonEditor(), tc, file, context.getSourceViewer().getDocument());
+                getCurrentCeylonEditor(), tc, file, 
+                sourceViewer == null ? null : sourceViewer.getDocument());
 
         switch (problem.getProblemId()) {
 //        case 100:
@@ -742,7 +744,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
 //            break;
         case 8000:
 //            addRenameDescriptorProposal(rootNode, context, problem, proposals, file);
-            if (context.getSourceViewer()!=null) {
+            if (sourceViewer!=null) {
                 addMoveDirProposal(file, rootNode, project, proposals, 
                         context);
             }
