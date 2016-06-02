@@ -113,8 +113,13 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
             String hint = 
                     CorrectionUtil.shortcut(
                             "com.redhat.ceylon.eclipse.ui.editor.findReferences");
-            return (dec instanceof TypeDeclaration ? "Subtypes" : "Refinements") 
-                    + hint + hint.substring(2);
+            if (!hint.isEmpty()) {
+                hint = hint + hint.substring(2);
+            }
+            String action = 
+                    dec instanceof TypeDeclaration ? 
+                            "Subtypes" : "Refinements";
+            return action + hint;
         }
 
         @Override
