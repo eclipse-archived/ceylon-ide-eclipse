@@ -24,6 +24,7 @@ import static com.redhat.ceylon.eclipse.core.builder.MarkerCreator.ERROR_CODE_KE
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.correctJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
 import static com.redhat.ceylon.eclipse.util.Nodes.findArgument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
@@ -501,7 +502,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         if (editor != null) {
             return editor;
         }
-        IEditorPart editorPart = EditorUtil.getCurrentEditor();
+        IEditorPart editorPart = getCurrentEditor();
         if (editorPart instanceof CeylonEditor) {
             return (CeylonEditor) editorPart;
         }
