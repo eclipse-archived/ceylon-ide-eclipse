@@ -826,4 +826,13 @@ public class EditorUtil {
         }
         return editors.toArray(new CeylonEditor[0]);
     }
+
+    public static int getPopupStyle() {
+        String platform = SWT.getPlatform();
+        int resize = 
+                platform.equals("carbon") || 
+                platform.equals("cocoa") ? 
+                            SWT.RESIZE : SWT.NONE;
+        return /*SWT.V_SCROLL | SWT.H_SCROLL |*/ resize;
+    }
 }

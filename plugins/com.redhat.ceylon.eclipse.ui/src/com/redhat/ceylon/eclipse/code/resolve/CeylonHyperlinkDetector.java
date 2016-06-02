@@ -66,7 +66,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
             Backends supportedBackends = supportedBackends();
             String hint = CorrectionUtil.shortcut(
                     "com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration");
-            return "Ceylon Declaration" +
+            return "Declaration" +
                     (supportedBackends.none() ?
                             hint :
                             " \u2014 " +

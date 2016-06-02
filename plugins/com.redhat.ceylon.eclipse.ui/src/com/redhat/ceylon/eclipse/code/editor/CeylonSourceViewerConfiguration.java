@@ -4,7 +4,9 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_ACTIVATION_DELAY;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_INSERT_PREFIX;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.completionJ2C;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.createColor;
+import static com.redhat.ceylon.eclipse.util.EditorUtil.getPopupStyle;
 import static com.redhat.ceylon.eclipse.util.Highlights.DOC_BACKGROUND;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
@@ -14,8 +16,6 @@ import static org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
-
 
 import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.bindings.keys.KeyStroke;
@@ -420,15 +420,6 @@ public class CeylonSourceViewerConfiguration
                         "refs_presenter_bounds"), 
                 true, true);
         return presenter;
-    }
-    
-    private static int getPopupStyle() {
-        String platform = SWT.getPlatform();
-        int resize = 
-                platform.equals("carbon") || 
-                platform.equals("cocoa") ? 
-                            SWT.RESIZE : SWT.NONE;
-        return /*SWT.V_SCROLL | SWT.H_SCROLL |*/ resize;
     }
     
     private static final class OutlinePresenterControlCreator 

@@ -31,6 +31,7 @@ import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.common.Backend;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.EditedSourceFile;
@@ -78,7 +79,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
 
         @Override
         public String getHyperlinkText() {
-            return "Java Declaration";
+            return "Declaration \u2014 native Java";
         }
 
         @Override
@@ -90,15 +91,21 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
     @Override
     public IHyperlink[] detectHyperlinks(ITextViewer tv, IRegion region,
             boolean csmh) {
-        if (pc==null||pc.getLastCompilationUnit()==null) {
+        if (pc==null) {
+            return null;
+        }
+        Tree.CompilationUnit rootNode = 
+                pc.getLastCompilationUnit();
+        if (rootNode==null) {
             return null;
         }
         else {
             Node node = 
-                    findNode(pc.getLastCompilationUnit(), 
+                    findNode(rootNode, 
                             pc.getTokens(), 
                             region.getOffset(), 
-                            region.getOffset()+region.getLength());
+                            region.getOffset() +
+                            region.getLength());
             if (node==null) {
                 return null;
             }

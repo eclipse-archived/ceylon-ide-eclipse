@@ -844,6 +844,12 @@ public final class ReferencesPopup extends PopupDialog
     private ToolItem importsButton;
     private Action importsAction;
     
+    public void show(boolean refinements) {
+        showingRefinements = refinements;
+        setInput(null);
+        open();
+    }
+    
     @Override
     public void setInput(Object input) {
         CeylonParseController pc = 
