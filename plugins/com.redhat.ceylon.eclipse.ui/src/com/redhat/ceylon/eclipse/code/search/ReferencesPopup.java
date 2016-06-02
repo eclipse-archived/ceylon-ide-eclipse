@@ -154,6 +154,7 @@ public final class ReferencesPopup extends PopupDialog
                 StyledString label = 
                         ce.getLabel(getPrefix(), getFont());
                 if (!ReferencesPopup.this.treeLayout) {
+                    label = new StyledString().append(label);
                     label.append(" \u2014 ", PACKAGE_STYLER)
                         .append(ce.getPackageLabel(), PACKAGE_STYLER);
                     if (CeylonPlugin.getPreferences()
@@ -164,6 +165,7 @@ public final class ReferencesPopup extends PopupDialog
                 }
                 Integer matchCount = matchCounts.get(ce);
                 if (matchCount!=null && matchCount>1) {
+                    label = new StyledString().append(label);
                     label.append(" (" + matchCount + " matches)", 
                             Highlights.ARROW_STYLER);
                 }

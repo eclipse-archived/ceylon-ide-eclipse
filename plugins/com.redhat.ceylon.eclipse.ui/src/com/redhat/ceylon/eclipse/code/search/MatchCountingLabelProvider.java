@@ -33,17 +33,13 @@ final class MatchCountingLabelProvider extends SearchResultsLabelProvider {
         StyledString label = super.getStyledText(element);
         int matchCount = page.getDisplayedMatchCount(element);
         if (matchCount>1) {
-            label.append(" (" + matchCount + " matches)", 
-                    Highlights.ARROW_STYLER);
+            return new StyledString().append(label)
+                    .append(" (" + matchCount + " matches)", 
+                            Highlights.ARROW_STYLER);
         }
-        /*else if (element instanceof CeylonElement) {
-            return label.append(":" + ((CeylonElement)element).getLocation(), 
-                    StyledString.COUNTER_STYLER);
-        }*/
-//        for (StyleRange range: label.getStyleRanges()) {
-//            range.font = CeylonPlugin.getOutlineFont();
-//        }
-        return label;
+        else {
+            return label;
+        }
     }
     
 }

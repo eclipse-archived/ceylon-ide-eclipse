@@ -198,19 +198,21 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
     
     private StyledString getStyledLabelForSearchResult(
             CeylonElement ce) {
-        StyledString styledString = new StyledString();
-        styledString.append(ce.getLabel());
+        StyledString label = ce.getLabel();
         if (appendMatchPackage()) {
-            styledString.append(
-                    " \u2014 " + ce.getPackageLabel(), 
-                    PACKAGE_STYLER);
+            StyledString fullLabel = 
+                    new StyledString().append(label)
+                    .append(" \u2014 " + ce.getPackageLabel(), 
+                            PACKAGE_STYLER);
             if (appendSourceLocation()) {
-                styledString.append(
-                        " \u2014 " + ce.getPathString(), 
+                fullLabel.append(" \u2014 " + ce.getPathString(), 
                         COUNTER_STYLER);
             }
+            return fullLabel;
         }
-        return styledString;
+        else {
+            return label;
+        }
     }
 
     private StyledString getStyledLabelForSearchResult(
