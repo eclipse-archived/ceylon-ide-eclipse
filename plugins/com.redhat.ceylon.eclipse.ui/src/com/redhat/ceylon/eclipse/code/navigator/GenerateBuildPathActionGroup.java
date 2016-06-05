@@ -369,8 +369,8 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
                 CeylonBuildPathsBlock.flush(Arrays.asList(classPathEntries), 
                         resourcePathEntries, javaProject.readOutputLocation(), 
                         javaProject, null, null);
-            } catch (OperationCanceledException | CoreException e) {
             }
+            catch (OperationCanceledException|CoreException e) {}
         }
     }
     
