@@ -161,10 +161,10 @@ class FindOccurrenceLocationVisitor extends Visitor {
         }
     }
     
-    public void visit(Tree.CaseClause that) {
+    public void visit(Tree.CaseItem that) {
         if (inBounds(that) && 
-                !inBounds(that.getBlock()) &&
-                !inBounds(that.getExpression())) {
+                (that.getMainEndToken()==null ||
+                 offset<that.getEndIndex())) {
             occurrence = CASE;
         }
         super.visit(that);

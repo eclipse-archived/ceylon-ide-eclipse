@@ -304,6 +304,54 @@ class RequiredTypeVisitor
     }
     
     @Override
+    public void visit(Tree.SwitchExpression that) {
+        Type ort = requiredType;
+        Tree.SwitchClause switchClause = 
+                that.getSwitchClause();
+        Type srt;
+        if (switchClause!=null) {
+            switchClause.visit(this);
+            Tree.Expression e = 
+                    switchClause.getSwitched()
+                        .getExpression();
+            Tree.Variable v = 
+                    switchClause.getSwitched()
+                        .getVariable();
+            if (e!=null) {
+                srt = e.getTypeModel();
+            }
+            else if (v!=null) {
+                srt = v.getType().getTypeModel();
+            }
+            else {
+                srt = null;
+            }
+        }
+        else {
+            srt = null;
+        }
+        SwitchCaseList switchCaseList = 
+                that.getSwitchCaseList();
+        if (switchCaseList!=null) {
+            for (Tree.CaseClause cc: 
+                    switchCaseList.getCaseClauses()) {
+                if (cc==node || cc.getCaseItem()==node) {
+                    finalResult = srt;
+                }
+                if (cc.getCaseItem()!=null) {
+                    requiredType = srt;
+                    cc.getCaseItem().visit(this);
+                }
+                if (cc.getExpression()!=null) {
+                    requiredType = ort;
+                    cc.getExpression().visit(this);
+                }
+            }
+        }
+        requiredType = ort;
+    }
+    
+    @Override
     public void visit(Tree.AnnotationList that) {
         Type ort = requiredType;
         requiredType = null;
