@@ -110,40 +110,40 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
      */
     public static final String GROUP_CUSTOMIZE= "customizeGroup";  //$NON-NLS-1$
 
-	private static class NoActionAvailable extends Action {
-		public NoActionAvailable() {
-			setEnabled(false);
-			setText(NewWizardMessages.GenerateBuildPathActionGroup_no_action_available);
-		}
-	}
-	private Action fNoActionAvailable= new NoActionAvailable();
+    private static class NoActionAvailable extends Action {
+        public NoActionAvailable() {
+            setEnabled(false);
+            setText(NewWizardMessages.GenerateBuildPathActionGroup_no_action_available);
+        }
+    }
+    private Action fNoActionAvailable= new NoActionAvailable();
 
     private class UpdateJarFileAction extends JarImportWizardAction implements IUpdate {
 
-		public UpdateJarFileAction() {
-			setText(ActionMessages.GenerateBuildPathActionGroup_update_jar_text);
-			setDescription(ActionMessages.GenerateBuildPathActionGroup_update_jar_description);
-			setToolTipText(ActionMessages.GenerateBuildPathActionGroup_update_jar_tooltip);
-			setImageDescriptor(JavaPluginImages.DESC_OBJS_JAR);
-			PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IJavaHelpContextIds.JARIMPORT_WIZARD_PAGE);
-		}
+        public UpdateJarFileAction() {
+            setText(ActionMessages.GenerateBuildPathActionGroup_update_jar_text);
+            setDescription(ActionMessages.GenerateBuildPathActionGroup_update_jar_description);
+            setToolTipText(ActionMessages.GenerateBuildPathActionGroup_update_jar_tooltip);
+            setImageDescriptor(JavaPluginImages.DESC_OBJS_JAR);
+            PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IJavaHelpContextIds.JARIMPORT_WIZARD_PAGE);
+        }
 
-		/**
-		 * {@inheritDoc}
-		 */
-		public void update() {
-			final IWorkbenchPart part= fSite.getPage().getActivePart();
-			if (part != null)
-				setActivePart(this, part);
-			selectionChanged(this, fSelectionProvider.getSelection());
-		}
-	}
+        /**
+         * {@inheritDoc}
+         */
+        public void update() {
+            final IWorkbenchPart part= fSite.getPage().getActivePart();
+            if (part != null)
+                setActivePart(this, part);
+            selectionChanged(this, fSelectionProvider.getSelection());
+        }
+    }
 
     private final IWorkbenchSite fSite;
-	private final ISelectionProvider fSelectionProvider;
-	private final List<Action> fActions;
+    private final ISelectionProvider fSelectionProvider;
+    private final List<Action> fActions;
 
-	private String fGroupName= IContextMenuConstants.GROUP_REORGANIZE;
+    private String fGroupName= IContextMenuConstants.GROUP_REORGANIZE;
 
 
     /**
@@ -154,7 +154,7 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
      * @param page the page that owns this action group
      */
     public GenerateBuildPathActionGroup(Page page) {
-		this(page.getSite(), page.getSite().getSelectionProvider());
+        this(page.getSite(), page.getSite().getSelectionProvider());
     }
 
     /**
@@ -165,220 +165,220 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
      * @param part the view part that owns this action group
      */
     public GenerateBuildPathActionGroup(IViewPart part) {
-		this(part.getSite(), part.getSite().getSelectionProvider());
+        this(part.getSite(), part.getSite().getSelectionProvider());
     }
     /**
-	 * Creates a new <code>GenerateActionGroup</code>. The group requires
-	 * that the selection provided by the given selection provider is of type
-	 * {@link IStructuredSelection}.
-	 *
-	 * @param site the site that will own the action group.
-	 * @param selectionProvider the selection provider used instead of the
-	 *  page selection provider.
-	 *
-	 * @since 3.4
-	 */
-	public GenerateBuildPathActionGroup(IWorkbenchSite site, ISelectionProvider selectionProvider) {
+     * Creates a new <code>GenerateActionGroup</code>. The group requires
+     * that the selection provided by the given selection provider is of type
+     * {@link IStructuredSelection}.
+     *
+     * @param site the site that will own the action group.
+     * @param selectionProvider the selection provider used instead of the
+     *  page selection provider.
+     *
+     * @since 3.4
+     */
+    public GenerateBuildPathActionGroup(IWorkbenchSite site, ISelectionProvider selectionProvider) {
         fSite= site;
-		fSelectionProvider= selectionProvider;
+        fSelectionProvider= selectionProvider;
         fActions= new ArrayList<Action>();
 
-		final CreateLinkedSourceFolderAction addLinkedSourceFolderAction= new CreateLinkedSourceFolderAction(site) {
-			private void doBuildpathAction() {
-				super.run();
-			}
-			@Override
-			public void run() {
-				alsoManageCeylonConfigFile(new Runnable() {
-					@Override
-					public void run() {
-						doBuildpathAction();
-					}
-				}, getShell(), getSelectedElements());
-			}
-		};
-		fActions.add(addLinkedSourceFolderAction);
+        final CreateLinkedSourceFolderAction addLinkedSourceFolderAction= new CreateLinkedSourceFolderAction(site) {
+            private void doBuildpathAction() {
+                super.run();
+            }
+            @Override
+            public void run() {
+                alsoManageCeylonConfigFile(new Runnable() {
+                    @Override
+                    public void run() {
+                        doBuildpathAction();
+                    }
+                }, getShell(), getSelectedElements());
+            }
+        };
+        fActions.add(addLinkedSourceFolderAction);
 
         final CreateSourceFolderAction addSourceFolderAction= new CreateSourceFolderAction(site) {
-			private void doBuildpathAction() {
-				super.run();
-			}
-			@Override
-			public void run() {
-				alsoManageCeylonConfigFile(new Runnable() {
-					@Override
-					public void run() {
-						doBuildpathAction();
-					}
-				}, getShell(), getSelectedElements());
-			}
+            private void doBuildpathAction() {
+                super.run();
+            }
+            @Override
+            public void run() {
+                alsoManageCeylonConfigFile(new Runnable() {
+                    @Override
+                    public void run() {
+                        doBuildpathAction();
+                    }
+                }, getShell(), getSelectedElements());
+            }
         };
         fActions.add(addSourceFolderAction);
 
-		final AddFolderToBuildpathAction addFolder= new AddFolderToBuildpathAction(site) {
-			private void doBuildpathAction() {
-				super.run();
-			}
-			@Override
-			public void run() {
-				alsoManageCeylonConfigFile(new Runnable() {
-					@Override
-					public void run() {
-						doBuildpathAction();
-					}
-				}, getShell(), getSelectedElements());
-			}
-		};
-		fActions.add(addFolder);
+        final AddFolderToBuildpathAction addFolder= new AddFolderToBuildpathAction(site) {
+            private void doBuildpathAction() {
+                super.run();
+            }
+            @Override
+            public void run() {
+                alsoManageCeylonConfigFile(new Runnable() {
+                    @Override
+                    public void run() {
+                        doBuildpathAction();
+                    }
+                }, getShell(), getSelectedElements());
+            }
+        };
+        fActions.add(addFolder);
 
-		final AddSelectedLibraryToBuildpathAction addSelectedLibrary= new AddSelectedLibraryToBuildpathAction(site);
-		fActions.add(addSelectedLibrary);
+        final AddSelectedLibraryToBuildpathAction addSelectedLibrary= new AddSelectedLibraryToBuildpathAction(site);
+        fActions.add(addSelectedLibrary);
 
-		final RemoveFromBuildpathAction remove = new RemoveFromBuildpathAction(site) {
-			private void doBuildpathAction() {
-				super.run();
-			}
-			@Override
-			public void run() {
-				alsoManageCeylonConfigFile(new Runnable() {
-					@Override
-					public void run() {
-						doBuildpathAction();
-					}
-				}, getShell(), getSelectedElements());
-			}
-		};
-		fActions.add(remove);
+        final RemoveFromBuildpathAction remove = new RemoveFromBuildpathAction(site) {
+            private void doBuildpathAction() {
+                super.run();
+            }
+            @Override
+            public void run() {
+                alsoManageCeylonConfigFile(new Runnable() {
+                    @Override
+                    public void run() {
+                        doBuildpathAction();
+                    }
+                }, getShell(), getSelectedElements());
+            }
+        };
+        fActions.add(remove);
 
-		final AddArchiveToBuildpathAction addArchive= new AddArchiveToBuildpathAction(site);
-		fActions.add(addArchive);
+        final AddArchiveToBuildpathAction addArchive= new AddArchiveToBuildpathAction(site);
+        fActions.add(addArchive);
 
-		final AddLibraryToBuildpathAction addLibrary= new AddLibraryToBuildpathAction(site);
-		fActions.add(addLibrary);
+        final AddLibraryToBuildpathAction addLibrary= new AddLibraryToBuildpathAction(site);
+        fActions.add(addLibrary);
 
-		final UpdateJarFileAction updateAction= new UpdateJarFileAction();
-		fActions.add(updateAction);
+        final UpdateJarFileAction updateAction= new UpdateJarFileAction();
+        fActions.add(updateAction);
 
-		final ExcludeFromBuildpathAction exclude= new ExcludeFromBuildpathAction(site);
-		fActions.add(exclude);
+        final ExcludeFromBuildpathAction exclude= new ExcludeFromBuildpathAction(site);
+        fActions.add(exclude);
 
-		final IncludeToBuildpathAction include= new IncludeToBuildpathAction(site);
-		fActions.add(include);
+        final IncludeToBuildpathAction include= new IncludeToBuildpathAction(site);
+        fActions.add(include);
 
-		final EditFilterAction editFilterAction= new EditFilterAction(site);
-		fActions.add(editFilterAction);
+        final EditFilterAction editFilterAction= new EditFilterAction(site);
+        fActions.add(editFilterAction);
 
-		final EditOutputFolderAction editOutput= new EditOutputFolderAction(site);
-		fActions.add(editOutput);
+        final EditOutputFolderAction editOutput= new EditOutputFolderAction(site);
+        fActions.add(editOutput);
 
-		final ConfigureBuildPathAction configure= new ConfigureBuildPathAction(site) {
-			@Override
-			public void run() {
-				IProject project = null;
-				Object firstElement = getSelectedElements().get(0);
-				HashMap<Object, IClasspathEntry> data= new HashMap<Object, IClasspathEntry>();
+        final ConfigureBuildPathAction configure= new ConfigureBuildPathAction(site) {
+            @Override
+            public void run() {
+                IProject project = null;
+                Object firstElement = getSelectedElements().get(0);
+                HashMap<Object, IClasspathEntry> data= new HashMap<Object, IClasspathEntry>();
 
-				if (firstElement instanceof IJavaElement) {
-					IJavaElement element= (IJavaElement) firstElement;
-					IPackageFragmentRoot root= (IPackageFragmentRoot) element.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
-					if (root != null) {
-						try {
-							data.put(BuildPathsPropertyPage.DATA_REVEAL_ENTRY, root.getRawClasspathEntry());
-						} catch (JavaModelException e) {
-							// ignore
-						}
-					}
-					project = element.getJavaProject().getProject();
-				}
-				else if (firstElement instanceof PackageFragmentRootContainer) {
-					PackageFragmentRootContainer container= (PackageFragmentRootContainer) firstElement;
-					project= container.getJavaProject().getProject();
-					IClasspathEntry entry = container instanceof ClassPathContainer ? ((ClassPathContainer) container).getClasspathEntry() : JavaCore.newLibraryEntry(new Path("/x/y"), null, null); //$NON-NLS-1$
-					data.put(BuildPathsPropertyPage.DATA_REVEAL_ENTRY, entry);
-				}
-				else {
-					project= ((IResource) ((IAdaptable) firstElement).getAdapter(IResource.class)).getProject();
-				}
-				PreferencesUtil.createPropertyDialogOn(getShell(), project, CeylonBuildPathsPropertiesPage.ID, null, data).open();
-			}
-		};
-		fActions.add(configure);
+                if (firstElement instanceof IJavaElement) {
+                    IJavaElement element= (IJavaElement) firstElement;
+                    IPackageFragmentRoot root= (IPackageFragmentRoot) element.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+                    if (root != null) {
+                        try {
+                            data.put(BuildPathsPropertyPage.DATA_REVEAL_ENTRY, root.getRawClasspathEntry());
+                        } catch (JavaModelException e) {
+                            // ignore
+                        }
+                    }
+                    project = element.getJavaProject().getProject();
+                }
+                else if (firstElement instanceof PackageFragmentRootContainer) {
+                    PackageFragmentRootContainer container= (PackageFragmentRootContainer) firstElement;
+                    project= container.getJavaProject().getProject();
+                    IClasspathEntry entry = container instanceof ClassPathContainer ? ((ClassPathContainer) container).getClasspathEntry() : JavaCore.newLibraryEntry(new Path("/x/y"), null, null); //$NON-NLS-1$
+                    data.put(BuildPathsPropertyPage.DATA_REVEAL_ENTRY, entry);
+                }
+                else {
+                    project= ((IResource) ((IAdaptable) firstElement).getAdapter(IResource.class)).getProject();
+                }
+                PreferencesUtil.createPropertyDialogOn(getShell(), project, CeylonBuildPathsPropertiesPage.ID, null, data).open();
+            }
+        };
+        fActions.add(configure);
 
-		for (Iterator<Action> iter= fActions.iterator(); iter.hasNext();) {
-			Action action= iter.next();
-			if (action instanceof ISelectionChangedListener) {
-				ISelectionChangedListener listener = (ISelectionChangedListener) action;
-				selectionProvider.addSelectionChangedListener(listener);
-				listener.selectionChanged(new SelectionChangedEvent(selectionProvider, selectionProvider.getSelection()));
-			}
-		}
+        for (Iterator<Action> iter= fActions.iterator(); iter.hasNext();) {
+            Action action= iter.next();
+            if (action instanceof ISelectionChangedListener) {
+                ISelectionChangedListener listener = (ISelectionChangedListener) action;
+                selectionProvider.addSelectionChangedListener(listener);
+                listener.selectionChanged(new SelectionChangedEvent(selectionProvider, selectionProvider.getSelection()));
+            }
+        }
 
     }
 
-	public static void alsoManageCeylonConfigFile(Runnable runnable, Shell shell, List<?> selectedElements) {
-		// First check the the config is synchronized to authorize the action
-		IProject project = null;
-		IJavaProject javaProject = null;
-		Object object= selectedElements.get(0);
-		if (object instanceof IJavaElement) {
-			IJavaElement javaElement = (IJavaElement) object;
+    public static void alsoManageCeylonConfigFile(Runnable runnable, Shell shell, List<?> selectedElements) {
+        // First check the the config is synchronized to authorize the action
+        IProject project = null;
+        IJavaProject javaProject = null;
+        Object object= selectedElements.get(0);
+        if (object instanceof IJavaElement) {
+            IJavaElement javaElement = (IJavaElement) object;
             javaProject = javaElement.getJavaProject();
-		} else if (object instanceof IResource) {
-			IResource resource = (IResource) object;
-			if (!ExternalSourceArchiveManager.isInSourceArchive(resource)) {
-				javaProject= JavaCore.create(resource.getProject());
-			}
-		}
-		
-		if (javaProject != null) {
-			project = javaProject.getProject();
-		}
+        } else if (object instanceof IResource) {
+            IResource resource = (IResource) object;
+            if (!ExternalSourceArchiveManager.isInSourceArchive(resource)) {
+                javaProject= JavaCore.create(resource.getProject());
+            }
+        }
+        
+        if (javaProject != null) {
+            project = javaProject.getProject();
+        }
 
-		if (project == null) {
-			return;
-		}
-		
-		BaseCeylonProject ceylonProject = 
-		        modelJ2C()
-		            .ceylonModel()
-		            .getProject(project);
-		
+        if (project == null) {
+            return;
+        }
+        
+        BaseCeylonProject ceylonProject = 
+                modelJ2C()
+                    .ceylonModel()
+                    .getProject(project);
+        
         if (ceylonProject != null
                 && !ceylonProject.getSynchronizedWithConfiguration()) {
-			MessageDialog.openError(shell, 
-					NewWizardMessages.NewSourceContainerWorkbookPage_ToolBar_RemoveFromCP_tooltip, 
+            MessageDialog.openError(shell, 
+                    NewWizardMessages.NewSourceContainerWorkbookPage_ToolBar_RemoveFromCP_tooltip, 
                     "The Ceylon configuration file (.ceylon/config) is not synchronized with the current build path settings.\n" +
                     "You should fix this before adding changing the Ceylon build path (a QuickFix is available).");
-			return;
-		}
-		
-		// Then run the modification action
-		runnable.run();
-		
-		if (ceylonProject != null) {
-	        CeylonProjectConfig config = ceylonProject.getConfiguration();
+            return;
+        }
+        
+        // Then run the modification action
+        runnable.run();
+        
+        if (ceylonProject != null) {
+            CeylonProjectConfig config = ceylonProject.getConfiguration();
     
-    		// And finally update the Ceylon config file
+            // And finally update the Ceylon config file
             try {
-    			CPListElement[] classPathEntries = 
-    			        CPListElement.createFromExisting(javaProject);
-    			List<CPListElement> resourcePathEntries = new ArrayList<>();
-    			CeylonBuildPathsBlock.resourcePathsFromStrings(javaProject, 
-    			        toJavaStringList(config.getProjectResourceDirectories()), 
-    			        new HashSet<String>(), resourcePathEntries);
-    			CeylonBuildPathsBlock.flush(Arrays.asList(classPathEntries), 
-    			        resourcePathEntries, javaProject.readOutputLocation(), 
-    			        javaProject, null, null);
-    		} catch (OperationCanceledException | CoreException e) {
-    		}
-		}
-	}
-	
-	/* (non-Javadoc)
+                CPListElement[] classPathEntries = 
+                        CPListElement.createFromExisting(javaProject);
+                List<CPListElement> resourcePathEntries = new ArrayList<>();
+                CeylonBuildPathsBlock.resourcePathsFromStrings(javaProject, 
+                        toJavaStringList(config.getProjectResourceDirectories()), 
+                        new HashSet<String>(), resourcePathEntries);
+                CeylonBuildPathsBlock.flush(Arrays.asList(classPathEntries), 
+                        resourcePathEntries, javaProject.readOutputLocation(), 
+                        javaProject, null, null);
+            } catch (OperationCanceledException | CoreException e) {
+            }
+        }
+    }
+    
+    /* (non-Javadoc)
      * Function declared in ActionGroup
      */
     @Override
-	public void fillActionBars(IActionBars actionBar) {
+    public void fillActionBars(IActionBars actionBar) {
         super.fillActionBars(actionBar);
         setGlobalActionHandlers(actionBar);
     }
@@ -387,29 +387,29 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
      * Function declared in ActionGroup
      */
     @Override
-	public void fillContextMenu(IMenuManager menu) {
+    public void fillContextMenu(IMenuManager menu) {
         super.fillContextMenu(menu);
         if (!canOperateOnSelection())
-        	return;
+            return;
         String menuText= ActionMessages.BuildPath_label;
         IMenuManager subMenu= new MenuManager(menuText, MENU_ID);
         subMenu.addMenuListener(new IMenuListener() {
-        	public void menuAboutToShow(IMenuManager manager) {
-        		fillViewSubMenu(manager);
-        	}
+            public void menuAboutToShow(IMenuManager manager) {
+                fillViewSubMenu(manager);
+            }
         });
         subMenu.setRemoveAllWhenShown(true);
         subMenu.add(new ConfigureBuildPathAction(fSite));
         menu.appendToGroup(fGroupName, subMenu);
     }
 
-	private void fillViewSubMenu(IMenuManager source) {
+    private void fillViewSubMenu(IMenuManager source) {
         int added= 0;
         int i=0;
         for (Iterator<Action> iter= fActions.iterator(); iter.hasNext();) {
-			Action action= iter.next();
-			if (action instanceof IUpdate)
-				((IUpdate) action).update();
+            Action action= iter.next();
+            if (action instanceof IUpdate)
+                ((IUpdate) action).update();
 
             if (i == 2)
                 source.add(new Separator(GROUP_BUILDPATH));
@@ -419,17 +419,17 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
                 source.add(new Separator(GROUP_CUSTOMIZE));
             added+= addAction(source, action);
             i++;
-		}
+        }
 
         if (added == 0) {
-        	source.add(fNoActionAvailable);
+            source.add(fNoActionAvailable);
         }
     }
 
-	/**
-	 * @param actionBar the action bars to set the handler for
-	 */
-	private void setGlobalActionHandlers(IActionBars actionBar) {
+    /**
+     * @param actionBar the action bars to set the handler for
+     */
+    private void setGlobalActionHandlers(IActionBars actionBar) {
         // TODO implement
     }
 
@@ -442,33 +442,33 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
     }
 
     private boolean canOperateOnSelection() {
-		ISelection sel= fSelectionProvider.getSelection();
-    	if (!(sel instanceof IStructuredSelection))
-    		return false;
-    	IStructuredSelection selection= (IStructuredSelection)sel;
-    	if (selection.isEmpty())
-			return false;
-    	for (Iterator<?> iter= selection.iterator(); iter.hasNext();) {
-			Object element= iter.next();
-			if (element instanceof IWorkingSet)
-				return false;
-		}
-    	return true;
+        ISelection sel= fSelectionProvider.getSelection();
+        if (!(sel instanceof IStructuredSelection))
+            return false;
+        IStructuredSelection selection= (IStructuredSelection)sel;
+        if (selection.isEmpty())
+            return false;
+        for (Iterator<?> iter= selection.iterator(); iter.hasNext();) {
+            Object element= iter.next();
+            if (element instanceof IWorkingSet)
+                return false;
+        }
+        return true;
     }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void dispose() {
-		if (fActions != null) {
-			for (Iterator<Action> iter= fActions.iterator(); iter.hasNext();) {
-				Action action= iter.next();
-				if (action instanceof ISelectionChangedListener)
-					fSelectionProvider.removeSelectionChangedListener((ISelectionChangedListener) action);
-			}
-			fActions.clear();
-		}
-		super.dispose();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void dispose() {
+        if (fActions != null) {
+            for (Iterator<Action> iter= fActions.iterator(); iter.hasNext();) {
+                Action action= iter.next();
+                if (action instanceof ISelectionChangedListener)
+                    fSelectionProvider.removeSelectionChangedListener((ISelectionChangedListener) action);
+            }
+            fActions.clear();
+        }
+        super.dispose();
+    }
 }
