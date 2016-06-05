@@ -14,33 +14,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchSite;
-import org.eclipse.ui.IWorkingSet;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.actions.ActionGroup;
-import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.eclipse.ui.part.Page;
-import org.eclipse.ui.texteditor.IUpdate;
-import org.eclipse.jdt.ui.IContextMenuConstants;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -68,11 +43,35 @@ import org.eclipse.jdt.internal.ui.wizards.buildpaths.newsourcepage.EditOutputFo
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.newsourcepage.ExcludeFromBuildpathAction;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.newsourcepage.IncludeToBuildpathAction;
 import org.eclipse.jdt.internal.ui.wizards.buildpaths.newsourcepage.RemoveFromBuildpathAction;
+import org.eclipse.jdt.ui.IContextMenuConstants;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchSite;
+import org.eclipse.ui.IWorkingSet;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.ActionGroup;
+import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.part.Page;
+import org.eclipse.ui.texteditor.IUpdate;
 
 import com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsBlock;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsPropertiesPage;
-import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
+import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 
 /**
@@ -275,8 +274,8 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
 		final ConfigureBuildPathAction configure= new ConfigureBuildPathAction(site) {
 			@Override
 			public void run() {
-				IProject project= null;
-				Object firstElement= getSelectedElements().get(0);
+				IProject project = null;
+				Object firstElement = getSelectedElements().get(0);
 				HashMap<Object, IClasspathEntry> data= new HashMap<Object, IClasspathEntry>();
 
 				if (firstElement instanceof IJavaElement) {
@@ -289,13 +288,15 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
 							// ignore
 						}
 					}
-					project= element.getJavaProject().getProject();
-				} else if (firstElement instanceof PackageFragmentRootContainer) {
+					project = element.getJavaProject().getProject();
+				}
+				else if (firstElement instanceof PackageFragmentRootContainer) {
 					PackageFragmentRootContainer container= (PackageFragmentRootContainer) firstElement;
 					project= container.getJavaProject().getProject();
-					IClasspathEntry entry= container instanceof ClassPathContainer ? ((ClassPathContainer) container).getClasspathEntry() : JavaCore.newLibraryEntry(new Path("/x/y"), null, null); //$NON-NLS-1$
+					IClasspathEntry entry = container instanceof ClassPathContainer ? ((ClassPathContainer) container).getClasspathEntry() : JavaCore.newLibraryEntry(new Path("/x/y"), null, null); //$NON-NLS-1$
 					data.put(BuildPathsPropertyPage.DATA_REVEAL_ENTRY, entry);
-				} else {
+				}
+				else {
 					project= ((IResource) ((IAdaptable) firstElement).getAdapter(IResource.class)).getProject();
 				}
 				PreferencesUtil.createPropertyDialogOn(getShell(), project, CeylonBuildPathsPropertiesPage.ID, null, data).open();
@@ -306,7 +307,7 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
 		for (Iterator<Action> iter= fActions.iterator(); iter.hasNext();) {
 			Action action= iter.next();
 			if (action instanceof ISelectionChangedListener) {
-				ISelectionChangedListener listener= (ISelectionChangedListener)action;
+				ISelectionChangedListener listener = (ISelectionChangedListener) action;
 				selectionProvider.addSelectionChangedListener(listener);
 				listener.selectionChanged(new SelectionChangedEvent(selectionProvider, selectionProvider.getSelection()));
 			}
@@ -320,10 +321,11 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
 		IJavaProject javaProject = null;
 		Object object= selectedElements.get(0);
 		if (object instanceof IJavaElement) {
-			javaProject = ((IJavaElement)object).getJavaProject();
+			IJavaElement javaElement = (IJavaElement) object;
+            javaProject = javaElement.getJavaProject();
 		} else if (object instanceof IResource) {
-			IResource resource = (IResource)object;
-			if (! ExternalSourceArchiveManager.isInSourceArchive(resource)) {
+			IResource resource = (IResource) object;
+			if (!ExternalSourceArchiveManager.isInSourceArchive(resource)) {
 				javaProject= JavaCore.create(resource.getProject());
 			}
 		}
@@ -336,10 +338,13 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
 			return;
 		}
 		
-		BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
-        CeylonProjectConfig config = ceylonProject.getConfiguration();
-
-        if (! ceylonProject.getSynchronizedWithConfiguration()) {
+		BaseCeylonProject ceylonProject = 
+		        modelJ2C()
+		            .ceylonModel()
+		            .getProject(project);
+		
+        if (ceylonProject != null
+                && !ceylonProject.getSynchronizedWithConfiguration()) {
 			MessageDialog.openError(shell, 
 					NewWizardMessages.NewSourceContainerWorkbookPage_ToolBar_RemoveFromCP_tooltip, 
                     "The Ceylon configuration file (.ceylon/config) is not synchronized with the current build path settings.\n" +
@@ -350,15 +355,22 @@ public class GenerateBuildPathActionGroup extends ActionGroup {
 		// Then run the modification action
 		runnable.run();
 		
-		// And finally update the Ceylon config file
-        List<String> configResourceDirectories = toJavaStringList(config.getProjectResourceDirectories());
-        IPath javaOutputLocation = javaProject.readOutputLocation();
-        try {
-			CPListElement[] classPathEntries = CPListElement.createFromExisting(javaProject);
-			List<CPListElement> resourcePathEntries = new ArrayList<>();
-			CeylonBuildPathsBlock.resourcePathsFromStrings(javaProject, configResourceDirectories, new HashSet<String>(), resourcePathEntries);
-			CeylonBuildPathsBlock.flush(Arrays.asList(classPathEntries), resourcePathEntries, javaOutputLocation, javaProject, null, null);
-		} catch (OperationCanceledException | CoreException e) {
+		if (ceylonProject != null) {
+	        CeylonProjectConfig config = ceylonProject.getConfiguration();
+    
+    		// And finally update the Ceylon config file
+            try {
+    			CPListElement[] classPathEntries = 
+    			        CPListElement.createFromExisting(javaProject);
+    			List<CPListElement> resourcePathEntries = new ArrayList<>();
+    			CeylonBuildPathsBlock.resourcePathsFromStrings(javaProject, 
+    			        toJavaStringList(config.getProjectResourceDirectories()), 
+    			        new HashSet<String>(), resourcePathEntries);
+    			CeylonBuildPathsBlock.flush(Arrays.asList(classPathEntries), 
+    			        resourcePathEntries, javaProject.readOutputLocation(), 
+    			        javaProject, null, null);
+    		} catch (OperationCanceledException | CoreException e) {
+    		}
 		}
 	}
 	
