@@ -100,13 +100,19 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
             return null;
         }
         else if (node instanceof Tree.Declaration) {
-            Tree.Declaration decNode = 
-                    (Tree.Declaration) node;
-            if (decNode.getDeclarationModel()
-                    .getNativeBackends()
-                    .equals(supportedBackends)) {
-                //we're already at the declaration itself
-                return null;
+            boolean syntheticVar = 
+                    node instanceof Tree.Variable &&
+                    ((Tree.Variable) node).getType() 
+                        instanceof Tree.SyntheticVariable;
+            if (!syntheticVar) {
+                Tree.Declaration decNode = 
+                        (Tree.Declaration) node;
+                if (decNode.getDeclarationModel()
+                        .getNativeBackends()
+                        .equals(supportedBackends)) {
+                    //we're already at the declaration itself
+                    return null;
+                }
             }
         }
         else if (node instanceof Tree.ImportPath) {
