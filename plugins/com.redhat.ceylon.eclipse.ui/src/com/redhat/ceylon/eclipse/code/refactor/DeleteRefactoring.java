@@ -573,9 +573,11 @@ public class DeleteRefactoring extends AbstractRefactoring {
         }
         if (declarationToDelete.isParameter()) {
             FunctionOrValue fov = 
-                    (FunctionOrValue) declarationToDelete;
+                    (FunctionOrValue) 
+                    declarationToDelete;
             Declaration container = 
-                    (Declaration) fov.getContainer();
+                    fov.getInitializerParameter()
+                        .getDeclaration();
             if (container.isToplevel() || 
                 container.isShared()) {
                 return true;

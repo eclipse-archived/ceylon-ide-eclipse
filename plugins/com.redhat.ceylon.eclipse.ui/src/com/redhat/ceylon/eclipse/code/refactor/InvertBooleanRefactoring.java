@@ -73,9 +73,12 @@ public class InvertBooleanRefactoring extends AbstractRefactoring {
         }
         if (value.isParameter()) {
             FunctionOrValue fov = 
-                    (FunctionOrValue) value;
+                    (FunctionOrValue) 
+                        value;
             Declaration container = 
-                    (Declaration) fov.getContainer();
+                    fov.getInitializerParameter()
+                        .getDeclaration();
+
             if (container.isToplevel() || 
                 container.isShared()) {
                 return true;
