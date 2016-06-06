@@ -265,12 +265,11 @@ object eclipseCompletionServices satisfies CompletionServices {
         }
     }
     
-    shared actual void newTypeProposal(ProposalsHolder ctx, Integer offset, Type? type, String text, 
+    shared actual void newTypeProposal(ProposalsHolder proposals, 
+        Integer offset, Type? type, String text, 
         String desc, Tree.CompilationUnit rootNode) {
-        
-        if (is EclipseCompletionContext ctx) {
-            ctx.proposals.add(TypeProposal(offset, type, text, desc, rootNode));
-        }
+        assert (is EclipseProposalsHolder proposals);
+        proposals.add(TypeProposal(offset, type, text, desc, rootNode));
     }
     
     createProposalsHolder() => EclipseProposalsHolder();
