@@ -59,13 +59,13 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
         if (repoManager != null) {
             String moduleName = "ceylon.language";
             String moduleVersion = TypeChecker.LANGUAGE_MODULE_VERSION;
-            File languageModuleArtifact = repoManager.getArtifact(new ArtifactContext(moduleName, moduleVersion, ArtifactContext.CAR));
+            File languageModuleArtifact = repoManager.getArtifact(new ArtifactContext(null, moduleName, moduleVersion, ArtifactContext.CAR));
             if (languageModuleArtifact != null) {
                 IPath ceylonLanguageBinaries = new Path(languageModuleArtifact.getAbsolutePath());
                 File ceylonLanguageJavaSources = ceylonSourceArchiveToJavaSourceArchive(
                         moduleName,
                         moduleVersion,
-                        repoManager.getArtifact(new ArtifactContext(moduleName,moduleVersion, ArtifactContext.SRC)));
+                        repoManager.getArtifact(new ArtifactContext(null, moduleName,moduleVersion, ArtifactContext.SRC)));
                 IPath ceylonLanguageSources = ceylonLanguageJavaSources != null ? 
                         new Path(ceylonLanguageJavaSources.getAbsolutePath()) : null;
                 IClasspathEntry entry = newLibraryEntry(ceylonLanguageBinaries, ceylonLanguageSources, null);

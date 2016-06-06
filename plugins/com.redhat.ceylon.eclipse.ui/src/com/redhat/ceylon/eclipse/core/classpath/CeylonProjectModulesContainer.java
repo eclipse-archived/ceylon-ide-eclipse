@@ -494,7 +494,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
         // In this case it will not try the second extension (-sources.jar).
         String suffix = module.getArtifactType().equals(ArtifactResultType.MAVEN) ? 
                 ArtifactContext.LEGACY_SRC : ArtifactContext.SRC; 
-        ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
+        ArtifactContext ctx = new ArtifactContext(null, module.getNameAsString(), 
                 module.getVersion(), suffix);
         File srcArtifact = null;
         try {
@@ -550,7 +550,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
         // Shouldn't need to execute this anymore ! 
         // We already retrieved this information during in the ModuleVisitor.
         // This should be a performance gain.
-        ArtifactContext ctx = new ArtifactContext(module.getNameAsString(), 
+        ArtifactContext ctx = new ArtifactContext(null, module.getNameAsString(), 
                 module.getVersion(), ArtifactContext.CAR);
         // try first with .car
         File moduleArtifact = null;
@@ -564,7 +564,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
         }
         if (moduleArtifact==null){
             // try with .jar
-            ctx = new ArtifactContext(module.getNameAsString(), 
+            ctx = new ArtifactContext(null, module.getNameAsString(), 
                     module.getVersion(), ArtifactContext.JAR);
             moduleArtifact = provider.getArtifact(ctx);
         }
