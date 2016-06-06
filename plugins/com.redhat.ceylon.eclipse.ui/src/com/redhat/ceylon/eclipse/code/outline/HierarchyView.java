@@ -394,7 +394,7 @@ public class HierarchyView extends ViewPart {
                     Collection<DeclarationWithProximity> children = 
                             declaration.getMatchingMemberDeclarations(
                                     declaration.getUnit(), //TODO: is this correct??
-                                    declaration, "", 0)
+                                    declaration, "", 0, null)
                                     .values();
                     for (DeclarationWithProximity dwp: children) {
                         Declaration d = dwp.getDeclaration();

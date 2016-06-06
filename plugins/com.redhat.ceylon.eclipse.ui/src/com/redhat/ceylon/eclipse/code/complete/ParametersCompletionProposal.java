@@ -672,7 +672,7 @@ public class ParametersCompletionProposal extends CompletionProposal {
                     Collection<DeclarationWithProximity> members = 
                             value.getTypeDeclaration()
                                 .getMatchingMemberDeclarations(
-                                        unit, scope, "", 0)
+                                        unit, scope, "", 0, null)
                                 .values();
                     for (DeclarationWithProximity mwp: members) {
                         addValueArgumentProposal(loc, props,

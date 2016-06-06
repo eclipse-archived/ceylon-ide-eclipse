@@ -168,7 +168,6 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                 secondLevel = secondLevel;
                 monitor = monitor;
                 returnedParamInfo = returnedParamInfo;
-                cancellable = monitor;
             };
             
             return ctx.proposals.proposals.sequence();

@@ -157,7 +157,7 @@ public class OutlinePopup extends TreeViewPopup {
                     Collection<DeclarationWithProximity> members = 
                             td.getMatchingMemberDeclarations(
                                     rootNode.getUnit(), 
-                                    td, filter, 0).values();
+                                    td, filter, 0, null).values();
                     for (DeclarationWithProximity dwp: members) {
                         for (Declaration dec: 
                                 overloads(dwp.getDeclaration())) {
