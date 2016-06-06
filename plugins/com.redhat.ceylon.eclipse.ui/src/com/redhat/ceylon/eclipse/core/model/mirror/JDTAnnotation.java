@@ -50,7 +50,9 @@ public class JDTAnnotation implements AnnotationMirror {
             if (elementMethod != null) {
                 value = convertValue(annotationValue.getMethodBinding().returnType, annotationValue.getValue());
             } else {
-                value = JDTType.UNKNOWN_TYPE;
+                System.err.println("WARNING: method for annotation '" + name + "' was not found");
+                continue;
+//                value = JDTType.UNKNOWN_TYPE;
             }
             values.put(name, value);
         }
