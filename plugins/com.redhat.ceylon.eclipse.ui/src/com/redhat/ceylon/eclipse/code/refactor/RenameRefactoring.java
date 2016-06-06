@@ -651,9 +651,11 @@ public class RenameRefactoring extends AbstractRefactoring {
         }
         if (declaration.isParameter()) {
             FunctionOrValue fov = 
-                    (FunctionOrValue) declaration;
+                    (FunctionOrValue) 
+                        declaration;
             Declaration container = 
-                    (Declaration) fov.getContainer();
+                    fov.getInitializerParameter()
+                        .getDeclaration();
             if (container.isToplevel() || 
                 container.isShared()) {
                 return true;
