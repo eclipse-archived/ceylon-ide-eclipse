@@ -63,59 +63,72 @@ public class RefactorMenuItems extends CompoundContributionItem {
         return new IContributionItem[] {
                 new DynamicMenuItem(PLUGIN_ID + ".action.rename", 
                         "&Rename...",
-                        editor!=null && new RenameRefactoring(editor).getEnabled(), 
+                        editorAvailable(editor) 
+                            && new RenameRefactoring(editor).getEnabled(), 
                         RENAME),
                 new DynamicMenuItem(PLUGIN_ID + ".action.enterAlias", 
                         "Enter Import &Alias...",
-                        editor!=null && new EnterAliasRefactoring(editor).getEnabled(), 
+                        editorAvailable(editor) 
+                            && new EnterAliasRefactoring(editor).getEnabled(), 
                         IMPORT),
                 new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".action.changeParameters", 
                         "Change Parameter &List...",
-                        editor!=null && new ChangeParametersRefactoring(editor).getEnabled(),
+                        editorAvailable(editor) 
+                            && new ChangeParametersRefactoring(editor).getEnabled(),
                         REORDER),
                 new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".action.inline", 
                         "&Inline...",
-                        editor!=null && newEclipseInlineRefactoring_.newEclipseInlineRefactoring(editor) != null,
+                        editorAvailable(editor) 
+                            && newEclipseInlineRefactoring_.newEclipseInlineRefactoring(editor) != null,
                         COMP_CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.extractValue", 
                         "Extract &Value...",
-                        editor!=null && refactorJ2C().newExtractValueRefactoring(editor).getEnabled(),
+                        editorAvailable(editor) 
+                            && refactorJ2C().newExtractValueRefactoring(editor).getEnabled(),
                         CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.extractFunction", 
                         "Extract &Function...",
-                        editor!=null && refactorJ2C().newExtractFunctionRefactoring(editor).getEnabled(),
+                        editorAvailable(editor) 
+                            && refactorJ2C().newExtractFunctionRefactoring(editor).getEnabled(),
                         CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.extractInterface", 
                         "Extract Interface...",
-                        editor!=null && new ExtractInterfaceRefactoring(editor).getEnabled(),
+                        editorAvailable(editor) 
+                            && new ExtractInterfaceRefactoring(editor).getEnabled(),
                         CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.extractParameter", 
                         "Extract &Parameter...",
-                        editor!=null && refactorJ2C().newExtractParameterRefactoring(editor).getEnabled(),
+                        editorAvailable(editor) 
+                            && refactorJ2C().newExtractParameterRefactoring(editor).getEnabled(),
                         CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.collectParameters", 
                         "&Collect Parameters...",
-                        editor!=null && new CollectParametersRefactoring(editor).getEnabled(),
+                        editorAvailable(editor) 
+                            && new CollectParametersRefactoring(editor).getEnabled(),
                         COMP_CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.createAlias", 
                         "Introduce &Type Alias...",
-                        editor!=null && new AliasRefactoring(editor).getEnabled(), 
+                        editorAvailable(editor) 
+                            && new AliasRefactoring(editor).getEnabled(), 
                         COMP_CHANGE),
                 new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".action.invertBoolean", 
                         "Invert &Boolean...",
-                        editor!=null && new InvertBooleanRefactoring(editor).getEnabled(),
+                        editorAvailable(editor) 
+                            && new InvertBooleanRefactoring(editor).getEnabled(),
                        COMP_CHANGE),
                 new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".action.moveOut", 
                         "Move &Out...",
-                        editor!=null && new MoveOutRefactoring(editor).getEnabled(),
+                        editorAvailable(editor) 
+                            && new MoveOutRefactoring(editor).getEnabled(),
                         RefactorMenuItems.COMP_CHANGE),
                 new DynamicMenuItem(PLUGIN_ID + ".action.makeReceiver", 
                         "Make R&eceiver...",
-                        editor!=null && new MakeReceiverRefactoring(editor).getEnabled(),
+                        editorAvailable(editor) 
+                            && new MakeReceiverRefactoring(editor).getEnabled(),
                         COMP_CHANGE),
                 new Separator(),
                 new DynamicMenuItem(PLUGIN_ID + ".action.moveDeclarationToNewUnit", 
@@ -127,6 +140,17 @@ public class RefactorMenuItems extends CompoundContributionItem {
                         new MoveToUnitHandler().isEnabled(), 
                         MOVE),
         };
+    }
+
+    private static boolean editorAvailable(IEditorPart editor) {
+        if (editor instanceof CeylonEditor) {
+            CeylonEditor ceylonEditor = (CeylonEditor) editor;
+            return ceylonEditor.getParseController()
+                    .getTypecheckedRootNode()!=null;
+        }
+        else {
+            return false;
+        }
     }
     
 }
