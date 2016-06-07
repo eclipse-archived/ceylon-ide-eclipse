@@ -2,7 +2,8 @@ import com.redhat.ceylon.compiler.typechecker.context {
     PhasedUnit
 }
 import com.redhat.ceylon.compiler.typechecker.tree {
-    Node
+    Node,
+    Tree
 }
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
@@ -86,20 +87,25 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
         
         tokens = editor.parseController.tokens;
         
-        rootNode = editor.parseController.typecheckedRootNode;
+        Tree.CompilationUnit? typecheckedRootNode 
+                = editor.parseController.typecheckedRootNode;
+        if (!exists typecheckedRootNode) {
+            throw Exception("Can't refactor while typechecking");
+        }
+        rootNode = typecheckedRootNode;
         
         value selection = EditorUtil.getSelection(editor);
-        value _node = nodes.findNode(
+        value foundNode = nodes.findNode(
             rootNode, tokens, 
             selection.offset,
             selection.offset+selection.length
         );
-        if (!exists _node) {
+        if (!exists foundNode) {
             throw Exception("Can't refactor if node is null " + 
                 "(selection = [``selection.offset``, ``selection.offset+selection.length``]).");
         }
         
-        shared actual default Node node = _node;
+        shared actual default Node node = foundNode;
         
         shared actual IFileVirtualFile? sourceVirtualFile = 
                 if (is IFileEditorInput input = editor.editorInput, 
