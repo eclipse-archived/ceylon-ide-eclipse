@@ -1,9 +1,6 @@
 import com.redhat.ceylon.compiler.typechecker.context {
     PhasedUnit
 }
-import com.redhat.ceylon.compiler.typechecker.tree {
-    Node
-}
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
 }
@@ -99,8 +96,7 @@ abstract class EclipseAbstractRefactoring<RefactoringData>
             startOffset = selection.offset;
             endOffset = selection.offset+selection.length;
         });
-        
-        shared actual default Node node = foundNode;
+        node = foundNode;
         
         shared actual IFileVirtualFile? sourceVirtualFile = 
                 if (is IFileEditorInput input = editor.editorInput, 
