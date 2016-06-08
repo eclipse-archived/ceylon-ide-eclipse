@@ -4,6 +4,8 @@ import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_HIERARCHY_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.HIERARCHY_FILTERS;
 import static com.redhat.ceylon.eclipse.util.ModelProxy.getDeclarationInUnit;
+import static com.redhat.ceylon.model.cmr.JDKUtils.isJDKModule;
+import static com.redhat.ceylon.model.cmr.JDKUtils.isOracleJDKModule;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getInterveningRefinements;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getSignature;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
@@ -31,7 +33,6 @@ import com.redhat.ceylon.eclipse.util.ModelProxy;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.util.toJavaIterable_;
 import com.redhat.ceylon.ide.common.util.toJavaList_;
-import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -417,21 +418,32 @@ public final class CeylonHierarchyContentProvider
             if (monitor.isCanceled()) return;
             
             IEditorPart part = 
-                    site.getPage().getActiveEditor();
+                    site.getPage()
+                        .getActiveEditor();
             
             List<Type> signature = getSignature(declaration);
             int ps = packages.size();
-            for (Package p: packages) { //workaround CME
-                int ms = p.getMembers().size();
-                monitor.subTask("scanning " + p.getNameAsString());
-                for (Unit u: p.getUnits()) {
+            for (Package pack: packages) { //workaround CME
+                List<Declaration> members =
+                        //IMPORTANT: call getMembers() to 
+                        //force lazy loading of all Units!
+                        pack.getMembers();
+                int ms = members.size();
+                monitor.subTask("scanning " 
+                        + pack.getNameAsString());
+                //iterate over units and then declarations
+                //in order to pick up nested declarations,
+                //unlike in OpenDeclarationDialog where we
+                //iterate over Package.getMembers() because
+                //we only want toplevels
+                for (Unit unit: pack.getUnits()) {
                     try {
                         //TODO: unshared inner types get 
                         //      missed for binary modules
-                        for (Declaration d: u.getDeclarations()) {
+                        for (Declaration d: unit.getDeclarations()) {
                             if (!isFiltered(d)) {
                                 d = replaceWithCurrentEditorDeclaration(
-                                        part, p, d); //TODO: not enough to catch *new* subtypes in the dirty editor
+                                        part, pack, d); //TODO: not enough to catch *new* subtypes in the dirty editor
                                 if (d instanceof ClassOrInterface || 
                                         d instanceof TypeParameter) {
                                     try {
@@ -607,43 +619,62 @@ public final class CeylonHierarchyContentProvider
 
         private void collectPackages(Set<Package> packages, 
                 Module module) {
-            if (!filters.isFiltered(module)) {
-                for (Package pack: 
-                        module.getPackages()) {
+            if (includeModule(module)) {
+                //TODO: I guess we don't need to clone the 
+                //      package list before iterating, like 
+                //      what we do in OpenDeclarationDialog, 
+                //      because all we're doing is adding
+                //      the packages to a Set
+                for (Package pack: module.getPackages()) {
                     if (!filters.isFiltered(pack)) {
-                        String packageModuleName = 
-                                pack.getModule()
-                                    .getNameAsString();
-                        if ((!excludeJDK || 
-                                !JDKUtils.isJDKModule(
-                                        packageModuleName)) && 
-                            (!excludeOracleJDK || 
-                                !JDKUtils.isOracleJDKModule(
-                                        packageModuleName))) {
-                            packages.add(pack);
-                        }
+                        packages.add(pack);
                     }
                 }
             }
+        }
+        
+        private boolean includeModule(Module module) {
+            return !excluded(module)
+                    && !filters.isFiltered(module) 
+                    && module.isAvailable();
+        }
+        
+        private boolean excluded(Module module) {
+            String moduleName = module.getNameAsString();
+            return 
+                excludeJDK &&
+                    isJDKModule(moduleName) || 
+                excludeOracleJDK && 
+                    isOracleJDKModule(moduleName);
         }
 
         private Set<Module> collectModules() {
             Unit unit = declaration.getUnit();
             Module currentModule = 
-                    unit.getPackage().getModule();
+                    unit.getPackage()
+                        .getModule();
             Set<Module> allModules = new HashSet<Module>();
             if (currentModule instanceof BaseIdeModule) {
-                BaseIdeModule jdtCurrentModule = (BaseIdeModule) currentModule;
-                List<BaseIdeModule> moduleInAllProjects = new ArrayList<BaseIdeModule>();
-                TypeDescriptor BaseIdeModuleTD = TypeDescriptor.klass(BaseIdeModule.class);
+                BaseIdeModule jdtCurrentModule = 
+                        (BaseIdeModule) currentModule;
+                List<BaseIdeModule> moduleInAllProjects = 
+                        new ArrayList<BaseIdeModule>();
+                TypeDescriptor BaseIdeModuleTD = 
+                        TypeDescriptor.klass(BaseIdeModule.class);
                 moduleInAllProjects.add(jdtCurrentModule);
-                moduleInAllProjects.addAll(toJavaList_.toJavaList(BaseIdeModuleTD, jdtCurrentModule.getModuleInReferencingProjects()));
-                for (BaseIdeModule ideModule : moduleInAllProjects) {
+                moduleInAllProjects.addAll(toJavaList_.toJavaList(
+                        BaseIdeModuleTD, 
+                        jdtCurrentModule.getModuleInReferencingProjects()));
+                for (BaseIdeModule ideModule: moduleInAllProjects) {
                     allModules.add(ideModule);
-                    for (Module relatedModule : toJavaIterable_.toJavaIterable(BaseIdeModuleTD, ideModule.getReferencingModules())) {
+                    for (Module relatedModule: 
+                        toJavaIterable_.toJavaIterable(BaseIdeModuleTD, 
+                                ideModule.getReferencingModules())) {
                         allModules.add(relatedModule);
                     }
-                    for (Module relatedModule : toJavaIterable_.toJavaIterable(BaseIdeModuleTD, ideModule.getTransitiveDependencies())) {
+                    for (Module relatedModule: 
+                        toJavaIterable_.toJavaIterable(BaseIdeModuleTD, 
+                                ideModule.getTransitiveDependencies())) {
                         allModules.add(relatedModule);
                     }
                 }

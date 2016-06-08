@@ -1,12 +1,12 @@
 package com.redhat.ceylon.eclipse.code.search;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.compile;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
@@ -204,14 +202,16 @@ class CeylonSearchQuery implements ISearchQuery {
                     for (Module m: modules.getListOfModules()) {
                         if (m instanceof IdeModule &&
                                 !filters.isFiltered(m)) {
-                            IdeModule<IProject,IResource,IFolder,IFile> module = (IdeModule<IProject,IResource,IFolder,IFile>) m;
+                            IdeModule module = (IdeModule) m;
                             if (module.getIsCeylonArchive() && 
                                     !module.getIsProjectModule() && 
                                     module.getArtifact()!=null) { 
 
-                                CeylonProject<IProject,IResource,IFolder,IFile> originalProject = module.getOriginalProject();
+                                CeylonProject originalProject = 
+                                        module.getOriginalProject();
                                 if (originalProject != null 
-                                        && projectsToSearch.contains(originalProject.getIdeArtifact())) {
+                                        && projectsToSearch.contains(
+                                                originalProject.getIdeArtifact())) {
                                     continue;
                                 }
                                 

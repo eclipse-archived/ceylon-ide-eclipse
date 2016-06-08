@@ -15,7 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -45,7 +44,6 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.util.Filters;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.IJavaModelAware;
@@ -132,15 +130,14 @@ abstract class FindSearchQuery implements ISearchQuery {
                 Modules modules = 
                         typeChecker.getContext()
                             .getModules();
-                for (Module m: modules.getListOfModules()) {
-                    if (m instanceof IdeModule &&
-                            !filters.isFiltered(m)) {
-                        IdeModule<IProject, IResource, IFolder, IFile> module = 
-                                (IdeModule<IProject, IResource, IFolder, IFile>) m;
+                for (Module mod: modules.getListOfModules()) {
+                    if (mod instanceof IdeModule &&
+                            !filters.isFiltered(mod)) {
+                        IdeModule module = (IdeModule) mod;
                         if (module.getIsCeylonArchive() && 
                                 !module.getIsProjectModule() && 
                                 module.getArtifact()!=null) {
-                            CeylonProject<IProject, IResource, IFolder, IFile> originalProject = 
+                            CeylonProject originalProject = 
                                     module.getOriginalProject();
                             if (originalProject != null 
                                     && projectsToSearch.contains(
@@ -155,7 +152,7 @@ abstract class FindSearchQuery implements ISearchQuery {
                                     toJavaString(module.getSourceArchivePath());
                             if (searchedArchives.add(archivePath) &&
                                 searchedArchives.add(sourceArchivePath) && 
-                                    m.getAllReachablePackages()
+                                    mod.getAllReachablePackages()
                                         .contains(pack)) {
                                 findInUnits(
                                         module.getPhasedUnitsAsJavaList(), 
@@ -202,10 +199,10 @@ abstract class FindSearchQuery implements ISearchQuery {
                         getProjectTypeChecker(project)
                                 .getContext()
                                 .getModules();
-                for (Module m: modules.getListOfModules()) {
-                    if (m instanceof BaseIdeModule &&
-                            !filters.isFiltered(m)) {
-                        BaseIdeModule module = (BaseIdeModule) m;
+                for (Module mod: modules.getListOfModules()) {
+                    if (mod instanceof IdeModule &&
+                            !filters.isFiltered(mod)) {
+                        IdeModule module = (IdeModule) mod;
                         if (module.getIsCeylonArchive() && 
                                 !module.getIsProjectModule() && 
                                 module.getArtifact()!=null) { 
@@ -216,7 +213,7 @@ abstract class FindSearchQuery implements ISearchQuery {
                                     toJavaString(module.getSourceArchivePath());
                             if (searchedArchives.add(archivePath) &&
                                 searchedArchives.add(sourceArchivePath) && 
-                                    m.getAllReachablePackages()
+                                    mod.getAllReachablePackages()
                                         .contains(pack)) {
                                 work++;
                             }

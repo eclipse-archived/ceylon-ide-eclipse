@@ -3,6 +3,7 @@ package com.redhat.ceylon.eclipse.code.open;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
+import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedModel;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
@@ -41,9 +42,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -71,7 +70,6 @@ import org.eclipse.ui.IMemento;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage;
 import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
@@ -82,7 +80,6 @@ import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 import com.redhat.ceylon.ide.common.doc.DocGenerator;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CrossProjectSourceFile;
 import com.redhat.ceylon.ide.common.model.EditedSourceFile;
 import com.redhat.ceylon.ide.common.model.IResourceAware;
@@ -703,16 +700,17 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             
             if (projectName!=null) {
                 for (IProject project: getProjects()) {
-                     if (project.getName().equals(projectName)) {
+                     if (project.getName()
+                             .equals(projectName)) {
                         //search for a source file in the project
                         for (PhasedUnit phasedUnit: 
                                 getUnits(project)) {
                             String filename = 
                                     phasedUnit.getUnit()
-                                            .getFilename();
+                                        .getFilename();
                             String pname = 
                                     phasedUnit.getPackage()
-                                            .getQualifiedNameString();
+                                        .getQualifiedNameString();
                             if (filename.equals(unitFileName) && 
                                     pname.equals(packageName)) {
                                 for (Declaration dec: 
@@ -749,8 +747,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                             module.getDirectPackage(packageName);
                     if (pkg!=null) {
                         for (Unit unit: pkg.getUnits()) {
-                            if (unit.getFilename().equals(unitFileName)) {
-                                for (Declaration dec: unit.getDeclarations()) {
+                            if (unit.getFilename()
+                                    .equals(unitFileName)) {
+                                for (Declaration dec: 
+                                        unit.getDeclarations()) {
                                     if (isPresentable(dec)) {
                                         String qname = 
                                                 dec.getQualifiedNameString();
@@ -797,9 +797,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 unit instanceof CrossProjectSourceFile ||
                 //TODO: is this correct:
                 unit instanceof JavaCompilationUnit) {
-                IResourceAware<IProject,IFolder,IFile> projectSourceFile = 
-                        (IResourceAware<IProject,IFolder,IFile>) unit;
-                IProject project = 
+                IResourceAware projectSourceFile = 
+                        (IResourceAware) unit;
+                IProject project = (IProject)
                         projectSourceFile.getResourceProject();
                 if (project!=null) {
                     element.putString("projectName", 
@@ -810,7 +810,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         
      }
     
-    public OpenDeclarationDialog(boolean multi, boolean history, 
+    public OpenDeclarationDialog(
+            boolean multi, boolean history, 
             Shell shell, String title, 
             String filterLabelText, String listLabelText) {
         super(shell, multi, filterLabelText, listLabelText);
@@ -926,38 +927,29 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             IProgressMonitor monitor, 
             Set<String> searchedArchives, 
             Collection<IProject> projectsToSearch) {
-        if (mod instanceof IdeModule &&
-                !filters.isFiltered(mod)) {
-            IdeModule<IProject,IResource,IFolder,IFile> module = 
-                    (IdeModule<IProject,IResource,IFolder,IFile>) mod;
+        if (includeModule(mod)) {
+            IdeModule module = (IdeModule) mod;
             BaseCeylonProject originalProject = 
                     module.getOriginalProject();
-            if (originalProject == null || 
-                    !projectsToSearch.contains(
-                            originalProject)) {
-                String moduleName = module.getNameAsString();
-                if (module.isAvailable() &&
-                        (!excludeJDK || 
-                                !isJDKModule(moduleName)) &&
-                        (!excludeOracleJDK || 
-                                !isOracleJDKModule(moduleName)) &&
-                        searchedArchives.add(
-                                uniqueIdentifier(module))) {
-                    fill(contentProvider, itemsFilter, 
-                            module, monitor);
-                    monitor.worked(1);
-                }
+            if ((originalProject == null || 
+                 !projectsToSearch.contains(originalProject)) 
+                && searchedArchives.add(uniqueIdentifier(mod))) {
+               fill(contentProvider, itemsFilter, 
+                     module, monitor);
+               monitor.worked(1);
             }
         }
     }
 
-    private void fill(AbstractContentProvider contentProvider,
-            ItemsFilter itemsFilter, BaseIdeModule module, 
+    private void fill(
+            AbstractContentProvider contentProvider,
+            ItemsFilter itemsFilter, 
+            IdeModule module, 
             IProgressMonitor monitor) {
         ArrayList<Package> copiedPackages = 
                 new ArrayList<Package>(module.getPackages());
         for (Package pack: copiedPackages) {
-            if (!filters.isFiltered(pack)) {
+            if (includePackage(pack, module)) {
                 for (Declaration dec: pack.getMembers()) {
                     fillDeclarationAndMembers(contentProvider, 
                             itemsFilter, module, dec);
@@ -966,6 +958,14 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             monitor.worked(1);
             if (monitor.isCanceled()) break;
         }
+    }
+
+    private boolean includePackage(Package pack, IdeModule module) {
+        boolean visibleFromProjectSource
+            = pack.isShared() 
+            || module.getIsProjectModule();
+        return visibleFromProjectSource 
+                && !filters.isFiltered(pack);
     }
     
     protected static class DeclarationProxy 
@@ -999,14 +999,15 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
         @Override
         public int hashCode() {
-            return super.hashCode() + location.hashCode();
+            return super.hashCode() 
+                    + location.hashCode();
         }
     }
 
     private void fillDeclarationAndMembers(
             AbstractContentProvider contentProvider, 
             ItemsFilter itemsFilter,
-            BaseIdeModule module, Declaration dec) {
+            IdeModule module, Declaration dec) {
         if (includeDeclaration(module, dec) &&
                 //watch out for dupes!
                 (!module.getIsProjectModule() || 
@@ -1042,7 +1043,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             List<? extends PhasedUnit> units, 
             IProgressMonitor monitor) {
         for (PhasedUnit unit: units) {
-            BaseIdeModule jdtModule = (BaseIdeModule) 
+            IdeModule jdtModule = (IdeModule) 
                     unit.getPackage().getModule();
             for (Declaration dec: unit.getDeclarations()) {
                 if (includeDeclaration(jdtModule, dec)) {
@@ -1058,7 +1059,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     }
 
     protected String getFilterListAsString(String preference) {
-        return CeylonPlugin.getPreferences().getString(preference);
+        return CeylonPlugin.getPreferences()
+                .getString(preference);
     }
     
     private Filters filters = new Filters() {
@@ -1077,22 +1079,25 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         return filters.isFiltered(declaration);
     }
 
-    private boolean includeDeclaration(BaseIdeModule module, 
+    private boolean includeDeclaration(IdeModule module, 
             Declaration dec) {
         try {
+            //only include declarations that could possibly
+            //be imported by the project source code
             boolean visibleFromSourceModules;
             if (dec.isToplevel()) {
-                visibleFromSourceModules = 
-                        dec.isShared() || 
-                        module.getIsProjectModule();
+                visibleFromSourceModules =
+                        module.getIsProjectModule()
+                        || dec.isShared();
             }
             else {
                 visibleFromSourceModules = 
-                        includeMembers && dec.isShared();
+                        includeMembers 
+                        && dec.isShared();
             }
-            return visibleFromSourceModules && 
-                    isPresentable(dec) && 
-                    !isFiltered(dec);
+            return visibleFromSourceModules 
+                    && isPresentable(dec) 
+                    && !isFiltered(dec);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -1110,38 +1115,54 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     getProjectTypeChecker(project)
                         .getContext()
                         .getModules();
-            for (Module m: modules.getListOfModules()) {
-                if (m instanceof BaseIdeModule &&
-                        !filters.isFiltered(m)) {
-                    BaseIdeModule module = (BaseIdeModule) m;
-                    String moduleName = 
-                            module.getNameAsString();
-                    if (module.isAvailable() &&
-                        (!excludeJDK || 
-                                !isJDKModule(moduleName)) &&
-                        (!excludeOracleJDK || 
-                                !isOracleJDKModule(moduleName)) &&
-                            searchedArchives.add(
-                                    uniqueIdentifier(module))) {
-                        work += 1 + m.getPackages().size();
-                    }
-                }
+            for (Module module: modules.getListOfModules()) {
+                if (includeModule(module) &&
+                    searchedArchives.add(uniqueIdentifier(module))) {
+                  work += 1 + module.getPackages().size();
+               }
             }
         }
         return work;
     }
+
+    private boolean includeModule(Module module) {
+        return module instanceof IdeModule &&
+                !excluded(module) &&
+                !filters.isFiltered(module) && 
+                module.isAvailable();
+    }
+
+    private boolean excluded(Module module) {
+        String moduleName = 
+                module.getNameAsString();
+        return 
+            excludeJDK &&
+                isJDKModule(moduleName) ||
+            excludeOracleJDK && 
+                isOracleJDKModule(moduleName);
+    }
     
-    private String uniqueIdentifier(BaseIdeModule module) {
-        return module.getArtifact()==null ?
-                module.getNameAsString() + 
-                    '#' + module.getVersion() :
-                new File(toJavaString(module.getSourceArchivePath()))
-                    .getAbsolutePath();
+    private static String uniqueIdentifier(Module m) {
+        String nameAndVersion = 
+                m.getNameAsString() + 
+                '#' + m.getVersion();
+        if (m instanceof IdeModule) {
+            IdeModule module = (IdeModule) m;
+            return module.getArtifact()==null ?
+                    nameAndVersion :
+                    new File(toJavaString(module.getSourceArchivePath()))
+                        .getAbsolutePath();
+        }
+        else {
+            return nameAndVersion;
+        }
     }
 
     private static String getModule(Declaration dec) {
-        Module module = dec.getUnit()
-                .getPackage().getModule();
+        Module module = 
+                dec.getUnit()
+                    .getPackage()
+                    .getModule();
         StringBuilder sb = new StringBuilder();
         sb.append(module.getNameAsString());
         if (module.getVersion()!=null) {
@@ -1154,9 +1175,11 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     
     private static Image getLocationImage(Declaration dwp) {
         Module module = 
-                dwp.getUnit().getPackage().getModule();
-        if (module instanceof BaseIdeModule) {
-            BaseIdeModule m = (BaseIdeModule) module;
+                dwp.getUnit()
+                    .getPackage()
+                    .getModule();
+        if (module instanceof IdeModule) {
+            IdeModule m = (IdeModule) module;
             if (m.getIsProjectModule()) {
 //                IProject project = dwp.getProject();
 //                if (project.isOpen()) {
@@ -1183,20 +1206,21 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     private static String getLocation(Declaration declaration) {
         Unit unit = declaration.getUnit();
         Module module = unit.getPackage().getModule();
-        if (module instanceof BaseIdeModule) {
+        if (module instanceof IdeModule) {
             if (unit instanceof EditedSourceFile ||
                 unit instanceof ProjectSourceFile ||
                 unit instanceof CrossProjectSourceFile ||
                 //TODO: is this correct:
                 unit instanceof JavaCompilationUnit) {
-                IResourceAware<IProject,IFolder,IFile> sourceFile = 
-                        (IResourceAware<IProject,IFolder,IFile>) unit;
-                IFile ra = sourceFile.getResourceFile();
+                IResourceAware sourceFile = 
+                        (IResourceAware) unit;
+                IFile ra = (IFile) 
+                        sourceFile.getResourceFile();
                 return ra==null ? null :
                     ra.getFullPath().toPortableString();
             }
             else {
-                BaseIdeModule mod = (BaseIdeModule) module;
+                IdeModule mod = (IdeModule) module;
                 String displayString = 
                         mod.getRepositoryDisplayString();
                 if (repositoryPath.equals(displayString)) {
@@ -1214,7 +1238,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         String name = dec.getName();
         if (dec.isClassOrInterfaceMember()) {
             Declaration type = 
-                    (Declaration) dec.getContainer();
+                    (Declaration) 
+                        dec.getContainer();
             name = type.getName() + "." + name; 
         }
         return name;
@@ -1233,8 +1258,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
     }
     
     static boolean isPresentable(Declaration d) {
-        String name = d.getName();
-        return name!=null && 
+        return d.getName()!=null && 
                 !d.isAnonymous() && 
                 !isOverloadedVersion(d);
     }
@@ -1309,7 +1333,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                     selection.length==1 &&
                     selection[0] instanceof DeclarationProxy) {
                     browser.setText(getDocumentationFor(null, 
-                            toDeclaration(selection[0]), null));
+                            toDeclaration(selection[0]), 
+                            null));
                 }
                 else {
                     if (emptyDoc==null) {
@@ -1408,12 +1433,13 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
         if (location.startsWith("doc:")) {
             if (target==null) {
-                target = DocumentationHover.getLinkedModel(location);
+                target = getLinkedModel(location);
             }
             if (target instanceof Declaration) {
                 String text = 
                         getDocumentationFor(null, 
-                                (Declaration) target, null);
+                                (Declaration) target, 
+                                null);
                 if (text!=null) browser.setText(text);
             }
             if (target instanceof Package) {
@@ -1431,7 +1457,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         }
         if (location.startsWith("dec:")) {
             if (target==null) {
-                target = DocumentationHover.getLinkedModel(location);
+                target = getLinkedModel(location);
             }
             if (target!=null) {
                 gotoDeclaration(target);
