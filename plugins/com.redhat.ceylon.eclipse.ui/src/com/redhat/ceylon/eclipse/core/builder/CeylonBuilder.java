@@ -2962,7 +2962,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         cleanupModules(monitor, project);
         cleanupJdtClasses(monitor, project);
         
-        monitor.subTask("Clearing project and source markers for project " + project.getName());
+        monitor.subTask("Clearing project and source markers for project " 
+                + project.getName());
         clearProjectMarkers(project, true, true);
         clearMarkersOn(project, true);
 
@@ -2973,9 +2974,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     private void cleanupJdtClasses(IProgressMonitor monitor, IProject project) {
         if (isExplodeModulesEnabled(project)) {
-            monitor.subTask("Cleaning exploded modules directory of project " + project.getName());
-            final File ceylonOutputDirectory = getCeylonClassesOutputDirectory(project);
-            new RepositoryLister(Arrays.asList(".*")).list(ceylonOutputDirectory, 
+            monitor.subTask("Cleaning exploded modules directory of project " 
+                    + project.getName());
+            final File ceylonOutputDirectory = 
+                    getCeylonClassesOutputDirectory(project);
+            new RepositoryLister(Arrays.asList(".*"))
+                .list(ceylonOutputDirectory, 
                     new RepositoryLister.Actions() {
                 @Override
                 public void doWithFile(File path) {
@@ -2993,20 +2997,27 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     private void cleanupModules(IProgressMonitor monitor, IProject project) {
-        final File modulesOutputDirectory = getCeylonModulesOutputDirectory(project);
+        final File modulesOutputDirectory = 
+                getCeylonModulesOutputDirectory(project);
         if (modulesOutputDirectory != null) {
-            monitor.subTask("Cleaning existing artifacts of project " + project.getName());
-            final List<String> extensionsToDelete = Arrays.asList(".jar", ".js", ".car", ".src", ".sha1");
-            final List<String> deleteEverything = Arrays.asList(".*");
+            monitor.subTask("Cleaning existing artifacts of project " 
+                    + project.getName());
+            final List<String> extensionsToDelete = 
+                    Arrays.asList(".jar", ".js", ".car", ".src", ".sha1");
+            final List<String> deleteEverything = 
+                    Arrays.asList(".*");
             new RepositoryLister(extensionsToDelete).list(modulesOutputDirectory, 
                     new RepositoryLister.Actions() {
 
                 @Override
                 public void doWithFile(File path) {
                     if (path.getName().endsWith(ArtifactContext.CAR)) {
-                        File moduleResourcesDirectory = new File(path.getParentFile(), ArtifactContext.RESOURCES);
+                        File moduleResourcesDirectory = 
+                                new File(path.getParentFile(), 
+                                        ArtifactContext.RESOURCES);
                         if (moduleResourcesDirectory.exists()) {
-                            new RepositoryLister(deleteEverything).list(moduleResourcesDirectory, 
+                            new RepositoryLister(deleteEverything)
+                                .list(moduleResourcesDirectory, 
                                 new RepositoryLister.Actions() {
                                     @Override
                                     public void doWithFile(File path) {
@@ -3040,7 +3051,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     // generated files go into parent folder
 
     public static RepositoryManager getProjectRepositoryManager(IProject project) {
-        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
+        CeylonProject ceylonProject = 
+                modelJ2C().ceylonModel().getProject(project);
         if (ceylonProject != null) {
             return ceylonProject.getRepositoryManager();
         }
@@ -3048,7 +3060,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     public static TypeChecker getProjectTypeChecker(IProject project) {
-        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
+        CeylonProject ceylonProject = 
+                modelJ2C().ceylonModel().getProject(project);
         if (ceylonProject != null && ceylonProject.getParsed()) {
             return ceylonProject.getTypechecker();
         }
@@ -3072,12 +3085,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
     
     public static Collection<BaseIdeModule> getProjectExternalModules(IProject project) {
-        TypeChecker typeChecker = getProjectTypeChecker(project);
+        TypeChecker typeChecker = 
+                getProjectTypeChecker(project);
         if (typeChecker == null) {
             return Collections.emptyList();
         }
         List<BaseIdeModule> modules = new ArrayList<>();
-        for (Module m : typeChecker.getContext().getModules().getListOfModules()) {
+        for (Module m : 
+                typeChecker.getContext()
+                    .getModules()
+                    .getListOfModules()) {
             if (m instanceof BaseIdeModule) {
                 BaseIdeModule module = (BaseIdeModule) m;
                 if (! module.getIsProjectModule()) {
@@ -3099,12 +3116,16 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static Collection<Module> getProjectDeclaredSourceModules(IProject project) {
-        TypeChecker typeChecker = getProjectTypeChecker(project);
+        TypeChecker typeChecker = 
+                getProjectTypeChecker(project);
         if (typeChecker == null) {
             return Collections.emptyList();
         }
         List<Module> modules = new ArrayList<>();
-        for (Module m : typeChecker.getPhasedUnits().getModuleSourceMapper().getCompiledModules()) {
+        for (Module m : 
+                typeChecker.getPhasedUnits()
+                    .getModuleSourceMapper()
+                    .getCompiledModules()) {
             if (m instanceof BaseIdeModule) {
                 BaseIdeModule module = (BaseIdeModule) m;
                 if (module.getIsProjectModule()) {
@@ -3120,11 +3141,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    IResource lastOverridesWithProblem = findLastOverridesProblemMarker(project);
+                    IResource lastOverridesWithProblem = 
+                            findLastOverridesProblemMarker(project);
                     if (lastOverridesWithProblem != null) {
-                        if (lastOverridesWithProblem.findMarkers(CEYLON_INVALID_OVERRIDES_MARKER, false, DEPTH_ZERO).length > 0) {
-                            lastOverridesWithProblem.deleteMarkers(CEYLON_INVALID_OVERRIDES_MARKER, false, DEPTH_ZERO);
-                            project.setPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID, "lastOverridesProblemMarker"), null);
+                        if (lastOverridesWithProblem.findMarkers(
+                                CEYLON_INVALID_OVERRIDES_MARKER, 
+                                false, DEPTH_ZERO).length > 0) {
+                            lastOverridesWithProblem.deleteMarkers(
+                                    CEYLON_INVALID_OVERRIDES_MARKER, 
+                                    false, DEPTH_ZERO);
+                            project.setPersistentProperty(
+                                    new QualifiedName(CeylonPlugin.PLUGIN_ID, 
+                                            "lastOverridesProblemMarker"), 
+                                    null);
                         }
                     }
                 }
@@ -3144,8 +3173,11 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         IPath absolutePath = new Path(file.getAbsolutePath());
         
         if (projectLocation.isPrefixOf(absolutePath)) {
-            IPath projectRelativePath = absolutePath.removeFirstSegments(projectLocation.segmentCount());
-            IResource resource = project.findMember(projectRelativePath);
+            IPath projectRelativePath = 
+                    absolutePath.removeFirstSegments(
+                            projectLocation.segmentCount());
+            IResource resource = 
+                    project.findMember(projectRelativePath);
             if (resource != null 
                     && resource.isAccessible()
                     && resource instanceof IFile) {
@@ -3155,11 +3187,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         return null;
     }
     
-    private static IResource findLastOverridesProblemMarker(final IProject project) {
+    private static IResource findLastOverridesProblemMarker(IProject project) {
         try {
-            String projectRelativePath = project.getPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID, "lastOverridesProblemMarker"));
+            String projectRelativePath = 
+                    project.getPersistentProperty(
+                            new QualifiedName(CeylonPlugin.PLUGIN_ID, 
+                                    "lastOverridesProblemMarker"));
             if (projectRelativePath != null) {
-                IResource resource = project.findMember(projectRelativePath);
+                IResource resource = 
+                        project.findMember(projectRelativePath);
                 if (resource != null && resource.isAccessible()) {
                     return resource;
                 }
@@ -3181,23 +3217,32 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         markerResource = overridesResource;
                     }
                     
-                    IResource lastOverridesWithProblem = findLastOverridesProblemMarker(project);
+                    IResource lastOverridesWithProblem = 
+                            findLastOverridesProblemMarker(project);
                     if (lastOverridesWithProblem != null) {
-                        lastOverridesWithProblem.deleteMarkers(CEYLON_INVALID_OVERRIDES_MARKER, false, DEPTH_ZERO);
+                        lastOverridesWithProblem.deleteMarkers(
+                                CEYLON_INVALID_OVERRIDES_MARKER, 
+                                false, DEPTH_ZERO);
                     }
                     
-                    project.setPersistentProperty(new QualifiedName(CeylonPlugin.PLUGIN_ID, "lastOverridesProblemMarker"), markerResource.getProjectRelativePath().toString());
+                    project.setPersistentProperty(
+                            new QualifiedName(CeylonPlugin.PLUGIN_ID, 
+                                    "lastOverridesProblemMarker"), 
+                            markerResource.getProjectRelativePath().toString());
                     
-                    IMarker marker = markerResource.createMarker(CEYLON_INVALID_OVERRIDES_MARKER);
+                    IMarker marker = 
+                            markerResource.createMarker(CEYLON_INVALID_OVERRIDES_MARKER);
                     marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
                     marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
                     if (line > -1) {
                         marker.setAttribute(IMarker.LOCATION, "Line " + line);
                         marker.setAttribute(IMarker.LINE_NUMBER, line);
                         if (column > -1 && markerResource instanceof IFile) {
-                            TextFileDocumentProvider docProvider = new TextFileDocumentProvider();
+                            TextFileDocumentProvider docProvider = 
+                                    new TextFileDocumentProvider();
                             docProvider.connect(markerResource);
-                            IDocument overridesDocument = docProvider.getDocument(markerResource);
+                            IDocument overridesDocument = 
+                                    docProvider.getDocument(markerResource);
                             if (overridesDocument != null) {
                                 IRegion lineInfo;
                                 try {
@@ -3236,7 +3281,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         }
                     }
                     marker.setAttribute(IMarker.SOURCE_ID, CeylonBuilder.SOURCE);
-                    marker.setAttribute(IMarker.MESSAGE, "The Module Resolver Overrides file is invalid : " + e.getMessage());
+                    marker.setAttribute(IMarker.MESSAGE, 
+                            "The Module Resolver Overrides file is invalid : " 
+                                    + e.getMessage());
                 }
                 catch (CoreException e) {
                     e.printStackTrace();
@@ -3314,12 +3361,14 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
     public static Collection<CeylonProject<IProject, IResource, IFolder, IFile>> getCeylonProjects() {
         return toJavaList_.toJavaList(td(CeylonProject.class), 
-                modelJ2C().ceylonModel().getCeylonProjects());
+                modelJ2C().ceylonModel()
+                    .getCeylonProjects());
     }
 
     public static Collection<IProject> getProjects() {
         return list(IProject.class, 
-                modelJ2C().ceylonModel().getNativeProjects());
+                modelJ2C().ceylonModel()
+                    .getNativeProjects());
     }
 
     public static Collection<TypeChecker> getTypeCheckers() {
