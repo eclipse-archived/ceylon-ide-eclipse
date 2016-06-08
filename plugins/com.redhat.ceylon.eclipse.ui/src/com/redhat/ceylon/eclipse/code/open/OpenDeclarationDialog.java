@@ -13,10 +13,12 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_DIALOGS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_DIALOGS;
+import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getOpenDialogFont;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_MODULE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_PACKAGE;
@@ -33,7 +35,6 @@ import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -67,7 +68,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMemento;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.html.HTML;
@@ -79,7 +79,7 @@ import com.redhat.ceylon.eclipse.util.DocBrowser;
 import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 import com.redhat.ceylon.ide.common.doc.DocGenerator;
-import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CrossProjectSourceFile;
 import com.redhat.ceylon.ide.common.model.EditedSourceFile;
 import com.redhat.ceylon.ide.common.model.IResourceAware;
@@ -897,9 +897,7 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
         monitor.beginTask("Filtering", estimateWork(monitor));
         Set<String> searchedArchives = new HashSet<String>();
     
-        Collection<IProject> projectsToSearch = getProjects();
-        
-        for (IProject project: projectsToSearch) {
+        /*for (IProject project: getProjects()) {
             TypeChecker typeChecker = 
                     getProjectTypeChecker(project);
             fillUnits(contentProvider, itemsFilter, 
@@ -917,46 +915,62 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                         projectsToSearch);
                 if (monitor.isCanceled()) break;
             }
+        }*/
+        for (CeylonProject project: getCeylonProjects()) {
+            for (Module module: 
+                    project.getModules()
+                        .getTypecheckerModules()
+                        .getListOfModules()) {
+                fillModule(module, 
+                        contentProvider, itemsFilter, 
+                        monitor, searchedArchives);
+                if (monitor.isCanceled()) break;
+            }
         }
         monitor.done();
     }
-
+    
     private void fillModule(Module mod, 
             AbstractContentProvider contentProvider, 
             ItemsFilter itemsFilter,
             IProgressMonitor monitor, 
-            Set<String> searchedArchives, 
-            Collection<IProject> projectsToSearch) {
+            Set<String> searchedArchives) {
         if (includeModule(mod)) {
             IdeModule module = (IdeModule) mod;
-            BaseCeylonProject originalProject = 
+            CeylonProject originalProject = 
                     module.getOriginalProject();
-            if ((originalProject == null || 
-                 !projectsToSearch.contains(originalProject)) 
+            if (originalProject == null
+                   //|| !CeylonNature.isEnabled((IProject) originalProject.getIdeArtifact()) //unnecessary for now!
                 && searchedArchives.add(uniqueIdentifier(mod))) {
-               fill(contentProvider, itemsFilter, 
-                     module, monitor);
+               fillModulePackages(module, contentProvider, 
+                     itemsFilter, monitor);
                monitor.worked(1);
             }
         }
     }
 
-    private void fill(
-            AbstractContentProvider contentProvider,
+    private void fillModulePackages(
+            IdeModule module,
+            AbstractContentProvider contentProvider, 
             ItemsFilter itemsFilter, 
-            IdeModule module, 
             IProgressMonitor monitor) {
         ArrayList<Package> copiedPackages = 
                 new ArrayList<Package>(module.getPackages());
         for (Package pack: copiedPackages) {
-            if (includePackage(pack, module)) {
-                for (Declaration dec: pack.getMembers()) {
-                    fillDeclarationAndMembers(contentProvider, 
-                            itemsFilter, module, dec);
-                }
-            }
+            fillPackage(pack, module, contentProvider, itemsFilter);
             monitor.worked(1);
             if (monitor.isCanceled()) break;
+        }
+    }
+
+    private void fillPackage(Package pack, IdeModule module, 
+            AbstractContentProvider contentProvider,
+            ItemsFilter itemsFilter) {
+        if (includePackage(pack, module)) {
+            for (Declaration dec: pack.getMembers()) {
+                fillDeclarationAndMembers(contentProvider, 
+                        itemsFilter, module, dec);
+            }
         }
     }
 
@@ -1008,12 +1022,12 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             AbstractContentProvider contentProvider, 
             ItemsFilter itemsFilter,
             IdeModule module, Declaration dec) {
-        if (includeDeclaration(module, dec) &&
+        if (includeDeclaration(module, dec) /*&&
                 //watch out for dupes!
                 (!module.getIsProjectModule() || 
                  !dec.getUnit()
                      .getFilename()
-                     .endsWith(".ceylon"))) {
+                     .endsWith(".ceylon"))*/) {
             contentProvider.add(new DeclarationProxy(dec), 
                     itemsFilter);
             nameOccurs(dec);
@@ -1044,7 +1058,8 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             IProgressMonitor monitor) {
         for (PhasedUnit unit: units) {
             IdeModule jdtModule = (IdeModule) 
-                    unit.getPackage().getModule();
+                    unit.getPackage()
+                        .getModule();
             for (Declaration dec: unit.getDeclarations()) {
                 if (includeDeclaration(jdtModule, dec)) {
                     contentProvider.add(
@@ -1111,15 +1126,19 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 new HashSet<String>();
         for (IProject project: getProjects()) {
             work++;
-            Modules modules = 
-                    getProjectTypeChecker(project)
-                        .getContext()
-                        .getModules();
-            for (Module module: modules.getListOfModules()) {
-                if (includeModule(module) &&
-                    searchedArchives.add(uniqueIdentifier(module))) {
-                  work += 1 + module.getPackages().size();
-               }
+            CeylonProject ceylonProject = 
+                    modelJ2C().ceylonModel()
+                        .getProject(project);
+            if (ceylonProject != null) {
+                for (Module module: 
+                        ceylonProject.getModules()
+                            .getTypecheckerModules()
+                            .getListOfModules()) {
+                    if (includeModule(module) &&
+                            searchedArchives.add(uniqueIdentifier(module))) {
+                        work += 1 + module.getPackages().size();
+                    }
+                }
             }
         }
         return work;
