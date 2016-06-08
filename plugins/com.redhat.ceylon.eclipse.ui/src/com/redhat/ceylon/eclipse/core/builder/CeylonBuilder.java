@@ -3006,7 +3006,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     Arrays.asList(".jar", ".js", ".car", ".src", ".sha1");
             final List<String> deleteEverything = 
                     Arrays.asList(".*");
-            new RepositoryLister(extensionsToDelete).list(modulesOutputDirectory, 
+            new RepositoryLister(extensionsToDelete)
+                .list(modulesOutputDirectory, 
                     new RepositoryLister.Actions() {
 
                 @Override
@@ -3052,7 +3053,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     public static RepositoryManager getProjectRepositoryManager(IProject project) {
         CeylonProject ceylonProject = 
-                modelJ2C().ceylonModel().getProject(project);
+                modelJ2C().ceylonModel()
+                    .getProject(project);
         if (ceylonProject != null) {
             return ceylonProject.getRepositoryManager();
         }
@@ -3061,7 +3063,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
     public static TypeChecker getProjectTypeChecker(IProject project) {
         CeylonProject ceylonProject = 
-                modelJ2C().ceylonModel().getProject(project);
+                modelJ2C().ceylonModel()
+                    .getProject(project);
         if (ceylonProject != null && ceylonProject.getParsed()) {
             return ceylonProject.getTypechecker();
         }
@@ -3069,7 +3072,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static PhasedUnits getProjectPhasedUnits(IProject project) {
-        TypeChecker typeChecker = getProjectTypeChecker(project);
+        TypeChecker typeChecker = 
+                getProjectTypeChecker(project);
         if (typeChecker != null) {
             return typeChecker.getPhasedUnits();
         }
@@ -3077,11 +3081,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     public static Modules getProjectModules(IProject project) {
-        TypeChecker typeChecker = getProjectTypeChecker(project);
+        TypeChecker typeChecker = 
+                getProjectTypeChecker(project);
         if (typeChecker == null) {
             return null;
         }
-        return typeChecker.getContext().getModules();
+        return typeChecker.getContext()
+                .getModules();
     }
     
     public static Collection<BaseIdeModule> getProjectExternalModules(IProject project) {
