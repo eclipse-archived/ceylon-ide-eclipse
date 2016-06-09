@@ -310,7 +310,8 @@ public class OutlinePopup extends TreeViewPopup {
             setImageDescriptor(imageRegistry.getDescriptor(SORT_ALPHA));
             treeViewer = viewer;
             boolean checked = 
-                    getDialogSettings().getBoolean("sort");
+                    getDialogSettings()
+                        .getBoolean("sort");
             setChecked(checked);
         }
 
@@ -319,7 +320,8 @@ public class OutlinePopup extends TreeViewPopup {
             boolean on = isChecked();
             setChecked(on);
             Display display = 
-                    treeViewer.getControl().getDisplay();
+                    treeViewer.getControl()
+                        .getDisplay();
             BusyIndicator.showWhile(display, 
                     new Runnable() {
                 @Override
@@ -368,7 +370,8 @@ public class OutlinePopup extends TreeViewPopup {
             setImageDescriptor(imageRegistry.getDescriptor(HIDE_PRIVATE)); 
             
             boolean checked = 
-                    getDialogSettings().getBoolean("hideNonShared");
+                    getDialogSettings()
+                        .getBoolean("hideNonShared");
             valueChanged(checked, false);
         }
 
@@ -382,7 +385,8 @@ public class OutlinePopup extends TreeViewPopup {
         private void valueChanged(final boolean on, boolean store) {
             setChecked(on);
             Display display = 
-                    treeViewer.getControl().getDisplay();
+                    treeViewer.getControl()
+                        .getDisplay();
             BusyIndicator.showWhile(display, 
                     new Runnable() {
                 @Override
@@ -567,9 +571,11 @@ public class OutlinePopup extends TreeViewPopup {
                                 CeylonFiltersPreferencePage.ID
                         }, 
                         null).open();
-                getTreeViewer().getTree()
+                getTreeViewer()
+                    .getTree()
                     .setFont(CeylonPlugin.getOutlineFont());
-                getTreeViewer().refresh();
+                getTreeViewer()
+                    .refresh();
             }
         };
         viewMenu.add(configureAction);
