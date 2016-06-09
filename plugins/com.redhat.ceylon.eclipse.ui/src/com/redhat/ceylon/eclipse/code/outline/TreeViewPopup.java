@@ -34,6 +34,7 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -56,6 +57,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
@@ -76,16 +78,19 @@ import com.redhat.ceylon.eclipse.util.EditorUtil;
  */
 @SuppressWarnings("deprecation")
 public abstract class TreeViewPopup extends PopupDialog 
-        implements IInformationControl, IInformationControlExtension, 
-                   IInformationControlExtension2, IInformationControlExtension3,
+        implements IInformationControl, 
+                   IInformationControlExtension, 
+                   IInformationControlExtension2, 
+                   IInformationControlExtension3,
                    DisposeListener {
 
     private static GridLayoutFactory popupLayoutFactory;
     protected static GridLayoutFactory getPopupLayout() {
         if (popupLayoutFactory == null) {
-            popupLayoutFactory = GridLayoutFactory.fillDefaults()
-                    .margins(POPUP_MARGINWIDTH, POPUP_MARGINHEIGHT)
-                    .spacing(POPUP_HORIZONTALSPACING, POPUP_VERTICALSPACING);
+            popupLayoutFactory = 
+                    GridLayoutFactory.fillDefaults()
+                        .margins(POPUP_MARGINWIDTH, POPUP_MARGINHEIGHT)
+                        .spacing(POPUP_HORIZONTALSPACING, POPUP_VERTICALSPACING);
         }
         return popupLayoutFactory;
     }
@@ -133,7 +138,8 @@ public abstract class TreeViewPopup extends PopupDialog
         super(parent, shellStyle, true, true, false, true, true, null, null);
         this.editor = editor; //has to be initialized here because it is used from create() called by super constructor!
         if (invokingCommandId != null) {
-            commandBinding = EditorUtil.getCommandBinding(invokingCommandId);
+            commandBinding = 
+                    EditorUtil.getCommandBinding(invokingCommandId);
         }
         // Title and status text must be set to get the title label created, so force empty values here.
         setInfoText("");
@@ -146,8 +152,12 @@ public abstract class TreeViewPopup extends PopupDialog
     }
     
     protected Control createContents(Composite parent) {
-        Composite composite = (Composite) super.createContents(parent);
-        GridLayout layout = (GridLayout) composite.getLayout();
+        Composite composite = 
+                (Composite) 
+                    super.createContents(parent);
+        GridLayout layout = 
+                (GridLayout) 
+                    composite.getLayout();
         layout.verticalSpacing=8;
         layout.marginLeft=8;
         layout.marginRight=8;
@@ -177,7 +187,20 @@ public abstract class TreeViewPopup extends PopupDialog
         final Tree tree = treeViewer.getTree();
         tree.addKeyListener(new KeyListener() {
             public void keyPressed(KeyEvent e)  {
-                if (e.character == 0x1B) {// ESC
+                char character = e.character;
+                int keyCode = e.keyCode;
+                int stateMask = e.stateMask;
+                
+                if ((stateMask==SWT.NONE || stateMask==SWT.SHIFT) 
+                        && Character.isLetter(character)
+                        && keyCode==Character.toLowerCase(character)) {
+                    String string = filterText.getText() + character;
+                    filterText.setText(string);
+                    filterText.setFocus();
+                    filterText.setSelection(string.length());
+                }
+                
+                if (character == 0x1B) {// ESC
                     dispose();
                 }
             }
@@ -256,13 +279,17 @@ public abstract class TreeViewPopup extends PopupDialog
     protected KeyListener createViewerKeyListener() {
         return new KeyListener() {
             public void keyPressed(KeyEvent e) {
-                if (e.keyCode == 0x0D || e.keyCode == SWT.KEYPAD_CR) // Enter key
+                
+                char character = e.character;
+                int keyCode = e.keyCode;
+                
+                if (keyCode == 0x0D || keyCode == SWT.KEYPAD_CR) // Enter key
                     gotoSelectedElement();
-                if (e.keyCode == SWT.ARROW_DOWN)
+                if (keyCode == SWT.ARROW_DOWN)
                     treeViewer.getTree().setFocus();
-                if (e.keyCode == SWT.ARROW_UP)
+                if (keyCode == SWT.ARROW_UP)
                     treeViewer.getTree().setFocus();
-                if (e.character == 0x1B) // ESC
+                if (character == 0x1B) // ESC
                     dispose();
             }
             public void keyReleased(KeyEvent e) {
@@ -283,7 +310,8 @@ public abstract class TreeViewPopup extends PopupDialog
         filterText.setText("");
         filterText.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                String text = ((Text) e.widget).getText();
+                Text input = (Text) e.widget;
+                String text = input.getText();
                 setMatcherString(text, true);
             }
         });
@@ -319,13 +347,15 @@ public abstract class TreeViewPopup extends PopupDialog
 
     protected void update() {
         if (!getShell().isDisposed()) {
-            treeViewer.getControl().setRedraw(false);
+            treeViewer.getControl()
+                .setRedraw(false);
             // refresh viewer to re-filter
             treeViewer.refresh();
             reveal();
             //fTreeViewer.expandAll();
             selectFirstMatch(); //TODO select the main declaration instead!
-            treeViewer.getControl().setRedraw(true);
+            treeViewer.getControl()
+                .setRedraw(true);
         }
     }
     
@@ -340,7 +370,8 @@ public abstract class TreeViewPopup extends PopupDialog
         }
         else {
             IStructuredSelection selection = 
-                    (IStructuredSelection) treeViewer.getSelection();
+                    (IStructuredSelection) 
+                        treeViewer.getSelection();
             return selection.getFirstElement();
         }
     }
@@ -354,7 +385,7 @@ public abstract class TreeViewPopup extends PopupDialog
     protected void selectFirstMatch() {
         //Object selectedElement= fTreeViewer.testFindItem(fInitiallySelectedType);
         TreeItem element;
-        final Tree tree = treeViewer.getTree();
+        Tree tree = treeViewer.getTree();
         /*if (selectedElement instanceof TreeItem)
             element= findElement(new TreeItem[] { (TreeItem)selectedElement });
         else*/
@@ -575,7 +606,10 @@ public abstract class TreeViewPopup extends PopupDialog
     }
 
     public boolean isFocusControl() {
-        return getShell().getDisplay().getActiveShell() == getShell();
+        return getShell() == 
+                getShell()
+                    .getDisplay()
+                    .getActiveShell();
     }
 
     public void setFocus() {
@@ -593,13 +627,14 @@ public abstract class TreeViewPopup extends PopupDialog
     
     @Override
     protected IDialogSettings getDialogSettings() {
-        String sectionName = getId();
+        String section = getId();
         IDialogSettings dialogSettings = 
-                CeylonPlugin.getInstance().getDialogSettings();
+                CeylonPlugin.getInstance()
+                    .getDialogSettings();
         IDialogSettings settings = 
-                dialogSettings.getSection(sectionName);
+                dialogSettings.getSection(section);
         if (settings == null) {
-            settings = dialogSettings.addNewSection(sectionName);
+            settings = dialogSettings.addNewSection(section);
         }
         return settings;
     }
@@ -607,7 +642,8 @@ public abstract class TreeViewPopup extends PopupDialog
     @Override
     protected Control createTitleMenuArea(Composite parent) {
         viewMenuButtonComposite = 
-                (Composite) super.createTitleMenuArea(parent);
+                (Composite) 
+                    super.createTitleMenuArea(parent);
         // the filter text must be created
         // underneath the title and menu area.
         filterText = createFilterText(parent);
@@ -629,22 +665,26 @@ public abstract class TreeViewPopup extends PopupDialog
     protected StyledString styleTitle(final StyledText title) {
         StyledString result = new StyledString();
         StringTokenizer tokens = 
-                new StringTokenizer(title.getText(), "\u2014", false);
+                new StringTokenizer(title.getText(), 
+                        "\u2014", false);
         styleDescription(title, result, tokens.nextToken());
         result.append("\u2014").append(tokens.nextToken());
         return result;
     }
 
-    protected void styleDescription(final StyledText title, StyledString result,
+    protected void styleDescription(StyledText title, StyledString result,
             String desc) {
-        final FontData[] fontDatas = title.getFont().getFontData();
+        final Display display = title.getDisplay();
+        final FontData[] fontDatas = 
+                title.getFont()
+                    .getFontData();
         for (int i=0; i<fontDatas.length; i++) {
             fontDatas[i].setStyle(SWT.BOLD);
         }
         result.append(desc, new Styler() {
             @Override
             public void applyStyles(TextStyle textStyle) {
-                textStyle.font=new Font(title.getDisplay(), fontDatas);
+                textStyle.font = new Font(display, fontDatas);
             }
         });
     }
@@ -655,7 +695,10 @@ public abstract class TreeViewPopup extends PopupDialog
         titleLabel.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                titleLabel.setStyleRanges(styleTitle(titleLabel).getStyleRanges());
+                StyleRange[] styleRanges = 
+                        styleTitle(titleLabel)
+                            .getStyleRanges();
+                titleLabel.setStyleRanges(styleRanges);
             }
         });
         titleLabel.setEditable(false);
