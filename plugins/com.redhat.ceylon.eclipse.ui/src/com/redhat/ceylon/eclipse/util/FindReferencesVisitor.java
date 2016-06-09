@@ -17,7 +17,6 @@ import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Setter;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
@@ -34,11 +33,11 @@ public class FindReferencesVisitor extends Visitor {
     
     public FindReferencesVisitor(Referenceable declaration) {
         if (declaration instanceof Value) {
-            Value val = originalDeclaration((Value) declaration);
-            declaration = val;
-            if (val.isParameter()) {
+            Value value = originalDeclaration((Value) declaration);
+            declaration = value;
+            if (value.isParameter()) {
                 Declaration dec = 
-                        val.getInitializerParameter()
+                        value.getInitializerParameter()
                             .getDeclaration();
                 if (dec instanceof Setter) {
                     Setter setter = (Setter) dec;
@@ -115,15 +114,19 @@ public class FindReferencesVisitor extends Visitor {
     }
 
     private boolean isSetterParameterReference(Declaration ref) {
-        Scope container = ref.getContainer();
-        if (container instanceof Setter) {
-            Setter setter = (Setter) container;
-            Declaration member = 
-                    setter.getDirectMember(
-                            setter.getName(), 
-                            null, false);
-            return member.equals(ref) && 
-                    isReference(setter.getGetter());
+        if (ref instanceof Value && ref.isParameter()) {
+            Value value = (Value) ref;
+            Declaration dec = 
+                    value.getInitializerParameter()
+                        .getDeclaration();
+            if (dec instanceof Setter) {
+                Setter setter = (Setter) dec;
+                return isReference(setter) || 
+                        isReference(setter.getGetter());
+            }
+            else {
+                return false;
+            }
         }
         else {
             return false;
