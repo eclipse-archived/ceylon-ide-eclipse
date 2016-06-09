@@ -33,44 +33,50 @@ public class FindReferencesVisitor extends Visitor {
     protected final Set<Node> nodes = new HashSet<Node>();
     
     public FindReferencesVisitor(Referenceable declaration) {
-        if (declaration instanceof TypedDeclaration) {
-            Referenceable od = declaration;
-            while (od!=null && od!=declaration) {
-                declaration = od;
-                TypedDeclaration td = (TypedDeclaration) od;
-                od = td.getOriginalDeclaration();
-            }
-        }
-        if (declaration instanceof Declaration) { 
-            Declaration dec = (Declaration) declaration;
-            Scope container = dec.getContainer();
-            if (container instanceof Setter) {
-                Setter setter = (Setter) container;
-                Declaration member = 
-                        setter.getDirectMember(
-                                setter.getName(), 
-                                null, false);
-                if (member.equals(declaration)) {
-                    declaration = setter;
+        if (declaration instanceof Value) {
+            Value val = originalDeclaration((Value) declaration);
+            declaration = val;
+            if (val.isParameter()) {
+                Declaration dec = 
+                        val.getInitializerParameter()
+                            .getDeclaration();
+                if (dec instanceof Setter) {
+                    Setter setter = (Setter) dec;
+                    Value getter = setter.getGetter();
+                    declaration = getter!=null ? getter : setter;
                 }
             }
         }
-        if (declaration instanceof Setter) {
+        else if (declaration instanceof Setter) {
             Setter setter = (Setter) declaration;
-            declaration = setter.getGetter();
+            Value getter = setter.getGetter();
+            if (getter!=null) {
+                declaration = setter.getGetter();
+            }
         }
-        if (declaration instanceof Constructor &&
-                declaration.getNameAsString()==null) {
-            //default constructor
+        else if (declaration instanceof Constructor) {
             Constructor constructor =
                     (Constructor) declaration;
-            Type extended = 
-                    constructor.getExtendedType();
-            if (extended!=null) {
-                declaration = extended.getDeclaration();
+            if (constructor.getName()==null) {
+                //default constructor
+                Type extended = 
+                        constructor.getExtendedType();
+                if (extended!=null) {
+                    declaration = extended.getDeclaration();
+                }
             }
         }
         this.declaration = declaration;
+    }
+
+    private Value originalDeclaration(Value declaration) {
+        TypedDeclaration original = declaration;
+        while (original!=null && original!=declaration
+                && original instanceof Value) {
+            declaration = (Value) original;
+            original = declaration.getOriginalDeclaration();
+        }
+        return declaration;
     }
     
     public Referenceable getDeclaration() {
