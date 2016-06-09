@@ -781,13 +781,23 @@ public abstract class FilteredItemsSelectionDialog extends
                 int keyCode = e.keyCode;
                 int stateMask = e.stateMask;
                 
-                if ((stateMask==SWT.NONE || stateMask==SWT.SHIFT) 
-                        && Character.isLetter(character)
-                        && keyCode==Character.toLowerCase(character)) {
-                    String string = pattern.getText() + character;
-                    pattern.setText(string);
-                    pattern.setFocus();
-                    pattern.setSelection(string.length());
+                if (stateMask==SWT.NONE || stateMask==SWT.SHIFT) {
+                    if (Character.isLetter(character) 
+                            && keyCode==Character.toLowerCase(character)) {
+                        String string = pattern.getText() + character;
+                        pattern.setText(string);
+                        pattern.setFocus();
+                        pattern.setSelection(string.length());
+                    }
+                    if (character == SWT.BS && keyCode==SWT.BS) {
+                        String string = pattern.getText();
+                        if (string.length()>0) {
+                            string = string.substring(0,string.length()-1);
+                        }
+                        pattern.setText(string);
+                        pattern.setFocus();
+                        pattern.setSelection(string.length());
+                    }
                 }
                 
                 if (keyCode == SWT.DEL) {

@@ -190,14 +190,24 @@ public abstract class TreeViewPopup extends PopupDialog
                 char character = e.character;
                 int keyCode = e.keyCode;
                 int stateMask = e.stateMask;
-                
-                if ((stateMask==SWT.NONE || stateMask==SWT.SHIFT) 
-                        && Character.isLetter(character)
-                        && keyCode==Character.toLowerCase(character)) {
-                    String string = filterText.getText() + character;
-                    filterText.setText(string);
-                    filterText.setFocus();
-                    filterText.setSelection(string.length());
+
+                if (stateMask==SWT.NONE || stateMask==SWT.SHIFT) {
+                    if (Character.isLetter(character) 
+                            && keyCode==Character.toLowerCase(character)) {
+                        String string = filterText.getText() + character;
+                        filterText.setText(string);
+                        filterText.setFocus();
+                        filterText.setSelection(string.length());
+                    }
+                    if (character == SWT.BS && keyCode==SWT.BS) {
+                        String string = filterText.getText();
+                        if (string.length()>0) {
+                            string = string.substring(0,string.length()-1);
+                        }
+                        filterText.setText(string);
+                        filterText.setFocus();
+                        filterText.setSelection(string.length());
+                    }
                 }
                 
                 if (character == 0x1B) {// ESC
