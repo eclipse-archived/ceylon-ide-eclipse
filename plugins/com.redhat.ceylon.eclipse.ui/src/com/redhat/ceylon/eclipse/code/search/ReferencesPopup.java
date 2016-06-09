@@ -78,6 +78,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
@@ -212,7 +213,21 @@ public final class ReferencesPopup extends PopupDialog
         @Override
         public void keyPressed(KeyEvent e) {
             triggerCommand(e);
-            if (e.keyCode == 0x0D || e.keyCode == SWT.KEYPAD_CR) { // Enter key
+            
+            char character = e.character;
+            int keyCode = e.keyCode;
+            int stateMask = e.stateMask;
+            
+            if ((stateMask==SWT.NONE || stateMask==SWT.SHIFT) 
+                    && Character.isLetter(character)
+                    && keyCode==Character.toLowerCase(character)) {
+                String string = filterText.getText() + character;
+                filterText.setText(string);
+                filterText.setFocus();
+                filterText.setSelection(string.length());
+            }
+            
+            if (keyCode == 0x0D || keyCode == SWT.KEYPAD_CR) { // Enter key
                 gotoSelectedElement();
             }
         }
@@ -371,9 +386,11 @@ public final class ReferencesPopup extends PopupDialog
         tableViewer.setComparator(new CeylonViewerComparator() {
             @Override
             public int compare(Viewer viewer, Object e1, Object e2) {
-                return super.compare(viewer, 
-                        ((TreeNode) e1).getValue(), 
-                        ((TreeNode) e2).getValue());
+                TreeNode treeNode1 = (TreeNode) e1;
+                TreeNode treeNode2 = (TreeNode) e2;
+                Object v1 = treeNode1.getValue();
+                Object v2 = treeNode2.getValue();
+                return super.compare(viewer, v1, v2);
             }
         });
         tableViewer.setContentProvider(ArrayContentProvider.getInstance());
@@ -392,9 +409,8 @@ public final class ReferencesPopup extends PopupDialog
 //                gotoSelectedElement();
 //            }
 //        });
-        Cursor cursor = 
-                new Cursor(getShell().getDisplay(), 
-                        SWT.CURSOR_HAND);
+        Display display = getShell().getDisplay();
+        Cursor cursor = new Cursor(display, SWT.CURSOR_HAND);
         tableViewer.getControl().setCursor(cursor);
         treeViewer.getControl().setCursor(cursor);
         tableViewer.getControl()
@@ -428,10 +444,12 @@ public final class ReferencesPopup extends PopupDialog
     
     protected void gotoSelectedElement() {
         StructuredSelection selection = 
-                (StructuredSelection) viewer.getSelection();
+                (StructuredSelection) 
+                    viewer.getSelection();
         Object node = selection.getFirstElement();
         if (node!=null) {
-            Object elem = ((TreeNode) node).getValue();
+            TreeNode treeNode = (TreeNode) node;
+            Object elem = treeNode.getValue();
             if (elem instanceof CeylonSearchMatch) {
                 CeylonSearchMatch match = 
                         (CeylonSearchMatch) elem;
@@ -446,8 +464,8 @@ public final class ReferencesPopup extends PopupDialog
         if (popupLayoutFactory == null) {
             popupLayoutFactory = 
                     GridLayoutFactory.fillDefaults()
-                    .margins(POPUP_MARGINWIDTH, POPUP_MARGINHEIGHT)
-                    .spacing(POPUP_HORIZONTALSPACING, POPUP_VERTICALSPACING);
+                        .margins(POPUP_MARGINWIDTH, POPUP_MARGINHEIGHT)
+                        .spacing(POPUP_HORIZONTALSPACING, POPUP_VERTICALSPACING);
         }
         return popupLayoutFactory;
     }
@@ -713,7 +731,8 @@ public final class ReferencesPopup extends PopupDialog
         filterText.setText("");
         filterText.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                String text = ((Text) e.widget).getText();
+                Text input = (Text) e.widget;
+                String text = input.getText();
                 setMatcherString(text, true);
             }
         });
@@ -727,9 +746,11 @@ public final class ReferencesPopup extends PopupDialog
         }*/
 
         if (update) {
-            viewer.getControl().setRedraw(false);
+            viewer.getControl()
+                .setRedraw(false);
             viewer.refresh();
-            viewer.getControl().setRedraw(true);
+            viewer.getControl()
+                .setRedraw(true);
             selectFirst();
         }
     }
@@ -782,7 +803,10 @@ public final class ReferencesPopup extends PopupDialog
     }
 
     public boolean isFocusControl() {
-        return getShell().getDisplay().getActiveShell() == getShell();
+        return getShell() == 
+                getShell()
+                    .getDisplay()
+                    .getActiveShell();
     }
 
     public void setFocus() {
@@ -1086,15 +1110,16 @@ public final class ReferencesPopup extends PopupDialog
     
     @Override
     protected IDialogSettings getDialogSettings() {
-        String sectionName = 
-                CeylonPlugin.PLUGIN_ID + ".FindReferences";
+        String section = 
+                CeylonPlugin.PLUGIN_ID 
+                    + ".FindReferences";
         IDialogSettings dialogSettings = 
                 CeylonPlugin.getInstance()
                     .getDialogSettings();
         IDialogSettings settings = 
-                dialogSettings.getSection(sectionName);
+                dialogSettings.getSection(section);
         if (settings == null)
-            settings = dialogSettings.addNewSection(sectionName);
+            settings = dialogSettings.addNewSection(section);
         return settings;
     }
     
