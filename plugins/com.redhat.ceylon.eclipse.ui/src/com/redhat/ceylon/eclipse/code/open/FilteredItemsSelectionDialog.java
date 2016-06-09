@@ -685,7 +685,9 @@ public abstract class FilteredItemsSelectionDialog extends
         list = new TableViewer(composite, 
                 (multi ? SWT.MULTI : SWT.SINGLE)
                 | SWT.BORDER | SWT.V_SCROLL | SWT.VIRTUAL);
-        list.getTable().getAccessible().addAccessibleListener(
+        list.getTable()
+            .getAccessible()
+            .addAccessibleListener(
                 new AccessibleAdapter() {
                     @Override
                     public void getName(AccessibleEvent e) {
@@ -774,8 +776,21 @@ public abstract class FilteredItemsSelectionDialog extends
         list.getTable().addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-
-                if (e.keyCode == SWT.DEL) {
+                
+                char character = e.character;
+                int keyCode = e.keyCode;
+                int stateMask = e.stateMask;
+                
+                if ((stateMask==SWT.NONE || stateMask==SWT.SHIFT) 
+                        && Character.isLetter(character)
+                        && keyCode==Character.toLowerCase(character)) {
+                    String string = pattern.getText() + character;
+                    pattern.setText(string);
+                    pattern.setFocus();
+                    pattern.setSelection(string.length());
+                }
+                
+                if (keyCode == SWT.DEL) {
 
                     List selectedElements = ((StructuredSelection) list
                             .getSelection()).toList();
@@ -797,8 +812,8 @@ public abstract class FilteredItemsSelectionDialog extends
 
                 }
 
-                if (e.keyCode == SWT.ARROW_UP && (e.stateMask & SWT.SHIFT) != 0
-                        && (e.stateMask & SWT.CTRL) != 0) {
+                if (keyCode == SWT.ARROW_UP && (stateMask & SWT.SHIFT) != 0
+                        && (stateMask & SWT.CTRL) != 0) {
                     StructuredSelection selection = 
                             (StructuredSelection) 
                                 list.getSelection();
@@ -818,9 +833,9 @@ public abstract class FilteredItemsSelectionDialog extends
                     }
                 }
 
-                if (e.keyCode == SWT.ARROW_DOWN
-                        && (e.stateMask & SWT.SHIFT) != 0
-                        && (e.stateMask & SWT.CTRL) != 0) {
+                if (keyCode == SWT.ARROW_DOWN
+                        && (stateMask & SWT.SHIFT) != 0
+                        && (stateMask & SWT.CTRL) != 0) {
 
                     if (list.getElementAt(list.getTable().getSelectionIndex() + 1) 
                             instanceof ItemsListSeparator)
