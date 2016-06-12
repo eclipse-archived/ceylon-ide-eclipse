@@ -198,60 +198,6 @@ public final class CeylonHierarchyContentProvider
         }
     }
 
-//    @Override
-//    public void updateElement(Object parent, int index) {
-//        if (recursive) return;
-//        CeylonHierarchyNode child;
-//        if (parent instanceof ModelProxy) {
-//            if (index>0) return;
-//            switch (mode) {
-//            case HIERARCHY:
-//                child = hierarchyRoot;
-//                break;
-//            case SUPERTYPES:
-//                child = supertypesRoot;
-//                break;
-//            case SUBTYPES:
-//                child = subtypesRoot;
-//                break;
-//            default:
-//                throw new RuntimeException();
-//            }
-//        }
-//        else if (parent instanceof CeylonHierarchyNode) {
-//            List<CeylonHierarchyNode> children = 
-//                    ((CeylonHierarchyNode) parent).getChildren();
-//            //TODO: wow, this is really expensive!
-//            CeylonHierarchyNode[] array = 
-//                    children.toArray(new CeylonHierarchyNode[children.size()]);
-//            Arrays.sort(array);
-//            if (index>=array.length) return;
-//            child = array[index];
-//        }
-//        else {
-//            return;
-//        }
-//        recursive = true;
-//        treeViewer.replace(parent, index, child);
-//        treeViewer.setChildCount(child, child.getChildren().size());
-//        recursive = false;
-//    }
-//
-//    @Override
-//    public void updateChildCount(Object element, int currentChildCount) {
-//        if (recursive) return;
-//        int count = 0;
-//        if (element instanceof ModelProxy) {
-//            count = 1;
-//        }
-//        else if (element instanceof CeylonHierarchyNode) {
-//            count = ((CeylonHierarchyNode) element).getChildren().size();
-//        }
-//        recursive = true;
-//        treeViewer.setChildCount(element, count);
-//        recursive = false;
-//    }
-    
     HierarchyMode getMode() {
         return mode;
     }
@@ -445,7 +391,7 @@ public final class CeylonHierarchyContentProvider
                                 d = replaceWithCurrentEditorDeclaration(
                                         part, pack, d); //TODO: not enough to catch *new* subtypes in the dirty editor
                                 if (d instanceof ClassOrInterface || 
-                                        d instanceof TypeParameter) {
+                                    d instanceof TypeParameter) {
                                     try {
                                         if (declaration instanceof TypeDeclaration) {
                                             addTypeToHierarchy(d);
