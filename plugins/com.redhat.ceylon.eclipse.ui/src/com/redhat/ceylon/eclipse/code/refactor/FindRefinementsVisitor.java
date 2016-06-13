@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.util;
+package com.redhat.ceylon.eclipse.code.refactor;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -8,7 +8,11 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Setter;
 
-public class FindRefinementsVisitor extends Visitor {
+@Deprecated
+/**
+ * @deprecated see com.redhat.ceylon.ide.common.util.FindRefinementsVisitor
+ */
+class FindRefinementsVisitor extends Visitor {
     
     private final Declaration declaration;
     private Set<Tree.StatementOrArgument> declarationNodes = 

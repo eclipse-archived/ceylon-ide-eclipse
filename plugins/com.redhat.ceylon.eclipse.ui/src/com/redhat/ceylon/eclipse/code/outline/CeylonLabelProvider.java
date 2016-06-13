@@ -15,7 +15,6 @@ import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_STYLER;
-import static com.redhat.ceylon.eclipse.util.Types.getRefinedDeclaration;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
@@ -70,6 +69,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.ErrorCollectionVisitor;
 import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.util.types_;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
@@ -1253,11 +1253,11 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             Tree.SpecifierStatement ss = 
                     (Tree.SpecifierStatement) node;
             Tree.Term bme = ss.getBaseMemberExpression();
-            Declaration d;
+            Declaration model;
             if (bme instanceof Tree.StaticMemberOrTypeExpression) {
                 Tree.StaticMemberOrTypeExpression smte = 
                         (Tree.StaticMemberOrTypeExpression) bme;
-                d = smte.getDeclaration();
+                model = smte.getDeclaration();
             }
             else if (bme instanceof Tree.ParameterizedExpression) {
                 Tree.ParameterizedExpression pe = 
@@ -1265,15 +1265,17 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 Tree.Primary primary = pe.getPrimary();
                 Tree.BaseMemberExpression pbe = 
                         (Tree.BaseMemberExpression) primary;
-                d = pbe.getDeclaration();
+                model = pbe.getDeclaration();
             }
             else {
                  throw new RuntimeException("unexpected node type");
             }
-            if (d!=null) {
-                Declaration r = getRefinedDeclaration(d);
-                if (r!=null) {
-                    result |= r.isFormal() ? 
+            if (model!=null) {
+                Declaration refined = 
+                        types_.get_()
+                            .getRefinedDeclaration(model);
+                if (refined!=null) {
+                    result |= refined.isFormal() ? 
                             IMPLEMENTS : REFINES;
                 }
             }
@@ -1333,7 +1335,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
             if (model.isActual()) {
                 Declaration refined = 
-                        getRefinedDeclaration(model);
+                        types_.get_()
+                            .getRefinedDeclaration(model);
                 if (refined!=null) {
                     result |= refined.isFormal() ? 
                             IMPLEMENTS : REFINES;

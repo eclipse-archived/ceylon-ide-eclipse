@@ -14,7 +14,7 @@ import org.eclipse.ui.IEditorPart;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
+import com.redhat.ceylon.ide.common.util.FindReferencesVisitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
@@ -59,18 +59,18 @@ public class FindReferencesAction extends AbstractFindAction {
             FindReferencesVisitor frv = 
                     new FindReferencesVisitor(referencedDeclaration) {
                 @Override
-                protected boolean isRefinedDeclarationReference(Declaration ref) {
+                public boolean isRefinedDeclarationReference(Declaration ref) {
                     return super.isRefinedDeclarationReference(ref) ||
                             ref instanceof FunctionOrValue 
                             && ((FunctionOrValue)ref).isShortcutRefinement()
-                            && ref.getRefinedDeclaration().equals(declaration);
+                            && ref.getRefinedDeclaration().equals(getDeclaration());
                 }
             };
             cu.visit(frv);
             FindDocLinkReferencesVisitor fdlrv =
                     new FindDocLinkReferencesVisitor(referencedDeclaration);
             cu.visit(fdlrv);
-            Set<Node> result = frv.getNodes();
+            Set<Node> result = frv.getReferenceNodeSet();
             result.addAll(fdlrv.getLinks());
             return result;
         }

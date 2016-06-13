@@ -33,7 +33,7 @@ public class FindSubtypesAction extends AbstractFindAction {
                     new FindSubtypesVisitor((TypeDeclaration) referencedDeclaration);
             cu.visit(frv);
             @SuppressWarnings("unchecked")
-            Set<Node> nodes = frv.getDeclarationNodes();
+            Set<Node> nodes = frv.getDeclarationNodeSet();
             return Collections.<Node>unmodifiableSet(nodes);
         }
 

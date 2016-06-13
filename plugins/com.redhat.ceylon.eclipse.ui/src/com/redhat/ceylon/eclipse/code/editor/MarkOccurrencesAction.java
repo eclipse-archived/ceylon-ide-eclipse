@@ -42,7 +42,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.hover.DocumentationView;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
-import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
+import com.redhat.ceylon.ide.common.util.FindAssignmentsVisitor;
 import com.redhat.ceylon.ide.common.util.FindDeclarationNodeVisitor;
 import com.redhat.ceylon.ide.common.util.FindReferencesVisitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -639,7 +639,7 @@ public class MarkOccurrencesAction
                             new FindReferencesVisitor(
                                     declaration);
                     root.visit(frv);
-                    occurrences.addAll(frv.getNodeSet());
+                    occurrences.addAll(frv.getReferenceNodeSet());
                     return occurrences;
                 }
             }
@@ -663,7 +663,7 @@ public class MarkOccurrencesAction
                         new FindAssignmentsVisitor(
                                 (Declaration) declaration);
                 root.visit(frv);
-                occurrences.addAll(frv.getNodes());
+                occurrences.addAll(frv.getAssignmentNodeSet());
                 return occurrences;
             }
         }

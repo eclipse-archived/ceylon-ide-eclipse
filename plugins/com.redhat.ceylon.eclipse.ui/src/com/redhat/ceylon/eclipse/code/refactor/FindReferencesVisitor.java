@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.util;
+package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
 import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
@@ -26,7 +26,7 @@ import com.redhat.ceylon.model.typechecker.model.Value;
 /**
  * @deprecated see com.redhat.ceylon.ide.common.util.FindReferencesVisitor
  */
-public class FindReferencesVisitor extends Visitor {
+class FindReferencesVisitor extends Visitor {
     
     protected Referenceable declaration;
     protected final Set<Node> nodes = new HashSet<Node>();

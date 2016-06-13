@@ -95,9 +95,9 @@ import com.redhat.ceylon.eclipse.code.outline.TreeViewMouseListener;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
-import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.ide.common.util.FindReferencesVisitor;
+import com.redhat.ceylon.ide.common.util.FindRefinementsVisitor;
 import com.redhat.ceylon.ide.common.util.FindSubtypesVisitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -973,7 +973,7 @@ public final class ReferencesPopup extends PopupDialog
                                 new FindSubtypesVisitor(td);
                         frv.visit(cu);
                         @SuppressWarnings("unchecked")
-                        Set<Node> dns = frv.getDeclarationNodes();
+                        Set<Node> dns = frv.getDeclarationNodeSet();
                         nodes = new HashSet<Node>(dns);
                     }
                     else {
@@ -984,7 +984,7 @@ public final class ReferencesPopup extends PopupDialog
                                 new FindRefinementsVisitor(d);
                         frv.visit(cu);
                         Set<Tree.StatementOrArgument> dns = 
-                                frv.getDeclarationNodes();
+                                frv.getDeclarationNodeSet();
                         nodes = new HashSet<Node>(dns);
                     }
                 }
@@ -996,7 +996,7 @@ public final class ReferencesPopup extends PopupDialog
                 FindReferencesVisitor frv = 
                         new FindReferencesVisitor(declaration);
                 frv.visit(cu);
-                nodes = frv.getNodes();
+                nodes = frv.getReferenceNodeSet();
             }
             for (Node node: nodes) {
                 CeylonSearchMatch match = 

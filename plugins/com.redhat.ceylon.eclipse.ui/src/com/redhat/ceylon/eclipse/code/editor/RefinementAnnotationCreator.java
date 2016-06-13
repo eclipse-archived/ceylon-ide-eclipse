@@ -4,7 +4,6 @@ import static com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil.addTaskAnnota
 import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.util.Types.getRefinedDeclaration;
 
 import java.util.Iterator;
 import java.util.List;
@@ -22,6 +21,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
+import com.redhat.ceylon.ide.common.util.types_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
@@ -133,7 +133,9 @@ public class RefinementAnnotationCreator
             IAnnotationModel model, 
             Tree.StatementOrArgument that, 
             Node node, Declaration dec) {
-        Declaration refined = getRefinedDeclaration(dec);
+        Declaration refined = 
+                types_.get_()
+                    .getRefinedDeclaration(dec);
         if (refined!=null) {
             Declaration container = 
                     (Declaration) 

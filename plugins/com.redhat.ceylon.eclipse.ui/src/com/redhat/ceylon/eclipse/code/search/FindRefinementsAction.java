@@ -14,8 +14,8 @@ import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
-import com.redhat.ceylon.eclipse.util.FindRefinementsVisitor;
+import com.redhat.ceylon.ide.common.util.FindReferencesVisitor;
+import com.redhat.ceylon.ide.common.util.FindRefinementsVisitor;
 
 public class FindRefinementsAction extends AbstractFindAction {
 
@@ -33,7 +33,7 @@ public class FindRefinementsAction extends AbstractFindAction {
                             .getDeclaration();
             FindRefinementsVisitor frv = new FindRefinementsVisitor(declaration);
             cu.visit(frv);
-            Set<Tree.StatementOrArgument> nodes = frv.getDeclarationNodes();
+            Set<Tree.StatementOrArgument> nodes = frv.getDeclarationNodeSet();
             return Collections.<Node>unmodifiableSet(nodes);
         }
 

@@ -56,9 +56,9 @@ import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.util.FindAssignmentsVisitor;
-import com.redhat.ceylon.eclipse.util.FindReferencesVisitor;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.util.FindAssignmentsVisitor;
+import com.redhat.ceylon.ide.common.util.FindReferencesVisitor;
 import com.redhat.ceylon.ide.common.util.FindSubtypesVisitor;
 import com.redhat.ceylon.model.loader.ModelLoader;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -341,7 +341,7 @@ public class JavaQueryParticipant
             FindAssignmentsVisitor fav = 
                     new FindAssignmentsVisitor(declaration);
             fav.visit(cu);
-            nodes = fav.getNodes();
+            nodes = fav.getAssignmentNodeSet();
         }
         else if (limitTo==IMPLEMENTORS) {
             FindSubtypesVisitor fsv = 
@@ -349,21 +349,21 @@ public class JavaQueryParticipant
                             (TypeDeclaration) 
                                 declaration);
             fsv.visit(cu);
-            nodes = fsv.getDeclarationNodes();
+            nodes = fsv.getDeclarationNodeSet();
         }
         else if (limitTo==REFERENCES || 
                  limitTo==READ_ACCESSES) {  //TODO: support this properly!!
             FindReferencesVisitor frv = 
                     new FindReferencesVisitor(declaration);
             frv.visit(cu);
-            nodes = frv.getNodes();
+            nodes = frv.getReferenceNodeSet();
         }
         else {
             //ALL_OCCURRENCES
             FindReferencesVisitor frv = 
                     new FindReferencesVisitor(declaration);
             frv.visit(cu);
-            nodes = frv.getNodes();
+            nodes = frv.getReferenceNodeSet();
             if (declaration instanceof TypeDeclaration) {
                 FindSubtypesVisitor fsv = 
                         new FindSubtypesVisitor(
@@ -372,7 +372,7 @@ public class JavaQueryParticipant
                 fsv.visit(cu);
                 HashSet<Node> result = new HashSet<Node>();
                 result.addAll(nodes);
-                result.addAll(fsv.getDeclarationNodes());
+                result.addAll(fsv.getDeclarationNodeSet());
                 nodes = result;
             }
         }
