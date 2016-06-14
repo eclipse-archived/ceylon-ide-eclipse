@@ -1,6 +1,9 @@
 import ceylon.collection {
     ArrayList
 }
+import ceylon.interop.java {
+    JavaList
+}
 
 import com.redhat.ceylon.cmr.api {
     ModuleVersionDetails,
@@ -61,10 +64,6 @@ import com.redhat.ceylon.model.typechecker.model {
     Package
 }
 
-import java.util {
-    JList=List
-}
-
 import org.eclipse.jface.text {
     IDocument,
     DocumentEvent,
@@ -86,13 +85,13 @@ object eclipseCompletionServices satisfies CompletionServices {
     
     shared actual void newParametersCompletionProposal(CompletionContext ctx,
         Integer offset, String prefix, String desc, String text, 
-        JList<Type> argTypes, Node node, Unit unit) {
+        List<Type> argTypes, Node node, Unit unit) {
         
         assert (is EclipseCompletionContext ctx);
         
         value proposal = ParametersCompletionProposal(offset,
             desc.string, text.string,
-            argTypes, node.scope, unit);
+            JavaList(argTypes), node.scope, unit);
         ctx.proposals.add(proposal);
     }
     
