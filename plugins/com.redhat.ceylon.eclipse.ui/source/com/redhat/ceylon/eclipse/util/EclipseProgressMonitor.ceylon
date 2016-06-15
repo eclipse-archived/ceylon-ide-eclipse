@@ -13,8 +13,8 @@ import org.eclipse.core.runtime {
 
 class EclipseProgressMonitorImpl
         extends ProgressMonitorImpl<IProgressMonitor> {
-    <IProgressMonitor&Identifiable>|Null nativeMonitor;
-
+    <IProgressMonitor&Identifiable>? nativeMonitor;
+    
     shared late actual SubMonitor wrapped;
     
     shared new child(EclipseProgressMonitorImpl parent, Integer allocatedWork)
@@ -47,7 +47,11 @@ class EclipseProgressMonitorImpl
     
     shared actual void worked(Integer amount) => wrapped.worked(amount);
     shared actual void subTask(String subTaskDescription) => wrapped.subTask(subTaskDescription);
-    shared actual Boolean cancelled => wrapped.canceled;
+    shared actual Boolean cancelled => 
+            if (exists nativeMonitor) 
+            then nativeMonitor.canceled 
+            else wrapped.canceled;
+    
     shared actual ProgressMonitorChild<IProgressMonitor> newChild(Integer allocatedWork) => 
             EclipseProgressMonitorImpl.child(this, allocatedWork);
     
