@@ -69,7 +69,8 @@ shared class EclipseQuickFixData(ProblemLocation location,
         Boolean qualifiedNameIsPath, 
         Icons? icon,
         QuickFixKind kind, 
-        String? hint) {
+        String? hint, 
+        Boolean asynchronous) {
         
         value myImage 
                 = eclipseIcons.fromIcons(icon) 
