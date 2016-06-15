@@ -63,6 +63,7 @@ import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.ide.common.model.CeylonUnit;
 import com.redhat.ceylon.model.typechecker.model.Unit;
+import com.redhat.ceylon.model.typechecker.model.Cancellable;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
@@ -760,8 +761,8 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
                 }
             });
             
-            parameters.visit(new TypeVisitor(unit));
-            parameters.visit(new ExpressionVisitor(unit));
+            parameters.visit(new TypeVisitor(unit, Cancellable.ALWAYS_CANCELLED));
+            parameters.visit(new ExpressionVisitor(unit, Cancellable.ALWAYS_CANCELLED));
             
             setErrorMessage(null);
             

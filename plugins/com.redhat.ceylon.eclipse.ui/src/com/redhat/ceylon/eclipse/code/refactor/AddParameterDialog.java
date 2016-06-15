@@ -33,6 +33,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.StaticType;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.ErrorVisitor;
+import com.redhat.ceylon.model.typechecker.model.Cancellable;
 import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.Value;
@@ -183,8 +184,8 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
                     super.visitAny(that);
                 }
             });
-            staticType.visit(new TypeVisitor(unit));
-            staticType.visit(new ExpressionVisitor(unit));
+            staticType.visit(new TypeVisitor(unit, Cancellable.ALWAYS_CANCELLED));
+            staticType.visit(new ExpressionVisitor(unit, Cancellable.ALWAYS_CANCELLED));
             
             errorLabel.setVisible(false);
             
@@ -272,8 +273,8 @@ public class AddParameterDialog extends Dialog /*TitleAreaDialog*/ {
                     super.visit(that);
                 }
             });
-            parameters.visit(new TypeVisitor(unit));
-            parameters.visit(new ExpressionVisitor(unit));
+            parameters.visit(new TypeVisitor(unit, Cancellable.ALWAYS_CANCELLED));
+            parameters.visit(new ExpressionVisitor(unit, Cancellable.ALWAYS_CANCELLED));
             
             errorLabel.setVisible(false);
             

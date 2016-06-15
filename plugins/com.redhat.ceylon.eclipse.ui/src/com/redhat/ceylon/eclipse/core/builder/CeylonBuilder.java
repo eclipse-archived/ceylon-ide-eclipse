@@ -1732,7 +1732,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     }
                     for (PhasedUnit pu: dependencies) {
                         progress.subTask("scanning types in " + pu.getUnit().getFilename());
-                        pu.scanTypeDeclarations();
+                        pu.scanTypeDeclarations(Cancellable.ALWAYS_CANCELLED);
                         if (progress.isCancelled()) {
                             throw new OperationCanceledException();
                         }
@@ -1748,7 +1748,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     }
                     for (PhasedUnit pu: dependencies) {
                         progress.subTask("analysing types in " + pu.getUnit().getFilename());
-                        pu.analyseTypes(); // Needed to have the right values in the Value.trans field (set in Expression visitor)
+                        pu.analyseTypes(Cancellable.ALWAYS_CANCELLED); // Needed to have the right values in the Value.trans field (set in Expression visitor)
                                             // which in turn is important for debugging !
                         if (progress.isCancelled()) {
                             throw new OperationCanceledException();
@@ -1869,7 +1869,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
                         if (! phasedUnit.isTypeDeclarationsScanned()) {
                             progress.subTask("scanning types " + phasedUnit.getUnit().getFilename());
-                            phasedUnit.scanTypeDeclarations();
+                            phasedUnit.scanTypeDeclarations(Cancellable.ALWAYS_CANCELLED);
                         }
                         if (progress.isCancelled()) {
                             throw new OperationCanceledException();
@@ -1891,7 +1891,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     for (PhasedUnit phasedUnit : phasedUnitsToUpdate) {
                         if (! phasedUnit.isFullyTyped()) {
                             progress.subTask("typechecking " + phasedUnit.getUnit().getFilename());
-                            phasedUnit.analyseTypes();
+                            phasedUnit.analyseTypes(Cancellable.ALWAYS_CANCELLED);
                             if (showWarnings(project)) {
                                 phasedUnit.analyseUsage();
                             }
@@ -1993,7 +1993,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                 
                                 for (PhasedUnit pu: dependencies) {
                                     progress.subTask("scanning types in " + pu.getUnit().getFilename());
-                                    pu.scanTypeDeclarations();
+                                    pu.scanTypeDeclarations(Cancellable.ALWAYS_CANCELLED);
                                     if (progress.isCancelled()) {
                                         throw new OperationCanceledException();
                                     }
@@ -2011,7 +2011,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 
                                 for (PhasedUnit pu: dependencies) {
                                     progress.subTask("analysing types in " + pu.getUnit().getFilename());
-                                    pu.analyseTypes(); // Needed to have the right values in the Value.trans field (set in Expression visitor)
+                                    pu.analyseTypes(Cancellable.ALWAYS_CANCELLED); // Needed to have the right values in the Value.trans field (set in Expression visitor)
                                                         // which in turn is important for debugging !
                                     if (progress.isCancelled()) {
                                         throw new OperationCanceledException();
@@ -2046,7 +2046,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                 for (PhasedUnit pu : listOfUnits) {
                                     if (! pu.isTypeDeclarationsScanned()) {
                                         progress.subTask("scanning types in " + pu.getUnit().getFilename());
-                                        pu.scanTypeDeclarations();
+                                        pu.scanTypeDeclarations(Cancellable.ALWAYS_CANCELLED);
                                     }
                                     if (progress.isCancelled()) {
                                         throw new OperationCanceledException();
@@ -2068,7 +2068,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                 for (PhasedUnit pu : listOfUnits) {
                                     if (! pu.isFullyTyped()) {
                                         progress.subTask("analysing types in " + pu.getUnit().getFilename());
-                                        pu.analyseTypes();
+                                        pu.analyseTypes(Cancellable.ALWAYS_CANCELLED);
                                         if (showWarnings(project)) {
                                             pu.analyseUsage();
                                         }

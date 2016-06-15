@@ -96,6 +96,7 @@ import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
 import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.CeylonUnit;
 import com.redhat.ceylon.model.cmr.JDKUtils;
+import com.redhat.ceylon.model.typechecker.model.Cancellable;
 import com.redhat.ceylon.model.typechecker.model.Class;
 import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
 import com.redhat.ceylon.model.typechecker.model.Constructor;
@@ -1368,7 +1369,7 @@ public class DocumentationHover extends SourceInfoHover {
         	CeylonUnit cu = (CeylonUnit) declarationUnit;
         	PhasedUnit declarationPhasedUnit = cu.getPhasedUnit();
             if (declarationPhasedUnit!=null) {
-                declarationPhasedUnit.analyseTypes();
+                declarationPhasedUnit.analyseTypes(Cancellable.ALWAYS_CANCELLED);
             }
         }
         	
