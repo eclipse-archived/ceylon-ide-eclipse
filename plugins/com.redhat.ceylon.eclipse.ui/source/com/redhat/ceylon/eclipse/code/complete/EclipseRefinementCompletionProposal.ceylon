@@ -18,7 +18,8 @@ import com.redhat.ceylon.ide.common.completion {
     RefinementCompletionProposal,
     getProposedName,
     appendPositionalArgs,
-    ProposalsHolder
+    ProposalsHolder,
+    CompletionContext
 }
 import com.redhat.ceylon.model.typechecker.model {
     Declaration,
@@ -53,10 +54,10 @@ import org.eclipse.swt.graphics {
 }
 
 class EclipseRefinementCompletionProposal(Integer _offset, String prefix, Reference pr, String desc, 
-        String text, CeylonParseController cpc, Declaration declaration, Scope scope,
+        String text, CompletionContext ctx, Declaration declaration, Scope scope,
         Boolean fullType, Boolean explicitReturnType)
         extends RefinementCompletionProposal
-                (_offset, prefix, pr, desc, text, cpc, declaration, scope, fullType, explicitReturnType)
+                (_offset, prefix, pr, desc, text, ctx, declaration, scope, fullType, explicitReturnType)
         satisfies EclipseCompletionProposal {
 
     shared actual variable String? currentPrefix = prefix;
@@ -210,7 +211,7 @@ class EclipseRefinementCompletionProposal(Integer _offset, String prefix, Refere
     
     shared actual void newNestedCompletionProposal(ProposalsHolder proposals, Declaration dec, Integer loc) {
         if (is EclipseProposalsHolder proposals) {
-            proposals.add(NestedCompletionProposal(dec, loc, cpc.lastCompilationUnit.unit));
+            proposals.add(NestedCompletionProposal(dec, loc, ctx.lastCompilationUnit.unit));
         }
     }
     
