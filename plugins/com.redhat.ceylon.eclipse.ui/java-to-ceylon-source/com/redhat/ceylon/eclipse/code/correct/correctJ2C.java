@@ -191,8 +191,11 @@ public class correctJ2C implements CorrectJ2C {
 
         List<TextEdit> edits = toJavaList_.toJavaList(
                 TypeDescriptor.klass(InsertEdit.class),
-                importProposals_.get_().importEditForMove(rootNode, declarations,
-                        aliases, newName, oldName, newDocument(doc))
+                importProposals_.get_()
+                    .importEditForMove(rootNode, 
+                        new CeylonSet<>(null,declarations),
+                        new CeylonStringIterable(aliases), 
+                        newName, oldName, newDocument(doc))
         );
 
         for (TextEdit importEdit: edits) {
