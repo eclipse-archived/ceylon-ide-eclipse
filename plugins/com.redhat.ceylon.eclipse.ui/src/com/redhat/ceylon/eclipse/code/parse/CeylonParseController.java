@@ -96,6 +96,7 @@ import com.redhat.ceylon.ide.common.platform.CommonDocument;
 import com.redhat.ceylon.ide.common.typechecker.EditedPhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.LocalAnalysisResult;
+import com.redhat.ceylon.ide.common.typechecker.LocalAnalysisResult$impl;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.util.Path;
 import com.redhat.ceylon.ide.common.util.SingleSourceUnitPackage;
@@ -104,6 +105,7 @@ import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.SourceCodeVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.VirtualFileSystem;
+import com.redhat.ceylon.model.typechecker.model.Cancellable;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Modules;
 import com.redhat.ceylon.model.typechecker.model.Package;
@@ -335,7 +337,7 @@ public class CeylonParseController
             useTypechecker(builtPhasedUnit, new Runnable() {
                 @Override
                 public void run() {
-                    builtPhasedUnit.analyseTypes();
+                    builtPhasedUnit.analyseTypes(Cancellable.ALWAYS_CANCELLED);
                     if (showWarnings) {
                         builtPhasedUnit.analyseUsage();
                     }
@@ -374,9 +376,9 @@ public class CeylonParseController
                 newPhasedUnit.visitSrcModulePhase();
                 newPhasedUnit.visitRemainingModulePhase();
                 newPhasedUnit.scanDeclarations();
-                newPhasedUnit.scanTypeDeclarations();
+                newPhasedUnit.scanTypeDeclarations(Cancellable.ALWAYS_CANCELLED);
                 newPhasedUnit.validateRefinement();
-                newPhasedUnit.analyseTypes();
+                newPhasedUnit.analyseTypes(Cancellable.ALWAYS_CANCELLED);
                 if (showWarnings) {
                     newPhasedUnit.analyseUsage();
                 }
@@ -471,13 +473,13 @@ public class CeylonParseController
             pu.scanDeclarations();
         }
         for (PhasedUnit pu: dependencies) {
-            pu.scanTypeDeclarations();
+            pu.scanTypeDeclarations(Cancellable.ALWAYS_CANCELLED);
         }
         for (PhasedUnit pu: dependencies) {
             pu.validateRefinement(); //TODO: only needed for type hierarchy view in IDE!
         }
         for (PhasedUnit pu: dependencies) {
-            pu.analyseTypes(); //TODO: Needed to have the right values in the Value.trans field (set in Expression visitor)
+            pu.analyseTypes(Cancellable.ALWAYS_CANCELLED); //TODO: Needed to have the right values in the Value.trans field (set in Expression visitor)
                                // which in turn is important for debugging !
         }
         
@@ -884,7 +886,7 @@ public class CeylonParseController
                   useTypechecker(phasedUnit, new Runnable() {
                       @Override
                       public void run() {
-                          phasedUnit.analyseTypes();
+                          phasedUnit.analyseTypes(Cancellable.ALWAYS_CANCELLED);
                           if (showWarnings(finalProject)) {
                               phasedUnit.analyseUsage();
                           }
@@ -1114,5 +1116,18 @@ public class CeylonParseController
     @Override
     public CommonDocument getCommonDocument() {
         return new correctJ2C().newDocument(getDocument());
+    }
+
+    
+    LocalAnalysisResult$impl $impl = new LocalAnalysisResult$impl(this);
+    
+    @Override
+    public LocalAnalysisResult$impl $com$redhat$ceylon$ide$common$typechecker$LocalAnalysisResult$impl() {
+        return $impl;
+    }
+
+    @Override
+    public boolean getUpToDate() {
+        return $impl.getUpToDate();
     }    
 }
