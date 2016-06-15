@@ -37,6 +37,9 @@ import com.redhat.ceylon.ide.common.platform.TextEdit;
 import com.redhat.ceylon.ide.common.util.toJavaList_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 
+import ceylon.interop.java.CeylonSet;
+import ceylon.interop.java.CeylonStringIterable;
+
 public class correctJ2C implements CorrectJ2C {
     @Override
     public importProposals_ importProposals() {
@@ -160,7 +163,10 @@ public class correctJ2C implements CorrectJ2C {
 
         List<InsertEdit> edits = toJavaList_.toJavaList(
                 TypeDescriptor.klass(InsertEdit.class),
-                importProposals_.get_().importEdits(rootNode, declarations, aliases,
+                importProposals_.get_().importEdits(
+                        rootNode, 
+                        new CeylonSet<>(null,declarations), 
+                        new CeylonStringIterable(aliases),
                         null, newDocument(doc))
         );
 

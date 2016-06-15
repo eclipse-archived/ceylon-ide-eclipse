@@ -49,6 +49,8 @@ import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 
+import ceylon.interop.java.CeylonMap;
+
 public class MoveUtil {
 
     public static int addImportEdits(Tree.Declaration node, 
@@ -61,8 +63,9 @@ public class MoveUtil {
         com.redhat.ceylon.ide.common.platform.TextChange change
             = new platformJ2C().newChange("", fc);
         return (int) importProposals()
-                .applyImportsWithAliases(change, imports, ncu, 
-                        change.getDocument(), declaration);
+                .applyImportsWithAliases(change, 
+                        new CeylonMap<>(null, null, imports), 
+                        ncu, change.getDocument(), declaration);
     }
 
     public static Map<Declaration,String> getImports(Node node,

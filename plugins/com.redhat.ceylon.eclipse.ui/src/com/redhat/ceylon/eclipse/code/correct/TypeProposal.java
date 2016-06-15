@@ -36,6 +36,8 @@ import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
+import ceylon.interop.java.CeylonMutableSet;
+
 public class TypeProposal 
         implements ICompletionProposal, 
                    ICompletionProposalExtension2, 
@@ -60,15 +62,22 @@ public class TypeProposal
 
     @Override
     public void apply(IDocument document) {
-        TextChange change = new platformJ2C().newChange("Specify Type", 
-                new correctJ2C().newDocument(document));
+        TextChange change = new platformJ2C()
+                .newChange("Specify Type", 
+                        new correctJ2C().newDocument(document));
         change.initMultiEdit();
         HashSet<Declaration> decs =
                 new HashSet<Declaration>();
         if (type!=null) {
-            importProposals().importType(decs, type, rootNode);
+            importProposals()
+                .importType(
+                        new CeylonMutableSet<>(null, decs), 
+                        type, rootNode);
         }
-        int il = (int) importProposals().applyImports(change, decs, rootNode, change.getDocument());
+        int il = (int) importProposals()
+                .applyImports(change, 
+                        new CeylonMutableSet<>(null, decs), 
+                        rootNode, change.getDocument());
         change.addEdit(new ReplaceEdit(offset,
                 getCurrentLength(document), text));
         change.apply();

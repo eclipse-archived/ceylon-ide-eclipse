@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.complete.EclipseCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendPositionalArgs;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getAssignableLiterals;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getCurrentSpecifierRegion;
@@ -10,6 +9,7 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLa
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleMethod;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleValue;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.withinBounds;
+import static com.redhat.ceylon.eclipse.code.complete.EclipseCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
@@ -73,6 +73,8 @@ import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.model.Value;
+
+import ceylon.interop.java.CeylonMutableSet;
 
 public final class RefinementCompletionProposal extends CompletionProposal {
     
@@ -310,19 +312,26 @@ public final class RefinementCompletionProposal extends CompletionProposal {
                 new DocumentChange("Complete Refinement",
                         document);
         TextChange commonChange = 
-                new platformJ2C().newChange("Complete Refinement", change);
+                new platformJ2C()
+                    .newChange("Complete Refinement", change);
         change.setEdit(new MultiTextEdit());
         HashSet<Declaration> decs =
                 new HashSet<Declaration>();
         Tree.CompilationUnit cu = cpc.getLastCompilationUnit();
         if (explicitReturnType) {
-            importProposals().importSignatureTypes(declaration, cu, decs);
+            importProposals()
+                .importSignatureTypes(declaration, cu, 
+                    new CeylonMutableSet<>(null, decs));
         }
         else {
-            importProposals().importParameterTypes(declaration, cu, decs);
+            importProposals()
+                .importParameterTypes(declaration, cu, 
+                        new CeylonMutableSet<>(null, decs));
         }
-        int il = (int) importProposals().applyImports(commonChange, decs,
-                cu, commonChange.getDocument());
+        int il = (int) importProposals()
+                .applyImports(commonChange, 
+                        new CeylonMutableSet<>(null, decs),
+                        cu, commonChange.getDocument());
         change.addEdit(createEdit(document));
         offset+=il;
         return change;

@@ -17,6 +17,8 @@ import com.redhat.ceylon.ide.common.platform.TextChange;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
 
+import ceylon.interop.java.CeylonMutableSet;
+
 public class LinkedModeImporter implements ILinkedModeListener {
     
     public static final int CANCEL = 1 << 10;
@@ -46,13 +48,16 @@ public class LinkedModeImporter implements ILinkedModeListener {
                             editor.getParseController()
                                 .getLastCompilationUnit();
                     importProposals()
-                        .importType(imports, type, rootNode);
+                        .importType(
+                                new CeylonMutableSet<>(null, imports), 
+                                type, rootNode);
                     if (!imports.isEmpty()) {
                         TextChange change = new platformJ2C().newChange("Import Type", 
                                         document);
                         change.initMultiEdit();
                         importProposals()
-                            .applyImports(change, imports, 
+                            .applyImports(change, 
+                                    new CeylonMutableSet<>(null, imports), 
                                     rootNode, change.getDocument());
                         change.apply();
                     }

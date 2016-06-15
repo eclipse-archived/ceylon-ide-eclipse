@@ -27,9 +27,6 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.LocalModifier;
@@ -37,6 +34,12 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.platform.platformJ2C;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Type;
+import com.redhat.ceylon.model.typechecker.model.Unit;
+
+import ceylon.interop.java.CeylonMutableSet;
+import ceylon.interop.java.CeylonSet;
 
 public class RevealInferredTypeHandler extends AbstractHandler {
 
@@ -94,7 +97,9 @@ public class RevealInferredTypeHandler extends AbstractHandler {
                             localModifier.getStartIndex(), 
                             localModifier.getText().length(), 
                             pt.asSourceCodeString(unit)));
-                    importProposals().importType(imports, pt, rootNode);
+                    importProposals().importType(
+                            new CeylonMutableSet<>(null, imports), 
+                            pt, rootNode);
                 }
             }
 
@@ -110,7 +115,9 @@ public class RevealInferredTypeHandler extends AbstractHandler {
                     tfc.addEdit(new InsertEdit(
                             variable.getStartIndex(), 
                             pt.asSourceCodeString(unit) + " "));
-                    importProposals().importType(imports,  
+                    importProposals()
+                        .importType(
+                            new CeylonMutableSet<>(null, imports),  
                             variable.getType().getTypeModel(), 
                             rootNode);
                 }
@@ -120,7 +127,10 @@ public class RevealInferredTypeHandler extends AbstractHandler {
                 IDocument doc = tfc.getCurrentDocument(null);
                 com.redhat.ceylon.ide.common.platform.TextChange chg =
                         new platformJ2C().newChange(tfc.getName(), tfc);
-                importProposals().applyImports(chg, imports, rootNode, 
+                importProposals()
+                    .applyImports(chg, 
+                        new CeylonSet<>(null, imports), 
+                        rootNode, 
                         new correctJ2C().newDocument(doc));
 
                 PerformChangeOperation changeOperation = 
