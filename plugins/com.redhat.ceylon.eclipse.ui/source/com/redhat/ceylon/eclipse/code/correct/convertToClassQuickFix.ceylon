@@ -28,7 +28,7 @@ class EclipseConvertToClassProposal(String desc, CeylonEditor editor,
     Tree.ObjectDefinition declaration)
             satisfies ICompletionProposal {
     
-    shared actual String? additionalProposalInfo => null;
+    displayString => desc;
     
     shared actual void apply(IDocument doc) {
         value lm = AbstractLinkedModeAdapter {
@@ -43,14 +43,13 @@ class EclipseConvertToClassProposal(String desc, CeylonEditor editor,
         };
         lm.openPopup();
     }
-    
+        
+    shared actual String? additionalProposalInfo => null;        
     shared actual IContextInformation? contextInformation => null;
-    
-    shared actual String displayString => desc;
-    
     shared actual Point? getSelection(IDocument doc) => null;
     
-    shared actual Image image => if (declaration.declarationModel.shared)
-                                 then CeylonResources.\iCLASS
-                                 else CeylonResources.\iLOCAL_CLASS;
+    shared actual Image image 
+            => if (declaration.declarationModel.shared)
+            then CeylonResources.\iCLASS
+            else CeylonResources.\iLOCAL_CLASS;
 }

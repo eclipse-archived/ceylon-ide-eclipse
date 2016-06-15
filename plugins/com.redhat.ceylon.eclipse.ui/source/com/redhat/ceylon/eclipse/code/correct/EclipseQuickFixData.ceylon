@@ -5,9 +5,6 @@ import com.redhat.ceylon.compiler.typechecker.tree {
 import com.redhat.ceylon.eclipse.code.editor {
     CeylonEditor
 }
-import com.redhat.ceylon.eclipse.platform {
-    EclipseTextChange
-}
 import com.redhat.ceylon.eclipse.ui {
     CeylonResources
 }
@@ -78,7 +75,7 @@ shared class EclipseQuickFixData(ProblemLocation location,
                 = eclipseIcons.fromIcons(icon) 
                 else CeylonResources.minorChange;
 
-        if (is EclipseTextChange change) {
+        if (is CommonTextChange change) {
             proposals.add(
                 proposalsFactory.createProposal {
                     description = desc;
@@ -89,7 +86,8 @@ shared class EclipseQuickFixData(ProblemLocation location,
                     kind = kind;
                 }
             );
-        } else if (is Anything() callback = change) {
+        } else {
+            value callback = change;
             proposals.add(object extends CorrectionProposal
                 (desc, null, null, myImage, qualifiedNameIsPath) {
                 apply(IDocument? doc) => callback();
