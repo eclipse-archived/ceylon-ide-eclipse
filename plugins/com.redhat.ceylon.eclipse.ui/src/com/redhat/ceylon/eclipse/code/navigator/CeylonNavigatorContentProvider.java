@@ -226,7 +226,10 @@ public class CeylonNavigatorContentProvider implements
                 }
                 String repoDisplayString = externalModule.getRepositoryDisplayString();
                 if (externalModule.getIsJDKModule()) {
-                    repositories.get(JDKRepository.JDK_REPOSITORY_DISPLAY_STRING).addModule(externalModule);
+                    RepositoryNode jdkRepositoryNode = repositories.get(JDKRepository.JDK_REPOSITORY_DISPLAY_STRING);
+                    if (jdkRepositoryNode != null) {
+                        jdkRepositoryNode.addModule(externalModule);
+                    }
                 }
                 else if (repositories.containsKey(repoDisplayString)) {
                     repositories.get(repoDisplayString).addModule(externalModule);
