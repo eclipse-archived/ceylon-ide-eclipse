@@ -12,11 +12,7 @@ import com.redhat.ceylon.eclipse.util {
     }
 }
 import com.redhat.ceylon.ide.common.correct {
-    QuickFixKind,
-    addConstructor,
-    addParameterList,
-    addRefineEqualsHash,
-    addRefineFormal
+    QuickFixKind
 }
 import com.redhat.ceylon.ide.common.platform {
     CommonTextChange=TextChange
@@ -64,13 +60,13 @@ object proposalsFactory {
             value region = toRegion(selection);
             
             Builder builder = switch (kind)
-            case (addConstructor) 
+            case (QuickFixKind.addConstructor) 
                 createProposalWithShortcut("addConstructor")
-            case (addParameterList) 
+            case (QuickFixKind.addParameterList) 
                 createProposalWithShortcut("addParameterList")
-            case (addRefineEqualsHash) 
+            case (QuickFixKind.addRefineEqualsHash) 
                 createProposalWithShortcut("refineEqualsHash")
-            case (addRefineFormal) 
+            case (QuickFixKind.addRefineFormal) 
                 createProposalWithShortcut("refineFormalMembers")
             else createGenericChangeProposal;
             
