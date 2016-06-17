@@ -1,3 +1,6 @@
+import com.redhat.ceylon.cmr.api {
+    ModuleVersionDetails
+}
 import com.redhat.ceylon.compiler.typechecker.tree {
     Tree,
     Node
@@ -27,6 +30,9 @@ import com.redhat.ceylon.ide.common.platform {
 import com.redhat.ceylon.ide.common.refactoring {
     DefaultRegion
 }
+import com.redhat.ceylon.model.typechecker.model {
+    Referenceable
+}
 
 import java.util {
     Collection
@@ -40,9 +46,6 @@ import org.eclipse.jface.text {
 }
 import org.eclipse.jface.text.contentassist {
     ICompletionProposal
-}
-import com.redhat.ceylon.model.typechecker.model {
-    Declaration
 }
 
 shared class EclipseQuickFixData(ProblemLocation location,
@@ -74,7 +77,7 @@ shared class EclipseQuickFixData(ProblemLocation location,
         QuickFixKind kind, 
         String? hint, 
         Boolean asynchronous, 
-        Declaration? declaration) {
+        Referenceable|ModuleVersionDetails? declaration) {
         
         value myImage 
                 = eclipseIcons.fromIcons(icon) 
