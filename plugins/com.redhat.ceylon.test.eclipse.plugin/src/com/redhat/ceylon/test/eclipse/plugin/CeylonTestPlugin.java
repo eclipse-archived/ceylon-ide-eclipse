@@ -1,7 +1,5 @@
 package com.redhat.ceylon.test.eclipse.plugin;
 
-import java.io.IOException;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -67,11 +65,11 @@ public class CeylonTestPlugin extends AbstractUIPlugin {
         plugin.getLog().log(new Status(IStatus.INFO, PLUGIN_ID, msg));
     }
 
-    public static void logInfo(String msg, IOException e) {
+    public static void logInfo(String msg, Throwable e) {
         plugin.getLog().log(new Status(IStatus.INFO, PLUGIN_ID, msg, e));
     }
 
-    public static void logError(String msg, Exception e) {
+    public static void logError(String msg, Throwable e) {
         plugin.getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, msg, e));
     }
 

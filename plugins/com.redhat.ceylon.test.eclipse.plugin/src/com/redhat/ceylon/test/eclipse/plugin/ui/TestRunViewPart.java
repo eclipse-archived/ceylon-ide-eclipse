@@ -69,7 +69,23 @@ import com.redhat.ceylon.test.eclipse.plugin.model.TestRunListenerAdapter;
 public class TestRunViewPart extends ViewPart {
 
     private static final String NAME = "com.redhat.ceylon.test.eclipse.plugin.testview";
-    private static final int REFRESH_INTERVAL = 200;
+    
+    private static final int REFRESH_INTERVAL;
+    static {
+        int refresh = 200;
+        try {
+            String val = System.getProperty("eclipse.ceylon.testview.refresh");
+            if( val != null ) {
+                refresh = Integer.parseInt(val);
+                CeylonTestPlugin.logInfo("ceylon testview refresh interval specified from system property to value: " + refresh);
+            }
+        }
+        catch(Throwable e) {
+            CeylonTestPlugin.logError("unable to parse ceylon testview refresh interval from system property", e);
+        }
+        
+        REFRESH_INTERVAL = refresh;
+    }
 
     private CounterPanel counterPanel;
     private ProgressBar progressBar;
