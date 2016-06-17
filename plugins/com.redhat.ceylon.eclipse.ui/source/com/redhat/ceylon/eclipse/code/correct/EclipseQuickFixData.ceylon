@@ -41,6 +41,9 @@ import org.eclipse.jface.text {
 import org.eclipse.jface.text.contentassist {
     ICompletionProposal
 }
+import com.redhat.ceylon.model.typechecker.model {
+    Declaration
+}
 
 shared class EclipseQuickFixData(ProblemLocation location,
     shared actual Tree.CompilationUnit rootNode,
@@ -70,7 +73,8 @@ shared class EclipseQuickFixData(ProblemLocation location,
         Icons? icon,
         QuickFixKind kind, 
         String? hint, 
-        Boolean asynchronous) {
+        Boolean asynchronous, 
+        Declaration? declaration) {
         
         value myImage 
                 = eclipseIcons.fromIcons(icon) 
