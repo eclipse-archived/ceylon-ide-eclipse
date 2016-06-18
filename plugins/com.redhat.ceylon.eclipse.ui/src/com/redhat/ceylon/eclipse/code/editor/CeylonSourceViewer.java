@@ -26,12 +26,9 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getTokenStrictlyContainingOff
 import static java.lang.Character.isWhitespace;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -67,17 +64,14 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.PartInitException;
 
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.ide.common.imports.SelectedImportsVisitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Import;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.NothingType;
 import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
@@ -871,70 +865,13 @@ public class CeylonSourceViewer extends ProjectionViewer {
     		if (cu == null) {
     		    return null;
     		}
-    		final IRegion selection = editor.getSelection();
-    		class SelectedImportsVisitor extends Visitor {
-    		    Set<Declaration> copied = 
-    		            new HashSet<Declaration>();
-    			Map<Declaration,String> results = 
-    			        new HashMap<Declaration,String>();
-    			boolean inSelection(Node node) {
-    				return node.getStartIndex()>=selection.getOffset() &&
-    						node.getEndIndex()<=selection.getOffset()+selection.getLength();
-    			}
-    			void addDeclaration(Declaration dec, 
-    			        Tree.Identifier id) {
-    				if (dec!=null && id!=null && 
-    				        dec.isToplevel() &&
-    				        !(dec instanceof NothingType) &&
-    				        !copied.contains(dec)) {
-    					String pname = 
-    					        dec.getUnit().getPackage()
-    					            .getNameAsString();
-    					if (!pname.isEmpty() &&
-    							!pname.equals(Module.LANGUAGE_MODULE_NAME)) {
-    						results.put(dec, id.getText());
-    					}
-    				}
-    			}
-    			@Override
-    			public void visit(Tree.BaseMemberOrTypeExpression that) {
-    				if (inSelection(that)) {
-    					addDeclaration(that.getDeclaration(), 
-    							that.getIdentifier());
-    				}
-    				super.visit(that);
-    			}
-    			@Override
-    			public void visit(Tree.BaseType that) {
-    				if (inSelection(that)) {
-    					addDeclaration(that.getDeclarationModel(), 
-    							that.getIdentifier());
-    				}
-    				super.visit(that);
-    			}
-    			@Override
-    			public void visit(Tree.MemberLiteral that) {
-    				if (inSelection(that) && that.getType()==null) {
-    					addDeclaration(that.getDeclaration(), 
-    							that.getIdentifier());
-    				}
-    				super.visit(that);
-    			}
-    			@Override 
-    			public void visit(Tree.Declaration that) {
-    			    if (inSelection(that)) {
-    			        Declaration dec = 
-    			                that.getDeclarationModel();
-                        copied.add(dec);
-    			        results.remove(dec);
-    			    }
-    			    super.visit(that);
-    			}
-    		}
+    		IRegion selection = editor.getSelection();
     		SelectedImportsVisitor v = 
-    		        new SelectedImportsVisitor();
+    		        new SelectedImportsVisitor(
+    		        		selection.getOffset(), 
+    		        		selection.getLength());
     		cu.visit(v);
-    		return v.results;
+    		return v.getCopiedReferencesMap();
     	}
     	catch (Exception e) {
     		e.printStackTrace();
