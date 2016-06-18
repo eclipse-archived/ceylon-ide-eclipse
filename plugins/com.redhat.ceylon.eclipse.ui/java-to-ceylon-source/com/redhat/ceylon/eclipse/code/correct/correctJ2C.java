@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
@@ -28,6 +29,7 @@ import com.redhat.ceylon.ide.common.correct.ideQuickFixManager_;
 import com.redhat.ceylon.ide.common.correct.importProposals_;
 import com.redhat.ceylon.ide.common.correct.refineEqualsHashQuickFix_;
 import com.redhat.ceylon.ide.common.correct.refineFormalMembersQuickFix_;
+import com.redhat.ceylon.ide.common.imports.pasteImportsSet_;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.platform.CommonDocument;
 import com.redhat.ceylon.ide.common.platform.DeleteEdit;
@@ -214,4 +216,12 @@ public class correctJ2C implements CorrectJ2C {
             }
         }
     }
+
+	public void pasteImports(Map<Declaration,String> map, MultiTextEdit edit, 
+			IDocument doc, Tree.CompilationUnit cu) {
+		for (InsertEdit e : pasteImportsSet_.pasteImportsSet(map, new EclipseDocument(doc), cu)) {
+			edit.addChild(new org.eclipse.text.edits.InsertEdit((int)e.getStart(), e.getText()));
+		}
+	}
+    
 }

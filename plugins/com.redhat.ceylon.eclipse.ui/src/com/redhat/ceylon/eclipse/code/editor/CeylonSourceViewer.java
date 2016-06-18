@@ -26,10 +26,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getTokenStrictlyContainingOff
 import static java.lang.Character.isWhitespace;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
 
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonToken;
@@ -71,9 +68,6 @@ import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.imports.SelectedImportsVisitor;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Import;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Unit;
 
 public class CeylonSourceViewer extends ProjectionViewer {
     /**
@@ -861,7 +855,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
     		if (controller==null) {
     		    return null;
     		}
-    		Tree.CompilationUnit cu = controller.getTypecheckedRootNode();
+    		Tree.CompilationUnit cu = 
+    				controller.getTypecheckedRootNode();
     		if (cu == null) {
     		    return null;
     		}
@@ -888,52 +883,11 @@ public class CeylonSourceViewer extends ProjectionViewer {
                     controller.getLastCompilationUnit()==null) {
                 return;
             }
-            Tree.CompilationUnit cu = controller.getLastCompilationUnit();
-            Unit unit = cu.getUnit();
-            //copy them, so as to not affect the clipboard
-            Map<Declaration,String> imports = 
-                    new LinkedHashMap<Declaration,String>(); 
-            imports.putAll(map);
-            for (Iterator<Map.Entry<Declaration,String>> i = 
-                        imports.entrySet().iterator(); 
-                    i.hasNext();) {
-                Map.Entry<Declaration,String> e = i.next();
-                Declaration declaration = e.getKey();
-                Package declarationPackage = 
-                        declaration.getUnit().getPackage();
-                String dpn = 
-                        declarationPackage.getNameAsString();
-                Pattern pattern = 
-                        Pattern.compile("\\bimport\\s+" + 
-                                dpn.replace(".", "\\.") + 
-                                "\\b[^.]");
-                if (unit.getPackage().equals(declarationPackage)) {
-                    //the declaration belongs to this package
-                    i.remove();
-                }
-                else if (pattern.matcher(pastedText).find()) {
-                    //i.e. the pasted text probably already contains the import
-                    i.remove();
-                }
-                else {
-                    for (Import ip: unit.getImports()) {
-                        //compare qualified names, treating
-                        //overloaded versions as identical
-                        if (ip.getDeclaration().getQualifiedNameString()
-                                .equals(declaration.getQualifiedNameString())) {
-                            i.remove();
-                            break;
-                        }
-                    }
-                }
-            }
-            if (!imports.isEmpty()) {
-                new correctJ2C().importEdits(edit, cu, imports.keySet(),
-                        imports.values(), doc);
-            }
+            new correctJ2C().pasteImports(map, edit, doc, 
+            		controller.getLastCompilationUnit());
         }
     }
-    
+
     public IPresentationReconciler getPresentationReconciler() {
         return fPresentationReconciler;
     }
