@@ -1,9 +1,6 @@
 import com.redhat.ceylon.eclipse.code.outline {
     CeylonLabelProvider
 }
-import com.redhat.ceylon.eclipse.code.parse {
-    CeylonParseController
-}
 import com.redhat.ceylon.eclipse.platform {
     EclipseProposalsHolder
 }

@@ -7,7 +7,7 @@ import org.eclipse.jface.text {
     IDocumentExtension4
 }
 
-shared class EclipseDocument(shared IDocument document) 
+shared class EclipseDocument(shared variable IDocument document) 
         satisfies CommonDocument {
     
     getLineContent(Integer line)
