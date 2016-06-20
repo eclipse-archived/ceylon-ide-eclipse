@@ -1,5 +1,8 @@
 package com.redhat.ceylon.eclipse.core.model;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.DefaultErrorHandlingPolicies;
@@ -67,6 +70,29 @@ public final class ModelLoaderTypeRequestor implements
         }
     }
 
+    IBinaryAnnotation[] noAnnots = new IBinaryAnnotation[0];
+    char[] dummyClassFileName = "unknown".toCharArray();
+    private IBinaryAnnotation[] getParameterAnnotations(IBinaryMethod methodInfo, int index) {
+        try {
+            try {
+                Method method = methodInfo.getClass().getDeclaredMethod("getParameterAnnotations", Integer.TYPE);
+                return (IBinaryAnnotation[]) method.invoke(methodInfo, index);
+            } catch (NoSuchMethodException e) {
+                try { 
+                    Method method = methodInfo.getClass().getDeclaredMethod("getParameterAnnotations", Integer.TYPE, dummyClassFileName.getClass());
+                    return (IBinaryAnnotation[]) method.invoke(methodInfo, index, dummyClassFileName);
+                } catch(NoSuchMethodException ee) {
+                    e.printStackTrace();
+                    return noAnnots;
+                }
+            }
+        } catch (IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException e) {
+            e.printStackTrace();
+            return noAnnots;
+        }
+    }
+    
     @Override
     public void accept(IBinaryType binaryType, PackageBinding packageBinding,
             AccessRestriction accessRestriction) {
@@ -80,14 +106,14 @@ public final class ModelLoaderTypeRequestor implements
                         if (methodInfo.isConstructor()) {
                             char[] methodInfoSignature = methodInfo.getMethodDescriptor();
                             if (new String(signature).equals(new String(methodInfoSignature))) {
-                                IBinaryAnnotation[] binaryAnnotation = methodInfo.getParameterAnnotations(0);
+                                IBinaryAnnotation[] binaryAnnotation = getParameterAnnotations(methodInfo, 0);
                                 if (binaryAnnotation == null) {
                                     if (methodInfo.getAnnotatedParametersCount() == method.parameters.length + 1) {
                                         AnnotationBinding[][] newParameterAnnotations = new AnnotationBinding[method.parameters.length][];
                                         for (int i=0; i<method.parameters.length; i++) {
                                             IBinaryAnnotation[] goodAnnotations = null;
                                             try {
-                                                 goodAnnotations = methodInfo.getParameterAnnotations(i + 1);
+                                                 goodAnnotations = getParameterAnnotations(methodInfo, i + 1);
                                             }
                                             catch(IndexOutOfBoundsException e) {
                                                 break;
