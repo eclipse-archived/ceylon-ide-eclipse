@@ -69,7 +69,7 @@ abstract class CeylonHierarchyLabelProvider
                     new StyledString()
                         .append("anonymous ")
                         .append("object", Highlights.KW_STYLER)
-                        .append(" expession");
+                        .append(" expression");
         }
         /*if (d.isClassOrInterfaceMember()) {
             Declaration container = (Declaration) d.getContainer();
