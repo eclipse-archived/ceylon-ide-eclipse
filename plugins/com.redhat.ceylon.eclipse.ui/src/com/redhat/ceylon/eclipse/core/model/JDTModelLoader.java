@@ -405,7 +405,41 @@ public class JDTModelLoader extends AbstractModelLoader {
         }
     }
     
+    private static IBinaryAnnotation[] noAnnots = new IBinaryAnnotation[0];
+    private static char[] dummyClassFileName = "unknown".toCharArray();
+    private static java.lang.Class<?> dummyClassFileNameClass = dummyClassFileName.getClass();
+    private static boolean hasClassFileNameParameter = false;
 
+    private static java.lang.reflect.Method getParameterAnnotationsMethod = null;
+    private static void loadGetParameterAnnotationsMethod() throws NoSuchMethodException, SecurityException {
+        if (getParameterAnnotationsMethod == null) {
+            Method m = null;
+            try {
+                m = IBinaryMethod.class.getMethod("getParameterAnnotations", Integer.TYPE);
+            } catch (NoSuchMethodException e) {
+                m = IBinaryMethod.class.getMethod("getParameterAnnotations", Integer.TYPE, dummyClassFileNameClass);
+                hasClassFileNameParameter = true;
+            }
+            m.setAccessible(true);
+            getParameterAnnotationsMethod = m;
+        }
+    }
+    
+    private static IBinaryAnnotation[] getParameterAnnotations(IBinaryMethod methodInfo, int index) {
+        try {
+            loadGetParameterAnnotationsMethod();
+            if (hasClassFileNameParameter) {
+                return (IBinaryAnnotation[]) getParameterAnnotationsMethod.invoke(methodInfo, index, dummyClassFileName);
+            } else {
+                return (IBinaryAnnotation[]) getParameterAnnotationsMethod.invoke(methodInfo, index);
+            }
+        } catch (IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+            e.printStackTrace();
+            return noAnnots;
+        }
+    }
+    
     public final class ModelLoaderTypeRequestor implements
             ITypeRequestor {
         private Parser basicParser;
@@ -456,14 +490,14 @@ public class JDTModelLoader extends AbstractModelLoader {
                             if (methodInfo.isConstructor()) {
                                 char[] methodInfoSignature = methodInfo.getMethodDescriptor();
                                 if (new String(signature).equals(new String(methodInfoSignature))) {
-                                    IBinaryAnnotation[] binaryAnnotation = methodInfo.getParameterAnnotations(0);
+                                    IBinaryAnnotation[] binaryAnnotation = getParameterAnnotations(methodInfo, 0);
                                     if (binaryAnnotation == null) {
                                         if (methodInfo.getAnnotatedParametersCount() == method.parameters.length + 1) {
                                             AnnotationBinding[][] newParameterAnnotations = new AnnotationBinding[method.parameters.length][];
                                             for (int i=0; i<method.parameters.length; i++) {
                                                 IBinaryAnnotation[] goodAnnotations = null;
                                                 try {
-                                                     goodAnnotations = methodInfo.getParameterAnnotations(i + 1);
+                                                     goodAnnotations = getParameterAnnotations(methodInfo, i + 1);
                                                 }
                                                 catch(IndexOutOfBoundsException e) {
                                                     break;
@@ -524,6 +558,38 @@ public class JDTModelLoader extends AbstractModelLoader {
         }
     }
 
+    private static java.lang.reflect.Constructor<NameEnvironmentAnswer> nameEnvironmentAnswerFromSoureTypesConstructor = null;
+    private static boolean hasAdditionalStringParameter = false;
+    
+    private static void loadNameEnvironmentAnswerFromSoureTypesConstructor() throws NoSuchMethodException, SecurityException {
+        if (nameEnvironmentAnswerFromSoureTypesConstructor == null) {
+        	java.lang.reflect.Constructor<NameEnvironmentAnswer> c = null;
+            try {
+                c = NameEnvironmentAnswer.class.getConstructor((new ISourceType[0]).getClass(), AccessRestriction.class);
+            } catch (NoSuchMethodException e) {
+                c = NameEnvironmentAnswer.class.getConstructor((new ISourceType[0]).getClass(), AccessRestriction.class, String.class);
+                hasAdditionalStringParameter = true;
+            }
+            c.setAccessible(true);
+            nameEnvironmentAnswerFromSoureTypesConstructor = c;
+        }
+    }
+    
+    private static NameEnvironmentAnswer createNameEnvironmentAnswerFromSoureTypes(ISourceType[] sourceTypes) {
+        try {
+            loadNameEnvironmentAnswerFromSoureTypesConstructor();
+            if (hasAdditionalStringParameter) {
+                return nameEnvironmentAnswerFromSoureTypesConstructor.newInstance(sourceTypes, null, null);
+            } else {
+                return nameEnvironmentAnswerFromSoureTypesConstructor.newInstance(sourceTypes, null);
+            }
+        } catch (IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | NoSuchMethodException | SecurityException | InstantiationException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
     public static class ModelLoaderNameEnvironment extends SearchableEnvironment {
         public ModelLoaderNameEnvironment(IJavaProject javaProject) throws JavaModelException {
             super((JavaProject)javaProject, (WorkingCopyOwner) null);
@@ -756,7 +822,7 @@ public class JDTModelLoader extends AbstractModelLoader {
                             if (!otherType.equals(topLevelType) && index < length) // check that the index is in bounds (see https://bugs.eclipse.org/bugs/show_bug.cgi?id=62861)
                                 sourceTypes[index++] = otherType;
                         }
-                        return new NameEnvironmentAnswer(sourceTypes, null);
+                        return createNameEnvironmentAnswerFromSoureTypes(sourceTypes);
                     } catch (JavaModelException jme) {
                         if (jme.isDoesNotExist() && String.valueOf(TypeConstants.PACKAGE_INFO_NAME).equals(typeName)) {
                             // in case of package-info.java the type doesn't exist in the model,
