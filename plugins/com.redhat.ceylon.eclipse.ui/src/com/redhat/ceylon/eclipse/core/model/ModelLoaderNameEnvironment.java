@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.core.model;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
@@ -19,6 +20,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.core.compiler.CharOperation;
+import org.eclipse.jdt.internal.compiler.env.AccessRestriction;
 import org.eclipse.jdt.internal.compiler.env.IBinaryType;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.eclipse.jdt.internal.compiler.env.ISourceType;
@@ -223,6 +225,38 @@ public class ModelLoaderNameEnvironment extends SearchableEnvironment {
         return null;
     }
     
+    private static Constructor<NameEnvironmentAnswer> nameEnvironmentAnswerFromSoureTypesConstructor = null;
+    private static boolean hasAdditionalStringParameter = false;
+    
+    private static void loadNameEnvironmentAnswerFromSoureTypesConstructor() throws NoSuchMethodException, SecurityException {
+        if (nameEnvironmentAnswerFromSoureTypesConstructor == null) {
+            Constructor<NameEnvironmentAnswer> c = null;
+            try {
+                c = NameEnvironmentAnswer.class.getConstructor((new ISourceType[0]).getClass(), AccessRestriction.class);
+            } catch (NoSuchMethodException e) {
+                c = NameEnvironmentAnswer.class.getConstructor((new ISourceType[0]).getClass(), AccessRestriction.class, String.class);
+                hasAdditionalStringParameter = true;
+            }
+            c.setAccessible(true);
+            nameEnvironmentAnswerFromSoureTypesConstructor = c;
+        }
+    }
+    
+    private static NameEnvironmentAnswer createNameEnvironmentAnswerFromSoureTypes(ISourceType[] sourceTypes) {
+        try {
+            loadNameEnvironmentAnswerFromSoureTypesConstructor();
+            if (hasAdditionalStringParameter) {
+                return nameEnvironmentAnswerFromSoureTypesConstructor.newInstance(sourceTypes, null, null);
+            } else {
+                return nameEnvironmentAnswerFromSoureTypesConstructor.newInstance(sourceTypes, null);
+            }
+        } catch (IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | NoSuchMethodException | SecurityException | InstantiationException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
     @Override
     protected NameEnvironmentAnswer find(String typeName, String packageName) {
         if (packageName == null)
@@ -268,7 +302,7 @@ public class ModelLoaderNameEnvironment extends SearchableEnvironment {
                         if (!otherType.equals(topLevelType) && index < length) // check that the index is in bounds (see https://bugs.eclipse.org/bugs/show_bug.cgi?id=62861)
                             sourceTypes[index++] = otherType;
                     }
-                    return new NameEnvironmentAnswer(sourceTypes, null);
+                    return createNameEnvironmentAnswerFromSoureTypes(sourceTypes);
                 } catch (JavaModelException jme) {
                     if (jme.isDoesNotExist() && String.valueOf(TypeConstants.PACKAGE_INFO_NAME).equals(typeName)) {
                         // in case of package-info.java the type doesn't exist in the model,

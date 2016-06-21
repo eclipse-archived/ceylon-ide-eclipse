@@ -70,24 +70,36 @@ public final class ModelLoaderTypeRequestor implements
         }
     }
 
-    IBinaryAnnotation[] noAnnots = new IBinaryAnnotation[0];
-    char[] dummyClassFileName = "unknown".toCharArray();
-    private IBinaryAnnotation[] getParameterAnnotations(IBinaryMethod methodInfo, int index) {
-        try {
+    private static IBinaryAnnotation[] noAnnots = new IBinaryAnnotation[0];
+    private static char[] dummyClassFileName = "unknown".toCharArray();
+    private static Class<?> dummyClassFileNameClass = dummyClassFileName.getClass();
+    private static boolean hasClassFileNameParameter = false;
+
+    private static Method getParameterAnnotationsMethod = null;
+    private static void loadGetParameterAnnotationsMethod() throws NoSuchMethodException, SecurityException {
+        if (getParameterAnnotationsMethod == null) {
+            Method m = null;
             try {
-                Method method = methodInfo.getClass().getDeclaredMethod("getParameterAnnotations", Integer.TYPE);
-                return (IBinaryAnnotation[]) method.invoke(methodInfo, index);
+                m = IBinaryMethod.class.getMethod("getParameterAnnotations", Integer.TYPE);
             } catch (NoSuchMethodException e) {
-                try { 
-                    Method method = methodInfo.getClass().getDeclaredMethod("getParameterAnnotations", Integer.TYPE, dummyClassFileName.getClass());
-                    return (IBinaryAnnotation[]) method.invoke(methodInfo, index, dummyClassFileName);
-                } catch(NoSuchMethodException ee) {
-                    e.printStackTrace();
-                    return noAnnots;
-                }
+                m = IBinaryMethod.class.getMethod("getParameterAnnotations", Integer.TYPE, dummyClassFileNameClass);
+                hasClassFileNameParameter = true;
+            }
+            m.setAccessible(true);
+            getParameterAnnotationsMethod = m;
+        }
+    }
+    
+    private static IBinaryAnnotation[] getParameterAnnotations(IBinaryMethod methodInfo, int index) {
+        try {
+            loadGetParameterAnnotationsMethod();
+            if (hasClassFileNameParameter) {
+                return (IBinaryAnnotation[]) getParameterAnnotationsMethod.invoke(methodInfo, index, dummyClassFileName);
+            } else {
+                return (IBinaryAnnotation[]) getParameterAnnotationsMethod.invoke(methodInfo, index);
             }
         } catch (IllegalAccessException | IllegalArgumentException
-                    | InvocationTargetException e) {
+                    | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             e.printStackTrace();
             return noAnnots;
         }
