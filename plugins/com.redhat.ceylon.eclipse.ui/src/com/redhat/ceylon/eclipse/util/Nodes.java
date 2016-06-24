@@ -341,7 +341,12 @@ public class Nodes {
     }
 
     public static String[] nameProposals(Node node) {
-        return nameProposals(node, false);
+        if (node instanceof Tree.Term || node instanceof Tree.Type) {
+            return nameProposals(node, false);
+        }
+        else {
+            return new String[] {"it"};
+        }
     }
     public static String[] nameProposals(Node node, boolean unplural) {
     	return toJavaStringArray(delegate.nameProposals(node, null, unplural));
