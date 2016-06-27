@@ -56,8 +56,12 @@ import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectBuild;
 import com.redhat.ceylon.ide.common.model.ModelListener;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Package;
+
+import ceylon.language.Iterable;
 
 public class CeylonNavigatorContentProvider implements
         IPipelinedTreeContentProvider2, ModelListener<IProject, IResource, IFolder, IFile> {
@@ -706,6 +710,18 @@ public class CeylonNavigatorContentProvider implements
             ceylon.language.Iterable<? extends CeylonProjectBuild<IProject,IResource,IFolder,IFile>.SourceFileMessage,? extends Object> frontendMessages,
             ceylon.language.Iterable<? extends CeylonProjectBuild<IProject,IResource,IFolder,IFile>.SourceFileMessage,? extends Object> backMessages,
             ceylon.language.Iterable<? extends CeylonProjectBuild<IProject,IResource,IFolder,IFile>.ProjectMessage,? extends Object> projectMessages) {
+        return null;
+    }
+
+    @Override
+    public Object modelFilesUpdated(
+            Iterable<? extends FileVirtualFile<IProject, IResource, IFolder, IFile>, ? extends Object> arg0) {
+        return null;
+    }
+
+    @Override
+    public Object modelPhasedUnitsTypechecked(
+            Iterable<? extends ProjectPhasedUnit<IProject, IResource, IFolder, IFile>, ? extends Object> arg0) {
         return null;
     }
 

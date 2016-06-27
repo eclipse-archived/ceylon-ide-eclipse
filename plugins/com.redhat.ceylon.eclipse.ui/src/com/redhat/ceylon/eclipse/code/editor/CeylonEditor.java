@@ -166,6 +166,10 @@ import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectBuild;
 import com.redhat.ceylon.ide.common.model.ModelListener;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
+
+import ceylon.language.Iterable;
 
 /**
  * An editor for Ceylon source code.
@@ -2176,6 +2180,18 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
             ceylon.language.Iterable<? extends CeylonProjectBuild<IProject,IResource,IFolder,IFile>.SourceFileMessage,? extends Object> frontendMessages,
             ceylon.language.Iterable<? extends CeylonProjectBuild<IProject,IResource,IFolder,IFile>.SourceFileMessage,? extends Object> backMessages,
             ceylon.language.Iterable<? extends CeylonProjectBuild<IProject,IResource,IFolder,IFile>.ProjectMessage,? extends Object> projectMessages) {
+        return null;
+    }
+
+    @Override
+    public Object modelFilesUpdated(
+            Iterable<? extends FileVirtualFile<IProject, IResource, IFolder, IFile>, ? extends Object> arg0) {
+        return null;
+    }
+
+    @Override
+    public Object modelPhasedUnitsTypechecked(
+            Iterable<? extends ProjectPhasedUnit<IProject, IResource, IFolder, IFile>, ? extends Object> arg0) {
         return null;
     }
 }

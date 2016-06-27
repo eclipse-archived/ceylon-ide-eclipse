@@ -94,6 +94,8 @@ import com.redhat.ceylon.ide.common.model.ModuleDependencies;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies.Dependency;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies.ModuleReference;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies.ModuleWeakReference;
+import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.ModuleImport;
 
@@ -861,6 +863,18 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, Mode
             ceylon.language.Iterable<? extends CeylonProjectBuild<IProject,IResource,IFolder,IFile>.SourceFileMessage,? extends Object> frontendMessages,
             ceylon.language.Iterable<? extends CeylonProjectBuild<IProject,IResource,IFolder,IFile>.SourceFileMessage,? extends Object> backMessages,
             ceylon.language.Iterable<? extends CeylonProjectBuild<IProject,IResource,IFolder,IFile>.ProjectMessage,? extends Object> projectMessages) {
+        return null;
+    }
+
+    @Override
+    public Object modelFilesUpdated(
+            ceylon.language.Iterable<? extends FileVirtualFile<IProject, IResource, IFolder, IFile>, ? extends Object> arg0) {
+        return null;
+    }
+
+    @Override
+    public Object modelPhasedUnitsTypechecked(
+            ceylon.language.Iterable<? extends ProjectPhasedUnit<IProject, IResource, IFolder, IFile>, ? extends Object> arg0) {
         return null;
     }
 }
