@@ -46,7 +46,7 @@ import org.eclipse.jdt.internal.core {
 }
 
 shared class JDTModuleManager(Context context, CeylonProject<IProject,IResource,IFolder,IFile>? ceylonProject)
-         extends IdeModuleManager<IProject,IResource,IFolder,IFile>(ceylonProject) {
+         extends IdeModuleManager<IProject,IResource,IFolder,IFile>(ceylonModel, ceylonProject) {
 
     shared IJavaProject? javaProject => 
             if (exists nativeProject = ceylonProject?.ideArtifact) 

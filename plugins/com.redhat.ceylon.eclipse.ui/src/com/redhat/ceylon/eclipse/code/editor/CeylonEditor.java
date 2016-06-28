@@ -166,6 +166,7 @@ import com.redhat.ceylon.eclipse.util.Highlights;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectBuild;
 import com.redhat.ceylon.ide.common.model.ModelListener;
+import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 
@@ -2192,6 +2193,13 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
     @Override
     public Object modelPhasedUnitsTypechecked(
             Iterable<? extends ProjectPhasedUnit<IProject, IResource, IFolder, IFile>, ? extends Object> arg0) {
+        return null;
+    }
+
+    @Override
+    public Object externalPhasedUnitsTypechecked(
+            Iterable<? extends ExternalPhasedUnit, ? extends Object> externalPhasedUnits,
+            boolean fullyTypechecked) {
         return null;
     }
 }

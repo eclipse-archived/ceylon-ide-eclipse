@@ -94,6 +94,7 @@ import com.redhat.ceylon.ide.common.model.ModuleDependencies;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies.Dependency;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies.ModuleReference;
 import com.redhat.ceylon.ide.common.model.ModuleDependencies.ModuleWeakReference;
+import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -875,6 +876,13 @@ public class DependencyGraphView extends ViewPart implements IShowInTarget, Mode
     @Override
     public Object modelPhasedUnitsTypechecked(
             ceylon.language.Iterable<? extends ProjectPhasedUnit<IProject, IResource, IFolder, IFile>, ? extends Object> arg0) {
+        return null;
+    }
+
+    @Override
+    public Object externalPhasedUnitsTypechecked(
+            ceylon.language.Iterable<? extends ExternalPhasedUnit, ? extends Object> arg0,
+            boolean arg1) {
         return null;
     }
 }

@@ -56,6 +56,7 @@ import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectBuild;
 import com.redhat.ceylon.ide.common.model.ModelListener;
+import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.model.typechecker.model.Module;
@@ -722,6 +723,13 @@ public class CeylonNavigatorContentProvider implements
     @Override
     public Object modelPhasedUnitsTypechecked(
             Iterable<? extends ProjectPhasedUnit<IProject, IResource, IFolder, IFile>, ? extends Object> arg0) {
+        return null;
+    }
+
+    @Override
+    public Object externalPhasedUnitsTypechecked(
+            Iterable<? extends ExternalPhasedUnit, ? extends Object> arg0,
+            boolean arg1) {
         return null;
     }
 
