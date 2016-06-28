@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.resolve;
 import static com.redhat.ceylon.eclipse.code.editor.Navigation.getJavaElement;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeDeclaration;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeHeader;
@@ -111,7 +111,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
             }
             else {
                 Node id = getIdentifyingNode(node);
-                Referenceable ref = getReferencedDeclaration(node);
+                Referenceable ref = getReferencedModel(node);
                 if (ref instanceof Declaration) {
                     Declaration dec = (Declaration) ref;
                     Unit declarationUnit = dec.getUnit();
