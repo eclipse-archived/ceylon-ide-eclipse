@@ -20,6 +20,7 @@
 package com.redhat.ceylon.eclipse.core.model.mirror;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
@@ -45,6 +46,11 @@ public class JDTField implements FieldMirror {
     @Override
     public AnnotationMirror getAnnotation(String type) {
         return annotations.get(type);
+    }
+    
+    @Override
+    public Set<String> getAnnotationNames() {
+        return annotations.keySet();
     }
 
     @Override

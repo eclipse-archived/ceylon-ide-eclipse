@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.eclipse.jdt.core.IType;
@@ -102,6 +103,11 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
 
     @Override
     public AnnotationMirror getAnnotation(String type) {
+        retrieveAnnotations();
+        return annotations.get(type);
+    }
+
+    private void retrieveAnnotations() {
         if (annotations == null) {
             doWithBindings(new ActionOnMethodBinding() {
                 @Override
@@ -117,7 +123,12 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                 }
             });
         }
-        return annotations.get(type);
+    }
+    
+    @Override
+    public Set<String> getAnnotationNames() {
+        retrieveAnnotations();
+        return annotations.keySet();
     }
 
     @Override

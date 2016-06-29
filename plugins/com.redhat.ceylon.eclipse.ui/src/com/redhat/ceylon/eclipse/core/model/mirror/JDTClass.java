@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IType;
@@ -194,6 +195,12 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
                 }
             });
         }
+    }
+
+    @Override
+    public Set<String> getAnnotationNames() {
+        retrieveAnnotations();
+        return annotations.keySet();
     }
 
     @Override

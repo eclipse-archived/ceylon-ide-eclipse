@@ -21,6 +21,7 @@
 package com.redhat.ceylon.eclipse.core.model.mirror;
 
 import java.util.Map;
+import java.util.Set;
 
 import com.redhat.ceylon.model.loader.mirror.AnnotationMirror;
 import com.redhat.ceylon.model.loader.mirror.TypeMirror;
@@ -41,6 +42,11 @@ public class JDTVariable implements VariableMirror {
     @Override
     public AnnotationMirror getAnnotation(String type) {
         return annotations.get(type);
+    }
+    
+    @Override
+    public Set<String> getAnnotationNames() {
+        return annotations.keySet();
     }
 
     @Override
