@@ -9,8 +9,6 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
 import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeDeclaration;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeHeader;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEditor;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.TOGGLE_SHOW_SELECTED_ELEMENT_ONLY;
@@ -58,8 +56,8 @@ import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Scope;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 
 
@@ -444,8 +442,8 @@ public class Navigation {
         if (backends.none()) {
             return null;
         }
+        
         Unit unit = dec.getUnit();
-        Scope containerToSearchHeaderIn = null;
         if (unit instanceof CeylonBinaryUnit) {
             CeylonBinaryUnit binaryUnit = 
                     (CeylonBinaryUnit) unit;
@@ -458,50 +456,23 @@ public class Navigation {
                             toJavaString(binaryUnit.getCeylonModule()
                                 .toSourceUnitRelativePath(
                                         toCeylonString(unit.getRelativePath())));
-                    if (sourceRelativePath != null && 
-                            sourceRelativePath.endsWith(".ceylon")) {
-                        for (Declaration sourceDecl: 
-                                sourceFile.getDeclarations()) {
-                            if (sourceDecl.equals(dec)) {
-                                containerToSearchHeaderIn = 
-                                        sourceDecl.getContainer();
-                                break;
-                            }
-                        }
-                    } else {
-                        for (Declaration sourceDecl: 
-                                sourceFile.getDeclarations()) {
-                            if (sourceDecl.getQualifiedNameString()
-                                    .equals(dec.getQualifiedNameString())) {
-                                containerToSearchHeaderIn = 
-                                        sourceDecl.getContainer();
-                                break;
-                            }
+                    boolean isCeylon = sourceRelativePath!=null && 
+                            sourceRelativePath.endsWith(".ceylon");
+                    for (Declaration sourceDecl: 
+                            sourceFile.getDeclarations()) {
+                        boolean thisOne = isCeylon ?
+                                sourceDecl.equals(dec) :
+                                sourceDecl.getQualifiedNameString()
+                                .equals(dec.getQualifiedNameString());
+                        if (thisOne) {
+                            return ModelUtil.getNativeDeclaration(sourceDecl, backends);
                         }
                     }
                 }
             }
-        } else {
-            containerToSearchHeaderIn = dec.getContainer();
         }
-    
-        if (containerToSearchHeaderIn != null) {
-            Declaration headerDeclaration = 
-                    getNativeHeader(containerToSearchHeaderIn, 
-                            dec.getName());
-            if (headerDeclaration == null 
-                    || ! headerDeclaration.isNative()) return null;
-            if (backends.header()) {
-                dec = headerDeclaration;
-            } else {
-                if (headerDeclaration != null) {
-                    dec = 
-                            getNativeDeclaration(headerDeclaration, 
-                                    backends);
-                }
-            }
-        }
-        return dec;
+        
+        return ModelUtil.getNativeDeclaration(dec, backends);
     }
 
 }
