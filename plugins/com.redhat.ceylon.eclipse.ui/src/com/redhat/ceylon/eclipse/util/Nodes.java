@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.util;
 
-import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringArray;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.EOF;
@@ -9,6 +8,7 @@ import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_CO
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_END;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
 import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
+import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringArray;
 
 import java.util.Iterator;
 import java.util.List;
@@ -188,47 +188,18 @@ public class Nodes {
      * in all relevant compilation units.
      */
     public static Node getReferencedNode(Referenceable model) {
-//        if (model==null) {
-//            return null;
-//        }
-//        else {
-//            Unit unit = model.getUnit();
-//            if (unit instanceof CeylonUnit) {
-//                CeylonUnit ceylonUnit = (CeylonUnit) unit;
-//                return getReferencedNodeInUnit(model, 
-//                        ceylonUnit.getCompilationUnit());
-//            }
-//            else {
-//                return null;
-//            }
-//        }
-        return delegate.getReferencedNode(model);
+        return delegate.getReferencedNode(model); 
+    }
+    
+    /** 
+     * Get the Node referenced by the given model, searching
+     * in all relevant compilation units.
+     */
+    public static Node getReferencedNode(Referenceable model, Tree.CompilationUnit rootNode) {
+        return delegate.getReferencedNode(model, rootNode);
     }
 
     public static Referenceable getReferencedModel(Node node) {
-//        if (node instanceof Tree.ImportPath) {
-//            Tree.ImportPath importPath = (Tree.ImportPath) node;
-//            return importPath.getModel();
-//        }
-//        else if (node instanceof Tree.DocLink) {
-//            Tree.DocLink docLink = (Tree.DocLink) node;
-//            if (docLink.getBase()==null) {
-//                if (docLink.getModule()!=null) {
-//                    return docLink.getModule(); 
-//                }
-//                if (docLink.getPkg()!=null) {
-//                    return docLink.getPkg();
-//                }
-//            }
-//        }
-//        Referenceable dec = getReferencedDeclaration(node);
-//        if (dec instanceof FunctionOrValue) {
-//            FunctionOrValue mv = (FunctionOrValue) dec;
-//            if (mv.isShortcutRefinement()) {
-//                dec = mv.getRefinedDeclaration();
-//            }
-//        }
-//        return dec;
         return delegate.getReferencedModel(node);
     }
 
@@ -241,70 +212,6 @@ public class Nodes {
         return delegate.getReferencedDeclaration(node);
     }
     
-    /**
-     * Find the Node defining the given model within the
-     * given CompilationUnit.
-     */
-    public static Node getReferencedNodeInUnit(Referenceable model,
-            Tree.CompilationUnit rootNode) {
-//        if (rootNode==null || model==null) {
-//            return null;
-//        }
-//        else {
-//            if (model instanceof Declaration) {
-//                Declaration decl = (Declaration) model;
-//                Unit unit = decl.getUnit();
-//                if (unit != null 
-//                        && ! unit.getFilename().toLowerCase().endsWith(".ceylon")) {
-//                    boolean foundTheCeylonDeclaration = false;
-//                    if (unit instanceof CeylonBinaryUnit) {
-//                        BaseIdeModule module = (BaseIdeModule) unit.getPackage().getModule();
-//                        String sourceRelativePath = toJavaString(module.toSourceUnitRelativePath(toCeylonString(unit.getRelativePath())));
-//                        if (sourceRelativePath != null) {
-//                            String ceylonSourceRelativePath = toJavaString(module.getCeylonDeclarationFile(toCeylonString(sourceRelativePath)));
-//                            if (ceylonSourceRelativePath != null) {
-//                                ExternalPhasedUnit externalPhasedUnit = module.getPhasedUnitFromRelativePath(ceylonSourceRelativePath);
-//                                if (externalPhasedUnit != null) {
-//                                    ExternalSourceFile sourceFile = externalPhasedUnit.getUnit();
-//                                    if (sourceFile != null) {
-//                                        for (Declaration sourceDecl : sourceFile.getDeclarations()) {
-//                                            if (sourceDecl.getQualifiedNameString().equals(decl.getQualifiedNameString())) {
-//                                                model = sourceDecl;
-//                                                foundTheCeylonDeclaration = true;
-//                                                break;
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                    if (! foundTheCeylonDeclaration) {
-//                        if (decl.isNative() 
-//                                && unit != null 
-//                                && ! unit.getFilename().toLowerCase().endsWith(".ceylon")) {
-//                            Declaration headerDeclaration = ModelUtil.getNativeHeader(decl);
-//                            if (headerDeclaration != null) {
-//                                List<Declaration> overloads = headerDeclaration.getOverloads();
-//                                if (overloads != null) {
-//                                    for (Declaration overload : overloads) {
-//                                        if (overload.getNativeBackends().header()) {
-//                                            model = overload;
-//                                            foundTheCeylonDeclaration = true;
-//                                            break;
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//            return findReferencedNode(rootNode, model);
-//        }
-        return delegate.getReferencedNodeInUnit(model, rootNode);
-    }
-
     public static Node findReferencedNode(
             Tree.CompilationUnit rootNode, Referenceable model) {
         return delegate.findReferencedNode(rootNode, model);

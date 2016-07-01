@@ -6,7 +6,7 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
 import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEditor;
@@ -72,7 +72,7 @@ public class Navigation {
             if (unit instanceof CeylonUnit) {
                 CeylonUnit ceylonUnit = (CeylonUnit) unit;
                 Node node = 
-                        getReferencedNodeInUnit(model, 
+                        getReferencedNode(model, 
                                 ceylonUnit.getCompilationUnit());
                 if (node != null) {
                     return gotoNode(node, null);

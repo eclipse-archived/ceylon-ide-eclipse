@@ -2,7 +2,7 @@ package com.redhat.ceylon.eclipse.code.navigator;
 
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNodeInUnit;
+import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -155,7 +155,7 @@ public class CeylonOpenAction extends OpenAction {
                                 if (member != null) {
                                     Declaration declaration = toCeylonDeclaration(member, ceylonUnit, 
                                             ceylonUnit.getCeylonModule().getModuleManager().getModelLoader());
-                                    Node node = getReferencedNodeInUnit(declaration, ceylonUnit.getCompilationUnit());
+                                    Node node = getReferencedNode(declaration, ceylonUnit.getCompilationUnit());
                                     if (node != null) {
                                         Node identifyingNode = getIdentifyingNode(node);
                                         ceylonEditor.selectAndReveal(identifyingNode.getStartIndex(), identifyingNode.getDistance());
