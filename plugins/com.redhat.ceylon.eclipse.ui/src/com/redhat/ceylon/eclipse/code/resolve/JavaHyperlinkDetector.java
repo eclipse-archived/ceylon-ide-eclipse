@@ -166,17 +166,16 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                                 Declaration javaOverload = 
                                         getNativeDeclaration(dec, 
                                                 Backend.Java.asSet());
-                                if (javaOverload != null) {
-                                    if (javaOverload.getUnit() 
+                                if (javaOverload != null 
+                                        && javaOverload.getUnit() 
                                             instanceof IJavaModelAware) {
-                                        dec = javaOverload;
-                                        declarationUnit = dec.getUnit();
-                                        IJavaModelAware<IProject, ITypeRoot, IJavaElement> javaModelAware = 
-                                                (IJavaModelAware<IProject, ITypeRoot, IJavaElement>) 
-                                                    declarationUnit;
-                                        jp = javaModelAware.getTypeRoot().getJavaProject();
-                                        hasFoundAJavaImplementation = true;
-                                    }
+                                    dec = javaOverload;
+                                    declarationUnit = dec.getUnit();
+                                    IJavaModelAware<IProject, ITypeRoot, IJavaElement> javaModelAware = 
+                                            (IJavaModelAware<IProject, ITypeRoot, IJavaElement>) 
+                                            declarationUnit;
+                                    jp = javaModelAware.getTypeRoot().getJavaProject();
+                                    hasFoundAJavaImplementation = true;
                                 }
                                 if (!hasFoundAJavaImplementation) {
                                     return null;
