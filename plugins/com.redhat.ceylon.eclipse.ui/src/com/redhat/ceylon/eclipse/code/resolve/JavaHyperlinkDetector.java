@@ -12,13 +12,7 @@ import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEdito
 
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.text.IRegion;
@@ -115,7 +109,6 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                 if (ref instanceof Declaration) {
                     Declaration dec = (Declaration) ref;
                     Unit declarationUnit = dec.getUnit();
-                    IJavaProject jp = JavaCore.create(pc.getProject());
                     
                     if (!(declarationUnit instanceof IJavaModelAware)) {
                         if (declarationUnit instanceof ExternalSourceFile) {
@@ -135,7 +128,7 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                             boolean hasFoundAJavaImplementation = false;
                             if (dec.isNative()) {
                                 if (declarationUnit instanceof EditedSourceFile) {
-                                    ProjectSourceFile<IProject, IResource, IFolder, IFile> projectSourceFile = 
+                                    ProjectSourceFile projectSourceFile = 
                                             ((EditedSourceFile)declarationUnit).getOriginalSourceFile();
                                     if (projectSourceFile != null) {
 
@@ -171,10 +164,6 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                                             instanceof IJavaModelAware) {
                                     dec = javaOverload;
                                     declarationUnit = dec.getUnit();
-                                    IJavaModelAware<IProject, ITypeRoot, IJavaElement> javaModelAware = 
-                                            (IJavaModelAware<IProject, ITypeRoot, IJavaElement>) 
-                                            declarationUnit;
-                                    jp = javaModelAware.getTypeRoot().getJavaProject();
                                     hasFoundAJavaImplementation = true;
                                 }
                                 if (!hasFoundAJavaImplementation) {
@@ -183,40 +172,30 @@ public class JavaHyperlinkDetector implements IHyperlinkDetector {
                             }
                         }
                     }
-                    else {
-                        final IJavaModelAware<IProject, ITypeRoot, IJavaElement> javaModelAware = 
-                                (IJavaModelAware<IProject, ITypeRoot, IJavaElement>)
-                                    declarationUnit;
-                        jp = javaModelAware.getTypeRoot().getJavaProject();
-                    }
+
                     if (declarationUnit instanceof CeylonBinaryUnit) {
-                        CeylonBinaryUnit<IProject,ITypeRoot,IJavaElement> ceylonBinaryUnit = 
-                                (CeylonBinaryUnit<IProject,ITypeRoot,IJavaElement>)
-                                    declarationUnit;
+                        CeylonBinaryUnit ceylonBinaryUnit = 
+                                (CeylonBinaryUnit) declarationUnit;
                         String path = toJavaString(ceylonBinaryUnit.getSourceRelativePath());
                         if (! JavaCore.isJavaLikeFileName(path)) {
                             return null; 
                         }
-                        jp = ceylonBinaryUnit.getTypeRoot().getJavaProject();
                     }
-                    if (jp==null) {
-                        return null;
-                    }
-                    else {
-                        try {
-                            IJavaElement element = getJavaElement(dec);
-                            if (element==null) {
-                                return null;
-                            }
-                            else {
-                                return new IHyperlink[] { new JavaElementLink(element, id) };
-                            }
-                        }
-                        catch (JavaModelException jme) {
-                            jme.printStackTrace();
+
+                    try {
+                        IJavaElement element = getJavaElement(dec);
+                        if (element==null) {
                             return null;
                         }
+                        else {
+                            return new IHyperlink[] { new JavaElementLink(element, id) };
+                        }
                     }
+                    catch (JavaModelException jme) {
+                        jme.printStackTrace();
+                        return null;
+                    }
+
                 }
                 else {
                     return null;

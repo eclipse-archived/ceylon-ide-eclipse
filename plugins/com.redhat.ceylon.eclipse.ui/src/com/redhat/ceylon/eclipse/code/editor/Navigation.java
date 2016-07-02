@@ -151,8 +151,8 @@ public class Navigation {
         }
         else {
             if (unit instanceof IResourceAware) {
-                IResourceAware<IProject,IFolder,IFile> ra = 
-                        (IResourceAware<IProject,IFolder,IFile>) unit;
+                IResourceAware<IProject,IFolder,IFile> 
+                    ra = (IResourceAware) unit;
                 IFile file = ra.getResourceFile();
                 if (file != null) {
                     return gotoFile(file, startOffset, length);
@@ -167,8 +167,8 @@ public class Navigation {
     public static ITextEditor gotoLocation(Unit unit, 
             int startOffset, int length) {
         if (unit instanceof IResourceAware) {
-            IResourceAware<IProject,IFolder,IFile> ra = 
-                    (IResourceAware<IProject,IFolder,IFile>) unit;
+            IResourceAware<IProject,IFolder,IFile> 
+                ra = (IResourceAware) unit;
             IFile file = ra.getResourceFile();
             if (file != null) {
                 return gotoFile(file, startOffset, length);
@@ -241,8 +241,8 @@ public class Navigation {
 
     public static IPath getUnitPath(Unit unit) {
         if (unit instanceof IResourceAware) {
-            IResourceAware<IProject,IFolder,IFile> ra = 
-                    (IResourceAware<IProject,IFolder,IFile>) unit;
+            IResourceAware<IProject,IFolder,IFile> 
+                ra = (IResourceAware) unit;
             IFile fileResource = ra.getResourceFile();
             return fileResource!=null ? 
                     fileResource.getLocation() : 
@@ -428,11 +428,12 @@ public class Navigation {
             Function fun = (Function) declaration;
             declaration = fun.getTypeDeclaration();
         }
-        if (declaration.getUnit() instanceof IJavaModelAware) {
-            final IJavaModelAware<IProject, ITypeRoot, IJavaElement> javaModelAware = 
-                    (IJavaModelAware<IProject, ITypeRoot, IJavaElement>) 
-                        declaration.getUnit();
-            return javaModelAware.toJavaElement(declaration, utilJ2C().wrapProgressMonitor(monitor));
+        Unit unit = declaration.getUnit();
+        if (unit instanceof IJavaModelAware) {
+            IJavaModelAware<IProject, ITypeRoot, IJavaElement> 
+                javaModelAware = (IJavaModelAware) unit;
+            return javaModelAware.toJavaElement(declaration, 
+                    utilJ2C().wrapProgressMonitor(monitor));
         }
         return null;
     }
