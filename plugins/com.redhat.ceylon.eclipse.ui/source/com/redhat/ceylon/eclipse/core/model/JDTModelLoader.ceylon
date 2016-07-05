@@ -367,9 +367,8 @@ shared class JDTModelLoader
     }
     
     shared MissingTypeBinding missingTypeBinding =>
-            synchronize {
-                on=lock;
-                function do() {
+            callWithLock {
+                function fun() {
                     assert(exists javaProjectInfos);
                     return javaProjectInfos.missingTypeBinding;
                 }
@@ -377,9 +376,8 @@ shared class JDTModelLoader
     shared actual LookupEnvironment? createLookupEnvironmentForGeneratedCode() =>
             javaProjectInfos?.createLookupEnvironmentForGeneratedCode();
     shared actual void refreshNameEnvironment() =>
-        synchronize {
-            on = lock;
-            void do() {
+        runWithLock {
+            void action() {
                 assert(exists javaProjectInfos);
                 javaProjectInfos.refreshNameEnvironment();
             }
