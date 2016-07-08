@@ -157,7 +157,6 @@ class CeylonCompletionProcessor(CeylonEditor editor)
             exists pu = controller.parseAndTypecheck(
                 viewer.document, 10, monitor.wrapped, null)) {
             
-            editor.annotationCreator.updateAnnotations();
             value ctx = EclipseCompletionContext(controller);
             
             completionManager.getContentProposals {

@@ -237,6 +237,9 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
     
     public synchronized void unpauseBackgroundParsing() {
         backgroundParsingPaused = false;
+        if (shouldForceBackgroundParsing) {
+            scheduleParsing(true);
+        }
     }
     
     public synchronized boolean isBackgroundParsingPaused() {
@@ -1307,6 +1310,8 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
         themeManager.addPropertyChangeListener(fontChangeListener);
     }
 
+    private boolean shouldForceBackgroundParsing = false;
+    
     public synchronized void scheduleParsing(boolean force) {
         if (parserScheduler!=null && !backgroundParsingPaused) {
             parserScheduler.cancel();
@@ -1314,6 +1319,9 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
             parserScheduler.schedule(REPARSE_SCHEDULE_DELAY);
         }
         else {
+            if (backgroundParsingPaused) {
+                shouldForceBackgroundParsing = true;
+            }
             if (force) parseController.dirty();
         }
     }
