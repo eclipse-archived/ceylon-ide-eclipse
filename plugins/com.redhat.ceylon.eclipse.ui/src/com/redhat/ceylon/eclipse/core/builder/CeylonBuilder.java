@@ -2518,23 +2518,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             
             final Map<RegularFileObject, Set<String>> inputFilesToGenerate = new HashMap<RegularFileObject, Set<String>>();
             BuildFileManager fileManager = new BuildFileManager(context, true, null, project, inputFilesToGenerate);
-            
-            computeCompilerClasspath(project, javaProject, options);
-            
-            List<File> allFiles = new ArrayList<>(sources.size()+ resources.size());
-            allFiles.addAll(sources);
-            allFiles.addAll(resources);
-            Iterable<? extends JavaFileObject> unitsToCompile =
-                    fileManager.getJavaFileObjectsFromFiles(allFiles);
-            
-            if (reuseEclipseModelInCompilation(project)) {
-                setupJDTModelLoader(ceylonProject, typeChecker, context, unitsTypecheckedIncrementally);
-            }
-            
-            CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
-                    fileManager, errorReporter, options, null, 
-                    unitsToCompile);
-            task.setTaskListener(new TaskListener() {
+
+            final TaskListener taskListener = new TaskListener() {
                 @Override
                 public void started(TaskEvent ta) {
                     if (progress.isCancelled()) {
@@ -2588,7 +2573,25 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     }
                     progress.worked(1);
                 }
-            });
+            };
+            context.put(TaskListener.class, taskListener);
+            
+            computeCompilerClasspath(project, javaProject, options);
+            
+            List<File> allFiles = new ArrayList<>(sources.size()+ resources.size());
+            allFiles.addAll(sources);
+            allFiles.addAll(resources);
+            Iterable<? extends JavaFileObject> unitsToCompile =
+                    fileManager.getJavaFileObjectsFromFiles(allFiles);
+            
+            if (reuseEclipseModelInCompilation(project)) {
+                setupJDTModelLoader(ceylonProject, typeChecker, context, unitsTypecheckedIncrementally);
+            }
+            
+            CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
+                    fileManager, errorReporter, options, null, 
+                    unitsToCompile);
+            task.setTaskListener(taskListener);
             boolean success=false;
             try {
                 success = task.call();
