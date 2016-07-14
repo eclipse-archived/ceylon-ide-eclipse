@@ -8,11 +8,15 @@ import com.redhat.ceylon.eclipse.ui {
     CeylonPlugin
 }
 import java.lang {
-    RuntimeException
+    RuntimeException,
+    ClassLoader
 }
 import com.redhat.ceylon.ide.common.platform {
     IdeUtils,
     Status
+}
+import ceylon.interop.java {
+    javaClassFromInstance
 }
 
 object eclipsePlatformUtils satisfies IdeUtils {
@@ -33,4 +37,6 @@ object eclipsePlatformUtils satisfies IdeUtils {
     
     shared actual Boolean isOperationCanceledException(Exception exception) =>
             exception is OperationCanceledException;
+
+    shared actual ClassLoader pluginClassLoader => javaClassFromInstance(this).classLoader;
 }
