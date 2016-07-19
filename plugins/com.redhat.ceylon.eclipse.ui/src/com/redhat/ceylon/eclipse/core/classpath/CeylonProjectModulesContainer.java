@@ -83,7 +83,6 @@ import com.redhat.ceylon.ide.common.util.ProgressMonitor;
 import com.redhat.ceylon.ide.common.util.ProgressMonitor$impl;
 import com.redhat.ceylon.ide.common.util.ProgressMonitorChild;
 import com.redhat.ceylon.model.cmr.ArtifactResultType;
-import com.redhat.ceylon.model.cmr.JDKUtils;
 import com.redhat.ceylon.model.typechecker.model.Module;
 
 /**
@@ -396,10 +395,8 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
             BaseIdeModule jdtModule = (BaseIdeModule) module;
             String name = module.getNameAsString(); 
             if (name.equals(Module.DEFAULT_MODULE_NAME) ||
-                    JDKUtils.isJDKModule(name) ||
-                    JDKUtils.isOracleJDKModule(name) ||
+                    !(jdtModule.getIsJavaBinaryArchive() || jdtModule.getIsCeylonArchive()) ||
                     module.equals(module.getLanguageModule()) ||
-                    isProjectModule(javaProject, module) ||
                     ! module.isAvailable()) {
                 continue;
             }
