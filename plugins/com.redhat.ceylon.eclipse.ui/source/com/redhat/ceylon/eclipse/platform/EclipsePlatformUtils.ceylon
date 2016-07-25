@@ -39,4 +39,7 @@ object eclipsePlatformUtils satisfies IdeUtils {
             exception is OperationCanceledException;
 
     shared actual ClassLoader pluginClassLoader => Thread.currentThread().contextClassLoader;
+    
+    shared actual Boolean isExceptionToPropagateInVisitors(Exception exception) => false;
+    
 }
