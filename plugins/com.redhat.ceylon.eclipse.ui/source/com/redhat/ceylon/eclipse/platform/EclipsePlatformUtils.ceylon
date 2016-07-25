@@ -7,8 +7,6 @@ import com.redhat.ceylon.ide.common.platform {
 }
 
 import java.lang {
-    RuntimeException,
-    ClassLoader,
     Thread
 }
 
@@ -23,23 +21,22 @@ object eclipsePlatformUtils satisfies IdeUtils {
     function toEcliseStatus(Status status) => 
             switch(status)
             case(Status._OK) IStatus.\iOK
-            case(Status._INFO) IStatus.\iINFO
-            case(Status._DEBUG) IStatus.\iINFO
-            case(Status._ERROR) IStatus.\iERROR
-            case(Status._WARNING) IStatus.\iWARNING;
+            case(Status._INFO) IStatus.info
+            case(Status._DEBUG) IStatus.info
+            case(Status._ERROR) IStatus.error
+            case(Status._WARNING) IStatus.warning;
 
-    shared actual void log(Status status, String message, Exception? e) =>
+    log(Status status, String message, Exception? e) =>
             (CeylonPlugin.instance of Plugin)
-                .log.log(EclipseStatus(toEcliseStatus(status), CeylonPlugin.\iPLUGIN_ID, message, e));
+                .log.log(EclipseStatus(toEcliseStatus(status), CeylonPlugin.pluginId, message, e));
 
-    shared actual RuntimeException newOperationCanceledException(String message) => 
+    newOperationCanceledException(String message) => 
             OperationCanceledException("Operation Cancelled : ``message``");
     
-    shared actual Boolean isOperationCanceledException(Exception exception) =>
+    isOperationCanceledException(Exception exception) =>
             exception is OperationCanceledException;
 
-    shared actual ClassLoader pluginClassLoader => Thread.currentThread().contextClassLoader;
+    pluginClassLoader => Thread.currentThread().contextClassLoader;
     
-    shared actual Boolean isExceptionToPropagateInVisitors(Exception exception) => false;
-    
+    isExceptionToPropagateInVisitors(Exception exception) => false;    
 }
