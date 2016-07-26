@@ -212,7 +212,8 @@ class AnnotationInformationControl
         return new Point(width, height);
     }
 
-    private final static ICompletionProposal[] NO_PROPOSAL = new ICompletionProposal[0];
+    private final static ICompletionProposal[] NO_PROPOSAL = 
+            new ICompletionProposal[0];
     
     /**
      * Create content of the hover. This is called after
@@ -231,7 +232,8 @@ class AnnotationInformationControl
             createQuickFixesRetrievalJob(fParent, 
                     quickFixProgressGroup)
                         .schedule();
-        } else {
+        }
+        else {
             setColorAndFont(fParent, 
                     fParent.getForeground(), 
                     fParent.getBackground(), 
@@ -255,7 +257,8 @@ class AnnotationInformationControl
                 final ICompletionProposal[] proposals;
                 if (getTypecheckedRootNode(info) == null) {
                     proposals = NO_PROPOSAL;
-                } else {
+                }
+                else {
                     proposals = 
                             getAnnotationInfo()
                                 .getCompletionProposals();
@@ -264,7 +267,7 @@ class AnnotationInformationControl
 
                 if (fParent == currentParent
                         && ! fParent.isDisposed()) {
-                    final Display display= fParent.getDisplay();
+                    Display display = fParent.getDisplay();
                     if (display != null) {
                         display.asyncExec(new Runnable() {
                             public void run() {
@@ -273,7 +276,8 @@ class AnnotationInformationControl
                                         quickFixProgressGroup.dispose();
                                     }
                                     if (proposals.length > 0
-                                            && quickFixesRetrieved.compareAndSet(false, true)) {
+                                            && quickFixesRetrieved
+                                                .compareAndSet(false, true)) {
                                         createCompletionProposalsControl(fParent, 
                                                 proposals);
                                     }
@@ -295,12 +299,12 @@ class AnnotationInformationControl
     }
 
     private Composite createQuickFixProgressBar() {
-        final Composite quickFixProgressGroup;
-        quickFixProgressGroup = new Composite(fParent, SWT.FILL);
+        Composite quickFixProgressGroup = 
+                new Composite(fParent, SWT.FILL);
         GridData qk1 = 
                 new GridData(SWT.FILL, SWT.FILL, 
                         true, true);
-        qk1.horizontalSpan=2;
+        qk1.horizontalSpan = 2;
         quickFixProgressGroup.setLayoutData(qk1);
         GridLayout layout2 = new GridLayout(2, true);
         layout2.marginHeight = 0;
@@ -456,8 +460,10 @@ class AnnotationInformationControl
                     StyleRange[] styleRanges = 
                             styled.getStyleRanges();
                     Font editorFont = 
+                            //monospaced font for identifiers
                             CeylonPlugin.getEditorFont();
                     Font hoverFont = 
+                            //regular font for message text
                             CeylonPlugin.getHoverFont();
                     FontData monospaceFontData = 
                             editorFont.getFontData()[0];
