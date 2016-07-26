@@ -221,29 +221,27 @@ class AnnotationInformationControl
      */
     protected void deferredCreateContent() {
         createAnnotationInformation(fParent);
-        quickFixesRetrieved.set(false);
+        setColorAndFont(fParent, 
+                fParent.getForeground(), 
+                fParent.getBackground(), 
+                CeylonPlugin.getHoverFont());
         
         ICompletionProposal[] existingProposals = 
                 fInput.getProposals();
+        quickFixesRetrieved.set(false);
         if (existingProposals == null) {
             Composite quickFixProgressGroup = 
                     createQuickFixProgressBar();
-            fParent.layout(true);
             createQuickFixesRetrievalJob(fParent, 
                     quickFixProgressGroup)
                         .schedule();
         }
-        else {
-            setColorAndFont(fParent, 
-                    fParent.getForeground(), 
-                    fParent.getBackground(), 
-                    CeylonPlugin.getHoverFont());
-            if (existingProposals.length > 0) {
-                createCompletionProposalsControl(fParent, 
-                        existingProposals);
-            }
-            fParent.layout(true);
+        else if (existingProposals.length > 0) {
+            createCompletionProposalsControl(fParent, 
+                    existingProposals);
         }
+        
+        fParent.layout(true);
     }
 
     private Job createQuickFixesRetrievalJob(
