@@ -81,7 +81,8 @@ class AnnotationInformationControl
     private Control fFocusControl;
     private AnnotationInfo fInput;
     private Composite fParent;
-    private final ISchedulingRule retrievingQuickFixesRule = new ISchedulingRule() {
+    private final ISchedulingRule retrievingQuickFixesRule = 
+            new ISchedulingRule() {
         @Override
         public boolean isConflicting(ISchedulingRule rule) {
             return rule == this;
@@ -221,14 +222,15 @@ class AnnotationInformationControl
         createAnnotationInformation(fParent);
         quickFixesRetrieved.set(false);
         
-        final ICompletionProposal[] existingProposals = fInput.getProposals();
+        ICompletionProposal[] existingProposals = 
+                fInput.getProposals();
         if (existingProposals == null) {
-            final Composite quickFixProgressGroup = createQuickFixProgressBar();
+            Composite quickFixProgressGroup = 
+                    createQuickFixProgressBar();
             fParent.layout(true);
-            final Composite currentParent = fParent;
-            Job completionProposalsJob = createQuickFixesRetrievalJob(
-                    quickFixProgressGroup, currentParent);
-            completionProposalsJob.schedule();
+            createQuickFixesRetrievalJob(fParent, 
+                    quickFixProgressGroup)
+                        .schedule();
         } else {
             setColorAndFont(fParent, 
                     fParent.getForeground(), 
@@ -243,8 +245,10 @@ class AnnotationInformationControl
     }
 
     private Job createQuickFixesRetrievalJob(
-            final Composite quickFixProgressGroup, final Composite currentParent) {
-        Job completionProposalsJob = new Job("Retrieving Fixes") {
+            final Composite currentParent, 
+            final Composite quickFixProgressGroup) {
+        Job completionProposalsJob = 
+                new Job("Retrieving Fixes") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 AnnotationInfo info = fInput;
@@ -265,7 +269,7 @@ class AnnotationInformationControl
                         display.asyncExec(new Runnable() {
                             public void run() {
                                 if (fParent.isVisible()) {
-                                    if (! quickFixProgressGroup.isDisposed()) {
+                                    if (!quickFixProgressGroup.isDisposed()) {
                                         quickFixProgressGroup.dispose();
                                     }
                                     if (proposals.length > 0
@@ -303,9 +307,11 @@ class AnnotationInformationControl
         layout2.marginWidth = 10;
         layout2.verticalSpacing = 2;
         quickFixProgressGroup.setLayout(layout2);
-        Label progressLabel = new Label(quickFixProgressGroup, SWT.NONE);
+        Label progressLabel = 
+                new Label(quickFixProgressGroup, SWT.NONE);
         progressLabel.setText("Preparing quick fixes...");
-        new ProgressBar(quickFixProgressGroup, SWT.INDETERMINATE | SWT.FILL);
+        new ProgressBar(quickFixProgressGroup, 
+                SWT.INDETERMINATE | SWT.FILL);
         setColorAndFont(fParent, 
                 fParent.getForeground(), 
                 fParent.getBackground(), 
@@ -440,7 +446,9 @@ class AnnotationInformationControl
                 text.setLayoutData(gd3);
                 String message = annotation.getText();
                 if (message!=null && !message.isEmpty()) {
-                    message = escaping_.get_().toInitialUppercase(message);
+                    message = 
+                            escaping_.get_()
+                                .toInitialUppercase(message);
                     StyledString styled =
                             Highlights.styleProposal(
                                     message, true, true);
