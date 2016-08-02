@@ -97,7 +97,7 @@ object eclipseCompletionServices satisfies CompletionServices {
     
     shared actual void newInvocationCompletion(CompletionContext ctx, Integer offset, String prefix,
         String desc, String text, Declaration dec, 
-        Reference? pr, Scope scope,
+        Reference()? pr, Scope scope,
         Boolean includeDefaulted, Boolean positionalInvocation, 
         Boolean namedInvocation, Boolean inheritance, 
         Boolean qualified, Declaration? qualifyingDec) {

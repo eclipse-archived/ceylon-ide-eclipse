@@ -61,7 +61,7 @@ import org.eclipse.swt.graphics {
 
 shared class EclipseInvocationCompletionProposal(Integer _offset, String prefix, 
             String description, String text, Declaration dec,
-            Reference? producedReference, Scope scope, 
+            Reference()? producedReference, Scope scope, 
             EclipseCompletionContext ctx, Boolean includeDefaulted,
             Boolean positionalInvocation, Boolean namedInvocation, 
             Boolean inheritance, Boolean qualified, Declaration? qualifyingValue)
@@ -100,8 +100,12 @@ shared class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
     }
     
     shared actual String? additionalProposalInfo {
+        value ref = if (exists producedReference)
+            then producedReference()
+            else null;
+        
         return DocumentationHover.getDocumentationFor(ctx.cpc, dec, 
-            producedReference, NullProgressMonitor());        
+            ref, NullProgressMonitor());        
     }
 
     shared actual IContextInformation? contextInformation {
@@ -109,13 +113,16 @@ shared class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
             if (is Functional fd = dec) {
                 value pls = fd.parameterLists;
                 if (!pls.empty) {
-                    variable Integer argListOffset = 
+                    value argListOffset = 
                             if (parameterInfo)
                             then this.offset
                             else offset - prefix.size + (text.firstOccurrence(if (namedInvocation) then '{' else '(') else -1);
+                    value ref = if (exists producedReference)
+                        then producedReference()
+                        else null;
                     
                     value unit = ctx.lastCompilationUnit.unit;
-                    return EInvocationCompletionProposal.ParameterContextInformation(dec, producedReference,
+                    return EInvocationCompletionProposal.ParameterContextInformation(dec, ref,
                         unit, pls.get(0), argListOffset, includeDefaulted, namedInvocation);
                 }
             }
