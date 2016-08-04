@@ -87,7 +87,7 @@ separately:
    `.../ceylon/dist/osgi/build/dist`
 
 2. Build the Ceylon SDK locally  (see [here][sdk] for more details):
-   - In the `.../ceylon` directory run: `ant clean-sdk sdk`
+   - In the `.../ceylon-sdk` directory run: `ant clean publish`
    - This should have produced an eclipse update site at the following path:
    
    `.../ceylon-sdk/osgi/dist`
