@@ -113,7 +113,7 @@ shared interface EclipseCompletionProposal
     }
     
     shared actual Integer getPrefixCompletionStart(IDocument document, Integer completionOffset) {
-        return start();
+        return start;
     }
     
     shared actual IInformationControlCreator? informationControlCreator => null;
