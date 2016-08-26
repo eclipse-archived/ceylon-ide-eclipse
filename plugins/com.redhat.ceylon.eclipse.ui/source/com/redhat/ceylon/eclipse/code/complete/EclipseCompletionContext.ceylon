@@ -42,7 +42,9 @@ shared class EclipseCompletionContext(shared CeylonParseController cpc) satisfie
     parsedRootNode => cpc.parsedRootNode;
     tokens => cpc.tokens;
     typeChecker => cpc.typeChecker;
-    typecheckedRootNode => cpc.typecheckedRootNode;
+    typecheckedPhasedUnit => cpc.typecheckedPhasedUnit;
+    phasedUnitWhenTypechecked => cpc.phasedUnitWhenTypechecked;
+
     
     function createOptions() {
         value options = CompletionOptions();

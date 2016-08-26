@@ -35,6 +35,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
@@ -93,6 +97,7 @@ import com.redhat.ceylon.ide.common.model.BaseIdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.IdeModuleManager;
 import com.redhat.ceylon.ide.common.platform.CommonDocument;
+import com.redhat.ceylon.ide.common.typechecker.AnalysisResult$impl;
 import com.redhat.ceylon.ide.common.typechecker.EditedPhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.IdePhasedUnit;
 import com.redhat.ceylon.ide.common.typechecker.LocalAnalysisResult;
@@ -788,18 +793,59 @@ public class CeylonParseController
      * running typechecking ...)
      */
     public Tree.CompilationUnit getTypecheckedRootNode() {
-        Tree.CompilationUnit lastRootNode = 
-                getLastCompilationUnit();
-        if (lastRootNode == rootNode) {
-            return lastRootNode;
-        }
-        return null;
+        return analysisResult$impl.getTypecheckedRootNode();
     }
     
     public void dirty() {
         dirty = true;
     }
 
+    @Override
+    public Future<? extends PhasedUnit> getPhasedUnitWhenTypechecked() {
+        return new Future<PhasedUnit>() {
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                return true;
+            }
+            @Override
+            public boolean isCancelled() {
+                return true;
+            }
+            @Override
+            public boolean isDone() {
+                return true;
+            }
+            @Override
+            public PhasedUnit get()
+                    throws InterruptedException, ExecutionException {
+                return null;
+            }
+            @Override
+            public PhasedUnit get(long timeout, TimeUnit unit)
+                    throws InterruptedException, ExecutionException,
+                    TimeoutException {
+                return null;
+            }
+        };
+    }
+    
+    /*
+     * The typechecked PhasedUnit built on the most-recently parsed AST 
+     * or null if the most-recently parsed AST could not be fully 
+     * typechecked 
+     * (cancellation, source model read lock not obtained, 
+     * running typechecking ...)
+     */
+    @Override
+    public PhasedUnit getTypecheckedPhasedUnit() {
+        if (phasedUnit != null &&
+            phasedUnit.getCompilationUnit() == rootNode) {
+            return phasedUnit;
+        }
+        return null;
+    }    
+    
+    
     /*
      * returns true is the the last AST was parsed *and* 
      * typechecked until the end (=> stage == TYPE_ANALYSIS)
@@ -1119,15 +1165,22 @@ public class CeylonParseController
     }
 
     
-    LocalAnalysisResult$impl $impl = new LocalAnalysisResult$impl(this);
+    LocalAnalysisResult$impl localAnalysisResult$impl = new LocalAnalysisResult$impl(this);
+    AnalysisResult$impl analysisResult$impl = new AnalysisResult$impl(this);
     
     @Override
     public LocalAnalysisResult$impl $com$redhat$ceylon$ide$common$typechecker$LocalAnalysisResult$impl() {
-        return $impl;
+        return localAnalysisResult$impl;
+    }
+
+    @Override
+    public AnalysisResult$impl $com$redhat$ceylon$ide$common$typechecker$AnalysisResult$impl() {
+        return analysisResult$impl;
     }
 
     @Override
     public boolean getUpToDate() {
-        return $impl.getUpToDate();
-    }    
+        return analysisResult$impl.getUpToDate();
+    }
+
 }
