@@ -184,4 +184,6 @@ object eclipseVfsServices
             return null;
         }
     }
+    shared actual Boolean flushIfNecessary(IResource resource) => true;
+    
 }

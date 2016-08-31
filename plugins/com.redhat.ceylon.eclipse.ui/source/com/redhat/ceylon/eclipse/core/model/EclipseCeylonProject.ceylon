@@ -125,9 +125,9 @@ shared class EclipseCeylonProject(ideArtifact)
     shared actual Boolean hasConfigFile
         => ideArtifact.findMember(ceylonConfigFileProjectRelativePath) exists;
 
-    shared actual void refreshConfigFile() {
+    shared actual void refreshConfigFile(String projectRelativePath) {
         try {
-            IResource? config = ideArtifact.findMember(ceylonConfigFileProjectRelativePath);
+            IResource? config = ideArtifact.findMember(projectRelativePath);
 
             if (exists config) {
                 config.refreshLocal(IResource.\iDEPTH_ZERO,
