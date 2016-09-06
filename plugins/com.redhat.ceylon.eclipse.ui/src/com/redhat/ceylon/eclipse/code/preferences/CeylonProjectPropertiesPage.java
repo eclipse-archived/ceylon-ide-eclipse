@@ -7,8 +7,8 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonSyst
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getVerbose;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
-import static com.redhat.ceylon.ide.common.util.toJavaBoolean_.toJavaBoolean;
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaBoolean;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jface.layout.GridDataFactory.swtDefaults;
 

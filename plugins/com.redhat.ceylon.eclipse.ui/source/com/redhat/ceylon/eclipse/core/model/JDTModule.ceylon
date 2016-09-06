@@ -119,10 +119,10 @@ shared class JDTModule(
         MutableSet<String> packageList = HashSet<String>();
         value name = nameAsString;
         if (JDKUtils.isJDKModule(name)) {
-            packageList.addAll(toCeylonStringIterable(JDKUtils.getJDKPackagesByModule(name)));
+            packageList.addAll { for (p in JDKUtils.getJDKPackagesByModule(name)) p.string };
         }
         else if (JDKUtils.isOracleJDKModule(name)) {
-            packageList.addAll(toCeylonStringIterable(JDKUtils.getOracleJDKPackagesByModule(name)));
+            packageList.addAll { for (p in JDKUtils.getOracleJDKPackagesByModule(name)) p.string };
         }
         else if (java || true) {  // TODO : check this - the `|| true` part is strange
             for (fragmentRoot in packageFragmentRoots) {

@@ -4,11 +4,10 @@ import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
-import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEditor;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds.TOGGLE_SHOW_SELECTED_ELEMENT_ONLY;
@@ -456,7 +455,8 @@ public class Navigation {
                     String sourceRelativePath = 
                             toJavaString(binaryUnit.getCeylonModule()
                                 .toSourceUnitRelativePath(
-                                        toCeylonString(unit.getRelativePath())));
+                                        ceylon.language.String.instance(
+                                                unit.getRelativePath())));
                     boolean isCeylon = sourceRelativePath!=null && 
                             sourceRelativePath.endsWith(".ceylon");
                     for (Declaration sourceDecl: 

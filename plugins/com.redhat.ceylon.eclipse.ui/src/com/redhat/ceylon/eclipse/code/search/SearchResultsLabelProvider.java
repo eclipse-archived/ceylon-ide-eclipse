@@ -9,8 +9,7 @@ import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.styleJavaType;
-import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
 import static org.eclipse.jdt.core.IJavaElement.TYPE;
@@ -458,7 +457,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
             JavaClassFile javaClassFile, 
             BaseIdeModule module) {
         ceylon.language.String path = 
-                toCeylonString(javaClassFile.getRelativePath());
+                ceylon.language.String.instance(javaClassFile.getRelativePath());
         return toJavaString(module.toSourceUnitRelativePath(path));
     }
 

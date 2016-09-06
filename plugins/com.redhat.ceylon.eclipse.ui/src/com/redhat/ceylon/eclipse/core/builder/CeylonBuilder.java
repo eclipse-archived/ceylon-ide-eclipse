@@ -11,9 +11,8 @@ import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.CeylonHelper.list;
 import static com.redhat.ceylon.eclipse.util.CeylonHelper.td;
-import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
 import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static com.redhat.ceylon.model.typechecker.model.Module.LANGUAGE_MODULE_NAME;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
@@ -137,6 +136,7 @@ import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import com.redhat.ceylon.eclipse.util.CeylonHelper;
 import com.redhat.ceylon.eclipse.util.EclipseLogger;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
@@ -164,9 +164,6 @@ import com.redhat.ceylon.ide.common.util.CarUtils;
 import com.redhat.ceylon.ide.common.util.ProgressMonitor;
 import com.redhat.ceylon.ide.common.util.ProgressMonitor$impl;
 import com.redhat.ceylon.ide.common.util.ProgressMonitorChild;
-import com.redhat.ceylon.ide.common.util.toCeylonString_;
-import com.redhat.ceylon.ide.common.util.toJavaIterable_;
-import com.redhat.ceylon.ide.common.util.toJavaList_;
 import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
 import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
@@ -192,6 +189,7 @@ import com.redhat.ceylon.model.typechecker.model.Package;
 import com.redhat.ceylon.model.typechecker.model.Unit;
 import com.redhat.ceylon.model.typechecker.util.ModuleManager;
 
+import ceylon.interop.java.JavaIterable;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
@@ -796,7 +794,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 return super.isCanceled() || 
                         PlatformUI.getWorkbench().isClosing();
             }
-        }).Progress$new$(1000, toCeylonString("Ceylon build of project " + project.getName()));
+        }).Progress$new$(1000, ceylon.language.String.instance("Ceylon build of project " + project.getName()));
         try {    
             try {
                 buildHook.startBuild(kind, args, project, getBuildConfig(), getContext(), ceylonMonitor.newChild(10).getWrapped());
@@ -1526,7 +1524,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 ceylonProject.getRootFolders();
                 
                 final Iterable<FolderVirtualFile<IProject, IResource, IFolder, IFile>> iter = 
-                        (Iterable<FolderVirtualFile<IProject, IResource, IFolder, IFile>>) toJavaIterable_.toJavaIterable(
+                        (Iterable<FolderVirtualFile<IProject, IResource, IFolder, IFile>>) 
+                        new JavaIterable<FolderVirtualFile<IProject, IResource, IFolder, IFile>>(
                                 td(FolderVirtualFile.class), 
                                 (ceylon.language.Iterable<? extends FolderVirtualFile<IProject, IResource, IFolder, IFile>, ? extends Object>) ceylonProject.getRootFolders());
                 for (final FolderVirtualFile<IProject, IResource, IFolder, IFile> rootVirtualFolder : iter) {
@@ -1973,7 +1972,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     
                     final ProgressMonitor$impl<IProgressMonitor>.Progress progress = 
                             mon.Progress$new$(dependencies.size()*6+listOfUnits.size()*8, 
-                                    toCeylonString(
+                                    ceylon.language.String.instance(
                                             "Typechecking " + listOfUnits.size() + " source files of project " + project.getName()));
                     try {
                         final BaseIdeModelLoader loader = getModelLoader(typeChecker);
@@ -2135,7 +2134,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
         final ProgressMonitor$impl<IProgressMonitor>.Progress progress = 
                 monitor.Progress$new$(370,
-                        toCeylonString(
+                        ceylon.language.String.instance(
                                 "Generating binaries for project " + project.getName()));
         try {
             progress.subTask("Preparing binary generation...");
@@ -2498,7 +2497,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         
         final ProgressMonitor$impl<IProgressMonitor>.Progress progress = mon.Progress$new$(
                 numberOfSourceFiles * 2,
-                toCeylonString("Generating binaries for " + numberOfSourceFiles + 
+                ceylon.language.String.instance("Generating binaries for " + numberOfSourceFiles + 
                                 " source files in project " + project.getName()));
         try {
             com.redhat.ceylon.compiler.java.tools.CeyloncTool compiler;
@@ -3369,15 +3368,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 //    }
     
     public static Collection<CeylonProject<IProject, IResource, IFolder, IFile>> getCeylonProjects() {
-        return toJavaList_.toJavaList(td(CeylonProject.class), 
-                modelJ2C().ceylonModel()
-                    .getCeylonProjects());
+        return modelJ2C().ceylonModel()
+                    .getCeylonProjectsAsJavaList();
     }
 
     public static Collection<IProject> getProjects() {
-        return list(IProject.class, 
-                modelJ2C().ceylonModel()
-                    .getNativeProjects());
+        return modelJ2C().ceylonModel()
+                    .getNativeProjectsAsJavaList();
     }
 
     public static Collection<TypeChecker> getTypeCheckers() {
@@ -3679,7 +3676,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 if (moduleManager != null) {
                     BaseIdeModule archiveModule = 
                             moduleManager.getArchiveModuleFromSourcePath(
-                                    toCeylonString_.toCeylonString(virtualPath));
+                                    ceylon.language.String.instance(virtualPath));
                     if (archiveModule != null) {
                         ExternalPhasedUnit pu = 
                                 archiveModule.getPhasedUnit(virtualFile);

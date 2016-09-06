@@ -61,7 +61,6 @@ import org.eclipse.jdt.internal.corext.util.SearchUtils;
 
 import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.compiler.java.language.AbstractCallable;
-import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -74,7 +73,6 @@ import com.redhat.ceylon.ide.common.model.CeylonUnit;
 import com.redhat.ceylon.ide.common.model.IJavaModelAware;
 import com.redhat.ceylon.ide.common.model.IUnit;
 import com.redhat.ceylon.ide.common.util.escaping_;
-import com.redhat.ceylon.ide.common.util.toJavaList_;
 import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.model.loader.NamingBase;
 import com.redhat.ceylon.model.loader.NamingBase.Prefix;
@@ -1140,11 +1138,8 @@ public class JavaSearch {
                                 if (searchedArchives.add(archivePath) &&
                                         belongsToModule(javaElement, module)) {
                                     result = 
-                                            toCeylonDeclaration(
-                                                javaElement, 
-                                                toJavaList_.toJavaList(
-                                                        TypeDescriptor.klass(PhasedUnit.class),
-                                                        module.getPhasedUnits()));
+                                            toCeylonDeclaration(javaElement, 
+                                                module.getPhasedUnitsAsJavaList());
                                     if (result!=null) {
                                         return result;
                                     }

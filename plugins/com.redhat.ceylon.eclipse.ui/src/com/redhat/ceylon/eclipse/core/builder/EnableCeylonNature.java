@@ -16,7 +16,8 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
-import com.redhat.ceylon.ide.common.util.toCeylonStringIterable_;
+
+import ceylon.interop.java.CeylonStringIterable;
 
 
 public class EnableCeylonNature implements IWorkbenchWindowActionDelegate {
@@ -39,7 +40,7 @@ public class EnableCeylonNature implements IWorkbenchWindowActionDelegate {
                 sourceFolders.add(sourceFolder.getProjectRelativePath().toString());
             }
         }
-        config.setProjectSourceDirectories(toCeylonStringIterable_.toCeylonStringIterable(sourceFolders));
+        config.setProjectSourceDirectories(new CeylonStringIterable(sourceFolders));
         config.save();
         new CeylonNature().addToProject(fProject);
     }

@@ -8,7 +8,7 @@ import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.createSearchPattern;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectsToSearch;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.runSearch;
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static java.util.Arrays.asList;
 
 import java.util.HashSet;

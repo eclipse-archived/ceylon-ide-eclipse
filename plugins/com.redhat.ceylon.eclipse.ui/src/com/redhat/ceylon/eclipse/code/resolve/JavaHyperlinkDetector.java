@@ -4,7 +4,7 @@ import static com.redhat.ceylon.eclipse.code.editor.Navigation.getJavaElement;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeDeclaration;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeHeader;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.openInEditor;

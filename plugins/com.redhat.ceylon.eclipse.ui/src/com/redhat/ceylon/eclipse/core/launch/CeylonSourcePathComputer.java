@@ -1,6 +1,6 @@
 package com.redhat.ceylon.eclipse.core.launch;
 
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 
 import java.io.File;
 import java.util.ArrayList;

@@ -4,7 +4,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModu
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRootFolderType;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static org.eclipse.jdt.core.JavaCore.isJavaLikeFileName;
 import static org.eclipse.jface.preference.PreferenceConverter.getColor;
 import static org.eclipse.jface.preference.PreferenceConverter.getDefaultColor;

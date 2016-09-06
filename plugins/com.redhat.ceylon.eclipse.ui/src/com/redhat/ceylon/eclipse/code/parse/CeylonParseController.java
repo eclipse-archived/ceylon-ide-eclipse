@@ -23,9 +23,8 @@ import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManag
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.toFullPath;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static com.redhat.ceylon.eclipse.util.PathUtils.toCommonPath;
-import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
 import static java.util.Arrays.asList;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.core.runtime.jobs.Job.getJobManager;
@@ -237,8 +236,8 @@ public class CeylonParseController
                 TypeDescriptor.klass(IFile.class),
                 contents, 
                 path==null ? null : toCommonPath(path),
-                project, getFile(), 
-                toCeylonString(getCharset()));
+                project, getFile(),
+                ceylon.language.String.instance(getCharset()));
     }
 
     private IFile getFile() {

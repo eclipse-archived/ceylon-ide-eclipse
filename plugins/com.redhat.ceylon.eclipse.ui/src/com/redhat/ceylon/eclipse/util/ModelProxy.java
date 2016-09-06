@@ -4,7 +4,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoade
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 
 import java.lang.ref.SoftReference;
 

@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -26,8 +26,9 @@ import com.redhat.ceylon.ide.common.model.IdeModuleManager;
 import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.model.JavaClassFile;
 import com.redhat.ceylon.ide.common.model.JavaCompilationUnit;
-import com.redhat.ceylon.ide.common.util.toJavaList_;
 import com.redhat.ceylon.model.loader.model.LazyPackage;
+
+import ceylon.interop.java.JavaList;
 
 public class modelJ2C implements ModelJ2C {
     @Override
@@ -55,7 +56,7 @@ public class modelJ2C implements ModelJ2C {
     
     @Override
     public List<IPackageFragmentRoot> getModulePackageFragmentRoots(BaseIdeModule module) {
-        return toJavaList_.toJavaList(TypeDescriptor.klass(IPackageFragmentRoot.class),((JDTModule) module).getPackageFragmentRoots());
+        return new JavaList<IPackageFragmentRoot>(TypeDescriptor.klass(IPackageFragmentRoot.class),((JDTModule) module).getPackageFragmentRoots());
     }
 
     @Override

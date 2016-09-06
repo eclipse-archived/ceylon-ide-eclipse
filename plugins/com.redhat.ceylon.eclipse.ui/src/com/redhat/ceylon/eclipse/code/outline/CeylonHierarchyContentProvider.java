@@ -4,8 +4,6 @@ import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_HIERARCHY_FILTERS;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.HIERARCHY_FILTERS;
 import static com.redhat.ceylon.eclipse.util.ModelProxy.getDeclarationInUnit;
-import static com.redhat.ceylon.ide.common.util.toJavaIterable_.toJavaIterable;
-import static com.redhat.ceylon.ide.common.util.toJavaList_.toJavaList;
 import static com.redhat.ceylon.model.cmr.JDKUtils.isJDKModule;
 import static com.redhat.ceylon.model.cmr.JDKUtils.isOracleJDKModule;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getInterveningRefinements;
@@ -30,6 +28,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import com.redhat.ceylon.eclipse.util.CeylonHelper;
 import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
@@ -43,6 +42,8 @@ import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
+
+import ceylon.interop.java.JavaIterable;
 
 public final class CeylonHierarchyContentProvider
         implements ITreeContentProvider {
@@ -608,21 +609,11 @@ public final class CeylonHierarchyContentProvider
                 TypeDescriptor BaseIdeModuleTD = 
                         TypeDescriptor.klass(BaseIdeModule.class);
                 moduleInAllProjects.add(jdtCurrentModule);
-                moduleInAllProjects.addAll(toJavaList(
-                        BaseIdeModuleTD, 
-                        jdtCurrentModule.getModuleInReferencingProjects()));
+                moduleInAllProjects.addAll(jdtCurrentModule.getModuleInReferencingProjectsAsJavaList());
                 for (BaseIdeModule ideModule: moduleInAllProjects) {
                     allModules.add(ideModule);
-                    for (Module relatedModule: 
-                        toJavaIterable(BaseIdeModuleTD, 
-                                ideModule.getReferencingModules())) {
-                        allModules.add(relatedModule);
-                    }
-                    for (Module relatedModule: 
-                        toJavaIterable(BaseIdeModuleTD, 
-                                ideModule.getTransitiveDependencies())) {
-                        allModules.add(relatedModule);
-                    }
+                    allModules.addAll(ideModule.getReferencingModulesAsJavaList());
+                    allModules.addAll(ideModule.getTransitiveDependenciesAsJavaList());
                 }
             }
             return allModules;

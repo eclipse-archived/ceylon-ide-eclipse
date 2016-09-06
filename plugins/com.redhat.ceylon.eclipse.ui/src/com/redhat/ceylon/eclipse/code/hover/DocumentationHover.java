@@ -38,7 +38,7 @@ import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isResolvable;
 import static java.lang.Character.codePointCount;
 import static java.lang.Double.parseDouble;

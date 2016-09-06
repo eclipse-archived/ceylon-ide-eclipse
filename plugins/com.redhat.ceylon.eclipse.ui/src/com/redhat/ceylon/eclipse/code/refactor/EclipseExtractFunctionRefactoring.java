@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.code.refactor;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectPhasedUnits;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.ArrayList;
@@ -31,7 +32,6 @@ import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.ide.common.refactoring.DefaultRegion;
 import com.redhat.ceylon.ide.common.refactoring.ExtractFunctionRefactoring;
 import com.redhat.ceylon.ide.common.refactoring.createExtractFunctionRefactoring_;
-import com.redhat.ceylon.ide.common.util.toJavaString_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Type;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
@@ -134,7 +134,7 @@ public class EclipseExtractFunctionRefactoring extends AbstractRefactoring imple
     public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
             throws CoreException, OperationCanceledException {
         
-        String str = toJavaString_.toJavaString(refactoring.checkInitialConditions());
+        String str = toJavaString(refactoring.checkInitialConditions());
         
         if (str != null) {
             return createWarningStatus(str);

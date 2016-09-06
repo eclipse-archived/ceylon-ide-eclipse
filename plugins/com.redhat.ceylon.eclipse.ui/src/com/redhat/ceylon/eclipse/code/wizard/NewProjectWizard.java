@@ -3,9 +3,7 @@ package com.redhat.ceylon.eclipse.code.wizard;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_PROJECT;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
-import static com.redhat.ceylon.ide.common.util.toCeylonBoolean_.toCeylonBoolean;
-import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
 
 import java.io.File;
@@ -163,13 +161,13 @@ public class NewProjectWizard extends NewElementWizard
             }
             String jdkProvider = firstPage.getJdkProvider();
             if(jdkProvider != null){
-                projectConfig.setProjectJdkProvider(toCeylonString(jdkProvider));
+                projectConfig.setProjectJdkProvider(ceylon.language.String.instance(jdkProvider));
             }
             
             Boolean offlineOption = firstPage.getOfflineOption();
             if (offlineOption!=null) {
                 projectConfig.setProjectOffline(
-                        toCeylonBoolean(offlineOption));
+                        ceylon.language.Boolean.instance(offlineOption));
             }
             
             CeylonRepoConfigBlock block = thirdPage.getBlock();
@@ -177,10 +175,10 @@ public class NewProjectWizard extends NewElementWizard
                 projectConfig.setOutputRepo(
                         block.getOutputRepo());
                 block.applyToConfiguration(projectConfig);
-                projectConfig.setProjectOverrides(toCeylonString(block.getOverrides()));
-                projectConfig.setProjectFlatClasspath(toCeylonBoolean(block.getFlatClasspath()));
+                projectConfig.setProjectOverrides(ceylon.language.String.instance(block.getOverrides()));
+                projectConfig.setProjectFlatClasspath(ceylon.language.Boolean.instance(block.getFlatClasspath()));
                 projectConfig.setProjectAutoExportMavenDependencies(
-                        toCeylonBoolean(block.getAutoExportMavenDependencies()));
+                        ceylon.language.Boolean.instance(block.getAutoExportMavenDependencies()));
             }
             
             projectConfig.save();

@@ -3,7 +3,7 @@ package com.redhat.ceylon.eclipse.code.search;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.compile;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;

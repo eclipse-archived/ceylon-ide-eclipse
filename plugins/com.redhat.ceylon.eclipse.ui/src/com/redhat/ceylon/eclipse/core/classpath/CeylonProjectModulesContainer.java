@@ -23,8 +23,7 @@ import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.ceylo
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.ide.common.util.toCeylonString_.toCeylonString;
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static java.util.Arrays.asList;
 import static java.util.Collections.synchronizedSet;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -188,7 +187,8 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
                 final IProject project = javaProject.getProject();
                 ProgressMonitor$impl<IProgressMonitor>.Progress progress = 
                         utilJ2C().wrapProgressMonitor(monitor)
-                            .Progress$new$(1000, toCeylonString("Resolving classpath of project " + project.getName()));
+                            .Progress$new$(1000, 
+                                    ceylon.language.String.instance("Resolving classpath of project " + project.getName()));
                 try {
                     
                     final IClasspathEntry[] classpath = constructModifiedClasspath(javaProject);                    
@@ -294,7 +294,8 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
     public boolean resolveClasspath(ProgressMonitor<IProgressMonitor> mon, boolean reparse)  {
         IJavaProject javaProject = getJavaProject();
         IProject project = javaProject.getProject();
-        ProgressMonitor$impl<IProgressMonitor>.Progress ceylonMonitor = mon.Progress$new$(1000, toCeylonString("Resolving classpath of project " + project.getName()));
+        ProgressMonitor$impl<IProgressMonitor>.Progress ceylonMonitor = mon.Progress$new$(1000, 
+                    ceylon.language.String.instance("Resolving classpath of project " + project.getName()));
         CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
         
         try {

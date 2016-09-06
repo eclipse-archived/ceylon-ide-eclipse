@@ -25,7 +25,7 @@ import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_PACKAGE;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static com.redhat.ceylon.model.cmr.JDKUtils.isJDKModule;
 import static com.redhat.ceylon.model.cmr.JDKUtils.isOracleJDKModule;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;

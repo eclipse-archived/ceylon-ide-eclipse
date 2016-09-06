@@ -16,7 +16,6 @@ import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitial
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
-import static com.redhat.ceylon.ide.common.util.toCeylonStringIterable_.toCeylonStringIterable;
 import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
 
 import java.io.File;
@@ -137,6 +136,8 @@ import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 import com.redhat.ceylon.ide.common.model.resourceDirectoriesFromCeylonConfig_;
 import com.redhat.ceylon.ide.common.model.sourceDirectoriesFromCeylonConfig_;
+
+import ceylon.interop.java.CeylonStringIterable;
 
 public class CeylonBuildPathsBlock {
 
@@ -1605,12 +1606,12 @@ public class CeylonBuildPathsBlock {
                     srcDirs.add(configFilePath(project, cpe));
                 }
             }
-            config.setProjectSourceDirectories(toCeylonStringIterable(srcDirs));
+            config.setProjectSourceDirectories(new CeylonStringIterable(srcDirs));
             List<String> rsrcDirs = new ArrayList<String>();
             for (CPListElement cpe: resourcePathEntries) {
                 rsrcDirs.add(configFilePath(project, cpe));
             }
-            config.setProjectResourceDirectories(toCeylonStringIterable(rsrcDirs));
+            config.setProjectResourceDirectories(new CeylonStringIterable(rsrcDirs));
             config.save();
             
         } finally {

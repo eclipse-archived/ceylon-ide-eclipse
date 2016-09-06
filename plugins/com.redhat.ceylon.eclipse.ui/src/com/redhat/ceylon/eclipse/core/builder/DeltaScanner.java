@@ -7,7 +7,7 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isResourceFil
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isSourceFile;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
-import static com.redhat.ceylon.ide.common.util.toJavaString_.toJavaString;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 
 import java.io.File;
 import java.util.HashMap;

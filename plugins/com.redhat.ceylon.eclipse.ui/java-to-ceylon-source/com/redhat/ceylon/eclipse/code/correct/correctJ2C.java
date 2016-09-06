@@ -21,6 +21,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.java2ceylon.CorrectJ2C;
+import com.redhat.ceylon.eclipse.util.CeylonHelper;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.ide.common.correct.QuickFixData;
 import com.redhat.ceylon.ide.common.correct.addAnnotationQuickFix_;
@@ -36,11 +37,11 @@ import com.redhat.ceylon.ide.common.platform.DeleteEdit;
 import com.redhat.ceylon.ide.common.platform.InsertEdit;
 import com.redhat.ceylon.ide.common.platform.ReplaceEdit;
 import com.redhat.ceylon.ide.common.platform.TextEdit;
-import com.redhat.ceylon.ide.common.util.toJavaList_;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 
 import ceylon.interop.java.CeylonSet;
 import ceylon.interop.java.CeylonStringIterable;
+import ceylon.interop.java.JavaList;
 
 public class correctJ2C implements CorrectJ2C {
     @Override
@@ -163,14 +164,13 @@ public class correctJ2C implements CorrectJ2C {
             Collection<String> aliases,
             IDocument doc) {
 
-        List<InsertEdit> edits = toJavaList_.toJavaList(
+        List<InsertEdit> edits = new JavaList<InsertEdit>(
                 TypeDescriptor.klass(InsertEdit.class),
                 importProposals_.get_().importEdits(
-                        rootNode, 
-                        new CeylonSet<>(null,declarations), 
+                        rootNode,
+                        new CeylonSet<>(null,declarations),
                         new CeylonStringIterable(aliases),
-                        null, newDocument(doc))
-        );
+                        null, newDocument(doc)));
 
         for (InsertEdit importEdit: edits) {
             org.eclipse.text.edits.InsertEdit ie = 
@@ -191,14 +191,13 @@ public class correctJ2C implements CorrectJ2C {
             Collection<String> aliases, String newName, String oldName,
             IDocument doc) {
 
-        List<TextEdit> edits = toJavaList_.toJavaList(
+        List<TextEdit> edits = new JavaList<TextEdit>(
                 TypeDescriptor.klass(InsertEdit.class),
                 importProposals_.get_()
                     .importEditForMove(rootNode, 
                         new CeylonSet<>(null,declarations),
                         new CeylonStringIterable(aliases), 
-                        newName, oldName, newDocument(doc))
-        );
+                        newName, oldName, newDocument(doc)));
 
         for (TextEdit importEdit: edits) {
             if (importEdit instanceof InsertEdit) {
