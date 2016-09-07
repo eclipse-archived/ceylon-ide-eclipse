@@ -76,6 +76,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
     private boolean isDeclaredVoid;
     private boolean isVariadic;
     private boolean isDefault;
+    private boolean isDefaultMethod;
     
     private static final Map<String, AnnotationMirror> noAnnotations = Collections.emptyMap();
 
@@ -90,6 +91,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         isDeclaredVoid = method.returnType.id == TypeIds.T_void;
         isVariadic = method.isVarargs();
         isDefault = method.getDefaultValue()!=null;
+        isDefaultMethod = method.isDefaultMethod();
         bindingKey = method.computeUniqueKey();
         if (method instanceof ProblemMethodBinding) {
             annotations = new HashMap<>();
@@ -524,7 +526,6 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
 
     @Override
     public boolean isDefaultMethod() {
-        // TODO Auto-generated method stub
-        return false;
+        return isDefaultMethod;
     }
 }
