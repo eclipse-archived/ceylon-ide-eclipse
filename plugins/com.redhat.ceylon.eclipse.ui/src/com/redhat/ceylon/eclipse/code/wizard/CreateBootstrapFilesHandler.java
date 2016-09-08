@@ -33,7 +33,7 @@ import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.util.versionsAvailableForBoostrap_;
 import com.redhat.ceylon.ide.common.util.messages_;
 import com.redhat.ceylon.ide.common.util.messages_.bootstrap_;
-import com.redhat.ceylon.ide.common.util.toJavaStringList_;
+import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringList;
 
 public class CreateBootstrapFilesHandler implements IWorkbenchWindowActionDelegate {
     public static bootstrap_ bootstrapMessages = messages_.get_().getBootstrap();
@@ -127,7 +127,7 @@ public class CreateBootstrapFilesHandler implements IWorkbenchWindowActionDelega
 	        final Label createBootstrapFilesLabel = new Label(bootstrapComposite, SWT.NONE);
 	        createBootstrapFilesLabel.setText(messages_.get_().getBootstrap().getVersionSelection());
 	        createBootstrapFilesVersionsCombo = new Combo(bootstrapComposite, SWT.READ_ONLY);
-	        String[] choices = toJavaStringList_.toJavaStringList(versionsAvailableForBoostrap_.get_()).toArray(new String[0]);
+	        String[] choices = toJavaStringList(versionsAvailableForBoostrap_.get_()).toArray(new String[0]);
 	        createBootstrapFilesVersionsCombo.setItems(choices);
 	        createBootstrapFilesVersionsCombo.select(0);
 	        bootstrapVersion = choices[0];

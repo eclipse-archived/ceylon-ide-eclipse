@@ -43,6 +43,16 @@ public class CeylonHelper {
         return arrayList;
     }
 
+    public static List<String> toJavaStringList(ceylon.language.Iterable<? extends ceylon.language.String, ? extends Object> ceylonIterable) {
+        ArrayList<String> arrayList = new ArrayList<>();
+        Iterator<?> iterator = ceylonIterable.iterator();
+        Object elem;
+        while ((elem = iterator.next())!=finished_.get_()) {
+            arrayList.add(elem == null ? null : ((ceylon.language.String)elem).value);
+        }
+        return arrayList;
+    }
+
     public static String[] toJavaStringArray(Sequence<? extends ceylon.language.String> sequence) {
         long length = sequence.getSize();
         String[] result = new String[(int) length];

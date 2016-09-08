@@ -11,7 +11,7 @@ import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static com.redhat.ceylon.eclipse.util.CeylonHelper.list;
 import static com.redhat.ceylon.eclipse.util.CeylonHelper.td;
-import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
+import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringList;
 import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static com.redhat.ceylon.model.typechecker.model.Module.LANGUAGE_MODULE_NAME;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;

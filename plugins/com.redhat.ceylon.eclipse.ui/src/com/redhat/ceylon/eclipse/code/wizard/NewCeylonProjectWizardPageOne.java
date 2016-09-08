@@ -101,7 +101,7 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.WorkingSetConfigurationBlock;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.ide.common.util.toJavaStringList_;
+import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringList;
 import com.redhat.ceylon.ide.common.util.versionsAvailableForBoostrap_;
 
 /**
@@ -1577,7 +1577,7 @@ public class NewCeylonProjectWizardPageOne extends WizardPage {
         createBootstrapFilesButton.setLayoutData(GridDataFactory.swtDefaults().create());
         final Combo createBootstrapFilesVersionsCombo = new Combo(composite, SWT.READ_ONLY);
         createBootstrapFilesVersionsCombo.setLayoutData(GridDataFactory.swtDefaults().create());
-        String[] choices = toJavaStringList_.toJavaStringList(versionsAvailableForBoostrap_.get_()).toArray(new String[0]);
+        String[] choices = toJavaStringList(versionsAvailableForBoostrap_.get_()).toArray(new String[0]);
         createBootstrapFilesVersionsCombo.setItems(choices);
         createBootstrapFilesVersionsCombo.select(0);
         bootstrapVersion = choices[0];

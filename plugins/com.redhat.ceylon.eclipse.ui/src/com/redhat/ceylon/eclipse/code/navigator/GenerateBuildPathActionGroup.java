@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.navigator;
 
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
-import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
+import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringList;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -9,7 +9,7 @@ import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationCo
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.DEFAULT_RUN_MARKER;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVASCRIPT_MODULE;
 import static com.redhat.ceylon.eclipse.core.launch.LaunchHelper.getStartLocation;
-import static com.redhat.ceylon.ide.common.util.toJavaStringList_.toJavaStringList;
+import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringList;
 import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 

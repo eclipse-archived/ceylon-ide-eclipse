@@ -2,7 +2,8 @@ import ceylon.collection {
     HashSet
 }
 import ceylon.interop.java {
-    CeylonIterable
+    CeylonIterable,
+    javaString
 }
 
 import com.redhat.ceylon.cmr.ceylon {
@@ -20,9 +21,6 @@ import com.redhat.ceylon.eclipse.core.model {
 import com.redhat.ceylon.ide.common.platform {
     platformUtils
 }
-import com.redhat.ceylon.ide.common.util {
-    toJavaStringList
-}
 import com.redhat.ceylon.model.cmr {
     ArtifactResult
 }
@@ -39,6 +37,10 @@ import java.io {
 import java.lang {
     JString=String,
     ObjectArray
+}
+
+import java.util {
+    Arrays
 }
 
 import org.eclipse.core.runtime {
@@ -137,10 +139,9 @@ shared interface ClassPathEnricher {
                             .cwd(referencedProject.rootDirectory)
                             .systemRepo(referencedProject.systemRepository)
                             .outRepo(CeylonBuilder.getCeylonModulesOutputDirectory(referencedProject.ideArtifact).absolutePath)
-                            .extraUserRepos(
-                                toJavaStringList(
-                                    referencedProject.referencedCeylonProjects.map((p) 
-                                        => p.ceylonModulesOutputDirectory.absolutePath)))
+                            .extraUserRepos(Arrays.asList(
+                                for (p in referencedProject.referencedCeylonProjects)
+                                javaString(p.ceylonModulesOutputDirectory.absolutePath)))
                             .logger(platformUtils.cmrLogger)
                             .isJDKIncluded(false);
                     
@@ -151,7 +152,7 @@ shared interface ClassPathEnricher {
                         shared {ArtifactResult*} modules => CeylonIterable(super.loadedModules.values());
                         createRepositoryManagerBuilderNoOut(Boolean forInput) => repoManagerBuilder;
                     }
-                    tool.setModules(toJavaStringList{m.nameAsString+"/"+m.version});
+                    tool.setModules(Arrays.asList(javaString(m.nameAsString+"/"+m.version)));
                     tool.run();
                     return tool.modules;
                 }
@@ -179,7 +180,7 @@ shared interface ClassPathEnricher {
             original.iterable.coalesced.map(
                 (js) => js.string));
         value result = ObjectArray<JString>(classpathEntries.size);
-        return toJavaStringList(classpathEntries).toArray(result);
+        return Arrays.asList(for (e in classpathEntries) javaString(e)).toArray(result);
     }
     
     shared formal IJavaProject getTheJavaProject(ILaunchConfiguration launchConfiguration);
