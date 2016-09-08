@@ -744,6 +744,16 @@ public class JavaSearch {
             Declaration ceylonContainingDeclaration = 
                     getContainingDeclaration(declaration);
             
+            if (isCeylonObject(declaringElement) 
+                    && ceylonContainingDeclaration.isToplevel() 
+                    && !(ceylonContainingDeclaration instanceof Value)) {
+                Scope grandParent = ceylonContainingDeclaration.getContainer();
+                if (grandParent != null) {
+                    ceylonContainingDeclaration = grandParent.getDirectMember(
+                            ceylonContainingDeclaration.getName(), null, false);
+                }
+            }
+            
             if (ceylonContainingDeclaration != null) {
                 return elementEqualsDeclaration(
                         declaringElement, 
