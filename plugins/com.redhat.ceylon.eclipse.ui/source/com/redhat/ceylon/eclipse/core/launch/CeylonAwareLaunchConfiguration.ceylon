@@ -150,7 +150,7 @@ shared interface ClassPathEnricher {
                 function moduleClassPath(JDTModule m) {
                     object tool extends CeylonClasspathTool() {
                         shared {ArtifactResult*} modules => CeylonIterable(super.loadedModules.values());
-                        createRepositoryManagerBuilderNoOut(Boolean forInput) => repoManagerBuilder;
+                        createRepositoryManagerBuilder() => repoManagerBuilder;
                     }
                     tool.setModules(Arrays.asList(javaString(m.nameAsString+"/"+m.version)));
                     tool.run();
