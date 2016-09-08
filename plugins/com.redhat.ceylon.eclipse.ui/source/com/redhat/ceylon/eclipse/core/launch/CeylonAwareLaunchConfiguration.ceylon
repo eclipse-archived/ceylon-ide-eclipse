@@ -3,7 +3,8 @@ import ceylon.collection {
 }
 import ceylon.interop.java {
     CeylonIterable,
-    javaString
+    javaString,
+    createJavaObjectArray
 }
 
 import com.redhat.ceylon.cmr.ceylon {
@@ -23,9 +24,6 @@ import com.redhat.ceylon.ide.common.platform {
 }
 import com.redhat.ceylon.model.cmr {
     ArtifactResult
-}
-import com.redhat.ceylon.model.typechecker.model {
-    Modules
 }
 import com.redhat.ceylon.tools.classpath {
     CeylonClasspathTool
@@ -129,58 +127,50 @@ shared interface ClassPathEnricher {
         }
         value project = javaProject.project;
         
-        
         value classpathEntries = HashSet<String>();
-        for (referencedProject in 
-                        project.referencedProjects.array.coalesced
-                            .map((p) => ceylonModel.getProject(p))
-                            .coalesced) {
-            CeylonRepoManagerBuilder repoManagerBuilder = CeylonRepoManagerBuilder().offline(referencedProject.configuration.offline)
-                            .cwd(referencedProject.rootDirectory)
-                            .systemRepo(referencedProject.systemRepository)
-                            .outRepo(CeylonBuilder.getCeylonModulesOutputDirectory(referencedProject.ideArtifact).absolutePath)
-                            .extraUserRepos(Arrays.asList(
-                                for (p in referencedProject.referencedCeylonProjects)
-                                javaString(p.ceylonModulesOutputDirectory.absolutePath)))
-                            .logger(platformUtils.cmrLogger)
-                            .isJDKIncluded(false);
-                    
-            Modules? modules = CeylonBuilder.getProjectModules(referencedProject.ideArtifact);
-            if (exists modules) {
+        for (referencedProject in
+                        { for (p in project.referencedProjects)
+                          if (exists cp = ceylonModel.getProject(p))
+                          cp}) {
+            value repoManagerBuilder = CeylonRepoManagerBuilder()
+                    .offline(referencedProject.configuration.offline)
+                        .cwd(referencedProject.rootDirectory)
+                        .systemRepo(referencedProject.systemRepository)
+                        .outRepo(CeylonBuilder.getCeylonModulesOutputDirectory(
+                            referencedProject.ideArtifact).absolutePath)
+                        .extraUserRepos(Arrays.asList(
+                            for (p in referencedProject.referencedCeylonProjects)
+                            javaString(p.ceylonModulesOutputDirectory.absolutePath)))
+                        .logger(platformUtils.cmrLogger)
+                        .isJDKIncluded(false);
+            
+            if (exists modules = CeylonBuilder.getProjectModules(referencedProject.ideArtifact)) {
                 function moduleClassPath(JDTModule m) {
                     object tool extends CeylonClasspathTool() {
                         shared {ArtifactResult*} modules => CeylonIterable(super.loadedModules.values());
                         createRepositoryManagerBuilder() => repoManagerBuilder;
                     }
-                    tool.setModules(Arrays.asList(javaString(m.nameAsString+"/"+m.version)));
+                    tool.setModules(Arrays.asList(javaString(m.nameAsString + "/" + m.version)));
                     tool.run();
                     return tool.modules;
                 }
-                value moduleList = CeylonIterable(modules.listOfModules)
-                    .narrow<JDTModule>()
-                    .filter((m)=>m.isProjectModule && !m.defaultModule)
-                    .flatMap(
-                        (m) => 
-                            moduleClassPath(m))
-                    .coalesced
-                    .map(
-                        (artifactResult) => 
-                            artifactResult.artifact()?.absolutePath)
-                    .coalesced;
+                value moduleList 
+                        = { for (m in modules.listOfModules)
+                            if (is JDTModule m, m.isProjectModule && !m.defaultModule)
+                            for (artifactResult in moduleClassPath(m))
+                            if (exists artifact = artifactResult.artifact())
+                            artifact.absolutePath };
                 classpathEntries.addAll(moduleList);
-                value defaultCar = File(
-                            CeylonBuilder.getCeylonModulesOutputDirectory(referencedProject.ideArtifact),
-                            "default.car");
+                value defaultCar 
+                        = File(CeylonBuilder.getCeylonModulesOutputDirectory(
+                                referencedProject.ideArtifact), "default.car");
                 if (defaultCar.\iexists()) {
                     classpathEntries.add(defaultCar.absolutePath);
                 }
             }
         }
-        classpathEntries.addAll(
-            original.iterable.coalesced.map(
-                (js) => js.string));
-        value result = ObjectArray<JString>(classpathEntries.size);
-        return Arrays.asList(for (e in classpathEntries) javaString(e)).toArray(result);
+        classpathEntries.addAll { for (cp in original) cp.string };
+        return createJavaObjectArray(classpathEntries.map(javaString));
     }
     
     shared formal IJavaProject getTheJavaProject(ILaunchConfiguration launchConfiguration);
