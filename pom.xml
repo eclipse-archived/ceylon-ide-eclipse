@@ -10,7 +10,7 @@
   <packaging>pom</packaging>
 
   <properties>
-    <platform-version-name>kepler</platform-version-name>
+    <platform-version-name>luna</platform-version-name>
     <main-software-site>http://download.eclipse.org/releases/${platform-version-name}</main-software-site>
     <tychoVersion>0.24.0</tychoVersion>
     <scmBranch>trunk</scmBranch>
