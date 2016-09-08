@@ -81,7 +81,7 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
         // Modifies the project classpath :
         //   Beware to always add the language module container before the application modules container 
         IClasspathEntry runtimeEntry = JavaCore.newContainerEntry(fPath, null, 
-                new IClasspathAttribute[0], false);
+                new IClasspathAttribute[0], true);
         IClasspathEntry[] entries = fProject.getRawClasspath();
         List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(Arrays.asList(entries));
         int indexFirstContainer = -1;
@@ -113,7 +113,7 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
         }
 
         IClasspathEntry newEntry = JavaCore.newContainerEntry(fPath, null, 
-                new IClasspathAttribute[0], languageModuleEntryWasExported);
+                new IClasspathAttribute[0], indexFirstContainer == -1 || languageModuleEntryWasExported);
 
         if (indexFirstContainer >= 0) {
             newEntries.set(indexFirstContainer, newEntry);

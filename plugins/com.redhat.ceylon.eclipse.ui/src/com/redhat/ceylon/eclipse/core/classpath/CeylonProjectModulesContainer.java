@@ -231,7 +231,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
     private IClasspathEntry[] constructModifiedClasspath(IJavaProject javaProject) 
             throws JavaModelException {
         IClasspathEntry newEntry = JavaCore.newContainerEntry(path, null, 
-                new IClasspathAttribute[0], false);
+                new IClasspathAttribute[0], true);
         IClasspathEntry[] entries = javaProject.getRawClasspath();
         List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(asList(entries));
         int index = 0;
@@ -247,7 +247,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
         }
 
         newEntry = JavaCore.newContainerEntry(path, null, 
-                new IClasspathAttribute[0], projectModulesEntryWasExported);
+                new IClasspathAttribute[0], !mustReplace || projectModulesEntryWasExported);
         if (mustReplace) {
             newEntries.set(index, newEntry);
         }
