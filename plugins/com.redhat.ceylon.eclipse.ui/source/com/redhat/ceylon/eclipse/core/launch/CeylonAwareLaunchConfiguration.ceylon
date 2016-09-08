@@ -2,7 +2,6 @@ import ceylon.collection {
     HashSet
 }
 import ceylon.interop.java {
-    CeylonIterable,
     javaString,
     createJavaObjectArray
 }
@@ -36,9 +35,9 @@ import java.lang {
     JString=String,
     ObjectArray
 }
-
 import java.util {
-    Arrays
+    Arrays,
+    Collection
 }
 
 import org.eclipse.core.runtime {
@@ -120,7 +119,10 @@ String[] requiredRuntimeJars = [
 
 
 shared interface ClassPathEnricher {
-    shared ObjectArray<JString> enrichClassPath(ObjectArray<JString> original, ILaunchConfiguration launchConfig) {
+    
+    shared ObjectArray<JString> enrichClassPath(ObjectArray<JString> original, 
+            ILaunchConfiguration launchConfig) {
+        
         IJavaProject? javaProject = getTheJavaProject(launchConfig);
         if (!exists javaProject) {
             return original;
@@ -128,10 +130,12 @@ shared interface ClassPathEnricher {
         value project = javaProject.project;
         
         value classpathEntries = HashSet<String>();
-        for (referencedProject in
-                        { for (p in project.referencedProjects)
-                          if (exists cp = ceylonModel.getProject(p))
-                          cp}) {
+        value ceylonProjects 
+                = { for (p in project.referencedProjects)
+                    if (exists cp = ceylonModel.getProject(p))
+                    cp };
+        for (referencedProject in ceylonProjects) {
+            
             value repoManagerBuilder = CeylonRepoManagerBuilder()
                     .offline(referencedProject.configuration.offline)
                         .cwd(referencedProject.rootDirectory)
@@ -147,7 +151,8 @@ shared interface ClassPathEnricher {
             if (exists modules = CeylonBuilder.getProjectModules(referencedProject.ideArtifact)) {
                 function moduleClassPath(JDTModule m) {
                     object tool extends CeylonClasspathTool() {
-                        shared {ArtifactResult*} modules => CeylonIterable(super.loadedModules.values());
+                        shared Collection<ArtifactResult> modules 
+                                => super.loadedModules.values();
                         createRepositoryManagerBuilder() => repoManagerBuilder;
                     }
                     tool.setModules(Arrays.asList(javaString(m.nameAsString + "/" + m.version)));
@@ -181,7 +186,7 @@ shared class CeylonAwareJavaLaunchDelegate()
         satisfies CeylonAwareLaunchConfigurationDelegate
                     & ClassPathEnricher {
 
-    shared actual void launch(
+    launch(
         ILaunchConfiguration c,
         String m,
         ILaunch l,
@@ -189,7 +194,7 @@ shared class CeylonAwareJavaLaunchDelegate()
             => (super of CeylonAwareLaunchConfigurationDelegate)
             .launch(c, m, l, p);
 
-    shared actual void originalLaunch(
+    originalLaunch(
         ILaunchConfiguration c,
         String m,
         ILaunch l,
@@ -197,11 +202,10 @@ shared class CeylonAwareJavaLaunchDelegate()
             => (super of JavaLaunchDelegate)
             .launch(c, m, l, p);
     
-    shared actual ObjectArray<JString> getClasspath(ILaunchConfiguration iLaunchConfiguration) { 
-        return enrichClassPath(super.getClasspath(iLaunchConfiguration), iLaunchConfiguration);
-    }
-    shared actual IJavaProject getTheJavaProject(ILaunchConfiguration launchConfiguration) => 
-            getJavaProject(launchConfiguration);
+    getClasspath(ILaunchConfiguration launchConfiguration) 
+            => enrichClassPath(super.getClasspath(launchConfiguration), launchConfiguration);
+    getTheJavaProject(ILaunchConfiguration launchConfiguration) 
+            => getJavaProject(launchConfiguration);
 }
 
 shared class CeylonAwareJavaRemoteApplicationLaunchConfigurationDelegate()
@@ -230,7 +234,7 @@ shared class CeylonAwareJUnitLaunchConfigurationDelegate()
         satisfies CeylonAwareLaunchConfigurationDelegate
                     & ClassPathEnricher {
 
-    shared actual void launch(
+    launch(
         ILaunchConfiguration c,
         String m,
         ILaunch l,
@@ -238,7 +242,7 @@ shared class CeylonAwareJUnitLaunchConfigurationDelegate()
             => (super of CeylonAwareLaunchConfigurationDelegate)
             .launch(c, m, l, p);
 
-    shared actual void originalLaunch(
+    originalLaunch(
         ILaunchConfiguration c,
         String m,
         ILaunch l,
@@ -246,11 +250,11 @@ shared class CeylonAwareJUnitLaunchConfigurationDelegate()
             => (super of JUnitLaunchConfigurationDelegate)
             .launch(c, m, l, p);
 
-    shared actual ObjectArray<JString> getClasspath(ILaunchConfiguration iLaunchConfiguration) { 
-        return enrichClassPath(super.getClasspath(iLaunchConfiguration), iLaunchConfiguration);
-    }
-    shared actual IJavaProject getTheJavaProject(ILaunchConfiguration launchConfiguration) => 
-            getJavaProject(launchConfiguration);
+    getClasspath(ILaunchConfiguration launchConfiguration) 
+            => enrichClassPath(super.getClasspath(launchConfiguration), 
+                               launchConfiguration);
+    getTheJavaProject(ILaunchConfiguration launchConfiguration) 
+            => getJavaProject(launchConfiguration);
 }
 
 shared class CeylonAwareEclipseApplicationLaunchConfiguration()
