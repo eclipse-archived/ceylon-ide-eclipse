@@ -34,6 +34,9 @@ public class CeylonHelper {
     }
     
     public static <Type> List<Type> list(Class<Type> klass,  ceylon.language.Iterable<? extends Type, ? extends Object> ceylonIterable) {
+        if (ceylonIterable == null) {
+            return null;
+        }
         ArrayList<Type> arrayList = new ArrayList<>();
         Iterator<?> iterator = ceylonIterable.iterator();
         Object elem;
@@ -44,6 +47,9 @@ public class CeylonHelper {
     }
 
     public static List<String> toJavaStringList(ceylon.language.Iterable<? extends ceylon.language.String, ? extends Object> ceylonIterable) {
+        if (ceylonIterable == null) {
+            return null;
+        }
         ArrayList<String> arrayList = new ArrayList<>();
         Iterator<?> iterator = ceylonIterable.iterator();
         Object elem;
@@ -54,6 +60,9 @@ public class CeylonHelper {
     }
 
     public static String[] toJavaStringArray(Sequence<? extends ceylon.language.String> sequence) {
+        if (sequence == null) {
+            return null;
+        }
         long length = sequence.getSize();
         String[] result = new String[(int) length];
         for (int i=0; i<length; i++) {

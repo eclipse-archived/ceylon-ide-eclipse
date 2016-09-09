@@ -164,10 +164,14 @@ final class DeltaScanner implements IResourceDeltaVisitor {
             }
             if (fileName.equals(".classpath") ||
                     fileName.equals("config") ||
+                    fileName.equals("ide-config") ||
                     file.equals(overridesResource)) {
                 //the classpath changed
                 mustDoFullBuild.value = true;
                 mustResolveClasspathContainer.value = true;
+                if (fileName.equals("ide-config")) {
+                    ceylonProject.getIdeConfiguration().refresh();
+                }
             }
             if (isSourceFile(file) || 
                     isResourceFile(file)) {

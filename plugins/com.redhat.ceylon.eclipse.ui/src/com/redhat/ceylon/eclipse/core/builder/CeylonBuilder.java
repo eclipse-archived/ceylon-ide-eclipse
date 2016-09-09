@@ -105,6 +105,7 @@ import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.common.config.CeylonConfig;
 import com.redhat.ceylon.common.config.DefaultToolOptions;
 import com.redhat.ceylon.common.log.Logger;
+import com.redhat.ceylon.compiler.CeylonCompileTool;
 import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
 import com.redhat.ceylon.compiler.java.codegen.CeylonFileObject;
 import com.redhat.ceylon.compiler.java.codegen.Naming;
@@ -144,6 +145,7 @@ import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.BaseIdeModuleManager;
 import com.redhat.ceylon.ide.common.model.BaseIdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
+import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 import com.redhat.ceylon.ide.common.model.CeylonUnit;
@@ -2201,6 +2203,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
             
             CeylonProjectConfig config = ceylonProject.getConfiguration();
+            CeylonIdeConfig ideConfig = ceylonProject.getIdeConfiguration();
             
             String overrides = toJavaString(config.getOverrides());
             if (overrides != null) {
@@ -2249,6 +2252,12 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 options.add(ceylonConfig.getOption(DefaultToolOptions.COMPILER_RESOURCE_ROOT));
             }
 
+            
+            List<String> javacOptions = CeylonHelper.toJavaStringList(ideConfig.getJavacOptions());
+            if (javacOptions != null) {
+                CeylonCompileTool.addJavacArguments(options, javacOptions);
+            }
+            
             progress.worked(20);
             List<File> forJavaBackend = new ArrayList<File>();
             List<File> forJavascriptBackend = new ArrayList<File>();
