@@ -3,7 +3,9 @@ import ceylon.collection {
 }
 import ceylon.interop.java {
     javaString,
-    createJavaObjectArray
+    createJavaObjectArray,
+    javaClassFromInstance,
+    javaClass
 }
 
 import com.redhat.ceylon.cmr.ceylon {
@@ -19,7 +21,8 @@ import com.redhat.ceylon.eclipse.core.model {
     JDTModule
 }
 import com.redhat.ceylon.ide.common.platform {
-    platformUtils
+    platformUtils,
+    Status
 }
 import com.redhat.ceylon.model.cmr {
     ArtifactResult
@@ -74,7 +77,53 @@ import org.eclipse.pde.launching {
     PDEJUnitLaunchConfigurationDelegate=JUnitLaunchConfigurationDelegate
 }
 
-shared interface CeylonAwareLaunchConfigurationDelegate satisfies ILaunchConfigurationDelegate {
+shared void setDefaultLaunchDelegateToNonCeylonAware() {
+    try {
+        value ceylonDelegatesClasses = [
+        javaClass<CeylonAwareJavaLaunchDelegate>(),
+        javaClass<CeylonAwareJavaRemoteApplicationLaunchConfigurationDelegate>(),
+        javaClass<CeylonAwareJUnitLaunchConfigurationDelegate>(),
+        javaClass<CeylonAwareEclipseApplicationLaunchConfiguration>(),
+        javaClass<CeylonAwarePDEJUnitLaunchConfigurationDelegate>(),
+        javaClass<CeylonAwareSWTBotJUnitLaunchConfigurationDelegate>()
+        ];
+        
+        value launchManager = DebugPlugin.default.launchManager;
+        for (type in launchManager.launchConfigurationTypes) {
+            for (modeCombination in type.supportedModeCombinations) {
+                value delegates = type.getDelegates(modeCombination);
+                if (delegates.size != 2 ||
+                    type.getPreferredDelegate(modeCombination) exists) {
+                    continue;
+                }
+                value delegatesWithClasses = {
+                    for (delegate in delegates)
+                    delegate -> javaClassFromInstance(delegate.delegate)
+                };
+                if (delegatesWithClasses.any((delegate -> clazz) 
+                    => clazz in ceylonDelegatesClasses)) {
+                    value originalDelegate = delegatesWithClasses.find((delegate -> clazz) 
+                        => ! clazz in ceylonDelegatesClasses)?.key;
+                    if (exists originalDelegate) {
+                        type.setPreferredDelegate(modeCombination, originalDelegate);
+                    }
+                }
+            }
+        }
+    } catch(Exception e) {
+        platformUtils.log(Status._WARNING, "Error when setting the default launch configurations", e);
+    }
+}
+
+
+shared interface CeylonAwareLaunchConfigurationDelegate 
+        of CeylonAwareJavaLaunchDelegate
+        | CeylonAwareJavaRemoteApplicationLaunchConfigurationDelegate
+        | CeylonAwareJUnitLaunchConfigurationDelegate
+        | CeylonAwareEclipseApplicationLaunchConfiguration
+        | CeylonAwarePDEJUnitLaunchConfigurationDelegate
+        | CeylonAwareSWTBotJUnitLaunchConfigurationDelegate
+        satisfies ILaunchConfigurationDelegate {
     shared default String overridenSourcePathComputerId
             => "com.redhat.ceylon.eclipse.ui.launching.sourceLookup.ceylonSourcePathComputer";
 

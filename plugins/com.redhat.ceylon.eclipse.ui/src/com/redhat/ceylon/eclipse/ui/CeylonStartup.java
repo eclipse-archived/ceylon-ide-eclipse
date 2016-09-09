@@ -181,6 +181,7 @@ public class CeylonStartup implements IStartup {
             }
         });
         
+        com.redhat.ceylon.eclipse.core.launch.setDefaultLaunchDelegateToNonCeylonAware_.setDefaultLaunchDelegateToNonCeylonAware();
     }
 
 }
