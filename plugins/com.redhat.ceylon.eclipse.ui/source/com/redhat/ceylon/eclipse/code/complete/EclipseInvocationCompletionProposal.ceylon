@@ -1,6 +1,3 @@
-import com.redhat.ceylon.eclipse.code.complete {
-    EInvocationCompletionProposal=InvocationCompletionProposal
-}
 import com.redhat.ceylon.eclipse.code.correct {
     EclipseDocument
 }
@@ -122,7 +119,7 @@ shared class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
                         else null;
                     
                     value unit = ctx.lastCompilationUnit.unit;
-                    return EInvocationCompletionProposal.ParameterContextInformation(dec, ref,
+                    return ParameterContextInformation(dec, ref,
                         unit, pls.get(0), argListOffset, includeDefaulted, namedInvocation);
                 }
             }

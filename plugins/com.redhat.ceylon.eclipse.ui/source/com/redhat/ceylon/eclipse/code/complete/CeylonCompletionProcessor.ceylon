@@ -3,7 +3,8 @@ import ceylon.collection {
 }
 import ceylon.interop.java {
     javaString,
-    createJavaObjectArray
+    createJavaObjectArray,
+    JavaRunnable
 }
 
 import com.redhat.ceylon.compiler.typechecker.tree {
@@ -27,14 +28,10 @@ import com.redhat.ceylon.eclipse.ui {
     }
 }
 import com.redhat.ceylon.eclipse.util {
-    wrapProgressMonitor,
-    EclipseProgressMonitorChild
+    wrapProgressMonitor
 }
 import com.redhat.ceylon.ide.common.completion {
     completionManager
-}
-import com.redhat.ceylon.ide.common.typechecker {
-    LocalAnalysisResult
 }
 import com.redhat.ceylon.model.typechecker.model {
     Declaration,
@@ -49,33 +46,51 @@ import java.lang {
 
 import org.eclipse.core.runtime {
     IProgressMonitor,
-    NullProgressMonitor
+    NullProgressMonitor,
+    IStatus,
+    Status,
+    OperationCanceledException
 }
-import org.eclipse.jface.operation {
-    IRunnableWithProgress
+import org.eclipse.core.runtime.jobs {
+    Job,
+    ISchedulingRule
 }
 import org.eclipse.jface.text {
     ITextViewer,
     BadLocationException,
-    IDocument
+    IDocument,
+    IDocumentListener,
+    DocumentEvent
 }
 import org.eclipse.jface.text.contentassist {
     IContentAssistProcessor,
     ICompletionProposal,
     IContextInformation
 }
-import org.eclipse.ui {
-    PlatformUI
+import org.eclipse.swt.widgets {
+    Display
+}
+import org.eclipse.draw2d {
+    ToolTipHelper
+}
+import org.eclipse.jface.window {
+    ToolTip
+}
+import org.eclipse.swt.custom {
+    BusyIndicator
 }
 
 class CeylonCompletionProcessor(CeylonEditor editor)
         satisfies IContentAssistProcessor & EclipseCompletionProcessor {
+    
+    value timeout = 4000;
     
     variable ParameterContextValidator? validator = null;
     variable Boolean secondLevel = false;
     variable Boolean returnedParamInfo = false;
     variable Integer lastOffsetAcrossSessions = -1;
     variable Integer lastOffset = -1;
+    variable Boolean isAutoActivated = false;
     
     value noCompletions = ObjectArray<ICompletionProposal>(0);
     
@@ -84,8 +99,102 @@ class CeylonCompletionProcessor(CeylonEditor editor)
     
     contextInformationAutoActivationCharacters
             = javaString(",(;{").toCharArray();
+
+    object completionSchedulingRule satisfies ISchedulingRule {
+        isConflicting(ISchedulingRule rule) => rule == this;
+        
+        contains(ISchedulingRule rule) => rule == this;
+    }
     
-    shared actual ObjectArray<ICompletionProposal>
+    class CompletionJob(ITextViewer viewer, Integer offset) extends Job("Ceylon Editor Completion") {
+        priority = interactive;
+        system = true;
+        rule = completionSchedulingRule;
+        
+        shared variable ICompletionProposal?[] _contentProposals = [];
+        shared variable Boolean canceledByTextInput = false;
+        
+        shared actual IStatus run(IProgressMonitor monitor) {
+            
+            object documentListener satisfies IDocumentListener {
+                shared actual void documentAboutToBeChanged(DocumentEvent? documentEvent) {
+                    canceledByTextInput = true;
+                    outer.cancel();
+                }
+                documentChanged(DocumentEvent? documentEvent) => noop();
+            }
+            
+            value sourceViewer = editor.ceylonSourceViewer;
+            value document = sourceViewer.document;
+            value contentAssistant = sourceViewer.contentAssistant;
+            document.addDocumentListener(documentListener);
+            
+            try (progress = wrapProgressMonitor(monitor)
+                .Progress(-1, "Preparing completions...")) {
+                
+                value controller = editor.parseController;
+                value completionMonitor = progress.newChild(-1);
+                if (exists lastPhasedUnit = controller.lastPhasedUnit) {
+                    Tree.CompilationUnit? typecheckedRootNode;
+                    if (exists inBuild = 
+                        controller.ceylonProject?.sourceModelLock?.writeLocked,
+                    inBuild) {
+                        typecheckedRootNode = lastPhasedUnit.compilationUnit;
+                        contentAssistant.setStatusMessage("The results might be incomplete while a build is running");
+                    } else {
+                        variable Tree.CompilationUnit? afterForcedTypechecking = null;
+                        try {
+                            afterForcedTypechecking = controller.parseAndTypecheck(
+                                viewer.document, 
+                                if (isAutoActivated) then 0 else 4, 
+                                completionMonitor.wrapped, 
+                                null)?.compilationUnit;
+                        } catch(OperationCanceledException e) {
+                        }
+                        if (exists aft=afterForcedTypechecking) {
+                            typecheckedRootNode = aft;
+                        } else {
+                            typecheckedRootNode = lastPhasedUnit.compilationUnit;
+                            contentAssistant.setStatusMessage("The results were truncated for faster completion");
+                        }
+                    }
+                    
+                    if (exists typecheckedRootNode) {
+                        value ctx = EclipseCompletionContext(controller);
+                        
+                        completionManager.getContentProposals {
+                            typecheckedRootNode = typecheckedRootNode;
+                            ctx = ctx;
+                            offset = offset;
+                            line = CompletionUtil.getLine(offset, viewer);
+                            secondLevel = secondLevel;
+                            monitor = completionMonitor;
+                            returnedParamInfo = returnedParamInfo;
+                        };
+                        
+                        _contentProposals = ctx.proposals.proposals.sequence();
+                    }
+                } 
+                
+                if (_contentProposals.size==1 &&
+                    _contentProposals.first is ParameterInfo) {
+                    returnedParamInfo = true;
+                }
+                
+                if (monitor.canceled) {
+                    return Status.cancelStatus;
+                }
+                return Status.okStatus;
+            } catch(OperationCanceledException e) {
+                return Status.cancelStatus;
+            } finally {
+                document.removeDocumentListener(documentListener);
+            }
+        }
+    }
+    
+    
+    shared actual ObjectArray<ICompletionProposal>?
     computeCompletionProposals(ITextViewer viewer, Integer offset) {
         
         if (offset != lastOffsetAcrossSessions) {
@@ -108,74 +217,36 @@ class CeylonCompletionProcessor(CeylonEditor editor)
         }
         lastOffset = offset;
         lastOffsetAcrossSessions = offset;
-        
-        object runnable satisfies IRunnableWithProgress {
-            shared variable ICompletionProposal?[] _contentProposals = [];
-            
-            shared actual void run(IProgressMonitor monitor) {
-                try (progress = wrapProgressMonitor(monitor)
-                    .Progress(-1, "Preparing completions...")) {
-                    _contentProposals = getContentProposals {
-                        editor = editor;
-                        controller = editor.parseController;
-                        offset = offset;
-                        viewer = viewer;
-                        secondLevel = secondLevel;
-                        returnedParamInfo = returnedParamInfo;
-                        monitor = progress.newChild(-1);
-                    };
-                    if (_contentProposals.size==1 &&
-                                _contentProposals.first is InvocationCompletionProposal.ParameterInfo) {
-                        returnedParamInfo = true;
-                    }
+
+        value sourceViewer = editor.ceylonSourceViewer;
+        value contentAssistant = sourceViewer.contentAssistant;
+        value display = Display.current;
+        CompletionJob completionJob = CompletionJob(viewer, offset);
+
+        BusyIndicator().showWhile(display, JavaRunnable(() {
+            completionJob.schedule();
+            while (completionJob.state != completionJob.none) {
+                if (!display.readAndDispatch()) {
+                    display.sleep();
                 }
             }
+        }));
+        
+        if (completionJob.result == Status.cancelStatus) {
+            if (completionJob.canceledByTextInput) {
+                return null;
+            }
+            contentAssistant.setStatusMessage("The results might be incomplete because search has been interrupted");
+            return createJavaObjectArray(completionJob._contentProposals);
         }
         
-        if (secondLevel) {
-            runnable.run(NullProgressMonitor());
+        if (completionJob.result == Status.okStatus) {
+            return createJavaObjectArray(completionJob._contentProposals);
         } else {
-            PlatformUI.workbench
-                .activeWorkbenchWindow.run(
-                true, true, runnable);
+            return noCompletions;
         }
-
-        return createJavaObjectArray(runnable._contentProposals);
     }
     
-    ICompletionProposal[] getContentProposals(
-        CeylonEditor editor,
-        LocalAnalysisResult? controller, Integer offset,
-        ITextViewer? viewer, Boolean secondLevel, 
-        Boolean returnedParamInfo, 
-        EclipseProgressMonitorChild monitor) {
-        
-        if (is CeylonParseController controller,
-            exists viewer, 
-            exists rn = controller.lastCompilationUnit, 
-            exists t = controller.tokens, 
-            exists pu = controller.parseAndTypecheck(
-                viewer.document, 10, monitor.wrapped, null)) {
-            
-            value ctx = EclipseCompletionContext(controller);
-            
-            completionManager.getContentProposals {
-                typecheckedRootNode = pu.compilationUnit;
-                ctx = ctx;
-                offset = offset;
-                line = CompletionUtil.getLine(offset, viewer);
-                secondLevel = secondLevel;
-                monitor = monitor;
-                returnedParamInfo = returnedParamInfo;
-            };
-            
-            return ctx.proposals.proposals.sequence();
-        }
-        else {
-            return [];
-        }
-    }
-
     shared actual ObjectArray<IContextInformation>
     computeContextInformation(ITextViewer viewer, Integer offset) {
         
@@ -200,9 +271,10 @@ class CeylonCompletionProcessor(CeylonEditor editor)
     
     errorMessage => "No completions available";
     
-    shared actual void sessionStarted() {
+    shared actual void sessionStarted(Boolean isAutoActivated) {
         secondLevel = false;
         lastOffset = -1;
+        this.isAutoActivated = isAutoActivated;
     }
     
     Boolean isIdentifierCharacter(ITextViewer viewer, Integer offset) {
@@ -256,7 +328,7 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                                         //      Delete it to get a choice of all surrounding
                                         //      argument lists.
                                         infos.clear();
-                                        infos.add(InvocationCompletionProposal.ParameterContextInformation(// TODO migrate this?
+                                        infos.add(ParameterContextInformation(// TODO migrate this?
                                                 declaration, target, unit,
                                                 pls.get(0), start, true,
                                                 al is Tree.NamedArgumentList));

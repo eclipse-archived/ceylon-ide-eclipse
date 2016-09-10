@@ -227,9 +227,17 @@ public final class RefinementCompletionProposal extends CompletionProposal {
             String prefix, Reference pr,
             String desc, String text,
             CeylonParseController cpc,
-            Declaration dec, Scope scope,
+            final Declaration dec, Scope scope,
             boolean fullType, boolean explicitReturnType) {
-        super(offset, prefix, getRefinementIcon(dec),
+        super(
+                offset, 
+                prefix, 
+                new ImageRetriever() {
+                    @Override
+                    public Image getImage() {
+                        return getRefinementIcon(dec);
+                    }
+                },
                 desc, text);
         this.cpc = cpc;
         this.declaration = dec;

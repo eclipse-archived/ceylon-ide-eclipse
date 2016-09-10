@@ -45,6 +45,7 @@ import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.complete.CompletionProposal.FixedImageRetriever;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
@@ -287,12 +288,12 @@ public class PackageCompletions {
     public static final class PackageDescriptorProposal extends CompletionProposal {
         
         public PackageDescriptorProposal(int offset, String prefix, String desc, String text) {
-            super(offset, prefix, PACKAGE, desc, text);
+            super(offset, prefix, new FixedImageRetriever(PACKAGE), desc, text);
         }
 
         @Deprecated
         PackageDescriptorProposal(int offset, String prefix, String packageName) {
-            super(offset, prefix, PACKAGE, 
+            super(offset, prefix, new FixedImageRetriever(PACKAGE), 
                     "package " + packageName, 
                     "package " + packageName + ";");
         }
@@ -311,7 +312,7 @@ public class PackageCompletions {
                 String memberPackageSubname, boolean withBody, 
                 String fullPackageName, 
                 CeylonParseController controller) {
-            super(offset, prefix, PACKAGE, 
+            super(offset, prefix, new FixedImageRetriever(PACKAGE), 
                     fullPackageName + (withBody ? " { ... }" : ""), 
                     memberPackageSubname + (withBody ? " { ... }" : ""));
             this.withBody = withBody;
@@ -453,7 +454,7 @@ public class PackageCompletions {
         String moduleName = getPackageName(file);
         if (moduleName!=null) {
             result.add(new CompletionProposal(offset, prefix, 
-                    isModuleDescriptor(cpc) ? MODULE : PACKAGE, 
+                    new FixedImageRetriever(isModuleDescriptor(cpc) ? MODULE : PACKAGE), 
                             moduleName, moduleName));
         }
     }

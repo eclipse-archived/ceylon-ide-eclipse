@@ -50,6 +50,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.eclipse.code.complete.CompletionProposal.FixedImageRetriever;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
@@ -429,7 +430,7 @@ public class ParametersCompletionProposal extends CompletionProposal {
             List<Type> argTypes, 
             Scope scope,
             Unit unit) {
-        super(offset, "", LARGE_CORRECTION_IMAGE, 
+        super(offset, "", new FixedImageRetriever(LARGE_CORRECTION_IMAGE), 
                 desc, text);
         this.argumentListOffset = offset + text.indexOf("(");
         this.unit = unit;

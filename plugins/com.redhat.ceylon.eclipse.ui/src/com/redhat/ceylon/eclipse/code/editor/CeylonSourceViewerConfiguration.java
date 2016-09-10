@@ -35,6 +35,7 @@ import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.ICompletionListener;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
+import org.eclipse.jface.text.contentassist.IContentAssistantExtension2;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.information.IInformationPresenter;
 import org.eclipse.jface.text.information.IInformationProvider;
@@ -121,7 +122,12 @@ public class CeylonSourceViewerConfiguration
             if (editor!=null) {
                 editor.pauseBackgroundParsing();
             }
-            processor.sessionStarted();
+            
+            if (event.assistant instanceof IContentAssistantExtension2) {
+                ((IContentAssistantExtension2)event.assistant).setStatusMessage(completionStatusMessage);
+            }
+            
+            processor.sessionStarted(event.isAutoActivated);
             /*try {
                 editor.getSite().getWorkbenchWindow().run(true, true, new Warmup());
             } 
@@ -138,6 +144,8 @@ public class CeylonSourceViewerConfiguration
         }
     }
 
+    private static String completionStatusMessage = "";
+    
     public ContentAssistant getContentAssistant(
             ISourceViewer sourceViewer) {
         if (editor==null) return null;
@@ -164,14 +172,17 @@ public class CeylonSourceViewerConfiguration
                 KeyStroke.getInstance(SWT.CTRL, SWT.SPACE);
         contentAssistant.setRepeatedInvocationTrigger(
                 KeySequence.getInstance(key));
-        contentAssistant.setStatusMessage(key.format() + 
-                " to toggle second-level completions");
+        completionStatusMessage = key.format() + 
+                " to toggle second-level completions";
+        contentAssistant.setStatusMessage(completionStatusMessage);
         contentAssistant.setStatusLineVisible(true);
         contentAssistant.setInformationControlCreator(
                 new CeylonInformationControlCreator(editor, 
                         "Tab or click for focus"));
         contentAssistant.setContextInformationPopupOrientation(
                 IContentAssistant.CONTEXT_INFO_ABOVE);
+        contentAssistant.setShowEmptyList(true);
+        
         return contentAssistant;
     }
 

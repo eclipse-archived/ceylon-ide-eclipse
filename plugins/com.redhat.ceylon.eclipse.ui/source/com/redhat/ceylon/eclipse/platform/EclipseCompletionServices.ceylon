@@ -25,7 +25,8 @@ import com.redhat.ceylon.eclipse.code.complete {
     EclipseFunctionCompletionProposal,
     EclipseCompletionContext,
     IEclipseCompletionProposal2And6,
-    proposalFactory
+    proposalFactory,
+    ParameterInfo
 }
 import com.redhat.ceylon.eclipse.code.correct {
     TypeProposal
@@ -215,7 +216,7 @@ object eclipseCompletionServices satisfies CompletionServices {
         Boolean namedInvocation) {
         
         assert (is EclipseCompletionContext ctx);
-        ctx.proposals.add(InvocationCompletionProposal.ParameterInfo(
+        ctx.proposals.add(ParameterInfo(
             offset, dec, producedReference, scope, ctx, namedInvocation));
     }
     

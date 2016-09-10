@@ -48,7 +48,7 @@ import org.eclipse.swt.graphics {
 shared object proposalFactory {
     
     alias Builder => ICompletionProposal(EclipseCompletionContext, Integer, 
-        String, Image?, String, String,
+        String, CompletionProposal.ImageRetriever, String, String,
         ProposalKind, TextChange?, Declaration?, Point?);
     
     shared ICompletionProposal create(EclipseCompletionContext ctx, Integer offset, 
@@ -59,16 +59,22 @@ shared object proposalFactory {
         case (keyword) keywordProposal
         else basicProposal;
         
-        value [image, decl] = if (is Icons icon)
-        then [eclipseIcons.fromIcons(icon), null]
-        else [CeylonLabelProvider.getImageForDeclaration(icon), icon];
+        CompletionProposal.ImageRetriever imageRetriever;
+        Declaration? decl;
+        if (is Icons icon) {
+            imageRetriever = CompletionProposal.IconImageRetriever(icon);
+            decl = null;
+        } else {
+            imageRetriever = CompletionProposal.DeclarationImageRetriever(icon);
+            decl = icon;
+        }
 
-        return builder(ctx, offset, prefix, image, description, text, kind, 
+        return builder(ctx, offset, prefix, imageRetriever, description, text, kind, 
             additionalChange, decl, region);
     }
     
     ICompletionProposal basicProposal(EclipseCompletionContext ctx, Integer _offset, 
-        String _prefix, Image? icon, String description, String _text,
+        String _prefix, CompletionProposal.ImageRetriever icon, String description, String _text,
         ProposalKind kind, TextChange? additionalChange, Declaration? decl,
         Point? selection) {
         
@@ -94,7 +100,7 @@ shared object proposalFactory {
     }
     
     ICompletionProposal keywordProposal(EclipseCompletionContext ctx, Integer _offset, 
-        String _prefix, Image? icon, String description, String _text,
+        String _prefix, CompletionProposal.ImageRetriever icon, String description, String _text,
         ProposalKind kind, TextChange? additionalChange, Declaration? decl,
         Point? selection) {
         

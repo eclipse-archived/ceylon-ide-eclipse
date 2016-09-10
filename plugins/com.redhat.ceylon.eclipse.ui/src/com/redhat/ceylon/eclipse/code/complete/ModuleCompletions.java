@@ -55,7 +55,7 @@ public class ModuleCompletions {
 
         public ModuleDescriptorProposal(int offset, String prefix, String desc, String text,
                 int selectionStart, int selectionLength) {
-            super(offset, prefix, MODULE, desc, text);
+            super(offset, prefix, new FixedImageRetriever(MODULE), desc, text);
             this.selectionStart = selectionStart;
             this.selectionLength = selectionLength;
         }
@@ -63,7 +63,7 @@ public class ModuleCompletions {
         @Deprecated
         ModuleDescriptorProposal(int offset,
                 String prefix, String moduleName) {
-            super(offset, prefix, MODULE, 
+            super(offset, prefix, new FixedImageRetriever(MODULE), 
                     "module " + moduleName,
                     "module " + moduleName + " \"1.0.0\" {}");
         }
@@ -99,7 +99,7 @@ public class ModuleCompletions {
                 boolean withBody,
                 ModuleVersionDetails version,
                 String name, Node node) {
-            super(offset, prefix, MODULE, versioned, 
+            super(offset, prefix, new FixedImageRetriever(MODULE), versioned, 
                     versioned.substring(len));
             this.len = len;
             this.versioned = versioned;
@@ -239,7 +239,7 @@ public class ModuleCompletions {
         public JDKModuleProposal(int offset,
                 String prefix, int len,
                 String versioned, String name) {
-            super(offset, prefix, MODULE, versioned, 
+            super(offset, prefix, new FixedImageRetriever(MODULE), versioned, 
                     versioned.substring(len));
             this.name = name;
         }

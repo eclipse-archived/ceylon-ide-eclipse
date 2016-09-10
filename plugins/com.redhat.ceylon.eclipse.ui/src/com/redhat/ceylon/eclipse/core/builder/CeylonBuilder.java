@@ -40,6 +40,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.antlr.runtime.CommonToken;
 import org.eclipse.core.internal.events.NotificationManager;
@@ -269,7 +270,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
     
-    private static ReadWriteLock getProjectSourceModelLock(IProject project) {
+    private static ReentrantReadWriteLock getProjectSourceModelLock(IProject project) {
         BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
         return ceylonProject != null ? ceylonProject.getSourceModelLock() : null;
     }

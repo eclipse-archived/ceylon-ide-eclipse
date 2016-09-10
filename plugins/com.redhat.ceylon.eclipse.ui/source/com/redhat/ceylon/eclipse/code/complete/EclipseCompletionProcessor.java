@@ -9,7 +9,7 @@ import org.eclipse.swt.graphics.Image;
 import com.redhat.ceylon.eclipse.ui.CeylonResources;
 
 public interface EclipseCompletionProcessor extends IContentAssistProcessor {
-    void sessionStarted();
+    void sessionStarted(boolean isAutoActivated);
     
     static final Image LARGE_CORRECTION_IMAGE = 
             getDecoratedImage(CeylonResources.CEYLON_CORRECTION, 0, false);

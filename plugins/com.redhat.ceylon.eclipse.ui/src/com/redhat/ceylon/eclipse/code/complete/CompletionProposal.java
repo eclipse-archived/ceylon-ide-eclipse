@@ -1,5 +1,6 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 
@@ -25,6 +26,8 @@ import org.eclipse.text.edits.ReplaceEdit;
 
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.ide.common.doc.Icons;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
 
 
 public class CompletionProposal implements ICompletionProposal, 
@@ -33,7 +36,7 @@ public class CompletionProposal implements ICompletionProposal,
         ICompletionProposalExtension5 {
     
     protected final String text;
-    private final Image image;
+    private final ImageRetriever imageRetriever;
     protected final String prefix;
     private final String description;
     protected int offset;
@@ -41,10 +44,47 @@ public class CompletionProposal implements ICompletionProposal,
     private boolean toggleOverwrite;
     protected String currentPrefix;
     
-    public CompletionProposal(int offset, String prefix, Image image,
+    public static interface ImageRetriever {
+        Image getImage();
+    }
+    
+    public static class DeclarationImageRetriever implements ImageRetriever {
+        private Declaration decl;
+        public DeclarationImageRetriever(Declaration declaration) {
+            decl = declaration;
+        }
+        @Override
+        public Image getImage() {
+            return getImageForDeclaration(decl);
+        }
+    }
+
+    public static class IconImageRetriever implements ImageRetriever {
+        private Icons icon;
+        public IconImageRetriever(Icons icon) {
+            this.icon = icon;
+        }
+        @Override
+        public Image getImage() {
+            return com.redhat.ceylon.eclipse.util.eclipseIcons_.get_().fromIcons(icon);
+        }
+    }
+
+    public static class FixedImageRetriever implements ImageRetriever {
+        private Image image;
+        public FixedImageRetriever(Image image) {
+            this.image = image;
+        }
+        @Override
+        public Image getImage() {
+            return image;
+        }
+    }
+
+    public CompletionProposal(int offset, String prefix, ImageRetriever imageRetriever,
             String desc, String text) {
         this.text = text;
-        this.image = image;
+        this.imageRetriever = imageRetriever;
         this.offset = offset;
         this.prefix = prefix;
         currentPrefix = prefix;
@@ -55,7 +95,7 @@ public class CompletionProposal implements ICompletionProposal,
     
     @Override
     public Image getImage() {
-        return image;
+        return imageRetriever.getImage();
     }
     
     @Override

@@ -124,9 +124,9 @@ class ParameterContextValidator
     @Override
     public void install(IContextInformation info, ITextViewer viewer, 
             int documentPosition) {
-        if (info instanceof InvocationCompletionProposal.ParameterContextInformation) {
-        	InvocationCompletionProposal.ParameterContextInformation pci = 
-                    (InvocationCompletionProposal.ParameterContextInformation) info;
+        if (info instanceof ParameterContextInformation) {
+        	ParameterContextInformation pci = 
+                    (ParameterContextInformation) info;
             this.position = pci.getArgumentListOffset();
         }
         else if (info instanceof ParametersCompletionProposal.ParameterContextInformation) {
