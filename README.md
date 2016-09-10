@@ -17,7 +17,7 @@ For more information about Ceylon IDE for Eclipse, go to:
 
 ### Installing from the main update site
 
-The simplest way to install the Ceyon IDE Eclipse plugin is simply to follow the 
+The simplest way to install the Ceylon IDE Eclipse plugin is simply to follow the 
 instructions found here:
 
 <http://ceylon-lang.org/documentation/1.2/ide/install>
@@ -176,11 +176,11 @@ or built with Maven).
         
     - the `ceylon-dist-osgi-embedded-repository` project found at the following location:
         
-        `.../ceyon/dist/osgi/embeddedRepository`
+        `.../ceylon/dist/osgi/embeddedRepository`
         
     - all the required _bundle-proxys_ projects found under the following location:
     
-        `.../ceyon-ide-eclipse/required-bundle-proxies`
+        `.../ceylon-ide-eclipse/required-bundle-proxies`
     
     #### _Important Note:_
     
