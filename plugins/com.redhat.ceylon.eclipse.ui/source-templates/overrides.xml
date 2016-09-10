@@ -70,6 +70,9 @@
     <module module="org.eclipse.core.resources">
         <share module="org.eclipse.core.runtime"/>
     </module>
+    <module module="org.eclipse.core.jobs">
+        <add module="org.eclipse.core.runtime" version="${org.eclipse.core.runtime.version.override}"/>
+    </module>
     <module module="org.eclipse.jdt.core">
         <add module="org.eclipse.core.contenttype" version="${org.eclipse.core.contenttype.version.override}"/>
     </module>
