@@ -189,7 +189,7 @@ public class Highlights  {
     }
     
     private static final Pattern path = 
-            Pattern.compile("\\b\\p{Ll}+(\\.\\p{Ll}+)+\\b");
+            Pattern.compile("\\b(\\p{javaLowerCase}|_)(\\p{Digit}|\\p{javaLowerCase}|_)*(\\.(\\p{javaLowerCase}|_)(\\p{Digit}|\\p{javaLowerCase}|_)*)+\\b");
     
     public static class FontStyler extends Styler {
         private final Font font;
