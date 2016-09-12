@@ -20,7 +20,6 @@ import com.redhat.ceylon.eclipse.code.complete {
     EclipseControlStructureProposal,
     ModuleCompletions,
     EclipseImportedModulePackageProposal,
-    InvocationCompletionProposal,
     PackageCompletions,
     EclipseFunctionCompletionProposal,
     EclipseCompletionContext,

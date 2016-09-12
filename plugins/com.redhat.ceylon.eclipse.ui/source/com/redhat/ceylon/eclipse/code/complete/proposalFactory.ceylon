@@ -1,14 +1,10 @@
 import com.redhat.ceylon.eclipse.code.hover {
     DocumentationHover
 }
-import com.redhat.ceylon.eclipse.code.outline {
-    CeylonLabelProvider
-}
 import com.redhat.ceylon.eclipse.ui {
     CeylonPlugin
 }
 import com.redhat.ceylon.eclipse.util {
-    eclipseIcons,
     Highlights
 }
 import com.redhat.ceylon.ide.common.completion {
@@ -42,7 +38,6 @@ import org.eclipse.jface.viewers {
     StyledString
 }
 import org.eclipse.swt.graphics {
-    Image,
     Point
 }
 shared object proposalFactory {
