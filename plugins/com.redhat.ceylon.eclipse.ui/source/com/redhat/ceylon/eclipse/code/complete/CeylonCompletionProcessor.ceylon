@@ -3,8 +3,7 @@ import ceylon.collection {
 }
 import ceylon.interop.java {
     javaString,
-    createJavaObjectArray,
-    JavaRunnable
+    createJavaObjectArray
 }
 
 import com.redhat.ceylon.compiler.typechecker.tree {
@@ -67,23 +66,18 @@ import org.eclipse.jface.text.contentassist {
     ICompletionProposal,
     IContextInformation
 }
+import org.eclipse.swt {
+    SWT
+}
+import org.eclipse.swt.graphics {
+    Cursor
+}
 import org.eclipse.swt.widgets {
     Display
-}
-import org.eclipse.draw2d {
-    ToolTipHelper
-}
-import org.eclipse.jface.window {
-    ToolTip
-}
-import org.eclipse.swt.custom {
-    BusyIndicator
 }
 
 class CeylonCompletionProcessor(CeylonEditor editor)
         satisfies IContentAssistProcessor & EclipseCompletionProcessor {
-    
-    value timeout = 4000;
     
     variable ParameterContextValidator? validator = null;
     variable Boolean secondLevel = false;
@@ -112,6 +106,7 @@ class CeylonCompletionProcessor(CeylonEditor editor)
         rule = completionSchedulingRule;
         
         shared variable ICompletionProposal?[] _contentProposals = [];
+        shared variable String? incompleteResultsMessage = null;
         shared variable Boolean canceledByTextInput = false;
         
         shared actual IStatus run(IProgressMonitor monitor) {
@@ -126,7 +121,6 @@ class CeylonCompletionProcessor(CeylonEditor editor)
             
             value sourceViewer = editor.ceylonSourceViewer;
             value document = sourceViewer.document;
-            value contentAssistant = sourceViewer.contentAssistant;
             document.addDocumentListener(documentListener);
             
             try (progress = wrapProgressMonitor(monitor)
@@ -140,7 +134,7 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                         controller.ceylonProject?.sourceModelLock?.writeLocked,
                     inBuild) {
                         typecheckedRootNode = lastPhasedUnit.compilationUnit;
-                        contentAssistant.setStatusMessage("The results might be incomplete while a build is running");
+                        incompleteResultsMessage = "The results might be incomplete while a build is running";
                     } else {
                         variable Tree.CompilationUnit? afterForcedTypechecking = null;
                         try {
@@ -155,7 +149,7 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                             typecheckedRootNode = aft;
                         } else {
                             typecheckedRootNode = lastPhasedUnit.compilationUnit;
-                            contentAssistant.setStatusMessage("The results were truncated for faster completion");
+                            incompleteResultsMessage = "The results were truncated for faster completion";
                         }
                     }
                     
@@ -173,6 +167,8 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                         };
                         
                         _contentProposals = ctx.proposals.proposals.sequence();
+                    } else {
+                        incompleteResultsMessage = "The file hasn't been analyzed yet";
                     }
                 } 
                 
@@ -201,17 +197,26 @@ class CeylonCompletionProcessor(CeylonEditor editor)
             returnedParamInfo = false;
             secondLevel = false;
         }
-        try {
-            if (lastOffset >= 0,
-                offset > 0,
-                offset != lastOffset,
-                !isIdentifierCharacter(viewer, offset)) {
-                return noCompletions;
+        
+        function wrongPlace() {
+            try {
+                if (lastOffset >= 0,
+                    offset > 0,
+                    offset != lastOffset,
+                    !isIdentifierCharacter(viewer, offset)) {
+                    return true;
+                }
+            } catch (BadLocationException ble) {
+                ble.printStackTrace();
+                return true;
             }
-        } catch (BadLocationException ble) {
-            ble.printStackTrace();
+            return false;
+        }
+        
+        if (wrongPlace()) {
             return noCompletions;
         }
+        
         if (offset == lastOffset) {
             secondLevel = !secondLevel;
         }
@@ -223,21 +228,28 @@ class CeylonCompletionProcessor(CeylonEditor editor)
         value display = Display.current;
         CompletionJob completionJob = CompletionJob(viewer, offset);
 
-        BusyIndicator().showWhile(display, JavaRunnable(() {
+        sourceViewer.textWidget.setCursor(Cursor(display, SWT.cursorWait));
+        try {
             completionJob.schedule();
             while (completionJob.state != completionJob.none) {
                 if (!display.readAndDispatch()) {
                     display.sleep();
                 }
             }
-        }));
+        } finally {
+            sourceViewer.textWidget.setCursor(null);
+        }
         
         if (completionJob.result == Status.cancelStatus) {
             if (completionJob.canceledByTextInput) {
-                return null;
+                throw OperationCanceledException();
             }
             contentAssistant.setStatusMessage("The results might be incomplete because search has been interrupted");
             return createJavaObjectArray(completionJob._contentProposals);
+        }
+        
+        if (exists statusMessage = completionJob.incompleteResultsMessage) {
+            contentAssistant.setStatusMessage(statusMessage);
         }
         
         if (completionJob.result == Status.okStatus) {
