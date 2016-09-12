@@ -77,7 +77,8 @@ shared class EclipseQuickFixData(ProblemLocation location,
         QuickFixKind kind, 
         String? hint, 
         Boolean asynchronous, 
-        Referenceable|ModuleVersionDetails? declaration) {
+        Referenceable|ModuleVersionDetails? declaration,
+        Boolean affectsOtherUnits) {
         
         value myImage 
                 = eclipseIcons.fromIcons(icon) 
