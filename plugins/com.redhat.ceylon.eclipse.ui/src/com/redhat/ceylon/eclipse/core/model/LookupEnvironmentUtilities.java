@@ -16,6 +16,7 @@ import org.eclipse.jdt.internal.compiler.lookup.PackageBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ProblemReasons;
 import org.eclipse.jdt.internal.compiler.lookup.ProblemReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
+import org.eclipse.jdt.internal.core.BinaryType;
 import org.eclipse.jdt.internal.core.ClassFile;
 
 import com.redhat.ceylon.compiler.java.codegen.Naming;
@@ -235,7 +236,12 @@ public class LookupEnvironmentUtilities {
             
             BinaryTypeBinding binaryTypeBinding = null;
             try {
-                IBinaryType binaryType = classFile.getBinaryTypeInfo(classFileRsrc, true);
+                IBinaryType binaryType;
+                if (type instanceof BinaryType) {
+                    binaryType = (IBinaryType) ((BinaryType) type).getElementInfo();                    
+                } else {
+                    binaryType = classFile.getBinaryTypeInfo(classFileRsrc, true);                    
+                }
                 if (readerHolder != null 
                         && readerHolder.length == 1
                         && binaryType instanceof ClassFileReader) {
