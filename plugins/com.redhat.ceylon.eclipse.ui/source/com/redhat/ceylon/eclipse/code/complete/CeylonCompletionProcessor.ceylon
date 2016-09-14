@@ -92,6 +92,9 @@ import org.eclipse.swt.graphics {
 import org.eclipse.swt.widgets {
     Display
 }
+import org.eclipse.ui.plugin {
+    AbstractUIPlugin
+}
 
 class CeylonCompletionProcessor(CeylonEditor editor)
         satisfies IContentAssistProcessor & EclipseCompletionProcessor {
@@ -246,6 +249,7 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                     };
                     
                     _contentProposals = ctx.proposals.proposals.sequence();
+                    throw Exception("");
                 } else {
                     if (! CeylonBuilder.allClasspathContainersInitialized()) {
                         incompleteResultsMessage = "Ceylon model initialization is not finished";
@@ -259,13 +263,15 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                     _contentProposals.first is ParameterInfo) {
                     returnedParamInfo = true;
                 }
-                
+
                 if (monitor.canceled) {
                     return Status.cancelStatus;
                 }
                 return Status.okStatus;
             } catch(OperationCanceledException e) {
                 return Status.cancelStatus;
+            } catch(Throwable t) {
+                return Status(Status.warning, CeylonPlugin.pluginId, "An exception occured during the Ceylon completion", t);
             }
         }
     }
@@ -328,6 +334,12 @@ class CeylonCompletionProcessor(CeylonEditor editor)
         
         if (completionJob.result == Status.cancelStatus) {
             contentAssistant.setStatusMessage("The results might be incomplete because search has been interrupted");
+            return createJavaObjectArray(completionJob._contentProposals);
+        }
+
+        if (completionJob.result.severity == Status.error) {
+            contentAssistant.setStatusMessage("The results might be incomplete because an error occured");
+            (CeylonPlugin.instance of AbstractUIPlugin).log.log(completionJob.result);
             return createJavaObjectArray(completionJob._contentProposals);
         }
         
