@@ -221,6 +221,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         };
         getPreferences()
                 .addPropertyChangeListener(iconChangeListener);*/
+        
+        com.redhat.ceylon.eclipse.code.complete.setupCompletionExecutors_.setupCompletionExecutors();
     }
     
     @Override
@@ -233,6 +235,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         FileUtil.deleteQuietly(getJavaSourceArchiveCacheDirectory());
         /*getPreferences()
             .removePropertyChangeListener(iconChangeListener);*/
+        com.redhat.ceylon.eclipse.code.complete.shutdownCompletionExecutors_.shutdownCompletionExecutors();
+        
     }
 
     private void addResourceFilterPreference() 

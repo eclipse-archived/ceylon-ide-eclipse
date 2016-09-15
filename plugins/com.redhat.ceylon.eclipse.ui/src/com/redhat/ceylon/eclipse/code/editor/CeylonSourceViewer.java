@@ -40,7 +40,6 @@ import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension4;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.information.IInformationPresenter;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.source.IOverviewRuler;
@@ -892,8 +891,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
         return fPresentationReconciler;
     }
     
-    public ContentAssistant getContentAssistant() {
-        return (ContentAssistant) fContentAssistant;
+    public CeylonContentAssistant getContentAssistant() {
+        return (CeylonContentAssistant) fContentAssistant;
     }
     
 }

@@ -333,7 +333,8 @@ public class CeylonParseController
             Tree.CompilationUnit rootNode, 
             FolderVirtualFile<IProject,IResource,IFolder,IFile> srcDir, 
             final boolean showWarnings, 
-            final PhasedUnit builtPhasedUnit) {
+            final PhasedUnit builtPhasedUnit,
+            final IProgressMonitor monitor) {
         
         if (isExternalPath(path) && builtPhasedUnit!=null) {
             // reuse the existing AST
@@ -369,6 +370,11 @@ public class CeylonParseController
             pkg = getPackage(file, srcDir, builtPhasedUnit);
         }
         
+        if (isCanceling(monitor)) {
+            throw new OperationCanceledException();
+        }
+
+        
         final PhasedUnit newPhasedUnit = 
                 createPhasedUnit(file, rootNode, srcDir, 
                         builtPhasedUnit, pkg);
@@ -376,19 +382,52 @@ public class CeylonParseController
         useTypechecker(newPhasedUnit, new Runnable() {
             @Override
             public void run() {
+                if (isCanceling(monitor)) {
+                    throw new OperationCanceledException();
+                }
                 newPhasedUnit.validateTree();
+                if (isCanceling(monitor)) {
+                    throw new OperationCanceledException();
+                }
                 newPhasedUnit.visitSrcModulePhase();
+                if (isCanceling(monitor)) {
+                    throw new OperationCanceledException();
+                }
                 newPhasedUnit.visitRemainingModulePhase();
+                if (isCanceling(monitor)) {
+                    throw new OperationCanceledException();
+                }
                 newPhasedUnit.scanDeclarations();
+                if (isCanceling(monitor)) {
+                    throw new OperationCanceledException();
+                }
                 newPhasedUnit.scanTypeDeclarations(Cancellable.ALWAYS_CANCELLED);
+                if (isCanceling(monitor)) {
+                    throw new OperationCanceledException();
+                }
                 newPhasedUnit.validateRefinement();
+                if (isCanceling(monitor)) {
+                    throw new OperationCanceledException();
+                }
                 newPhasedUnit.analyseTypes(Cancellable.ALWAYS_CANCELLED);
+                if (isCanceling(monitor)) {
+                    throw new OperationCanceledException();
+                }
                 if (showWarnings) {
                     newPhasedUnit.analyseUsage();
                 }
+                if (isCanceling(monitor)) {
+                    throw new OperationCanceledException();
+                }
                 newPhasedUnit.analyseFlow();
+                if (isCanceling(monitor)) {
+                    throw new OperationCanceledException();
+                }
                 newPhasedUnit.getCompilationUnit()
                     .visit(new UnknownTypeCollector());
+                if (isCanceling(monitor)) {
+                    throw new OperationCanceledException();
+                }
                 newPhasedUnit.getCompilationUnit()
                     .visit(new WarningSuppressionVisitor<Warning>(
                             Warning.class, 
@@ -446,7 +485,11 @@ public class CeylonParseController
                         phasedUnitToTypeCheck.getPathRelativeToSrcDir()) {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                typecheckSteps.run();
+                try {
+                    typecheckSteps.run();
+                } catch(OperationCanceledException e) {
+                    return Status.CANCEL_STATUS;
+                }
                 return Status.OK_STATUS;
             }
         };
@@ -460,6 +503,9 @@ public class CeylonParseController
             typecheckJob.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+        if (typecheckJob.getResult() == Status.CANCEL_STATUS) {
+            throw new OperationCanceledException();
         }
     }
 
@@ -1073,7 +1119,8 @@ public class CeylonParseController
                                 typecheck(finalPath, file, 
                                         rootNode, finalSrcDir,
                                         showWarnings, 
-                                        builtPhasedUnit);
+                                        builtPhasedUnit,
+                                        monitor);
                         rootNode = 
                                 phasedUnit.getCompilationUnit();
                         if (doc.get().equals(code)) {

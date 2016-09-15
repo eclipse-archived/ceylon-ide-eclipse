@@ -150,7 +150,7 @@ public class CeylonSourceViewerConfiguration
             ISourceViewer sourceViewer) {
         if (editor==null) return null;
         ContentAssistant contentAssistant = 
-                new ContentAssistant();
+                new CeylonContentAssistant();
         contentAssistant.setRestoreCompletionProposalSize(
                 getOrCreateSection(getSettings(),
                 "completion_proposal_popup"));
@@ -181,7 +181,6 @@ public class CeylonSourceViewerConfiguration
                         "Tab or click for focus"));
         contentAssistant.setContextInformationPopupOrientation(
                 IContentAssistant.CONTEXT_INFO_ABOVE);
-        contentAssistant.setShowEmptyList(true);
         
         return contentAssistant;
     }

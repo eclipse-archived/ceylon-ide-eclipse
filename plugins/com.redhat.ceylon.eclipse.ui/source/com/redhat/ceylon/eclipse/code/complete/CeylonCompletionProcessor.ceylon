@@ -3,7 +3,8 @@ import ceylon.collection {
 }
 import ceylon.interop.java {
     javaString,
-    createJavaObjectArray
+    createJavaObjectArray,
+    JavaRunnable
 }
 
 import com.redhat.ceylon.compiler.typechecker.tree {
@@ -11,7 +12,8 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     Tree
 }
 import com.redhat.ceylon.eclipse.code.editor {
-    CeylonEditor
+    CeylonEditor,
+    CeylonContentAssistant
 }
 import com.redhat.ceylon.eclipse.code.parse {
     CeylonParseController
@@ -43,7 +45,14 @@ import com.redhat.ceylon.model.typechecker.model {
 }
 
 import java.lang {
-    ObjectArray
+    ObjectArray,
+    System
+}
+import java.util.concurrent {
+    Executors,
+    ExecutorService,
+    ScheduledExecutorService,
+    TimeUnit
 }
 
 import org.eclipse.core.runtime {
@@ -51,18 +60,16 @@ import org.eclipse.core.runtime {
     NullProgressMonitor,
     IStatus,
     Status,
-    OperationCanceledException
+    OperationCanceledException,
+    ProgressMonitorWrapper
 }
 import org.eclipse.core.runtime.jobs {
-    Job,
     ISchedulingRule
 }
 import org.eclipse.jface.text {
     ITextViewer,
     BadLocationException,
-    IDocument,
-    IDocumentListener,
-    DocumentEvent
+    IDocument
 }
 import org.eclipse.jface.text.contentassist {
     IContentAssistProcessor,
@@ -74,7 +81,8 @@ import org.eclipse.swt {
 }
 import org.eclipse.swt.custom {
     CaretListener,
-    CaretEvent
+    CaretEvent,
+    VerifyKeyListener
 }
 import org.eclipse.swt.events {
     FocusListener,
@@ -83,8 +91,7 @@ import org.eclipse.swt.events {
     MouseEvent,
     DisposeListener,
     DisposeEvent,
-    KeyListener,
-    KeyEvent
+    VerifyEvent
 }
 import org.eclipse.swt.graphics {
     Cursor
@@ -96,6 +103,22 @@ import org.eclipse.ui.plugin {
     AbstractUIPlugin
 }
 
+
+variable ScheduledExecutorService? _timerExecutor = null;
+variable ExecutorService? _backgroundExecutor = null;
+
+shared void setupCompletionExecutors() {
+    _timerExecutor = Executors.newSingleThreadScheduledExecutor();
+    _backgroundExecutor = Executors.newSingleThreadExecutor();
+}
+
+shared void shutdownCompletionExecutors() {
+    _timerExecutor?.shutdownNow();
+    _backgroundExecutor?.shutdown();
+    _timerExecutor = null;
+    _backgroundExecutor = null;
+}
+
 class CeylonCompletionProcessor(CeylonEditor editor)
         satisfies IContentAssistProcessor & EclipseCompletionProcessor {
     
@@ -105,8 +128,23 @@ class CeylonCompletionProcessor(CeylonEditor editor)
     variable Integer lastOffsetAcrossSessions = -1;
     variable Integer lastOffset = -1;
     variable Boolean isAutoActivated = false;
-    
+    Integer typecheckingTimeoutMilli {
+        return if (isAutoActivated) then 200 else 4000;
+    }
+    Integer typecheckingTimeoutSec => 
+            typecheckingTimeoutMilli / 1000;
+     
     value noCompletions = ObjectArray<ICompletionProposal>(0);
+
+    ScheduledExecutorService timerExecutor {
+        assert(exists te = _timerExecutor);
+        return te;
+    }
+
+    ExecutorService backgroundExecutor {
+        assert(exists be = _backgroundExecutor);
+        return be;
+    }
     
     completionProposalAutoActivationCharacters =
         javaString(preferences.getString(autoActivationChars)).toCharArray();
@@ -114,100 +152,121 @@ class CeylonCompletionProcessor(CeylonEditor editor)
     contextInformationAutoActivationCharacters
             = javaString(",(;{").toCharArray();
 
+    
     object completionSchedulingRule satisfies ISchedulingRule {
         isConflicting(ISchedulingRule rule) => rule == completionSchedulingRule;
         
         contains(ISchedulingRule rule) => rule == completionSchedulingRule;
     }
-    
-    class CompletionJob(ITextViewer viewer, Integer offset) extends Job("Ceylon Editor Completion") {
-        priority = interactive;
-        system = true;
-        rule = completionSchedulingRule;
+
+    class BackgroundCompletion(ITextViewer viewer, Integer offset, IProgressMonitor monitor, Integer start) 
+            satisfies Destroyable {
         
+        value sourceViewer = editor.ceylonSourceViewer;
+        CeylonContentAssistant contentAssistant = sourceViewer.contentAssistant;
+        value textWidget = sourceViewer.textWidget;
+
         shared variable ICompletionProposal?[] _contentProposals = [];
         shared variable String? incompleteResultsMessage = null;
         shared variable Boolean canceledByTextEditorEvent = false;
+        shared variable IStatus? status = null;
+        
+        value keyEvents = ArrayList<VerifyEvent>();
 
-        shared object eventWatcher satisfies Obtainable {
-            value sourceViewer = editor.ceylonSourceViewer;
-            value document = sourceViewer.document;
-            value textWidget = sourceViewer.textWidget;
+        void stopJobOnEvent() {
+            canceledByTextEditorEvent = true;
+            monitor.canceled = true;
+        }
+        
+        object listener satisfies 
+        FocusListener &
+                MouseListener &
+                DisposeListener &
+                CaretListener & 
+                VerifyKeyListener {
             
-            void stopJobOnEvent() {
-                canceledByTextEditorEvent = true;
-                outer.cancel();
+            focusLost(FocusEvent focusEvent) => stopJobOnEvent();
+            mouseDoubleClick(MouseEvent mouseEvent) => stopJobOnEvent();
+            mouseDown(MouseEvent mouseEvent) => stopJobOnEvent();
+            shared actual void widgetDisposed(DisposeEvent disposeEvent) {
+                stopJobOnEvent();
             }
-            
-            object listener satisfies 
-                    IDocumentListener &
-                    FocusListener &
-                    MouseListener &
-                    DisposeListener &
-                    CaretListener & 
-                    KeyListener {
-
-                documentAboutToBeChanged(DocumentEvent? documentEvent) => stopJobOnEvent();
-                focusLost(FocusEvent? focusEvent) => stopJobOnEvent();
-                mouseDoubleClick(MouseEvent? mouseEvent) => stopJobOnEvent();
-                mouseDown(MouseEvent? mouseEvent) => stopJobOnEvent();
-                widgetDisposed(DisposeEvent? disposeEvent) => stopJobOnEvent();
-                caretMoved(CaretEvent? caretEvent) => stopJobOnEvent();
-                shared actual void keyPressed(KeyEvent keyEvent) {
-                    if (keyEvent.keyCode == SWT.esc.integer) {
-                        stopJobOnEvent();
-                    }
-                }
-
-                documentChanged(DocumentEvent? documentEvent) =>  noop();
-                focusGained(FocusEvent? focusEvent) =>  noop();
-                mouseUp(MouseEvent? mouseEvent) => noop();
-                keyReleased(KeyEvent? keyEvent) => noop();
-            }
-            
-            value installs = {
-                document.addDocumentListener,
-                textWidget.addFocusListener,
-                textWidget.addMouseListener,
-                textWidget.addDisposeListener,
-                textWidget.addCaretListener,
-                textWidget.addKeyListener
-            };
-            
-            value removals = {
-                document.removeDocumentListener,
-                textWidget.removeFocusListener,
-                textWidget.removeMouseListener,
-                textWidget.removeDisposeListener,
-                textWidget.removeCaretListener,
-                textWidget.removeKeyListener
-            };
-            
-            shared actual void obtain() {
-                for (install in installs) {
-                    try {
-                        install(listener);
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                    }
+            caretMoved(CaretEvent caretEvent) => stopJobOnEvent();
+            shared actual void verifyKey(VerifyEvent verifyEvent) {
+                stopJobOnEvent();
+                if (isAutoActivated) {
+                    keyEvents.add(verifyEvent);
                 }
             }
             
-            shared actual void release(Throwable? error) {
-                for (remove in removals) {
-                    try {
-                        remove(listener);
-                    } catch(Exception e) {
-                        e.printStackTrace();
+            focusGained(FocusEvent? focusEvent) =>  noop();
+            mouseUp(MouseEvent? mouseEvent) => noop();
+        }
+        
+        value installs = {
+            textWidget.addFocusListener,
+            textWidget.addMouseListener,
+            textWidget.addDisposeListener,
+            textWidget.addCaretListener,
+            textWidget.addVerifyKeyListener
+        };
+        
+        value removals = {
+            textWidget.removeFocusListener,
+            textWidget.removeMouseListener,
+            textWidget.removeDisposeListener,
+            textWidget.removeCaretListener,
+            textWidget.removeVerifyKeyListener
+        };
+        
+        for (install in installs) {
+            try {
+                install(listener);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        Tree.CompilationUnit? forceTypecheckingWithTimeout(
+            IProgressMonitor completionMonitor, 
+            CeylonParseController controller) {
+            
+            object typecheckingMonitor 
+                    extends ProgressMonitorWrapper(completionMonitor) {
+                variable value typecheckingCanceled = false;
+                shared actual Boolean canceled {
+                    if (typecheckingCanceled) {
+                        // print("        `` System.currentTimeMillis() - start ``ms => Typechecking canceled message received");
+                        return true;
                     }
+                    return wrappedProgressMonitor.canceled;                    
                 }
+                assign canceled {
+                    typecheckingCanceled = true;
+                }
+            }
+            
+            // print("        `` System.currentTimeMillis() - start ``ms => Setup typechecking timeout to `` typecheckingTimeoutMilli ``ms");
+            value timeout = timerExecutor.schedule(JavaRunnable((){
+                try {
+                    // print("        `` System.currentTimeMillis() - start ``ms => Typechecking timeout (`` typecheckingTimeoutMilli ``ms) reached");
+                    typecheckingMonitor.canceled = true;
+                } catch(Throwable t) {}
+            }), typecheckingTimeoutMilli, TimeUnit.milliseconds);
+            try {
+                return controller.parseAndTypecheck(
+                    viewer.document, 
+                    typecheckingTimeoutSec, 
+                    typecheckingMonitor, 
+                    null)?.compilationUnit;
+            } finally {
+                timeout.cancel(true);
             }
         }
         
-        shared actual IStatus run(IProgressMonitor monitor) {
-            
+        value completionJobFuture = backgroundExecutor.submit(JavaRunnable(() {
             try (progress = wrapProgressMonitor(monitor)
-                    .Progress(-1, "Preparing completions...")) {
+                .Progress(-1, "Preparing completions...")) {
                 
                 value controller = editor.parseController;
                 value completionMonitor = progress.newChild(-1);
@@ -219,17 +278,12 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                         typecheckedRootNode = lastPhasedUnit.compilationUnit;
                         incompleteResultsMessage = "The results might be incomplete while a build is running";
                     } else {
-                        variable Tree.CompilationUnit? afterForcedTypechecking = null;
-                        try {
-                            afterForcedTypechecking = controller.parseAndTypecheck(
-                                viewer.document, 
-                                if (isAutoActivated) then 0 else 4, 
-                                completionMonitor.wrapped, 
-                                null)?.compilationUnit;
-                        } catch(OperationCanceledException e) {
-                        }
-                        if (exists aft=afterForcedTypechecking) {
-                            typecheckedRootNode = aft;
+                        // print("    `` System.currentTimeMillis() - start ``ms => Start typechecking");
+                        value afterForcedTypechecking = 
+                                forceTypecheckingWithTimeout(completionMonitor.wrapped, controller);
+                        // print("    `` System.currentTimeMillis() - start ``ms => Finished typechecking");
+                        if (exists afterForcedTypechecking) {
+                            typecheckedRootNode = afterForcedTypechecking;
                         } else {
                             typecheckedRootNode = lastPhasedUnit.compilationUnit;
                             incompleteResultsMessage = "The results were truncated for faster completion";
@@ -238,42 +292,76 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                     
                     value ctx = EclipseCompletionContext(controller);
                     
-                    completionManager.getContentProposals {
-                        typecheckedRootNode = typecheckedRootNode;
-                        ctx = ctx;
-                        offset = offset;
-                        line = CompletionUtil.getLine(offset, viewer);
-                        secondLevel = secondLevel;
-                        monitor = completionMonitor;
-                        returnedParamInfo = returnedParamInfo;
-                    };
+                    value timeout =
+                            if (isAutoActivated)
+                    then timerExecutor.schedule(JavaRunnable((){
+                        try {
+                            completionMonitor.wrapped.canceled = true;
+                        } catch(Throwable t) {}
+                    }), typecheckingTimeoutMilli, TimeUnit.milliseconds)
+                    else null;
+                    try {
+                        // print("`` System.currentTimeMillis() - start ``ms => Start constructing completions");
+                        completionManager.getContentProposals {
+                            typecheckedRootNode = typecheckedRootNode;
+                            ctx = ctx;
+                            offset = offset;
+                            line = CompletionUtil.getLine(offset, viewer);
+                            secondLevel = secondLevel;
+                            monitor = completionMonitor;
+                            returnedParamInfo = returnedParamInfo;
+                        };
+                        // print("`` System.currentTimeMillis() - start ``ms => Finished constructing completions");
+                    } finally {
+                        if (exists timeout) {
+                            timeout.cancel(true);
+                        }
+                    }
                     
                     _contentProposals = ctx.proposals.proposals.sequence();
-                    throw Exception("");
                 } else {
                     if (! CeylonBuilder.allClasspathContainersInitialized()) {
                         incompleteResultsMessage = "Ceylon model initialization is not finished";
                     } else {
                         incompleteResultsMessage = "The file hasn't been analyzed yet";
                     }
-
                 }
                 
                 if (_contentProposals.size==1 &&
                     _contentProposals.first is ParameterInfo) {
                     returnedParamInfo = true;
                 }
-
+                
                 if (monitor.canceled) {
-                    return Status.cancelStatus;
+                    status = Status.cancelStatus;
+                } else {
+                    status = Status.okStatus;
                 }
-                return Status.okStatus;
             } catch(OperationCanceledException e) {
-                return Status.cancelStatus;
+                status = Status.cancelStatus;
             } catch(Throwable t) {
-                return Status(Status.warning, CeylonPlugin.pluginId, "An exception occured during the Ceylon completion", t);
+                status = Status(Status.warning, CeylonPlugin.pluginId, "An exception occured during the Ceylon completion", t);
+            }
+        }));
+
+        shared actual void destroy(Throwable? error) {
+            for (remove in removals) {
+                try {
+                    remove(listener);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            for (e in keyEvents) {
+                Display.current.asyncExec(JavaRunnable(() {
+                    contentAssistant.autoAssistListener?.verifyKey(e);
+                }));
             }
         }
+        
+        shared Boolean shouldBeWaitedFor => 
+                ! completionJobFuture.done &&
+                ! canceledByTextEditorEvent;
     }
     
     
@@ -312,45 +400,49 @@ class CeylonCompletionProcessor(CeylonEditor editor)
 
         value sourceViewer = editor.ceylonSourceViewer;
         value contentAssistant = sourceViewer.contentAssistant;
-        value display = Display.current;
-        CompletionJob completionJob = CompletionJob(viewer, offset);
+        value display = sourceViewer.textWidget.display;
 
         sourceViewer.textWidget.setCursor(Cursor(display, SWT.cursorWait));
-        try(completionJob.eventWatcher) {
-            completionJob.schedule();
-            while (completionJob.state != completionJob.none &&
-                    ! completionJob.canceledByTextEditorEvent) {
+        
+        value start = System.currentTimeMillis();
+        try(completionJob = BackgroundCompletion(viewer, offset, NullProgressMonitor(), start)) {
+            // print("`` System.currentTimeMillis() - start ``ms => Start gathering constructed completions");
+            while (completionJob.shouldBeWaitedFor) {
+                // print("    `` System.currentTimeMillis() - start ``ms => readAndDispatch during gathering of constructed completions");
                 if (!display.readAndDispatch()) {
+                    // print("    `` System.currentTimeMillis() - start ``ms => sleep during gathering of constructed completions");
                     display.sleep();
                 }
             }
+            // print("`` System.currentTimeMillis() - start ``ms => Finished gathering constructed completions");
+            
+            if (completionJob.canceledByTextEditorEvent) {
+                return noCompletions;
+            }
+            
+            assert(exists status = completionJob.status);
+            if (status == Status.cancelStatus) {
+                contentAssistant.setStatusMessage("The results might be incomplete because search has been interrupted");
+                return createJavaObjectArray(completionJob._contentProposals);
+            }
+            
+            if (status.severity == Status.error) {
+                contentAssistant.setStatusMessage("The results might be incomplete because an error occured");
+                (CeylonPlugin.instance of AbstractUIPlugin).log.log(status);
+                return createJavaObjectArray(completionJob._contentProposals);
+            }
+            
+            if (exists statusMessage = completionJob.incompleteResultsMessage) {
+                contentAssistant.setStatusMessage(statusMessage);
+            }
+            
+            if (status == Status.okStatus) {
+                return createJavaObjectArray(completionJob._contentProposals);
+            } else {
+                return noCompletions;
+            }
         } finally {
             sourceViewer.textWidget.setCursor(null);
-        }
-        
-        if (completionJob.canceledByTextEditorEvent) {
-            throw OperationCanceledException();
-        }
-        
-        if (completionJob.result == Status.cancelStatus) {
-            contentAssistant.setStatusMessage("The results might be incomplete because search has been interrupted");
-            return createJavaObjectArray(completionJob._contentProposals);
-        }
-
-        if (completionJob.result.severity == Status.error) {
-            contentAssistant.setStatusMessage("The results might be incomplete because an error occured");
-            (CeylonPlugin.instance of AbstractUIPlugin).log.log(completionJob.result);
-            return createJavaObjectArray(completionJob._contentProposals);
-        }
-        
-        if (exists statusMessage = completionJob.incompleteResultsMessage) {
-            contentAssistant.setStatusMessage(statusMessage);
-        }
-        
-        if (completionJob.result == Status.okStatus) {
-            return createJavaObjectArray(completionJob._contentProposals);
-        } else {
-            return noCompletions;
         }
     }
     
