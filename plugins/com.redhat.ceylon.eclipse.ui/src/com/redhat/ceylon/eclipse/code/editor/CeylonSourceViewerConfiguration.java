@@ -124,7 +124,7 @@ public class CeylonSourceViewerConfiguration
             }
             
             if (event.assistant instanceof IContentAssistantExtension2) {
-                ((IContentAssistantExtension2)event.assistant).setStatusMessage(completionStatusMessage);
+                ((IContentAssistantExtension2)event.assistant).setStatusMessage(CeylonContentAssistant.secondLevelStatusMessage);
             }
             
             processor.sessionStarted(event.isAutoActivated);
@@ -144,8 +144,6 @@ public class CeylonSourceViewerConfiguration
         }
     }
 
-    private static String completionStatusMessage = "";
-    
     public ContentAssistant getContentAssistant(
             ISourceViewer sourceViewer) {
         if (editor==null) return null;
@@ -172,16 +170,18 @@ public class CeylonSourceViewerConfiguration
                 KeyStroke.getInstance(SWT.CTRL, SWT.SPACE);
         contentAssistant.setRepeatedInvocationTrigger(
                 KeySequence.getInstance(key));
-        completionStatusMessage = key.format() + 
+        CeylonContentAssistant.secondLevelStatusMessage = key.format() + 
                 " to toggle second-level completions";
-        contentAssistant.setStatusMessage(completionStatusMessage);
+        contentAssistant.setStatusMessage(CeylonContentAssistant.secondLevelStatusMessage);
+        CeylonContentAssistant.retrieveCompleteResultsStatusMessage = key.format() + 
+                " to retrieve all results";                
         contentAssistant.setStatusLineVisible(true);
         contentAssistant.setInformationControlCreator(
                 new CeylonInformationControlCreator(editor, 
                         "Tab or click for focus"));
         contentAssistant.setContextInformationPopupOrientation(
                 IContentAssistant.CONTEXT_INFO_ABOVE);
-        
+        contentAssistant.setShowEmptyList(true);
         return contentAssistant;
     }
 

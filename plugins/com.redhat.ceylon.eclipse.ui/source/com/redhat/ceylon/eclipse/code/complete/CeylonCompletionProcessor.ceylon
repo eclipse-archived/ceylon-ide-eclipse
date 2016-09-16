@@ -128,9 +128,13 @@ class CeylonCompletionProcessor(CeylonEditor editor)
     variable Integer lastOffsetAcrossSessions = -1;
     variable Integer lastOffset = -1;
     variable Boolean isAutoActivated = false;
-    Integer typecheckingTimeoutMilli {
-        return if (isAutoActivated) then 200 else 4000;
-    }
+    
+    value contentAssistant => editor.ceylonSourceViewer.contentAssistant;
+   
+    Integer typecheckingTimeoutMilli => if (isAutoActivated) 
+        then contentAssistant.autoActivationDelay 
+        else 4000;
+    
     Integer typecheckingTimeoutSec => 
             typecheckingTimeoutMilli / 1000;
      
@@ -169,13 +173,15 @@ class CeylonCompletionProcessor(CeylonEditor editor)
         shared variable ICompletionProposal?[] _contentProposals = [];
         shared variable String? incompleteResultsMessage = null;
         shared variable Boolean canceledByTextEditorEvent = false;
+        shared variable Boolean shouldStillShowCompletion = false;
         shared variable IStatus? status = null;
         
         value keyEvents = ArrayList<VerifyEvent>();
 
-        void stopJobOnEvent() {
+        void stopJobOnEvent(Boolean stillShowResult = false) {
             canceledByTextEditorEvent = true;
             monitor.canceled = true;
+            shouldStillShowCompletion = stillShowResult;
         }
         
         object listener satisfies 
@@ -193,7 +199,7 @@ class CeylonCompletionProcessor(CeylonEditor editor)
             }
             caretMoved(CaretEvent caretEvent) => stopJobOnEvent();
             shared actual void verifyKey(VerifyEvent verifyEvent) {
-                stopJobOnEvent();
+                stopJobOnEvent(verifyEvent.keyCode == SWT.esc.integer);
                 if (isAutoActivated) {
                     keyEvents.add(verifyEvent);
                 }
@@ -247,12 +253,12 @@ class CeylonCompletionProcessor(CeylonEditor editor)
             }
             
             // print("        `` System.currentTimeMillis() - start ``ms => Setup typechecking timeout to `` typecheckingTimeoutMilli ``ms");
-            value timeout = timerExecutor.schedule(JavaRunnable((){
-                try {
-                    // print("        `` System.currentTimeMillis() - start ``ms => Typechecking timeout (`` typecheckingTimeoutMilli ``ms) reached");
-                    typecheckingMonitor.canceled = true;
-                } catch(Throwable t) {}
-            }), typecheckingTimeoutMilli, TimeUnit.milliseconds);
+//            value timeout = timerExecutor.schedule(JavaRunnable((){
+//                try {
+//                    // print("        `` System.currentTimeMillis() - start ``ms => Typechecking timeout (`` typecheckingTimeoutMilli ``ms) reached");
+//                    typecheckingMonitor.canceled = true;
+//                } catch(Throwable t) {}
+//            }), typecheckingTimeoutMilli, TimeUnit.milliseconds);
             try {
                 return controller.parseAndTypecheck(
                     viewer.document, 
@@ -260,7 +266,7 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                     typecheckingMonitor, 
                     null)?.compilationUnit;
             } finally {
-                timeout.cancel(true);
+//                timeout.cancel(true);
             }
         }
         
@@ -271,12 +277,16 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                 value controller = editor.parseController;
                 value completionMonitor = progress.newChild(-1);
                 if (exists lastPhasedUnit = controller.lastPhasedUnit) {
-                    Tree.CompilationUnit typecheckedRootNode;
+                    Tree.CompilationUnit? typecheckedRootNode;
                     if (exists inBuild = 
                         controller.ceylonProject?.sourceModelLock?.writeLocked,
                     inBuild) {
-                        typecheckedRootNode = lastPhasedUnit.compilationUnit;
-                        incompleteResultsMessage = "The results might be incomplete while a build is running";
+                        if (isAutoActivated) {
+                            typecheckedRootNode = null;
+                        } else {
+                            typecheckedRootNode = lastPhasedUnit.compilationUnit;
+                            incompleteResultsMessage = "The results might be incomplete or incorrect while a build is running";
+                        }
                     } else {
                         // print("    `` System.currentTimeMillis() - start ``ms => Start typechecking");
                         value afterForcedTypechecking = 
@@ -285,40 +295,46 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                         if (exists afterForcedTypechecking) {
                             typecheckedRootNode = afterForcedTypechecking;
                         } else {
-                            typecheckedRootNode = lastPhasedUnit.compilationUnit;
-                            incompleteResultsMessage = "The results were truncated for faster completion";
+                            if (isAutoActivated) {
+                                typecheckedRootNode = null;
+                            } else {
+                                typecheckedRootNode = lastPhasedUnit.compilationUnit;
+                                incompleteResultsMessage = "The results might be incomplete or incorrect because the analysis timed out";
+                            }
                         }
                     }
                     
-                    value ctx = EclipseCompletionContext(controller);
-                    
-                    value timeout =
-                            if (isAutoActivated)
-                    then timerExecutor.schedule(JavaRunnable((){
+                    if (exists typecheckedRootNode) {
+                        value ctx = EclipseCompletionContext(controller);
+                        
+                        value timeout =
+                                if (isAutoActivated)
+                        then timerExecutor.schedule(JavaRunnable((){
+                            try {
+                                completionMonitor.wrapped.canceled = true;
+                            } catch(Throwable t) {}
+                        }), 1000, TimeUnit.milliseconds)
+                        else null;
                         try {
-                            completionMonitor.wrapped.canceled = true;
-                        } catch(Throwable t) {}
-                    }), typecheckingTimeoutMilli, TimeUnit.milliseconds)
-                    else null;
-                    try {
-                        // print("`` System.currentTimeMillis() - start ``ms => Start constructing completions");
-                        completionManager.getContentProposals {
-                            typecheckedRootNode = typecheckedRootNode;
-                            ctx = ctx;
-                            offset = offset;
-                            line = CompletionUtil.getLine(offset, viewer);
-                            secondLevel = secondLevel;
-                            monitor = completionMonitor;
-                            returnedParamInfo = returnedParamInfo;
-                        };
-                        // print("`` System.currentTimeMillis() - start ``ms => Finished constructing completions");
-                    } finally {
-                        if (exists timeout) {
-                            timeout.cancel(true);
+                            // print("`` System.currentTimeMillis() - start ``ms => Start constructing completions");
+                            completionManager.getContentProposals {
+                                typecheckedRootNode = typecheckedRootNode;
+                                ctx = ctx;
+                                offset = offset;
+                                line = CompletionUtil.getLine(offset, viewer);
+                                secondLevel = secondLevel;
+                                monitor = completionMonitor;
+                                returnedParamInfo = returnedParamInfo;
+                            };
+                            // print("`` System.currentTimeMillis() - start ``ms => Finished constructing completions");
+                        } finally {
+                            if (exists timeout) {
+                                timeout.cancel(true);
+                            }
                         }
+                        
+                        _contentProposals = ctx.proposals.proposals.sequence();
                     }
-                    
-                    _contentProposals = ctx.proposals.proposals.sequence();
                 } else {
                     if (! CeylonBuilder.allClasspathContainersInitialized()) {
                         incompleteResultsMessage = "Ceylon model initialization is not finished";
@@ -392,14 +408,15 @@ class CeylonCompletionProcessor(CeylonEditor editor)
             return noCompletions;
         }
         
-        if (offset == lastOffset) {
+        value sourceViewer = editor.ceylonSourceViewer;
+        value contentAssistant = sourceViewer.contentAssistant;
+
+        if (offset == lastOffset && !contentAssistant.areResultIncomplete()) {
             secondLevel = !secondLevel;
         }
         lastOffset = offset;
         lastOffsetAcrossSessions = offset;
 
-        value sourceViewer = editor.ceylonSourceViewer;
-        value contentAssistant = sourceViewer.contentAssistant;
         value display = sourceViewer.textWidget.display;
 
         sourceViewer.textWidget.setCursor(Cursor(display, SWT.cursorWait));
@@ -422,7 +439,7 @@ class CeylonCompletionProcessor(CeylonEditor editor)
             
             assert(exists status = completionJob.status);
             if (status == Status.cancelStatus) {
-                contentAssistant.setStatusMessage("The results might be incomplete because search has been interrupted");
+                contentAssistant.setStatusMessage("Results truncated for rapid completion. "+ contentAssistant.retrieveCompleteResultsStatusMessage);
                 return createJavaObjectArray(completionJob._contentProposals);
             }
             
