@@ -411,8 +411,13 @@ class CeylonCompletionProcessor(CeylonEditor editor)
         value sourceViewer = editor.ceylonSourceViewer;
         value contentAssistant = sourceViewer.contentAssistant;
 
-        if (offset == lastOffset && !contentAssistant.areResultIncomplete()) {
-            secondLevel = !secondLevel;
+        if (offset == lastOffset) {
+            if(contentAssistant.areResultIncomplete()) {
+                isAutoActivated = false;
+                contentAssistant.setStatusMessage(contentAssistant.secondLevelStatusMessage);
+            } else {
+                secondLevel = !secondLevel;
+            }
         }
         lastOffset = offset;
         lastOffsetAcrossSessions = offset;
@@ -420,7 +425,14 @@ class CeylonCompletionProcessor(CeylonEditor editor)
         value display = sourceViewer.textWidget.display;
 
         sourceViewer.textWidget.setCursor(Cursor(display, SWT.cursorWait));
-        
+
+        value bars = editor.editorSite?.actionBars;
+        value statusLine = bars?.statusLineManager;
+        value pm = statusLine?.progressMonitor;
+        if (exists pm) {
+            pm.beginTask("Preparing completions ...", IProgressMonitor.unknown);
+            pm.worked(1);
+        }
         value start = System.currentTimeMillis();
         try(completionJob = BackgroundCompletion(viewer, offset, NullProgressMonitor(), start)) {
             // print("`` System.currentTimeMillis() - start ``ms => Start gathering constructed completions");
@@ -434,7 +446,13 @@ class CeylonCompletionProcessor(CeylonEditor editor)
             // print("`` System.currentTimeMillis() - start ``ms => Finished gathering constructed completions");
             
             if (completionJob.canceledByTextEditorEvent) {
-                return noCompletions;
+                if(completionJob.shouldStillShowCompletion) {
+                    contentAssistant.setStatusMessage("Results truncated for rapid completion. "+ contentAssistant.retrieveCompleteResultsStatusMessage);
+                    return createJavaObjectArray(completionJob._contentProposals);
+                } else {
+                    contentAssistant.setShowEmptyList(false);
+                    return noCompletions;
+                }
             }
             
             assert(exists status = completionJob.status);
@@ -460,6 +478,9 @@ class CeylonCompletionProcessor(CeylonEditor editor)
             }
         } finally {
             sourceViewer.textWidget.setCursor(null);
+            if (exists pm) {
+                pm.done();
+            }
         }
     }
     
@@ -491,6 +512,7 @@ class CeylonCompletionProcessor(CeylonEditor editor)
         secondLevel = false;
         lastOffset = -1;
         this.isAutoActivated = isAutoActivated;
+        contentAssistant.setShowEmptyList(true);
     }
     
     Boolean isIdentifierCharacter(ITextViewer viewer, Integer offset) {
