@@ -142,7 +142,7 @@ class AnnotationInfo {
                 new FixContext(location);
         cp.collectCorrections(context, location, 
                 list);
-        cp.collectWarningSuppressions(ca, context, 
+        cp.collectWarningProposals(ca, context, 
                 location, list);
     }
 
