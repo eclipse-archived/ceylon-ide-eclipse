@@ -36,6 +36,7 @@ shared object eclipseIcons {
              CeylonResources.ceylonCorrection, 0, false)
          case(Icons.addCorrection) CeylonResources.addCorr
          case(Icons.suppressWarnings) CeylonResources.suppressWarning
+         case(Icons.remove) CeylonResources.removeCorr
          else null;
     }
 }
