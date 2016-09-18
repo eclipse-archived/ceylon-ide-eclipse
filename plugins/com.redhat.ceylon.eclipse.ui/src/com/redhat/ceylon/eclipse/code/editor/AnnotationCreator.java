@@ -56,16 +56,17 @@ public class AnnotationCreator
         public final int severity;
         public final boolean syntaxError;
         public final int line;
+		public final Message error;
         
-        private PositionedMessage(String msg, Position pos, 
-                int severity, int code, boolean syntaxError,
-                int line) {
-            this.message = msg;
+        private PositionedMessage(Message error, Position pos, 
+                int severity) {
+        	this.error = error;
+            this.message = error.getMessage();
             this.pos = pos;
-            this.code = code;
+            this.code = error.getCode();
             this.severity = severity;
-            this.syntaxError = syntaxError;
-            this.line = line;
+            this.syntaxError = error instanceof RecognitionError;
+            this.line = error.getLine();
         }
 
         @Override
@@ -103,11 +104,9 @@ public class AnnotationCreator
     @Override
     public void handleMessage(int startOffset, int endOffset,
             int startCol, int startLine, Message error) {
-        messages.add(new PositionedMessage(error.getMessage(), 
+        messages.add(new PositionedMessage(error, 
                 new Position(startOffset, endOffset-startOffset), 
-                getSeverity(error, getWarnForErrors()), 
-                error.getCode(), error instanceof RecognitionError,
-                error.getLine()));
+                getSeverity(error, getWarnForErrors())));
     }
         
     public void clearMessages() {
@@ -167,7 +166,7 @@ public class AnnotationCreator
 
     private Annotation createAnnotation(PositionedMessage pm) {
         return new CeylonAnnotation(getAnnotationType(pm), 
-                pm.message, pm.code, pm.severity);
+                pm.message, pm.code, pm.severity, pm.error);
     }
 
     private String getAnnotationType(PositionedMessage pm) {

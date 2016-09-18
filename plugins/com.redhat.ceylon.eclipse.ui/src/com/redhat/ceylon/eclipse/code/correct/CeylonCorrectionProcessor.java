@@ -22,10 +22,8 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKE
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
 import static com.redhat.ceylon.eclipse.core.builder.MarkerCreator.ERROR_CODE_KEY;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.correctJ2C;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.util.AnnotationUtils.getAnnotationsForLine;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
 import static com.redhat.ceylon.eclipse.util.Nodes.findArgument;
 import static com.redhat.ceylon.eclipse.util.Nodes.findDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.findImport;
@@ -55,7 +53,6 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
-import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.quickassist.IQuickAssistInvocationContext;
 import org.eclipse.jface.text.quickassist.IQuickAssistProcessor;
@@ -63,9 +60,6 @@ import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.ltk.core.refactoring.TextFileChange;
-import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -75,15 +69,12 @@ import org.eclipse.ui.texteditor.MarkerAnnotation;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Message;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.MarkerUtils;
 
@@ -92,42 +83,6 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
     
     private static final ProblemLocation[] NO_PROBLEM_LOCATIONS = new ProblemLocation[0];
     private static final ICompletionProposal[] NO_PROPOSALS = new ICompletionProposal[0];
-
-    private static final class CollectWarningsToSuppressVisitor
-            extends Visitor {
-        private final StringBuilder sb;
-        private final StyledString ss;
-
-        private CollectWarningsToSuppressVisitor
-                (StringBuilder sb, StyledString ss) {
-            this.sb = sb;
-            this.ss = ss;
-        }
-
-        @Override
-        public void visitAny(Node node) {
-            for (Message m: node.getErrors()) {
-                if (m instanceof UsageWarning) {
-                    UsageWarning warning = (UsageWarning) m;
-                    String warningName = 
-                            warning.getWarningName();
-                    if (!sb.toString().contains(warningName)) {
-                        if (sb.length()>0) {
-                            sb.append(", ");
-                            ss.append(", ");
-                        }
-                        sb.append('"')
-                          .append(warningName)
-                          .append('"');
-                        ss.append('"', STRING_STYLER)
-                          .append(warningName, STRING_STYLER)
-                          .append('"', STRING_STYLER);
-                    }
-                }
-            }
-            super.visitAny(node);
-        }
-    }
 
     CeylonEditor editor; //may only be used for quick assists!!!
     private Tree.CompilationUnit model;
@@ -260,7 +215,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
                     ProblemLocation problemLocation = 
                             getProblemLocation(ca, model);
                     if (problemLocation != null) {
-                        collectWarningSuppressions(ca, context,
+                        collectWarningProposals(ca, context,
                                 problemLocation, proposals);
                         break;
                     }
@@ -908,7 +863,7 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
         
     }
     
-    public void collectWarningSuppressions(
+    public void collectWarningProposals(
             CeylonAnnotation annotation,
             IQuickAssistInvocationContext context,
             ProblemLocation location, 
@@ -918,131 +873,29 @@ public class CeylonCorrectionProcessor extends QuickAssistAssistant
             if (rootNode == null) {
                 return;
             }
-            Tree.StatementOrArgument target =
-                    findAnnotatable(rootNode,
-                            findNode(rootNode, null,
-                                    location.getOffset(),
-                                    location.getOffset() +
-                                    location.getLength()));
-            if (target==null) {
-                return;
-            }
+            Node node = findNode(rootNode, null,
+                    location.getOffset(),
+                    location.getOffset() +
+                    location.getLength());
 
             IEditorInput ei = editor.getEditorInput();
             IFile file = EditorUtil.getFile(ei);
             IDocument doc =
                     context.getSourceViewer()
                         .getDocument();
-            TextFileChange change = 
-                    new TextFileChange("Suppress Warnings",
-                            file);
-            final StringBuilder sb = new StringBuilder();
-            final StyledString ss = 
-                    new StyledString("Suppress warnings of type ");
-            target.visit(new CollectWarningsToSuppressVisitor(sb, ss));
-            String ws = 
-                    utilJ2C().indents().getDefaultLineDelimiter(doc) +
-                    utilJ2C().indents().getIndent(target, doc);
-            String text = "suppressWarnings(" + sb + ")";
-            Integer start = target.getStartIndex();
-            Tree.AnnotationList al = annotationList(target);
-            if (al == null) {
-                text += ws;
-            }
-            else {
-                Tree.AnonymousAnnotation aa =
-                        al.getAnonymousAnnotation();
-                if (aa!=null) {
-                    start = aa.getEndIndex();
-                    text = ws + text;
-                }
-                else {
-                    text += ws;
-                }
-            }
-            change.setEdit(new InsertEdit(start, text));
-            proposals.add(new CorrectionProposal(ss.toString(), 
-                    change, new Region(start+text.length(), 0), 
-                    CeylonResources.SUPPRESS_WARNING) {
-                @Override
-                public StyledString getStyledDisplayString() {
-                    return ss;
-                }
-            });
+
+        	if (annotation.getError() instanceof UsageWarning) {
+                correctJ2C().addWarningFixes(location, (UsageWarning) annotation.getError(),
+                		getRootNode(), node, 
+                		file.getProject(), proposals,
+                        getCurrentCeylonEditor(), file,
+                        doc);
+        	}
+
             proposals.add(new ConfigureWarningsProposal(editor));
         }
 
     }
-
-    private static Tree.StatementOrArgument findAnnotatable(
-            Tree.CompilationUnit rootNode, final Node node) {
-        class FindAnnotatableVisitor extends Visitor {
-            Tree.StatementOrArgument result;
-            private Tree.StatementOrArgument current;
-            @Override
-            public void visit(Tree.Declaration that) {
-                Tree.StatementOrArgument outer = current;
-                current = that;
-                super.visit(that);
-                current = outer;
-            }
-            @Override
-            public void visit(Tree.ModuleDescriptor that) {
-                Tree.StatementOrArgument outer = current;
-                current = that;
-                super.visit(that);
-                current = outer;
-            }
-            @Override
-            public void visit(Tree.PackageDescriptor that) {
-                Tree.StatementOrArgument outer = current;
-                current = that;
-                super.visit(that);
-                current = outer;
-            }
-            @Override
-            public void visitAny(Node that) {
-                if (that == node) {
-                    result = current;
-                }
-                if (result==null) {
-                    super.visitAny(that);
-                }
-            }
-        }
-        FindAnnotatableVisitor fav =
-                new FindAnnotatableVisitor();
-        fav.visit(rootNode);
-        Tree.StatementOrArgument target = fav.result;
-        return target;
-    }
-
-    private static Tree.AnnotationList annotationList(Node node) {
-        if (node instanceof Tree.Declaration) {
-            Tree.Declaration dec =
-                    (Tree.Declaration) node;
-            return dec.getAnnotationList();
-        }
-        else if (node instanceof Tree.ModuleDescriptor) {
-            Tree.ModuleDescriptor dec =
-                    (Tree.ModuleDescriptor) node;
-            return dec.getAnnotationList();
-        }
-        else if (node instanceof Tree.PackageDescriptor) {
-            Tree.PackageDescriptor dec =
-                    (Tree.PackageDescriptor) node;
-            return dec.getAnnotationList();
-        }
-        else if (node instanceof Tree.ImportModule) {
-            Tree.ImportModule dec =
-                    (Tree.ImportModule) node;
-            return dec.getAnnotationList();
-        }
-        else {
-            return null;
-        }
-    }
-
 }
 
 //private void addArgumentProposals(

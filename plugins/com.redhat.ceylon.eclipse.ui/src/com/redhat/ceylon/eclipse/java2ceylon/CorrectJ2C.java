@@ -11,6 +11,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -41,6 +42,17 @@ public interface CorrectJ2C {
         TypeChecker tc, 
         IFile file,
         IDocument doc);
+
+    void addWarningFixes(
+            ProblemLocation problem,
+            UsageWarning message,
+            Tree.CompilationUnit rootNode,
+            Node node,
+            IProject project,
+            Collection<ICompletionProposal> proposals,
+            CeylonEditor editor, 
+            IFile file,
+            IDocument doc);
 
     void addQuickAssists(
             CompilationUnit rootNode,

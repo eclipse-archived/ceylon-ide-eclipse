@@ -7,6 +7,8 @@ import org.eclipse.core.runtime.AssertionFailedException;
 import org.eclipse.jface.text.quickassist.IQuickFixableAnnotation;
 import org.eclipse.jface.text.source.Annotation;
 
+import com.redhat.ceylon.compiler.typechecker.tree.Message;
+
 public class CeylonAnnotation extends Annotation 
         implements IQuickFixableAnnotation {
     
@@ -46,16 +48,18 @@ public class CeylonAnnotation extends Annotation
     private final int count;
     private final int code;
     private final int severity;
+	private final Message error;
 
     public static boolean isParseAnnotation(Annotation a) {
         return a.getType().startsWith(PARSE_ANNOTATION_TYPE);
     }
 
     public CeylonAnnotation(String type, String text, 
-            int code, int severity) {
+            int code, int severity, Message error) {
         super(type, false, text);
         this.code = code;
         this.severity = severity;
+		this.error = error;
         count = counter++;
     }
     
@@ -71,6 +75,10 @@ public class CeylonAnnotation extends Annotation
     public int getSeverity() {
         return severity;
     }
+
+    public Message getError() {
+		return error;
+	}
 
     @Override
     public boolean isQuickFixable() 

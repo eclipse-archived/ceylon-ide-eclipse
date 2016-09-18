@@ -35,6 +35,7 @@ shared object eclipseIcons {
          case(Icons.correction) CeylonLabelProvider.getDecoratedImage(
              CeylonResources.ceylonCorrection, 0, false)
          case(Icons.addCorrection) CeylonResources.addCorr
+         case(Icons.suppressWarnings) CeylonResources.suppressWarning
          else null;
     }
 }

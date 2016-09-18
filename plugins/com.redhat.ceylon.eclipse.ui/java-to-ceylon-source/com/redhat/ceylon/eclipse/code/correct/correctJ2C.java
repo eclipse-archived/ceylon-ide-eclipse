@@ -16,12 +16,12 @@ import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
+import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.java2ceylon.CorrectJ2C;
-import com.redhat.ceylon.eclipse.util.CeylonHelper;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.ide.common.correct.QuickFixData;
 import com.redhat.ceylon.ide.common.correct.addAnnotationQuickFix_;
@@ -75,6 +75,26 @@ public class correctJ2C implements CorrectJ2C {
 
         ideQuickFixManager_.get_().addQuickFixes(data, tc);
     }
+
+
+	@Override
+	public void addWarningFixes(
+	        ProblemLocation problem,
+			UsageWarning warning, 
+			CompilationUnit rootNode, 
+			Node node, 
+			IProject project,
+			Collection<ICompletionProposal> proposals, 
+			CeylonEditor editor, 
+			IFile file, 
+			IDocument doc) {
+        BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
+        EclipseQuickFixData data = new EclipseQuickFixData(problem, rootNode, 
+                node, project, proposals, editor, ceylonProject, doc);
+
+        ideQuickFixManager_.get_().addWarningFixes(data, warning);
+
+	}
 
     @Override
     public void addQuickAssists(
