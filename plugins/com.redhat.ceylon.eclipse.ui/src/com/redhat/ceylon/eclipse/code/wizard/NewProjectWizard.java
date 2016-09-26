@@ -159,9 +159,11 @@ public class NewProjectWizard extends NewElementWizard
                 projectConfig.setProjectSuppressWarningsEnum(
                         EnumSet.allOf(Warning.class));
             }
+            
             String jdkProvider = firstPage.getJdkProvider();
-            if(jdkProvider != null){
-                projectConfig.setProjectJdkProvider(ceylon.language.String.instance(jdkProvider));
+            if (jdkProvider!=null){
+                projectConfig.setProjectJdkProvider(
+                        ceylon.language.String.instance(jdkProvider));
             }
             
             Boolean offlineOption = firstPage.getOfflineOption();
@@ -172,13 +174,28 @@ public class NewProjectWizard extends NewElementWizard
             
             CeylonRepoConfigBlock block = thirdPage.getBlock();
             if (block.getProject() != null) {
-                projectConfig.setOutputRepo(
-                        block.getOutputRepo());
+                projectConfig.setOutputRepo(block.getOutputRepo());
+                
                 block.applyToConfiguration(projectConfig);
-                projectConfig.setProjectOverrides(ceylon.language.String.instance(block.getOverrides()));
-                projectConfig.setProjectFlatClasspath(ceylon.language.Boolean.instance(block.getFlatClasspath()));
-                projectConfig.setProjectAutoExportMavenDependencies(
-                        ceylon.language.Boolean.instance(block.getAutoExportMavenDependencies()));
+                
+                String overrides = block.getOverrides();
+                if (overrides!=null) {
+                    projectConfig.setProjectOverrides(
+                            ceylon.language.String.instance(overrides));
+                }
+
+                Boolean flatClasspath = block.getFlatClasspath();
+                if (flatClasspath!=null) { 
+                    projectConfig.setProjectFlatClasspath(
+                            ceylon.language.Boolean.instance(flatClasspath));
+                }
+                
+                Boolean autoExportMavenDependencies = 
+                        block.getAutoExportMavenDependencies();
+                if (autoExportMavenDependencies!=null) {
+                    projectConfig.setProjectAutoExportMavenDependencies(
+                            ceylon.language.Boolean.instance(autoExportMavenDependencies));
+                }
             }
             
             projectConfig.save();
