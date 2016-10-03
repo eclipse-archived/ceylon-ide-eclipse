@@ -16,6 +16,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.internal.registry.ExtensionRegistry;
 import org.eclipse.core.resources.IProject;
@@ -361,16 +363,18 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
                     new ArrayList<String>
                         (libraries.length);
             for(String jar : libraries){
-                File libDir = 
-                        new File(repoDir, 
-                                getRepoFolder(jar));
-                if( !libDir.exists() ) {
-                    System.out.println("WARNING directory doesn't exist: " + libDir);
+                File libDir = getRepoFolder(repoDir, jar);
+                if( libDir == null) {
+                    System.out.println("WARNING lib directory not found for: " + jar);
+                } else {
+                    if( !libDir.exists() ) {
+                        System.out.println("WARNING directory doesn't exist: " + libDir);
+                    }
+                    String path = 
+                            new File(libDir, jar)
+                                .getAbsolutePath();
+                    jars.add(path);
                 }
-                String path = 
-                        new File(libDir, jar)
-                            .getAbsolutePath();
-                jars.add(path);
             }
             return jars;
         } catch (Exception x) {
@@ -379,11 +383,18 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         }
     }
     
-    private static String getRepoFolder(String jarName) {   
-       int lastDot = jarName.lastIndexOf('.');
-       int lastDash = jarName.lastIndexOf('-');
-       return jarName.substring(0, lastDash).replace('.', '/')
-            + "/" + jarName.substring(lastDash + 1, lastDot);
+
+    private static Pattern pattern = Pattern.compile("(.+)-(" + Pattern.quote(Versions.CEYLON_VERSION_NUMBER) + ")\\.(j|c)ar");
+    private static File getRepoFolder(File repoDir, String jarName) {
+       Matcher matcher = pattern.matcher(jarName);
+       if (matcher.matches()) {
+           String name = matcher.group(1);
+           String version = matcher.group(2);
+           String folderPath = name.replace('.', '/')
+                   + "/" + version;
+           return new File(repoDir, folderPath);
+       }
+       return null;
     }
     
     public String getID() {
