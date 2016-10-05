@@ -916,15 +916,18 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 if (monitor.isCanceled()) break;
             }
         }*/
-        for (CeylonProject project: getCeylonProjects()) {
-            for (Module module: 
-                    project.getModules()
-                        .getTypecheckerModules()
-                        .getListOfModules()) {
-                fillModule(module, 
-                        contentProvider, itemsFilter, 
-                        monitor, searchedArchives);
-                if (monitor.isCanceled()) break;
+        for (@SuppressWarnings("rawtypes") CeylonProject project: getCeylonProjects()) {
+            @SuppressWarnings("rawtypes")
+            CeylonProject.Modules modules = project.getModules();
+            if (modules != null) {
+                for (Module module: 
+                    modules.getTypecheckerModules()
+                    .getListOfModules()) {
+                    fillModule(module, 
+                            contentProvider, itemsFilter, 
+                            monitor, searchedArchives);
+                    if (monitor.isCanceled()) break;
+                }
             }
         }
         monitor.done();
@@ -1126,17 +1129,21 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 new HashSet<String>();
         for (IProject project: getProjects()) {
             work++;
+            @SuppressWarnings("rawtypes")
             CeylonProject ceylonProject = 
                     modelJ2C().ceylonModel()
                         .getProject(project);
             if (ceylonProject != null) {
-                for (Module module: 
-                        ceylonProject.getModules()
-                            .getTypecheckerModules()
-                            .getListOfModules()) {
-                    if (includeModule(module) &&
-                            searchedArchives.add(uniqueIdentifier(module))) {
-                        work += 1 + module.getPackages().size();
+                @SuppressWarnings("rawtypes")
+                CeylonProject.Modules modules = ceylonProject.getModules();
+                if (modules != null) {
+                    for (Module module: 
+                        modules.getTypecheckerModules()
+                        .getListOfModules()) {
+                        if (includeModule(module) &&
+                                searchedArchives.add(uniqueIdentifier(module))) {
+                            work += 1 + module.getPackages().size();
+                        }
                     }
                 }
             }
