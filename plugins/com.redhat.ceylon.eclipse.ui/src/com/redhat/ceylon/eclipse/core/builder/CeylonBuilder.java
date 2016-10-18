@@ -2700,6 +2700,15 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
     private void addProjectClasspathElements(List<String> classpathElements, IJavaProject javaProj) {
         try {
+        	
+        	AbstractModelLoader modelLoader = CeylonBuilder.getProjectModelLoader(getProject());
+        	if (modelLoader != null) {
+            	Module jdkProviderMod = modelLoader.getJdkProviderModule();
+            	if (jdkProviderMod instanceof BaseIdeModule) {
+            		File archiveFile = (((BaseIdeModule) jdkProviderMod).getArtifact());
+            		classpathElements.add(archiveFile.getAbsolutePath());
+            	}
+        	}
             List<IClasspathContainer> containers = getCeylonClasspathContainers(javaProj);
             for (IClasspathContainer container : containers) {
                 for (IClasspathEntry cpEntry : container.getClasspathEntries()) {
@@ -4106,7 +4115,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             }
         }
     }    
-    private static File getCeylonClassesOutputDirectory(IProject project) {
+    public static File getCeylonClassesOutputDirectory(IProject project) {
         return getCeylonClassesOutputFolder(project)
                 .getRawLocation().toFile();
     }

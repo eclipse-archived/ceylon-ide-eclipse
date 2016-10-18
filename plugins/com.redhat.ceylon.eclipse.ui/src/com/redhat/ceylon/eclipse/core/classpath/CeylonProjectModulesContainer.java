@@ -70,6 +70,7 @@ import org.eclipse.jdt.internal.ui.util.CoreUtility;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.common.ModuleSpec;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -77,12 +78,15 @@ import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 import com.redhat.ceylon.ide.common.platform.platformUtils_;
 import com.redhat.ceylon.ide.common.util.ProgressMonitor;
 import com.redhat.ceylon.ide.common.util.ProgressMonitor$impl;
 import com.redhat.ceylon.ide.common.util.ProgressMonitorChild;
 import com.redhat.ceylon.model.cmr.ArtifactResultType;
 import com.redhat.ceylon.model.typechecker.model.Module;
+
+import ceylon.interop.java.javaString_;
 
 /**
  * Eclipse classpath container that will contain the Ceylon resolved entries.
@@ -388,6 +392,15 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
                     throws JavaModelException, CoreException {
         final Map<String, IClasspathEntry> paths = new TreeMap<String, IClasspathEntry>();
 
+        ModuleSpec jdkProviderSpec = null;
+        CeylonProjectConfig ceylonConfig = modelJ2C().ceylonConfig(project);
+        if (ceylonConfig != null) {
+            ceylon.language.String jdkProviderString = ceylonConfig.getJdkProvider();
+            if (jdkProviderString != null) {
+            	jdkProviderSpec = ModuleSpec.parse(jdkProviderString.toString());
+            }
+        }
+        
         Context context = typeChecker.getContext();
         RepositoryManager provider = context.getRepositoryManager();
         Set<Module> modulesToAdd = context.getModules().getListOfModules();
@@ -401,6 +414,11 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
                     ! module.isAvailable()) {
                 continue;
             }
+            if (jdkProviderSpec != null &&
+            		jdkProviderSpec.getName().equals(module.getNameAsString())) {
+            	continue;
+            }
+            
             IPath modulePath = getModuleArchive(provider, jdtModule);
             if (modulePath!=null) {
                 IPath srcPath = null;

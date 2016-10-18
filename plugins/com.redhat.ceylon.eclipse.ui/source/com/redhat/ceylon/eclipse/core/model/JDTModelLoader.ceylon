@@ -109,6 +109,9 @@ import org.eclipse.jdt.internal.compiler.problem {
 import org.eclipse.jdt.internal.core {
     JavaProject
 }
+import com.redhat.ceylon.common {
+	ModuleSpec
+}
 
 CharArray toCharArray(String s) => javaString(s).toCharArray();
 
@@ -383,6 +386,14 @@ shared class JDTModelLoader
             }
         };
     shared actual void addModuleToClasspathInternal(ArtifactResult? artifact) {
+        if (exists jp = jdkProvider,
+            exists artifact) {
+            value jpSpec = ModuleSpec.parse(jp);
+            if (artifact.name() == jpSpec.name &&
+            	artifact.version() == jpSpec.version) {
+                return;
+            }
+        }
         assert(exists javaProject = javaProjectInfos?.javaProject);
         CeylonProjectModulesContainer? container = CeylonClasspathUtil.getCeylonProjectModulesClasspathContainer(javaProject);
         
