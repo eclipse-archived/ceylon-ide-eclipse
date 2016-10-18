@@ -83,6 +83,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     private static final String[] COMPILETIME_LIBRARIES = new String[] {
         "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "com.redhat.ceylon.model-"+Versions.CEYLON_VERSION_NUMBER+".jar",
+        "com.redhat.ceylon.common-"+Versions.CEYLON_VERSION_NUMBER+".jar",
     };
     
     public static final String EDITOR_FONT_PREFERENCE = 
