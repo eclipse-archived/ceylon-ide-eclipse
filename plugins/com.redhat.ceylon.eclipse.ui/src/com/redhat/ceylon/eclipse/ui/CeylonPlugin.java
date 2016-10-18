@@ -354,7 +354,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         return getRequiredJars(MODULE_LAUNCHER_LIBRARIES);
     }
 
-    private static List<String> getRequiredJars(String[] libraries) {
+    public static List<String> getRequiredJars(String[] libraries) {
         File repoDir = 
                 getCeylonPluginRepository(
                         System.getProperty("ceylon.repo", ""));
