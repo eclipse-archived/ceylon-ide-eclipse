@@ -354,7 +354,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         return isOverloading.booleanValue();
     }
 
-    private boolean ignoreMethodInAncestorSearch(MethodBinding methodBinding) {
+    public static boolean ignoreMethodInAncestorSearch(MethodBinding methodBinding) {
         String name = CharOperation.charToString(methodBinding.selector);
         if(name.equals("finalize")
                 || name.equals("clone")){

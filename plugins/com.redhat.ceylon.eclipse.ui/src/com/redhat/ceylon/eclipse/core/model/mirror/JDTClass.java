@@ -252,7 +252,7 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
         return (this.modifiers & ClassFileConstants.AccDeprecated) != 0;
     }
     
-    private void doWithBindings(final ActionOnClassBinding action) {
+    public void doWithBindings(final ActionOnClassBinding action) {
         if (!doWithReferenceBinding(type, bindingRef.get(), action)) {
             doWithResolvedType(type, new ActionOnResolvedType() {
                 @Override

@@ -1,8 +1,12 @@
 import ceylon.interop.java {
     javaString,
-    createJavaObjectArray
+    createJavaObjectArray,
+    JavaList
 }
 
+import com.redhat.ceylon.common {
+    ModuleSpec
+}
 import com.redhat.ceylon.eclipse.core.classpath {
     CeylonClasspathUtil,
     CeylonProjectModulesContainer
@@ -12,7 +16,8 @@ import com.redhat.ceylon.eclipse.core.model {
 }
 import com.redhat.ceylon.eclipse.core.model.mirror {
     JDTClass,
-    JDTMethod
+    JDTMethod,
+    JDTType
 }
 import com.redhat.ceylon.eclipse.util {
     withJavaModel
@@ -28,10 +33,16 @@ import com.redhat.ceylon.ide.common.util {
 import com.redhat.ceylon.model.cmr {
     ArtifactResult
 }
+import com.redhat.ceylon.model.loader {
+    NamingBase
+}
 import com.redhat.ceylon.model.loader.mirror {
     ClassMirror,
     MethodMirror,
-    AnnotatedMirror
+    AnnotatedMirror,
+    FunctionalInterfaceType,
+    TypeMirror,
+    TypeKind
 }
 import com.redhat.ceylon.model.loader.model {
     LazyPackage
@@ -88,6 +99,9 @@ import org.eclipse.jdt.core.compiler {
 import org.eclipse.jdt.internal.compiler {
     DefaultErrorHandlingPolicies
 }
+import org.eclipse.jdt.internal.compiler.ast {
+    CompilationUnitDeclaration
+}
 import org.eclipse.jdt.internal.compiler.classfmt {
     ClassFileReader
 }
@@ -100,7 +114,11 @@ import org.eclipse.jdt.internal.compiler.impl {
 import org.eclipse.jdt.internal.compiler.lookup {
     LookupEnvironment,
     MissingTypeBinding,
-    ReferenceBinding
+    ReferenceBinding,
+    CompilationUnitScope,
+    MethodBinding,
+    TypeIds,
+    ArrayBinding
 }
 import org.eclipse.jdt.internal.compiler.problem {
     ProblemReporter,
@@ -108,9 +126,6 @@ import org.eclipse.jdt.internal.compiler.problem {
 }
 import org.eclipse.jdt.internal.core {
     JavaProject
-}
-import com.redhat.ceylon.common {
-	ModuleSpec
 }
 
 CharArray toCharArray(String s) => javaString(s).toCharArray();
@@ -379,16 +394,16 @@ shared class JDTModelLoader
     shared actual LookupEnvironment? createLookupEnvironmentForGeneratedCode() =>
             javaProjectInfos?.createLookupEnvironmentForGeneratedCode();
     shared actual void refreshNameEnvironment() =>
-        runWithLock {
-            void action() {
-                assert(exists javaProjectInfos);
-                javaProjectInfos.refreshNameEnvironment();
-            }
-        };
+            runWithLock {
+        void action() {
+            assert(exists javaProjectInfos);
+            javaProjectInfos.refreshNameEnvironment();
+        }
+    };
     shared actual void addModuleToClasspathInternal(ArtifactResult? artifact) {
         if (exists jp = jdkProvider,
             exists artifact) {
-            value jpSpec = ModuleSpec.parse(jp);
+            ModuleSpec jpSpec = ModuleSpec.parse(jp);
             if (artifact.name() == jpSpec.name &&
             	artifact.version() == jpSpec.version) {
                 return;
@@ -420,7 +435,7 @@ shared class JDTModelLoader
         try {
             value theLookupEnvironment = upToDateLookupEnvironment;
             value nameEnvironment = unsafeCast<ModelLoaderNameEnvironment>(theLookupEnvironment.nameEnvironment);
-            value uncertainCompoundName = CharOperation.splitOn('.', javaString(name).toCharArray());
+            ObjectArray<CharArray> uncertainCompoundName = CharOperation.splitOn('.', javaString(name).toCharArray());
             Integer numberOfParts = uncertainCompoundName.size;
 
             variable ObjectArray<CharArray>? compoundName = null;
@@ -446,7 +461,7 @@ shared class JDTModelLoader
                     
                     value triedClassName = CharArray(triedClassNameSize);
                     variable Integer currentDestinationIndex = 0;
-                    variable value currentPart = uncertainCompoundName.get(packagePartsEndIndex);
+                    variable CharArray currentPart = uncertainCompoundName.get(packagePartsEndIndex);
                     variable value currentPartLength = currentPart.size;
                     System.arraycopy(currentPart, 0, triedClassName, currentDestinationIndex, currentPartLength);
                     currentDestinationIndex += currentPartLength;
@@ -544,4 +559,90 @@ shared class JDTModelLoader
     }
     
     logVerbose(String message) => noop();
+    
+    Boolean isGetter(MethodBinding methodBinding, String methodName) {
+        if(! methodBinding.typeVariables().size > 0) {            
+            return false;
+        }
+        function matchesPrefix(String prefix) => 
+                let(stringAfterPrefix = methodName[prefix.size...])
+                if (exists charAfterPrefix = stringAfterPrefix.first,
+                    methodName.startsWith("get"),
+                    isStartOfJavaBeanPropertyName(charAfterPrefix.integer),
+                    stringAfterPrefix != "String",
+                    stringAfterPrefix != "Hash",
+                    stringAfterPrefix != "Equals")
+                then true
+                else false;
+        
+        value matchesIs = matchesPrefix("is");
+        value matchesGet = matchesPrefix("get");
+        value hasNoParams = methodBinding.parameters.size == 0;
+        value hasNonVoidReturn = methodBinding.returnType.id != TypeIds.t_void;
+        value hasBooleanReturn = methodBinding.returnType.id == TypeIds.t_boolean;
+        return (matchesGet && hasNonVoidReturn || matchesIs && hasBooleanReturn) && hasNoParams;
+    }
+    
+    MethodBinding? getFunctionalInterfaceMethodBinding(JDTClass klass) {
+        object holder {
+            shared variable MethodBinding? methodBinding = null;
+        }
+        
+        klass.doWithBindings(object satisfies LookupEnvironmentUtilities.ActionOnClassBinding {
+            shared actual void doWithBinding(IType type, ReferenceBinding referenceBinding) {
+                if (! referenceBinding.\iinterface) {
+                    return;
+                }
+                value scope = CompilationUnitScope(
+                    CompilationUnitDeclaration(
+                        referenceBinding.\ipackage.environment.problemReporter, 
+                        null, 
+                        0), 
+                    referenceBinding.\ipackage.environment);
+                value method = referenceBinding.getSingleAbstractMethod(scope, true) else null;
+                if (exists method,
+                    method.validBinding) {
+                    holder.methodBinding = method;
+                }
+            }
+        });
+        
+        return holder.methodBinding;
+    }
+    
+    shared actual String? isFunctionalInterface(ClassMirror klass){
+        if (is JDTClass klass,
+            exists method = getFunctionalInterfaceMethodBinding(klass) ,
+            ! JDTMethod.ignoreMethodInAncestorSearch(method)) {
+            variable String name = CharOperation.charToString(method.selector);
+            if(isGetter(method, name)){
+                name = NamingBase.getJavaAttributeName(name);
+            }
+            return name;
+        }
+        return null;
+    }
+
+    shared actual FunctionalInterfaceType? getFunctionalInterfaceType(TypeMirror typeMirror) {
+        if (typeMirror.kind == TypeKind.declared,
+            is JDTClass klass = typeMirror.declaredClass,
+            exists method = getFunctionalInterfaceMethodBinding(klass)) {
+            value parameters = method.parameters.array;
+            return FunctionalInterfaceType(
+                JDTType.newJDTType(method.returnType),
+                JavaList( { 
+                    for (paramType in parameters.exceptLast)
+                        JDTType.newJDTType(paramType)
+                }.chain {
+                    if (exists lastParamType = parameters.last)
+                        if (method.varargs,
+                            is ArrayBinding lastParamType)
+                        then JDTType.newJDTType(lastParamType.elementsType())
+                        else JDTType.newJDTType(lastParamType)
+                }.sequence()),
+                method.varargs);
+        }
+        return null;
+    }
+    
 }
