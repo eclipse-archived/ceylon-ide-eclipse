@@ -2,6 +2,9 @@ package com.redhat.ceylon.eclipse.android.plugin;
 
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.file.FileSystems;
@@ -9,6 +12,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.eclipse.core.resources.IBuildConfiguration;
 import org.eclipse.core.resources.IBuildContext;
@@ -21,15 +25,22 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.util.CoreUtility;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.cmr.ceylon.CeylonUtils.CeylonRepoManagerBuilder;
+import com.redhat.ceylon.cmr.ceylon.LegacyImporter;
+import com.redhat.ceylon.common.FileUtil;
 import com.redhat.ceylon.common.Versions;
+import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BooleanHolder;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CeylonBuildHook;
@@ -37,10 +48,14 @@ import com.redhat.ceylon.eclipse.core.builder.ICeylonBuildHookProvider;
 import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 import com.redhat.ceylon.ide.common.model.IdeModule;
 import com.redhat.ceylon.model.cmr.ArtifactResult;
 import com.redhat.ceylon.model.loader.JvmBackendUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
+
+import ceylon.interop.java.CeylonIterable;
+import ceylon.interop.java.JavaIterable;
 
 @SuppressWarnings("restriction")
 public class AndroidBuildHookProvider implements ICeylonBuildHookProvider {
@@ -55,6 +70,7 @@ public class AndroidBuildHookProvider implements ICeylonBuildHookProvider {
             };
         private static Path CPC_PATH = new Path(CEYLON_RENAMED_CARS_CPC_NAME + "/default");
 
+        boolean configFileChanged = false;
         boolean areModulesChanged = false;
         boolean hasAdtNature = false;
         boolean hasAndMoreNature = false;
@@ -190,6 +206,89 @@ public class AndroidBuildHookProvider implements ICeylonBuildHookProvider {
             return cpc;
         }
 
+        private String getProjectAndroidVersion(IProject project) {
+            try {
+                java.io.File projectProperties = new java.io.File(project.getLocation().toFile(), "project.properties");
+                if (projectProperties.exists()) {
+                    Properties props = new Properties();
+                    props.load(new FileReader(projectProperties));
+                    String target = props.getProperty("target");
+                    if (target.indexOf('-') > 0) {
+                       return target.split("-")[1];
+                    }
+                }
+            } catch (IOException e) {
+                CeylonAndroidPlugin.logError("Exception occured in the CeylonAndroidPlugin", e);
+            }
+            return null;
+        }
+        
+        
+        private String getSdkHome() {
+            IEclipsePreferences preferences = InstanceScope.INSTANCE
+                    .getNode("org.eclipse.andmore");
+            if (preferences != null) {
+                return preferences.get("org.eclipse.andmore.sdk", null);            
+            }
+            return null;
+        }
+        
+        private java.io.File getAndroidSupportInstalledFolder() {
+            String sdkHome = getSdkHome();
+            if (sdkHome != null) {
+                java.io.File supportFolder = new java.io.File(new java.io.File(new java.io.File(sdkHome, "extras"), "android"), "support");
+                if (supportFolder.exists()) {
+                    return supportFolder;
+                }
+            }
+            return null;
+        }
+
+        private String getAndroidSupportInstalledVersion() {
+            java.io.File supportFolder = getAndroidSupportInstalledFolder();
+            if (supportFolder != null) {
+                try {
+                    java.io.File supportSourceProperties = new java.io.File(supportFolder, "source.properties");
+                    if (supportSourceProperties.exists()) {
+                        Properties props = new Properties();
+                        props.load(new FileReader(supportSourceProperties));
+                        return props.getProperty("Pkg.Revision");
+                    }
+                } catch (IOException e) {
+                    CeylonAndroidPlugin.logError("Exception occured in the CeylonAndroidPlugin", e);
+                }
+            }
+            return null;
+        }
+
+        private File getCeylonAndroidRepositoryFile(IProject project) {
+            java.io.File androidCeylonRepository = new java.io.File(project.getLocation().toFile(), "androidCeylonRepository");
+            return androidCeylonRepository;
+        }
+        
+        private List<File> getFilesInClasspathContainer(String cpcName) {
+            IJavaProject javaProject = JavaCore.create(getProject());
+            ArrayList<File> files = new ArrayList<File>();
+            try {
+                for (IClasspathEntry entry : javaProject.getRawClasspath()) {
+                    if (entry.getEntryKind() == IClasspathEntry.CPE_CONTAINER &&
+                        entry.getPath().segment(0).equals(cpcName)) {
+                            IClasspathContainer container = JavaCore.getClasspathContainer(entry.getPath(), javaProject);
+                            if (container != null){
+                                for (IClasspathEntry cpcEntry : container.getClasspathEntries()) {
+                                    if (cpcEntry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
+                                        files.add(cpcEntry.getPath().toFile());
+                                    }
+                                }
+                            }
+                            break;
+                    }
+                }
+            } catch (JavaModelException e) {
+                CeylonAndroidPlugin.logError("", e);
+            }
+            return files;
+        }
         
         @Override
         protected void startBuild(int kind, @SuppressWarnings("rawtypes") Map args, 
@@ -205,11 +304,54 @@ public class AndroidBuildHookProvider implements ICeylonBuildHookProvider {
                 hasAndMoreNature= false;
             }
             
+            configFileChanged = false;
             areModulesChanged = false;
             monitorRef = new WeakReference<IProgressMonitor>(monitor);
             projectRef = new WeakReference<IProject>(project);
             isReentrantBuild = args.containsKey(CeylonBuilder.BUILDER_ID + ".reentrant");
             	
+            CeylonProjectConfig projectConfig = modelJ2C().ceylonConfig(getProject());
+            
+            ceylon.language.String jdkProvider = projectConfig.getProjectJdkProvider();
+            String androidVersion = getProjectAndroidVersion(getProject());
+            String newJdkProvider = null;
+            if (androidVersion != null) {
+                newJdkProvider = "android/" + androidVersion;
+            }
+            if (jdkProvider == null && newJdkProvider != null) {
+                projectConfig.setProjectJdkProvider(new ceylon.language.String(newJdkProvider));
+                configFileChanged = true;
+            } else {
+                String existingJdkProvider = jdkProvider.toString();
+                if (newJdkProvider != null && 
+                        ! newJdkProvider.equals(existingJdkProvider)) {
+                    projectConfig.setProjectJdkProvider(new ceylon.language.String(newJdkProvider));
+                    configFileChanged = true;
+                }
+            }
+
+            final TypeDescriptor stringTD = TypeDescriptor.klass(ceylon.language.String.class);
+            ceylon.language.String ceylonAndroidRepository = 
+                    new ceylon.language.String("./" + getCeylonAndroidRepositoryFile(getProject()).getName());
+            if (! projectConfig.getProjectLocalRepos().contains(
+                    ceylonAndroidRepository)) {
+                ArrayList<ceylon.language.String> newProjectLoclRepos = new ArrayList<>();
+                Iterable<ceylon.language.String> javaIter = 
+                        new JavaIterable<ceylon.language.String>(
+                                stringTD, 
+                                projectConfig.getProjectLocalRepos());
+                newProjectLoclRepos.add(ceylonAndroidRepository);
+                for (ceylon.language.String oldRepo : javaIter) {
+                    newProjectLoclRepos.add(oldRepo);
+                }
+                projectConfig.setProjectLocalRepos(new CeylonIterable<ceylon.language.String>(stringTD, newProjectLoclRepos));
+                configFileChanged = true;
+            }
+            
+            if (configFileChanged) {
+                projectConfig.save();
+            }
+            
             /*
             if (hasAndroidNature()) {
                 IJavaProject javaProject =JavaCore.create(project);
@@ -252,14 +394,111 @@ public class AndroidBuildHookProvider implements ICeylonBuildHookProvider {
 */
         }
 
+        String[][] supportLibraries = new String[][] {
+            new String[] { "android-support-annotations.jar", "support-annotations" },
+            new String[] { "android-support-customtabs.jar", "customtabs" },
+            new String[] { "android-support-design.jar", "design" },
+            new String[] { "android-support-multidex.jar", "multidex" },
+            new String[] { "android-support-percent.jar", "percent" },
+            new String[] { "android-support-recommendation.jar", "recommendation" },
+            new String[] { "android-support-v4.jar", "support-v4" },
+            new String[] { "android-support-v7-appcompat.jar", "appcompat-v7", "support-v4.jar"},
+            new String[] { "android-support-v7-cardview.jar", "cardview-v7"},
+            new String[] { "android-support-v7-gridlayout.jar", "gridlayout-v7"},
+            new String[] { "android-support-v7-mediarouter.jar", "mediarouter-v7"},
+            new String[] { "android-support-v7-palette.jar", "palette-v7"},
+            new String[] { "android-support-v7-preference.jar", "preference-v7"},
+            new String[] { "android-support-v7-recyclerview.jar", "recyclerview-v7"},
+            new String[] { "android-support-v13.jar", "support-v13" },
+            new String[] { "android-support-v14-preference.jar", "preference-v14"},
+            new String[] { "android-support-v17-leanback.jar", "leanback-v17"},
+            new String[] { "android-support-v17-preference-leanback.jar", "preference-leanback-v17"}
+        };
+        
         @Override
         protected void deltasAnalyzed(List<IResourceDelta> currentDeltas, 
                 BooleanHolder sourceModified, 
                 BooleanHolder mustDoFullBuild,
                 BooleanHolder mustResolveClasspathContainer,
                 boolean mustContinueBuild) {
-            if (mustContinueBuild && hasAndroidNature()) {
-                CeylonBuilder.waitForUpToDateJavaModel(10000, getProject(), getMonitor());
+            if (! mustContinueBuild || ! hasAndroidNature()) {
+                return;
+            }
+            CeylonBuilder.waitForUpToDateJavaModel(10000, getProject(), getMonitor());
+            CeylonProjectConfig projectConfig = modelJ2C().ceylonConfig(getProject());
+            
+            if (configFileChanged) {
+                mustResolveClasspathContainer.value = true;
+                mustDoFullBuild.value = true;
+            }
+            
+            if (mustResolveClasspathContainer.value || mustDoFullBuild.value) {
+                String androidVersion = getProjectAndroidVersion(getProject());
+                String androidSupportVersion = getAndroidSupportInstalledVersion();
+                if (androidVersion != null) {
+                    File androidCeylonRepo = getCeylonAndroidRepositoryFile(getProject());
+                    if (androidCeylonRepo.exists()) {
+                        FileUtil.delete(androidCeylonRepo);
+                    }
+                    
+                    RepositoryManager outputRepoMgr = new CeylonRepoManagerBuilder()
+                    .cwd(getProject().getLocation().toFile())
+                    .outRepo("./" + androidCeylonRepo.getName())
+                    .buildOutputManager();
+                    
+                    androidCeylonRepo.mkdirs();
+                    for (File archive : getFilesInClasspathContainer("org.eclipse.andmore.ANDROID_FRAMEWORK")) {
+                        if (archive.getName().equals("android.jar")) {
+                            LegacyImporter importer = new LegacyImporter("android", androidVersion, archive, outputRepoMgr, outputRepoMgr);
+                            importer.publish();
+                            break;
+                        }
+                    }
+                    
+                    if (androidSupportVersion != null) {
+                        for (File archive : getFilesInClasspathContainer("org.eclipse.andmore.LIBRARIES")) {
+                            if (archive.getName().startsWith("android-support-")) {
+                                for (String[] libDesc : supportLibraries) {
+                                    if (libDesc[0].equals(archive.getName())) {
+                                        String moduleName = "com.android.support." + libDesc[1];
+                                        File propsFile = null;
+                                        FileWriter writer = null;
+                                        try {
+                                            propsFile = File.createTempFile(moduleName, ".properties");
+                                            writer = new FileWriter(propsFile);
+                                            writer.write("+android=" + androidVersion);
+                                            if (libDesc.length > 2) {
+                                                for (int i = 2; i<libDesc.length; i++) {
+                                                    String dep = libDesc[i];
+                                                    writer.write("+" + dep + "=" + androidSupportVersion);
+                                                }
+                                            }
+                                            writer.flush();
+                                            writer.close();
+                                            
+                                            LegacyImporter importer = new LegacyImporter(moduleName, androidSupportVersion, archive, outputRepoMgr, outputRepoMgr);
+                                            importer.moduleDescriptor(propsFile);
+                                            importer.publish();
+                                            break;
+                                        } catch (IOException e) {
+                                            CeylonAndroidPlugin.logError("", e);
+                                        } finally {
+                                            if (writer!= null) {
+                                                try {
+                                                    writer.close();
+                                                } catch (IOException e) {}
+                                            }
+                                            if (propsFile != null) {
+                                                propsFile.delete();
+                                                propsFile.deleteOnExit();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -337,6 +576,7 @@ public class AndroidBuildHookProvider implements ICeylonBuildHookProvider {
 
         @Override
         protected void endBuild() {
+            configFileChanged = false;
             areModulesChanged = false;
             hasAdtNature = false;
             hasAndMoreNature = false;
