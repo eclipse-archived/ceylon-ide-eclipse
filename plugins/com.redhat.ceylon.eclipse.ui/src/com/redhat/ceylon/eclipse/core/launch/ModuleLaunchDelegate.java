@@ -49,9 +49,11 @@ import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
 
+import com.redhat.ceylon.common.Constants;
 import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.sun.jdi.VirtualMachine;
 
@@ -97,12 +99,25 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
     @Override
     public String getVMArguments(ILaunchConfiguration configuration)
             throws CoreException {
+        IProject project = getJavaProject(configuration).getProject();
+        
         //user values at the end although JVMs behave differently
         List<String> vmArgs = new ArrayList<String>();
         vmArgs.add("-Dceylon.system.version="+Versions.CEYLON_VERSION_NUMBER);
-        vmArgs.add("-Dceylon.system.repo="+getInterpolatedCeylonSystemRepo(getJavaProject(configuration).getProject()));
+        vmArgs.add("-Dceylon.system.repo="+getInterpolatedCeylonSystemRepo(project));
         vmArgs.add("-Dceylon.debug.startEvaluationThread=true");
         
+        boolean runAsJs = DebugPlugin.getDefault().getLaunchManager()
+                .getLaunchConfigurationType(ID_CEYLON_JAVASCRIPT_MODULE)
+                    .equals(configuration.getType());
+        
+        CeylonIdeConfig ideConfig = modelJ2C().ideConfig(project);
+        if (ideConfig != null) {
+            ceylon.language.String nodePath = ideConfig.getNodePath();
+            if (nodePath != null) {
+                vmArgs.add("-D" + Constants.PROP_CEYLON_EXTCMD_NODE + "=" + nodePath.toString());
+            }
+        }
         vmArgs.addAll(Arrays.asList(DebugPlugin.parseArguments(super.getVMArguments(configuration))));
         return DebugPlugin.renderArguments(vmArgs.toArray(new String[0]), null);
     }
