@@ -306,6 +306,11 @@ public class AndroidBuildHookProvider implements ICeylonBuildHookProvider {
             
             configFileChanged = false;
             areModulesChanged = false;
+            
+            if (!hasAndroidNature()) {
+                return;
+            }
+            
             monitorRef = new WeakReference<IProgressMonitor>(monitor);
             projectRef = new WeakReference<IProject>(project);
             isReentrantBuild = args.containsKey(CeylonBuilder.BUILDER_ID + ".reentrant");
