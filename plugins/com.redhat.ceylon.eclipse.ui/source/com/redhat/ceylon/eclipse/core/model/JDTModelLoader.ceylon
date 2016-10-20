@@ -206,6 +206,7 @@ shared class JDTModelLoader
             DefaultProblemFactory());
         shared late variable LookupEnvironment lookupEnvironment;
         shared late variable MissingTypeBinding missingTypeBinding;
+        shared late variable CompilationUnitScope dummyCompilationUnitScope;
 
         throws(`class JavaModelException`)
         INameEnvironment createSearchableEnvironment()  {
@@ -219,6 +220,11 @@ shared class JDTModelLoader
             requestor.initialize(lookupEnvironment);
             lookupEnvironment.mayTolerateMissingType = true;
             missingTypeBinding = MissingTypeBinding(lookupEnvironment.defaultPackage, createJavaObjectArray { toCharArray("unknown") }, lookupEnvironment);
+            dummyCompilationUnitScope = CompilationUnitScope(
+                CompilationUnitDeclaration(
+                    lookupEnvironment.problemReporter, 
+                    null, 
+                    0), lookupEnvironment);
         }
 
         createLookupEnvironment();
@@ -593,12 +599,7 @@ shared class JDTModelLoader
                 if (! referenceBinding.\iinterface) {
                     return;
                 }
-                value scope = CompilationUnitScope(
-                    CompilationUnitDeclaration(
-                        referenceBinding.\ipackage.environment.problemReporter, 
-                        null, 
-                        0), 
-                    referenceBinding.\ipackage.environment);
+                assert(exists scope = javaProjectInfos?.dummyCompilationUnitScope);
                 value method = referenceBinding.getSingleAbstractMethod(scope, true) else null;
                 if (exists method,
                     method.validBinding) {
@@ -623,6 +624,15 @@ shared class JDTModelLoader
         return null;
     }
 
+    shared actual Boolean isFunctionalInterfaceType(TypeMirror typeMirror){
+        if (typeMirror.kind == TypeKind.declared,
+            is JDTClass klass = typeMirror.declaredClass,
+            exists method = getFunctionalInterfaceMethodBinding(klass)) {
+            return true;
+        }
+        return false;
+    }
+    
     shared actual FunctionalInterfaceType? getFunctionalInterfaceType(TypeMirror typeMirror) {
         if (typeMirror.kind == TypeKind.declared,
             is JDTClass klass = typeMirror.declaredClass,
