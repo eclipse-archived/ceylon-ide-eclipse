@@ -46,7 +46,10 @@ public class CeylonWarningsPropertiesPage extends PropertyPage {
     public boolean performOk() {
         IProject project = getSelectedProject();
         if (CeylonNature.isEnabled(project)) {
-            CeylonProjectConfig config = modelJ2C().ceylonModel().getProject(project).getConfiguration();
+            CeylonProjectConfig config = 
+                    modelJ2C().ceylonModel()
+                        .getProject(project)
+                        .getConfiguration();
             if (suppressedWarnings.isEmpty()) {
                 config.setProjectSuppressWarnings(null);
             }
@@ -98,9 +101,9 @@ public class CeylonWarningsPropertiesPage extends PropertyPage {
         public void widgetDefaultSelected(SelectionEvent e) {}
     }
     
-    void createOption(Composite comp, String description, Warning... type) {
+    void createOption(Composite comp, Warning type) {
         final Button b = new Button(comp, SWT.CHECK);
-        b.setText(description);
+        b.setText(type.getDescription());
         b.addSelectionListener(new OptionListener(b, type));
         b.setSelection(!suppressedWarnings.containsAll(Arrays.asList(type)));
         b.setEnabled(showCompilerWarnings && 
@@ -130,40 +133,11 @@ public class CeylonWarningsPropertiesPage extends PropertyPage {
         warningOptions.setLayout(GridLayoutFactory.swtDefaults().equalWidth(true).numColumns(2).create());
         warningOptions.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).create());
         
-        createOption(warningOptions, 
-                "Unused declarations",
-                Warning.unusedDeclaration);
-        createOption(warningOptions, 
-                "Unused imports", 
-                Warning.unusedImport);
-        createOption(warningOptions, 
-                "Deprecation", 
-                Warning.deprecation);
-        createOption(warningOptions, 
-                "Expressions of type 'Nothing'", 
-                Warning.expressionTypeNothing);
-        createOption(warningOptions, 
-                "Broken documentation links", 
-                Warning.doclink);
-        createOption(warningOptions, 
-                "Discouraged namespaces", 
-                Warning.ceylonNamespace, 
-                Warning.javaNamespace);
-        createOption(warningOptions, 
-                "Source file names", 
-                Warning.filenameCaselessCollision, 
-                Warning.filenameNonAscii);
-        createOption(warningOptions, 
-                "Warning suppression", 
-                Warning.suppressedAlready, 
-                Warning.suppressesNothing, 
-                Warning.unknownWarning);
-        createOption(warningOptions, 
-                "Ambiguous annotations", 
-                Warning.ambiguousAnnotation);
-        createOption(warningOptions, 
-                "Compiler annotations", 
-                Warning.compilerAnnotation);
+        for (Warning warning: Warning.values()) {
+            createOption(warningOptions, warning);
+                    
+        }
+        
         warningOptions.setEnabled(showCompilerWarnings && builderEnabled);
         
         showWarnings.addSelectionListener(new SelectionAdapter() {
