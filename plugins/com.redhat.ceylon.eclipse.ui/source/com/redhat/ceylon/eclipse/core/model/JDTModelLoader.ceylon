@@ -636,9 +636,11 @@ shared class JDTModelLoader
     shared actual FunctionalInterfaceType? getFunctionalInterfaceType(TypeMirror typeMirror) {
         if (typeMirror.kind == TypeKind.declared,
             is JDTClass klass = typeMirror.declaredClass,
-            exists method = getFunctionalInterfaceMethodBinding(klass)) {
+            exists method = getFunctionalInterfaceMethodBinding(klass),
+            is ReferenceBinding enclosingClass = method.declaringClass) {
             value parameters = method.parameters.array;
             return FunctionalInterfaceType(
+                JDTMethod(JDTClass(enclosingClass, LookupEnvironmentUtilities.toType(enclosingClass)), method),
                 JDTType.newJDTType(method.returnType),
                 JavaList( { 
                     for (paramType in parameters.exceptLast)
