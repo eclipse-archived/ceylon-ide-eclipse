@@ -2253,10 +2253,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 options.add(ceylonConfig.getOption(DefaultToolOptions.COMPILER_RESOURCE_ROOT));
             }
 
-            
-            List<String> javacOptions = CeylonHelper.toJavaStringList(ideConfig.getJavacOptions());
+            List<String> javacOptions = CeylonHelper.toJavaStringList(config.getJavacOptions());
             if (javacOptions != null) {
                 CeylonCompileTool.addJavacArguments(options, javacOptions);
+            }
+            if (!options.contains("-target")) {
+                options.add("-target");
+                options.add(String.valueOf(DefaultToolOptions.getCompilerTargetVersion(ceylonConfig)));
             }
             
             progress.worked(20);
