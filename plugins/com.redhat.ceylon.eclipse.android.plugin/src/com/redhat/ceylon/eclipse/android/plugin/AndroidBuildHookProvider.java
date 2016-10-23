@@ -349,7 +349,7 @@ public class AndroidBuildHookProvider implements ICeylonBuildHookProvider {
                 for (ceylon.language.String oldRepo : javaIter) {
                     newProjectLoclRepos.add(oldRepo);
                 }
-                projectConfig.setProjectLocalRepos(new CeylonIterable<ceylon.language.String>(stringTD, newProjectLoclRepos));
+                projectConfig.setProjectLocalRepos(new CeylonIterable<ceylon.language.String>(stringTD, newProjectLoclRepos).sequence());
                 configFileChanged = true;
             }
             
