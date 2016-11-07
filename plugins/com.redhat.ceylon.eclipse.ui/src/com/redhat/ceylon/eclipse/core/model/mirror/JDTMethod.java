@@ -46,6 +46,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 
+import com.redhat.ceylon.common.JVMModuleUtil;
 import com.redhat.ceylon.compiler.java.metadata.Name;
 import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.*;
 import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.ActionOnMethodBinding;
@@ -200,6 +201,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                         TypeBinding parameterTypeBinding = parameterBindings[i];
                         if(nameAnnotation != null) {
                             parameterName = (String) nameAnnotation.getValue();
+                            givenNames.add(parameterName);
                         } else {
                             String baseName = toParameterName(parameterTypeBinding);
                             int count = 0;
@@ -211,8 +213,11 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                                 }
                             }
                             parameterName = nameToReturn;
+                            givenNames.add(parameterName);
+                            if (JVMModuleUtil.isJavaKeyword(parameterName)) {
+                                parameterName = parameterName + "_";
+                            }
                         }
-                        givenNames.add(parameterName);
                         parameters.add(new JDTVariable(parameterName, JDTType.newJDTType(parameterTypeBinding), parameterAnnotations));
                     }
                 }
