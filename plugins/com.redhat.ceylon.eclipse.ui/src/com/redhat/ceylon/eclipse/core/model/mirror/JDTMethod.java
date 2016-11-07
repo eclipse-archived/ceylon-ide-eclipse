@@ -163,7 +163,9 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         if (parameters == null) {
             doWithBindings(new ActionOnMethodBinding() {
                 private String toParameterName(TypeBinding parameterType) {
-                    String typeName = new String(parameterType.sourceName());
+                    String typeName = new StringBuilder("")
+                            .append('_')
+                            .append(parameterType.sourceName()).toString();
                     StringTokenizer tokens = new StringTokenizer(typeName, "$.[]");
                     String result = null;
                     while (tokens.hasMoreTokens()) {
