@@ -55,7 +55,6 @@ import com.redhat.ceylon.model.typechecker.model {
 
 import java.lang {
     CharArray,
-    Runnable,
     ObjectArray,
     System
 }
@@ -375,13 +374,12 @@ shared class JDTModelLoader
     
     shared actual LookupEnvironment upToDateLookupEnvironment {
         assert(exists javaProjectInfos);
-        resetJavaModelSourceIfNecessary(object satisfies Runnable {
-            run() =>
+        resetJavaModelSourceIfNecessary(() =>
                 synchronize {
                     on = lookupEnvironmentMutex;
                     do() => createLookupEnvironment();
-                };
-        });
+                }
+        );
         return javaProjectInfos.lookupEnvironment;
     }
 
