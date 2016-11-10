@@ -14,7 +14,7 @@ import org.eclipse.jdt.internal.debug.ui.monitors.JavaElementContentProvider;
 import org.eclipse.jdt.internal.debug.ui.threadgroups.JavaDebugTargetContentProvider;
 
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
-import com.redhat.ceylon.launcher.CeylonDebugEvaluationThread;
+import com.redhat.ceylon.ide.common.debug.agent.CeylonDebugEvaluationThread;
 
 public class CeylonDebugTargetContentProvider extends
         JavaDebugTargetContentProvider {

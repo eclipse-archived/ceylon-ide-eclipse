@@ -557,6 +557,11 @@ public class LaunchHelper {
         String topLevelName = 
                 configuration.getAttribute(ATTR_TOPLEVEL_NAME,
                         (String) null);
+        int def = topLevelName.indexOf(DEFAULT_RUN_MARKER);
+        if (def != -1) {
+            topLevelName = null;
+        }
+
         if (topLevelName == null) {
             String moduleName = 
                     configuration.getAttribute(ATTR_MODULE_NAME,

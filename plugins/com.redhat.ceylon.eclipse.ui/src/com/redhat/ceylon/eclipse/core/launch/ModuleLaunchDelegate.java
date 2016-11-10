@@ -13,6 +13,7 @@ import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringList;
 import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -105,11 +106,10 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         List<String> vmArgs = new ArrayList<String>();
         vmArgs.add("-Dceylon.system.version="+Versions.CEYLON_VERSION_NUMBER);
         vmArgs.add("-Dceylon.system.repo="+getInterpolatedCeylonSystemRepo(project));
-        vmArgs.add("-Dceylon.debug.startEvaluationThread=true");
-        
-        boolean runAsJs = DebugPlugin.getDefault().getLaunchManager()
-                .getLaunchConfigurationType(ID_CEYLON_JAVASCRIPT_MODULE)
-                    .equals(configuration.getType());
+        File javaDebugAgentPath = CeylonPlugin.getInstance().getDebugAgentJar();
+        if (javaDebugAgentPath != null) {
+            vmArgs.add("-javaagent:" + javaDebugAgentPath.getAbsolutePath());
+        }
         
         CeylonIdeConfig ideConfig = modelJ2C().ideConfig(project);
         if (ideConfig != null) {

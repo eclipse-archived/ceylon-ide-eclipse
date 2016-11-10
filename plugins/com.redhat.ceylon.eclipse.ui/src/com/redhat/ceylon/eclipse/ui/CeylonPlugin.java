@@ -10,6 +10,8 @@ import static org.eclipse.jdt.core.JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
@@ -61,6 +63,9 @@ import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
 import com.redhat.ceylon.eclipse.core.debug.CeylonDebugElementAdapterFactory;
 import com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugOptionsManager;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
+
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.model.ZipParameters;
 
 
 public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
@@ -304,6 +309,60 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         return repo;
     }
     
+    public File getDebugAgentJar() {
+        try {
+            Bundle bundle = Platform.getBundle("com.redhat.ceylon.ide.common");
+            if (bundle != null) {
+                File debugAgentBundleFile = FileLocator.getBundleFile(bundle);
+                if (debugAgentBundleFile != null) {
+                    if (debugAgentBundleFile.isDirectory()) {
+                        File[] found = debugAgentBundleFile.listFiles(new FilenameFilter() {
+                            @Override
+                            public boolean accept(File dir, String name) {
+                                return name.startsWith("com.redhat.ceylon.ide.common"+ "-") &&
+                                        name.endsWith(".car");
+                            }
+                        });
+                        if (found.length == 1) {
+                            return found[0];
+                        }
+                        
+                        found = debugAgentBundleFile.listFiles(new FileFilter() {
+                            @Override
+                            public boolean accept(File pathname) {
+                                return pathname.isDirectory() && pathname.getName().equals("META-INF");
+                            }
+                        });
+                        if (found.length == 1) {
+                            // The IDE common bundle has been unpacked during installation
+                            // jar it back in the eclipse plugin state location.
+                            File utilitiesDirectory = 
+                                    new File(getStateLocation().toFile(), 
+                                            "Utilities");
+                            utilitiesDirectory.mkdirs();
+                            final File debugAgentFile = new File(utilitiesDirectory, debugAgentBundleFile.getName() + ".car");
+                            if (! debugAgentFile.exists()) {
+                                ZipFile debugAgentZipFile = new ZipFile(
+                                        debugAgentFile);
+                                ZipParameters zipParams = new ZipParameters();
+                                zipParams.setIncludeRootFolder(false);
+                                debugAgentZipFile.createZipFileFromFolder(debugAgentBundleFile, zipParams, false, -1);
+                            }
+                            return debugAgentFile;
+                        }
+                        
+                    } else {
+                        return debugAgentBundleFile;
+                    }
+                }
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /**
      * - If the property is not empty, return the 
      *   corresponding file

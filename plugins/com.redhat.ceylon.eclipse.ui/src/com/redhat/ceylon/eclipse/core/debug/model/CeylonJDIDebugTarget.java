@@ -39,7 +39,7 @@ import org.eclipse.jdt.internal.debug.core.model.JDIObjectValue;
 import org.eclipse.jdt.internal.debug.core.model.JDIThread;
 
 import com.redhat.ceylon.eclipse.core.launch.LaunchHelper;
-import com.redhat.ceylon.launcher.CeylonDebugEvaluationThread;
+import com.redhat.ceylon.ide.common.debug.agent.CeylonDebugEvaluationThread;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
