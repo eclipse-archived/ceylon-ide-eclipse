@@ -180,6 +180,7 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         prepareOverridesArgument(args, ceylonProject);
         prepareFlatClasspathArgument(args, ceylonProject);
         prepareAutoExportMavenDependencies(args, ceylonProject);
+        prepareFullyExportMavenDependencies(args, ceylonProject);
         prepareOfflineArgument(args, ceylonProject);
         if (configuration.getAttribute(ATTR_LAUNCH_VERBOSE, false)) {
             prepareVerboseArgument(args, runAsJs);
@@ -231,6 +232,13 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
         boolean autoExportMavenDependencies = project.getConfiguration().getAutoExportMavenDependencies();
         if (autoExportMavenDependencies) {
             args.add("--auto-export-maven-dependencies");
+        }
+    }
+
+    protected void prepareFullyExportMavenDependencies(List<String> args, CeylonProject<IProject,IResource,IFolder,IFile> project) {
+        boolean fullyExportMavenDependencies = project.getConfiguration().getFullyExportMavenDependencies();
+        if (fullyExportMavenDependencies) {
+            args.add("--fully-export-maven-dependencies");
         }
     }
 

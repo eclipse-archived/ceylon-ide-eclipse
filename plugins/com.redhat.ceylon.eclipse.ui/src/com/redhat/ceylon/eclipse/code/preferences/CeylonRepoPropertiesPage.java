@@ -7,6 +7,8 @@ import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSuppressed
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getVerbose;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toCeylonBoolean;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toCeylonString;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.widgets.Composite;
@@ -42,11 +44,13 @@ public class CeylonRepoPropertiesPage extends PropertyPage {
         projectConfig.setProjectSuppressWarningsEnum(
                 getSuppressedWarnings(project));
         projectConfig.setProjectOverrides(
-                ceylon.language.String.instance(block.getOverrides()));
+                toCeylonString(block.getOverrides()));
         projectConfig.setProjectFlatClasspath(
-                ceylon.language.Boolean.instance(block.getFlatClasspath()));
+                toCeylonBoolean(block.getFlatClasspath()));
         projectConfig.setProjectAutoExportMavenDependencies(
-                ceylon.language.Boolean.instance(block.getAutoExportMavenDependencies()));
+                toCeylonBoolean(block.getAutoExportMavenDependencies()));
+        projectConfig.setProjectFullyExportMavenDependencies(
+                toCeylonBoolean(block.getFullyExportMavenDependencies()));
         projectConfig.save();
         
         if (CeylonNature.isEnabled(project)) {

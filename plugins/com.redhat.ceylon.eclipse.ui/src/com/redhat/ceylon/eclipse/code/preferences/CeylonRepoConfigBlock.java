@@ -51,6 +51,7 @@ import com.redhat.ceylon.eclipse.ui.CeylonResources;
 import com.redhat.ceylon.ide.common.configuration.CeylonRepositoryConfigurator;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 
+@SuppressWarnings("serial")
 public class CeylonRepoConfigBlock extends CeylonRepositoryConfigurator {
 
     public interface ValidationCallback {
@@ -94,6 +95,10 @@ public class CeylonRepoConfigBlock extends CeylonRepositoryConfigurator {
 
     public Boolean getAutoExportMavenDependencies() {
         return moduleResolutionBlock.getAutoExportMavenDependencies();
+    }
+
+    public Boolean getFullyExportMavenDependencies() {
+        return moduleResolutionBlock.getFullyExportMavenDependencies();
     }
 
     public String getSystemRepo() {

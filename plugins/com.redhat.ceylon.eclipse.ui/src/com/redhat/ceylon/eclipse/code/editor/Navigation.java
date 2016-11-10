@@ -4,6 +4,7 @@ import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
 import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toCeylonString;
 import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
@@ -78,6 +79,7 @@ public class Navigation {
                 }
                 else if (ceylonUnit instanceof CeylonBinaryUnit) {
                     //special case for Java source in ceylon.language!
+                    @SuppressWarnings("rawtypes")
                     CeylonBinaryUnit binaryUnit = 
                             (CeylonBinaryUnit) ceylonUnit;
                     String path = toJavaString(binaryUnit.getSourceRelativePath());
@@ -150,6 +152,7 @@ public class Navigation {
         }
         else {
             if (unit instanceof IResourceAware) {
+                @SuppressWarnings({ "unchecked", "rawtypes" })
                 IResourceAware<IProject,IFolder,IFile> 
                     ra = (IResourceAware) unit;
                 IFile file = ra.getResourceFile();
@@ -166,6 +169,7 @@ public class Navigation {
     public static ITextEditor gotoLocation(Unit unit, 
             int startOffset, int length) {
         if (unit instanceof IResourceAware) {
+            @SuppressWarnings({ "unchecked", "rawtypes" })
             IResourceAware<IProject,IFolder,IFile> 
                 ra = (IResourceAware) unit;
             IFile file = ra.getResourceFile();
@@ -240,6 +244,7 @@ public class Navigation {
 
     public static IPath getUnitPath(Unit unit) {
         if (unit instanceof IResourceAware) {
+            @SuppressWarnings({ "rawtypes", "unchecked" })
             IResourceAware<IProject,IFolder,IFile> 
                 ra = (IResourceAware) unit;
             IFile fileResource = ra.getResourceFile();
@@ -429,6 +434,7 @@ public class Navigation {
         }
         Unit unit = declaration.getUnit();
         if (unit instanceof IJavaModelAware) {
+            @SuppressWarnings({ "rawtypes", "unchecked" })
             IJavaModelAware<IProject, ITypeRoot, IJavaElement> 
                 javaModelAware = (IJavaModelAware) unit;
             return javaModelAware.toJavaElement(declaration, 
@@ -445,6 +451,7 @@ public class Navigation {
         
         Unit unit = dec.getUnit();
         if (unit instanceof CeylonBinaryUnit) {
+            @SuppressWarnings("rawtypes")
             CeylonBinaryUnit binaryUnit = 
                     (CeylonBinaryUnit) unit;
             ExternalPhasedUnit phasedUnit = 
@@ -455,7 +462,7 @@ public class Navigation {
                     String sourceRelativePath = 
                             toJavaString(binaryUnit.getCeylonModule()
                                 .toSourceUnitRelativePath(
-                                        ceylon.language.String.instance(
+                                        toCeylonString(
                                                 unit.getRelativePath())));
                     boolean isCeylon = sourceRelativePath!=null && 
                             sourceRelativePath.endsWith(".ceylon");

@@ -49,12 +49,14 @@ public class CeylonModuleResolutionBlock {
 
     private ceylon.language.Boolean flatClasspath;
     private ceylon.language.Boolean autoExportMavenDependencies;
+    private ceylon.language.Boolean fullyExportMavenDependencies;
 
     private Text overridesText;
     private Button overridesBrowseButton;
     private Button overridesCreateButton;
     private Button flatClasspathButton;
     private Button autoExportMavenDependenciesButton;
+    private Button fullyExportMavenDependenciesButton;
     
 
     public CeylonModuleResolutionBlock() {
@@ -77,6 +79,10 @@ public class CeylonModuleResolutionBlock {
         return autoExportMavenDependencies == null ? null : autoExportMavenDependencies.booleanValue();
     }
 
+    public Boolean getFullyExportMavenDependencies() {
+        return fullyExportMavenDependencies == null ? null : fullyExportMavenDependencies.booleanValue();
+    }
+
     public void performDefaults() {
         overridesText.setText("");
 
@@ -89,15 +95,23 @@ public class CeylonModuleResolutionBlock {
         ceylon.language.String overrides = null;
         if (isCeylonNatureEnabled) {
             BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
-            if (project != null) {
-                
-            }
             CeylonProjectConfig config = 
                     ceylonProject.getConfiguration();
             overrides = config.getProjectOverrides();
             flatClasspath = config.getProjectFlatClasspath();
             autoExportMavenDependencies = 
                     config.getProjectAutoExportMavenDependencies();
+            fullyExportMavenDependencies = 
+                    config.getProjectFullyExportMavenDependencies();
+            overridesText.setEnabled(true);
+            flatClasspathButton.setEnabled(true);
+            autoExportMavenDependenciesButton.setEnabled(true);
+            fullyExportMavenDependenciesButton.setEnabled(true);
+        } else {
+            overridesText.setEnabled(false);
+            flatClasspathButton.setEnabled(false);
+            autoExportMavenDependenciesButton.setEnabled(false);
+            fullyExportMavenDependenciesButton.setEnabled(false);
         }
         
         boolean flat = 
@@ -131,6 +145,22 @@ public class CeylonModuleResolutionBlock {
             }
         });
 
+        boolean fullyExport = 
+                fullyExportMavenDependencies!=null &&
+                fullyExportMavenDependencies.booleanValue();
+        fullyExportMavenDependenciesButton.setSelection(fullyExport);
+        fullyExportMavenDependenciesButton.addListener(SWT.Selection, 
+                new Listener() {
+            public void handleEvent(Event e) {
+                if (fullyExportMavenDependencies == null) {
+                    fullyExportMavenDependencies = ceylon.language.Boolean.instance(true);
+                } else {
+                    fullyExportMavenDependencies = 
+                            ceylon.language.Boolean.instance(!fullyExportMavenDependencies.booleanValue());
+                }
+            }
+        });
+        
         if (overrides != null) {
             overridesText.setText(overrides.value.trim());
         } else {
@@ -249,6 +279,14 @@ public class CeylonModuleResolutionBlock {
                 .grab(true, false)
                 .create());
 
+        fullyExportMavenDependenciesButton = 
+                new Button(parent, SWT.CHECK);
+        fullyExportMavenDependenciesButton.setText(
+                "Fully export Maven dependencies");
+        fullyExportMavenDependenciesButton.setLayoutData(fillDefaults()
+                .span(2, 1)
+                .grab(true, false)
+                .create());
 
         performDefaults();
     }

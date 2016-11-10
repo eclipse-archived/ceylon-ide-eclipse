@@ -9,6 +9,7 @@ import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static com.redhat.ceylon.eclipse.util.Highlights.styleJavaType;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toCeylonString;
 import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
@@ -362,9 +363,11 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                     IType type = 
                             (IType) je.getAncestor(TYPE);
                     
+                    @SuppressWarnings("rawtypes")
                     IJavaModelAware unit = 
                             CeylonBuilder.getUnit(type);
                     if (unit instanceof CeylonBinaryUnit) {
+                        @SuppressWarnings("rawtypes")
                         CeylonBinaryUnit bu = 
                                 (CeylonBinaryUnit)unit;
                         String fullPath = 
@@ -376,6 +379,7 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
                         }
                     }
                     if (unit instanceof JavaClassFile) {
+                        @SuppressWarnings("rawtypes")
                         JavaClassFile javaClassFile = 
                                 (JavaClassFile) unit;
                         BaseIdeModule module = 
@@ -454,10 +458,10 @@ public class SearchResultsLabelProvider extends CeylonLabelProvider {
     }
 
     private static String sourceRelativePath(
-            JavaClassFile javaClassFile, 
+            @SuppressWarnings("rawtypes") JavaClassFile javaClassFile, 
             BaseIdeModule module) {
         ceylon.language.String path = 
-                ceylon.language.String.instance(javaClassFile.getRelativePath());
+                toCeylonString(javaClassFile.getRelativePath());
         return toJavaString(module.toSourceUnitRelativePath(path));
     }
 

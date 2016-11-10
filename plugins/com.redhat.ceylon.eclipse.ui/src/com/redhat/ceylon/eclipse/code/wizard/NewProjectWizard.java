@@ -196,6 +196,13 @@ public class NewProjectWizard extends NewElementWizard
                     projectConfig.setProjectAutoExportMavenDependencies(
                             ceylon.language.Boolean.instance(autoExportMavenDependencies));
                 }
+
+                Boolean fullyExportMavenDependencies = 
+                        block.getFullyExportMavenDependencies();
+                if (fullyExportMavenDependencies!=null) {
+                    projectConfig.setProjectFullyExportMavenDependencies(
+                            ceylon.language.Boolean.instance(fullyExportMavenDependencies));
+                }
             }
             
             projectConfig.save();

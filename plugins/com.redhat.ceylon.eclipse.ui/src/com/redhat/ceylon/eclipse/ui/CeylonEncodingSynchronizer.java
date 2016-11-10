@@ -2,6 +2,7 @@ package com.redhat.ceylon.eclipse.ui;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CHARSET_PROBLEM_MARKER_ID;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toCeylonString;
 import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static org.eclipse.core.resources.IResource.DEPTH_ONE;
 import static org.eclipse.core.resources.IResourceDelta.CONTENT;
@@ -273,7 +274,7 @@ public class CeylonEncodingSynchronizer {
 
                     String originalConfigEncoding = toJavaString(config.getProjectEncoding());
                     if (!isEquals(originalConfigEncoding, encoding)) {
-                        config.setProjectEncoding(ceylon.language.String.instance(encoding));
+                        config.setProjectEncoding(toCeylonString(encoding));
                         config.save();
                     }
                 } finally {
