@@ -9,6 +9,7 @@ import static com.redhat.ceylon.model.cmr.JDKUtils.isOracleJDKModule;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getInterveningRefinements;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getSignature;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
+import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isVariadic;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -25,10 +26,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 
-import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.CeylonHelper;
 import com.redhat.ceylon.eclipse.util.Filters;
 import com.redhat.ceylon.eclipse.util.ModelProxy;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
@@ -42,8 +41,6 @@ import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 import com.redhat.ceylon.model.typechecker.model.TypeParameter;
 import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-
-import ceylon.interop.java.JavaIterable;
 
 public final class CeylonHierarchyContentProvider
         implements ITreeContentProvider {
@@ -369,6 +366,7 @@ public final class CeylonHierarchyContentProvider
                         .getActiveEditor();
             
             List<Type> signature = getSignature(declaration);
+            boolean isVariadic = isVariadic(declaration);
             int ps = packages.size();
             for (Package pack: packages) { //workaround CME
                 List<Declaration> members =
@@ -398,7 +396,7 @@ public final class CeylonHierarchyContentProvider
                                             addTypeToHierarchy(d);
                                         }
                                         else if (declaration instanceof TypedDeclaration) {
-                                            addMemberToHierarchy(signature, d);
+                                            addMemberToHierarchy(signature, isVariadic, d);
                                         }
                                     }
                                     catch (Exception e) {
@@ -431,6 +429,8 @@ public final class CeylonHierarchyContentProvider
                         (TypeDeclaration) container;
                 List<Type> signature = 
                         getSignature(declaration);
+                boolean isVariadic = 
+                        isVariadic(declaration);
                 depthInHierarchy++;
                 root = memberDec;
                 //first walk up the superclass hierarchy
@@ -461,13 +461,15 @@ public final class CeylonHierarchyContentProvider
                             List<Declaration> directlyInheritedMembers = 
                                     getInterveningRefinements(
                                             decname, 
-                                            signature, 
+                                            signature,
+                                            isVariadic,
                                             refinedDeclaration,
                                             mc, superDec);
                             List<Declaration> all = 
                                     getInterveningRefinements(
                                             decname, 
-                                            signature, 
+                                            signature,
+                                            isVariadic,
                                             refinedDeclaration,
                                             mc, rc);
                             for (Declaration d: all) {
@@ -506,6 +508,7 @@ public final class CeylonHierarchyContentProvider
                             getInterveningRefinements(
                                     decname, 
                                     signature, 
+                                    isVariadic,
                                     declaration.getRefinedDeclaration(),
                                     mc, rc);
                     directlyInheritedMembers.remove(refinedDeclaration);
@@ -606,8 +609,6 @@ public final class CeylonHierarchyContentProvider
                         (BaseIdeModule) currentModule;
                 List<BaseIdeModule> moduleInAllProjects = 
                         new ArrayList<BaseIdeModule>();
-                TypeDescriptor BaseIdeModuleTD = 
-                        TypeDescriptor.klass(BaseIdeModule.class);
                 moduleInAllProjects.add(jdtCurrentModule);
                 moduleInAllProjects.addAll(jdtCurrentModule.getModuleInReferencingProjectsAsJavaList());
                 for (BaseIdeModule ideModule: moduleInAllProjects) {
@@ -620,7 +621,7 @@ public final class CeylonHierarchyContentProvider
         }
 
         private void addMemberToHierarchy(
-                List<Type> signature, Declaration dec) {
+                List<Type> signature, boolean isVariadic, Declaration dec) {
             Declaration refinedDeclaration = 
                     declaration.getRefinedDeclaration();
             TypeDeclaration td = 
@@ -640,7 +641,8 @@ public final class CeylonHierarchyContentProvider
                     List<Declaration> refinements = 
                             getInterveningRefinements(
                                     name, 
-                                    signature, 
+                                    signature,
+                                    isVariadic,
                                     refinedDeclaration, 
                                     td, rdc);
                     //TODO: keep the directly refined declarations in the model
@@ -652,7 +654,8 @@ public final class CeylonHierarchyContentProvider
                         List<Declaration> refs = 
                                 getInterveningRefinements(
                                         name, 
-                                        signature, 
+                                        signature,
+                                        isVariadic,
                                         refinedDeclaration, 
                                         td, cc);
                         if (refs.size()==1) {
