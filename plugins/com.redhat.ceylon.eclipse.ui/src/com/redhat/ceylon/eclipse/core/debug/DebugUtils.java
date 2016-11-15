@@ -7,10 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -34,6 +34,7 @@ import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
+import org.eclipse.jdt.internal.debug.core.model.JDIClassObjectValue;
 import org.eclipse.jdt.internal.debug.core.model.JDIClassType;
 import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
 import org.eclipse.jdt.internal.debug.core.model.JDINullValue;
@@ -54,10 +55,10 @@ import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.Evaluatio
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationWaiter;
 import com.redhat.ceylon.eclipse.util.JavaSearch;
 import com.redhat.ceylon.eclipse.util.JavaSearch.DefaultArgumentMethodSearch;
-import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
 import com.redhat.ceylon.ide.common.typechecker.CrossProjectPhasedUnit;
+import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.model.loader.NamingBase.Suffix;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
@@ -202,6 +203,7 @@ public class DebugUtils {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     public static PhasedUnit getPhasedUnit(String sourcePath,
             IJavaProject project) {
         PhasedUnits projectPhasedUnits = CeylonBuilder
@@ -365,10 +367,31 @@ public class DebugUtils {
         }
     };
 
-    public static JDIClassType getMetaModelClass(JDIDebugTarget debugTarget) {
+    public static JDIClassType getMetaModelClass(JDIDebugTarget debugTarget, IJavaThread innerThread) {
         IJavaType[] types = null;
         try {
             types = debugTarget.getJavaTypes(Metamodel.class.getName());
+            if (types == null || types.length == 0){
+                types = debugTarget.getJavaTypes(ClassLoader.class.getName());
+                if (types != null && types.length > 0) {
+                    JDIClassType clClass = ((JDIClassType)types[0]);
+                    IJavaValue res = clClass.sendMessage("getSystemClassLoader", "()Ljava/lang/ClassLoader;", new IJavaValue[0], innerThread);
+                    if (res instanceof JDIObjectValue) {
+                        JDIObjectValue systemCL = (JDIObjectValue) res;
+                        types = debugTarget.getJavaTypes(Class.class.getName());
+                        if (types != null && types.length > 0) {
+                            JDIClassType klassClass = ((JDIClassType)types[0]);
+                            
+                            IJavaValue metaModelName = JDIObjectValue.createValue(debugTarget, debugTarget.getVM().mirrorOf(Metamodel.class.getName()));
+                            IJavaValue trueValue = JDIObjectValue.createValue(debugTarget, debugTarget.getVM().mirrorOf(true));
+                            res = klassClass.sendMessage("forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;", new IJavaValue[] {metaModelName, trueValue, systemCL}, innerThread);
+                            if (res instanceof JDIClassObjectValue) {
+                                return (JDIClassType) ((JDIClassObjectValue) res).getInstanceType();
+                            }
+                        }
+                    }
+                }
+            }
         } catch (DebugException e) {
             e.printStackTrace();
         }
@@ -414,7 +437,7 @@ public class DebugUtils {
                             @Override
                             public void run(IJavaThread innerThread, IProgressMonitor monitor,
                                     EvaluationListener listener) throws DebugException {
-                                JDIClassType metamodelType = getMetaModelClass(javaValue.getJavaDebugTarget());
+                                JDIClassType metamodelType = getMetaModelClass(javaValue.getJavaDebugTarget(), innerThread);
                                 IJavaValue producedType = null;
                                 if (metamodelType != null) {
                                     producedType = typeRetriever.retrieveType(javaValue, isMethod, metamodelType, innerThread, monitor);

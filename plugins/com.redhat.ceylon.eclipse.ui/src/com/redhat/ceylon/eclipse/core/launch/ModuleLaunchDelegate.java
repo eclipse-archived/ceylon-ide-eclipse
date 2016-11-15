@@ -146,7 +146,7 @@ public class ModuleLaunchDelegate extends JavaLaunchDelegate {
                 protected IDebugTarget createDebugTarget(
                         final VMRunnerConfiguration config, final ILaunch launch, final int port,
                         final IProcess process, final VirtualMachine vm) {
-                    final IJavaDebugTarget[] target = new IJavaDebugTarget[1];
+                    final IDebugTarget[] target = new IDebugTarget[1];
                     IWorkspaceRunnable r = new IWorkspaceRunnable() {
                         public void run(IProgressMonitor m) {
                             target[0] = new CeylonJDIDebugTarget(launch, vm, 

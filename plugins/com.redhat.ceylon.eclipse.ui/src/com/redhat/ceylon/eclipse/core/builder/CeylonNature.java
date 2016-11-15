@@ -21,6 +21,7 @@ public class CeylonNature extends ProjectNatureBase {
     public static boolean isEnabled(IProject project) {
         try {
             return project != null && 
+                    project.isAccessible() &&
                     project.hasNature(NATURE_ID);
         } catch (CoreException e) {
             e.printStackTrace();

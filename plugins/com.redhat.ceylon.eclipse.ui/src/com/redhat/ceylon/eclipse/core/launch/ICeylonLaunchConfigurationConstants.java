@@ -12,6 +12,8 @@ public interface ICeylonLaunchConfigurationConstants extends
      */
     public static final String ID_CEYLON_APPLICATION = PLUGIN_ID + ".launching.localCeylonApplication";
 
+    public static final String ID_CEYLON_JAVA_JAR_BASED_APPLICATION = PLUGIN_ID + ".launching.javaJarBasedCeylonApplication";
+
     public static final String ID_CEYLON_JAVA_MODULE = PLUGIN_ID + ".launching.ceylonJavaModule";
     public static final String ID_CEYLON_JAVASCRIPT_MODULE = PLUGIN_ID + ".launching.ceylonJavaScriptModule";
     
@@ -21,6 +23,7 @@ public interface ICeylonLaunchConfigurationConstants extends
     
     public static final String ATTR_LAUNCH_TYPE = "CEYLON_LAUNCH_TYPE";
     public static final String ATTR_MODULE_NAME = "CEYLON_MODULE";
+    public static final String ATTR_JAR_CREATION_TOOL_NAME = "CEYLON_JAR_CREATION_TOOL";
     public static final String ATTR_TOPLEVEL_NAME = "CEYLON_TOPLEVEL";
     public static final String ATTR_LAUNCH_VERBOSE = "CEYLON_LAUNCH_VERBOSE";
     

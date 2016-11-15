@@ -1873,7 +1873,17 @@
             name="Ceylon JavaScript Application"
             sourceLocatorId="com.redhat.ceylon.eclipse.ui.launching.sourceLocator.CeylonSourceLookupDirector"
             sourcePathComputerId="com.redhat.ceylon.eclipse.ui.launching.sourceLookup.ceylonSourcePathComputer">
-      </launchConfigurationType>      
+      </launchConfigurationType>
+      <launchConfigurationType
+            delegate="com.redhat.ceylon.eclipse.core.launch.JarPackagedCeylonLaunchConfigurationDelegate"
+            delegateDescription="Packages the whole Ceylon application as a single Jar file, and runs it with a pure Java command"
+            delegateName="Ceylon Jar-packaged Application Launcher"
+            id="com.redhat.ceylon.eclipse.ui.launching.JarPackagedCeylonApplication"
+            modes="run, debug"
+            name="Ceylon Jar-packaged Application"
+            sourceLocatorId="com.redhat.ceylon.eclipse.ui.launching.sourceLocator.CeylonSourceLookupDirector"
+            sourcePathComputerId="com.redhat.ceylon.eclipse.ui.launching.sourceLookup.ceylonSourcePathComputer">
+      </launchConfigurationType>
    </extension>
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
@@ -1905,16 +1915,35 @@
                   description="Run Ceylon JavaScript Application">
             </launchMode>
       </launchConfigurationTabGroup>        
+      <launchConfigurationTabGroup
+            type="com.redhat.ceylon.eclipse.ui.launching.JarPackagedCeylonApplication"
+            class="com.redhat.ceylon.eclipse.core.launch.JarPackagedCeylonLaunchConfigurationTabGroup"
+            id="com.redhat.ceylon.eclipse.ui.launchConfigurations.JarPackagedCeylonApplication">
+            <launchMode 
+                  mode="debug"
+                  perspective="org.eclipse.debug.ui.DebugPerspective"
+                  description="Debug Ceylon Jar-packaged Application">
+            </launchMode>
+            <launchMode
+                  mode="run"
+                  description="Run Ceylon Jar-packaged Application">
+            </launchMode>
+      </launchConfigurationTabGroup>
    </extension>
    <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
       <launchConfigurationTypeImage
-            id="com.redhat.ceylon.eclipse.ui.launching.ceylonModuleImage"
+            id="com.redhat.ceylon.eclipse.ui.launching.ceylonJavaModuleImage"
             configTypeID="com.redhat.ceylon.eclipse.ui.launching.ceylonJavaModule"
             icon="icons/start_application.gif">
       </launchConfigurationTypeImage>
       <launchConfigurationTypeImage
-            id="com.redhat.ceylon.eclipse.ui.launching.ceylonModuleImage"
+            id="com.redhat.ceylon.eclipse.ui.launching.ceylonJavascriptModuleImage"
             configTypeID="com.redhat.ceylon.eclipse.ui.launching.ceylonJavaScriptModule"
+            icon="icons/start_application.gif">
+      </launchConfigurationTypeImage>  
+      <launchConfigurationTypeImage
+            id="com.redhat.ceylon.eclipse.ui.launching.JarPackagedCeylonApplicationImage"
+            configTypeID="com.redhat.ceylon.eclipse.ui.launching.JarPackagedCeylonApplication"
             icon="icons/start_application.gif">
       </launchConfigurationTypeImage>  
    </extension>

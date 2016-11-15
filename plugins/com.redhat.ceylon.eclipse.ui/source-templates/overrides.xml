@@ -76,7 +76,25 @@
     <module module="org.eclipse.jdt.core">
         <add module="org.eclipse.core.contenttype" version="${org.eclipse.core.contenttype.version.override}"/>
     </module>
-
+    <module module="org.eclipse.jdt.launching">
+        <add module="org.eclipse.equinox.preferences" version="${org.eclipse.equinox.preferences.version.override}"/>
+    </module>
+    <module module="org.eclipse.jdt.debug">
+        <add module="org.eclipse.equinox.preferences" version="${org.eclipse.equinox.preferences.version.override}"/>
+    </module>
+    <module module="org.eclipse.jdt.debug.ui">
+        <add module="org.eclipse.swt.gtk.linux.x86_64" version="${org.eclipse.swt.gtk.linux.x86_64.version.override}"/>
+        <add module="org.eclipse.ui.workbench" version="${org.eclipse.ui.workbench.version.override}"/>
+        <add module="org.eclipse.osgi" version="${org.eclipse.osgi.version.override}"/>
+    </module>
+    <module module="org.eclipse.debug.ui">
+        <add module="org.eclipse.jface" version="${org.eclipse.jface.version.override}"/>
+        <add module="org.eclipse.ui.workbench" version="${org.eclipse.ui.workbench.version.override}"/>
+        <add module="org.eclipse.swt.gtk.linux.x86_64" version="${org.eclipse.swt.gtk.linux.x86_64.version.override}"/>
+    </module>
+    <module module="org.eclipse.ui.console">
+        <add module="org.eclipse.ui.workbench" version="${org.eclipse.ui.workbench.version.override}"/>
+    </module>
     <module module="org.eclipse.swt">
         <add module="org.eclipse.swt.gtk.linux.x86_64" version="${org.eclipse.swt.gtk.linux.x86_64.version.override}" shared="true"/>
     </module>
@@ -88,5 +106,9 @@
     </module>
     <module module="org.eclipse.jdt.ui">
         <share module="org.eclipse.jdt.core.manipulation"/>
+    </module>
+    <module module="com.redhat.ceylon.eclipse.ui.jdt.debug.fragment">
+        <add module="org.eclipse.debug.core" version="${org.eclipse.debug.core.version.override}"/>
+        <add module="org.eclipse.jdt.debug" version="${org.eclipse.jdt.debug.version.override}"/>
     </module>
 </overrides>
