@@ -1878,7 +1878,7 @@
             delegate="com.redhat.ceylon.eclipse.core.launch.JarPackagedCeylonLaunchConfigurationDelegate"
             delegateDescription="Packages the whole Ceylon application as a single Jar file, and runs it with a pure Java command"
             delegateName="Ceylon Jar-packaged Application Launcher"
-            id="com.redhat.ceylon.eclipse.ui.launching.JarPackagedCeylonApplication"
+            id="com.redhat.ceylon.eclipse.ui.launching.jarPackagedCeylonApplication"
             modes="run, debug"
             name="Ceylon Jar-packaged Application"
             sourceLocatorId="com.redhat.ceylon.eclipse.ui.launching.sourceLocator.CeylonSourceLookupDirector"
@@ -1916,9 +1916,9 @@
             </launchMode>
       </launchConfigurationTabGroup>        
       <launchConfigurationTabGroup
-            type="com.redhat.ceylon.eclipse.ui.launching.JarPackagedCeylonApplication"
+            type="com.redhat.ceylon.eclipse.ui.launching.jarPackagedCeylonApplication"
             class="com.redhat.ceylon.eclipse.core.launch.JarPackagedCeylonLaunchConfigurationTabGroup"
-            id="com.redhat.ceylon.eclipse.ui.launchConfigurations.JarPackagedCeylonApplication">
+            id="com.redhat.ceylon.eclipse.ui.launchConfigurations.jarPackagedCeylonApplication">
             <launchMode 
                   mode="debug"
                   perspective="org.eclipse.debug.ui.DebugPerspective"
@@ -1942,8 +1942,8 @@
             icon="icons/start_application.gif">
       </launchConfigurationTypeImage>  
       <launchConfigurationTypeImage
-            id="com.redhat.ceylon.eclipse.ui.launching.JarPackagedCeylonApplicationImage"
-            configTypeID="com.redhat.ceylon.eclipse.ui.launching.JarPackagedCeylonApplication"
+            id="com.redhat.ceylon.eclipse.ui.launching.jarPackagedCeylonApplicationImage"
+            configTypeID="com.redhat.ceylon.eclipse.ui.launching.jarPackagedCeylonApplication"
             icon="icons/start_application.gif">
       </launchConfigurationTypeImage>  
    </extension>
@@ -2013,6 +2013,90 @@
             id="com.redhat.ceylon.eclipse.ui.launching.ceylonJavaScriptModule">
          </configurationType>
       </shortcut>         
+      <shortcut
+            label="Ceylon Java Application Packaged As FatJar"
+            icon="icons/start_application.gif"
+            modes="run, debug"
+            class="com.redhat.ceylon.eclipse.core.launch.FatJarPackagedCeylonLaunchShortcut"
+            description="Launch a Ceylon Java application packaged as a FatJar"
+            id="com.redhat.ceylon.eclipse.ui.launcher.fatJarPackagedModuleShortcut">
+         <description 
+               description="Runs a Ceylon Java application packaged as a FatJar"
+               mode="run">
+         </description>
+         <description
+               description="Debugs a Ceylon Java application packaged as a FatJar"
+               mode="debug">
+         </description>
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <and>
+                         <test
+                               forcePluginActivation="true"
+                               property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonJavaModule">
+                         </test>
+                         <or>
+                             <instanceof value="com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode"/>
+                             <adapt type="org.eclipse.core.resources.IResource">
+                                 <instanceof value="org.eclipse.core.resources.IResource"/>
+                             </adapt>
+                         </or>
+                     </and>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+            id="com.redhat.ceylon.eclipse.ui.launching.jarPackagedCeylonApplication">
+         </configurationType>
+      </shortcut>
+      <shortcut
+            label="Ceylon Java Application Packaged By WildFly Swarm"
+            icon="icons/start_application.gif"
+            modes="run, debug"
+            class="com.redhat.ceylon.eclipse.core.launch.SwarmPackagedCeylonLaunchShortcut"
+            description="Launch a Ceylon Java application packaged by Wildfly Swarm"
+            id="com.redhat.ceylon.eclipse.ui.launcher.swarmPackagedModuleShortcut">
+         <description 
+               description="Runs a Ceylon Java application packaged by Wildfly Swarm"
+               mode="run">
+         </description>
+         <description
+               description="Debugs a Ceylon Java application packaged by Wildfly Swarm"
+               mode="debug">
+         </description>
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <and>
+                         <test
+                               forcePluginActivation="true"
+                               property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonJavaModule">
+                         </test>
+                         <test
+                               forcePluginActivation="true"
+                               property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonSwarmPackagedJavaModule">
+                         </test>
+                         <or>
+                             <instanceof value="com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode"/>
+                             <adapt type="org.eclipse.core.resources.IResource">
+                                 <instanceof value="org.eclipse.core.resources.IResource"/>
+                             </adapt>
+                         </or>
+                     </and>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+            id="com.redhat.ceylon.eclipse.ui.launching.jarPackagedCeylonApplication">
+         </configurationType>
+      </shortcut>
    </extension>
    
    <extension point="org.eclipse.ui.console.consolePatternMatchListeners">
@@ -3287,7 +3371,7 @@
              class="com.redhat.ceylon.eclipse.core.launch.CeylonRunPropertyTester"
              id="com.redhat.ceylon.eclipse.core.launch.ceylonRunPropertyTester"
              namespace="com.redhat.ceylon.eclipse.ui"
-             properties="canLaunchAsCeylonJavaModule, canLaunchAsCeylonJavaScriptModule"
+             properties="canLaunchAsCeylonJavaModule, canLaunchAsCeylonJavaScriptModule, canLaunchAsCeylonSwarmPackagedJavaModule"
              type="java.lang.Object">
        </propertyTester>    
     </extension>

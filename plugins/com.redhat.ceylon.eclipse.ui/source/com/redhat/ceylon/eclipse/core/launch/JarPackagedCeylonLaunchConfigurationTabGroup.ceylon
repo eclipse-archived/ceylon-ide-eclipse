@@ -13,7 +13,9 @@ import com.redhat.ceylon.eclipse.ui {
     CeylonResources
 }
 import com.redhat.ceylon.model.typechecker.model {
-    Module
+    Module {
+        defaultModuleName
+    }
 }
 
 import org.eclipse.core.runtime {
@@ -35,7 +37,7 @@ import org.eclipse.jdt.debug.ui.launchConfigurations {
     JavaJRETab
 }
 import org.eclipse.jdt.internal.debug.ui {
-    IJavaDebugHelpContextIds,
+    IJavaDebugHelpContextIds { launchConfigurationDialogMainTab },
     JDIDebugUIPlugin
 }
 import org.eclipse.jdt.internal.debug.ui.actions {
@@ -46,7 +48,12 @@ import org.eclipse.jdt.internal.debug.ui.launcher {
     LauncherMessages
 }
 import org.eclipse.jdt.launching {
-    IJavaLaunchConfigurationConstants
+    IJavaLaunchConfigurationConstants { ... }
+}
+import com.redhat.ceylon.eclipse.core.launch {
+    ICeylonLaunchConfigurationConstants { ... },
+    LaunchHelper { ... },
+    SWTFactory { ... }
 }
 import org.eclipse.swt {
     SWT
@@ -68,7 +75,9 @@ import org.eclipse.swt.widgets {
     Combo
 }
 import org.eclipse.ui {
-    PlatformUI
+    PlatformUI {
+        workbench
+    }
 }
 
 shared class JarPackagedCeylonLaunchConfigurationTabGroup() extends AbstractLaunchConfigurationTabGroup() {
@@ -81,7 +90,6 @@ shared class JarPackagedCeylonLaunchConfigurationTabGroup() extends AbstractLaun
          });
 }
 
-
 shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
     variable late Text fModuleText;
     variable late Combo fJarCreationToolText;
@@ -89,7 +97,7 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
     variable late Button fStopInMainCheckButton;
     
     shared actual void createControl(Composite parent) {
-        value comp = SWTFactory.createComposite(parent, parent.font, 1, 1, GridData.fillBoth);
+        value comp = createComposite(parent, parent.font, 1, 1, GridData.fillBoth);
         assert(is GridLayout gl = comp.layout);
         gl.verticalSpacing = 0;
         createProjectEditor(comp);
@@ -98,7 +106,7 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
         createVerticalSpacer(comp, 1);
         createToolSelector(comp, "Jar packaging type:");
         setControl(comp);
-        PlatformUI.workbench.helpSystem.setHelp(control, IJavaDebugHelpContextIds.launchConfigurationDialogMainTab);
+        workbench.helpSystem.setHelp(control, launchConfigurationDialogMainTab);
     }
     
     image => CeylonResources.\imodule;
@@ -108,11 +116,11 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
     id => "``pluginId``.ceylonModuleOnlyTab";
     
     void handleModuleSearchButtonSelected() {
-        if (exists mod = LaunchHelper.chooseModule(LaunchHelper.getProjectFromName(this.fProjText.text), true)) {
+        if (exists mod = chooseModule(getProjectFromName(this.fProjText.text), true)) {
             if (mod.defaultModule) {
-                fModuleText.text = Module.defaultModuleName;
+                fModuleText.text = defaultModuleName;
             } else {
-                fModuleText.text = LaunchHelper.getFullModuleName(mod);
+                fModuleText.text = getFullModuleName(mod);
             }
         }
     }
@@ -120,8 +128,8 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
     shared actual void initializeFrom(ILaunchConfiguration config) {
         super.initializeFrom(config);
         try {
-            fModuleText.text = config.getAttribute(ICeylonLaunchConfigurationConstants.attrModuleName, "");
-            value toolName = config.getAttribute(ICeylonLaunchConfigurationConstants.attrJarCreationToolName, "");
+            fModuleText.text = config.getAttribute(attrModuleName, "");
+            value toolName = config.getAttribute(attrJarCreationToolName, "");
             if (toolName.empty) {
                 fJarCreationToolText.select(-1);
             } else {
@@ -140,7 +148,7 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
         setErrorMessage(null);
         setMessage(null);
         value projectName = fProjText.text.trim(' '.equals);
-        value project = LaunchHelper.getProjectFromName(projectName);
+        value project = getProjectFromName(projectName);
         if (exists project) {
             if (!project.\iexists()) {
                 setErrorMessage("The project " + projectName + " does no exist.");
@@ -166,7 +174,7 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
             return false;
         }
         
-        if (!LaunchHelper.isModuleInProject(project, moduleName)) {
+        if (!isModuleInProject(project, moduleName)) {
             setErrorMessage("Ceylon module not found in project");
             return false;
         }
@@ -180,26 +188,15 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
         return true;
     }
     
-    function getLaunchConfigurationName(ILaunchConfiguration config)
-            => " \{#2014} ".join {
-        for (attr in { 
-            IJavaLaunchConfigurationConstants.attrProjectName,
-            ICeylonLaunchConfigurationConstants.attrModuleName,
-            ICeylonLaunchConfigurationConstants.attrJarCreationToolName})
-            
-            launchConfigurationDialog.generateName(
-                config.getAttribute(attr, ""))
-        };
-        
     shared actual void performApply(ILaunchConfigurationWorkingCopy config) {
-        config.setAttribute(IJavaLaunchConfigurationConstants.attrProjectName, fProjText.text.trim(' '.equals));
-        config.setAttribute(ICeylonLaunchConfigurationConstants.attrModuleName, fModuleText.text.trim(' '.equals));
-        config.setAttribute(ICeylonLaunchConfigurationConstants.attrJarCreationToolName, fJarCreationToolText.text.trim(' '.equals));
+        config.setAttribute(attrProjectName, fProjText.text.trim(' '.equals));
+        config.setAttribute(attrModuleName, fModuleText.text.trim(' '.equals));
+        config.setAttribute(attrJarCreationToolName, fJarCreationToolText.text.trim(' '.equals));
         mapResources(config);
         if (fStopInMainCheckButton.selection) {
-            config.setAttribute(IJavaLaunchConfigurationConstants.attrStopInMain, true);
+            config.setAttribute(attrStopInMain, true);
         } else {
-            config.setAttribute(IJavaLaunchConfigurationConstants.attrStopInMain, (null of String?));
+            config.setAttribute(attrStopInMain, (null of String?));
         }
         config.rename(getLaunchConfigurationName(config));
     }
@@ -209,7 +206,7 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
         if (exists javaElement) {
             initializeJavaProject(javaElement, config);
         } else {
-            config.setAttribute(IJavaLaunchConfigurationConstants.attrProjectName, "");
+            config.setAttribute(attrProjectName, "");
         }
         
         variable String moduleName = "";
@@ -220,23 +217,26 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
         variable Module? theModule = null;
         if (context.javaProject.\iexists()) {
             value theModules = [
-                for (m in LaunchHelper.getModules(
+                for (m in getModules(
                     context.javaProject.project, true)) m ];
             if (exists first = theModules.first,
                 ! theModules.rest.any((m)=> ! m.nameAsString.startsWith("test."))){
                 theModule = first;
             }
         }
+        if (exists m = theModule) {
+            moduleName = getFullModuleName(m);
+        }
         
-        config.setAttribute(ICeylonLaunchConfigurationConstants.attrModuleName, moduleName);
-        config.setAttribute(ICeylonLaunchConfigurationConstants.attrJarCreationToolName, jarCreationTools[0].type);
+        config.setAttribute(attrModuleName, moduleName);
+        config.setAttribute(attrJarCreationToolName, jarCreationTools[0].type);
         
         config.rename(getLaunchConfigurationName(config));
     }
     
     void createModuleEditor(Composite parent, String text) {
-        value group = SWTFactory.createGroup(parent, text, 2, 1, GridData.fillHorizontal);
-        fModuleText = SWTFactory.createSingleText(group, 1);
+        value group = createGroup(parent, text, 2, 1, GridData.fillHorizontal);
+        fModuleText = createSingleText(group, 1);
         fModuleText.addModifyListener(object satisfies ModifyListener {
                 shared actual void modifyText(ModifyEvent e) {
                     updateLaunchConfigurationDialog();
@@ -257,11 +257,13 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
     }
     
     void createToolSelector(Composite parent, String text) {
-        value group = SWTFactory.createGroup(parent, text, 2, 1, GridData.fillHorizontal);
-        fJarCreationToolText = SWTFactory.createCombo(group, SWT.none, 2, 
+        value group = createGroup(parent, text, 2, 1, GridData.fillHorizontal);
+        fJarCreationToolText = createCombo(group, SWT.none, 2, 
             createJavaStringArray { for (t in jarCreationTools) t.type });
 
-        value canStopInMain => jarCreationTools[fJarCreationToolText.selectionIndex]?.canStopInMain else false;
+        value canStopInMain 
+                => jarCreationTools[fJarCreationToolText.selectionIndex]?.canStopInMain
+                else false;
 
         fJarCreationToolText.addSelectionListener(object satisfies SelectionListener {
             shared actual void widgetDefaultSelected(SelectionEvent selectionEvent) {
@@ -273,7 +275,8 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
             
             shared actual void widgetSelected(SelectionEvent selectionEvent) {
                 fStopInMainCheckButton.enabled = 
-                        jarCreationTools[fJarCreationToolText.selectionIndex]?.canStopInMain else false;
+                        jarCreationTools[fJarCreationToolText.selectionIndex]?.canStopInMain
+                        else false;
                 fStopInMainCheckButton.enabled = canStopInMain;
                 fStopInMainCheckButton.selection &&= fStopInMainCheckButton.enabled;
                 updateLaunchConfigurationDialog();
@@ -281,8 +284,8 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
         });
         
         ControlAccessibleListener.addListener(fModuleText, group.text);
-        value checks = SWTFactory.createComposite(group, 2, 2, GridData.beginning);
-        fStopInMainCheckButton = SWTFactory.createCheckButton(checks, "St&op inside", null, false, 1);
+        value checks = createComposite(group, 2, 2, GridData.beginning);
+        fStopInMainCheckButton = createCheckButton(checks, "St&op inside");
         fStopInMainCheckButton.addSelectionListener(defaultListener);
     }
 
@@ -290,7 +293,7 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
     void updateStopInMainFromConfig(ILaunchConfiguration config) {
         variable value stop = false;
         try {
-            stop = config.getAttribute(IJavaLaunchConfigurationConstants.attrStopInMain, false);
+            stop = config.getAttribute(attrStopInMain, false);
         } catch (CoreException e) {
             JDIDebugUIPlugin.log(e);
         }

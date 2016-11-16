@@ -79,18 +79,45 @@ import org.eclipse.jdt.internal.launching {
 }
 import org.eclipse.jdt.launching {
     JavaLaunchDelegate,
-    IJavaLaunchConfigurationConstants,
+    IJavaLaunchConfigurationConstants { ... },
     IVMRunner,
     AbstractJavaLaunchConfigurationDelegate,
     IVMInstall,
     VMRunnerConfiguration
 }
+import com.redhat.ceylon.eclipse.core.launch {
+    ICeylonLaunchConfigurationConstants {
+        ...
+    }
+}
+
 import org.eclipse.ui.console {
     ConsolePlugin{
         consolePlugin = default
     }
 }
 
+String getLaunchConfigurationName(ILaunchConfiguration config)
+    => let (attr = (String s) => (config.getAttribute(s,"")))
+        buildLaunchConfigurationName {
+        projectName => attr(attrProjectName);
+        moduleName => attr(attrModuleName);
+        jarPackagingToolName => attr(attrJarCreationToolName);
+    };
+
+String buildLaunchConfigurationName(
+        String projectName,
+        String moduleName,
+        String jarPackagingToolName)
+    => let (launchManager = debugPlugin.launchManager)
+    " \{#2014} ".join {
+        for (name in { 
+            projectName,
+            moduleName,
+            jarPackagingToolName})
+            launchManager.generateLaunchConfigurationName(name)
+        };
+    
 shared class JarPackagedCeylonLaunchConfigurationDelegate() extends JavaLaunchDelegate()
         satisfies CeylonDebuggingSupportEnabled {
     
