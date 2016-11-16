@@ -1173,11 +1173,18 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
                 m.getNameAsString() + 
                 '#' + m.getVersion();
         if (m instanceof IdeModule) {
+            @SuppressWarnings("rawtypes")
             IdeModule module = (IdeModule) m;
-            return module.getArtifact()==null ?
-                    nameAndVersion :
-                    new File(toJavaString(module.getSourceArchivePath()))
-                        .getAbsolutePath();
+            final File artifact = module.getArtifact();
+            if (artifact==null) {
+                return nameAndVersion;
+            } else {
+                String archivePath = toJavaString(module.getSourceArchivePath());
+                if (archivePath == null) {
+                    archivePath = artifact.getAbsolutePath();
+                }
+                return archivePath;
+            }
         }
         else {
             return nameAndVersion;
