@@ -107,8 +107,6 @@ shared object proposalFactory {
 
             shared actual Point? getSelection(IDocument document)
                     => selection;
-
-            length(IDocument? iDocument) => prefix.size;
         };
     }
 }
