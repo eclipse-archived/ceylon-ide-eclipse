@@ -33,7 +33,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
@@ -47,6 +49,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 
 import com.redhat.ceylon.common.JVMModuleUtil;
+import com.redhat.ceylon.compiler.java.metadata.Ignore;
 import com.redhat.ceylon.compiler.java.metadata.Name;
 import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.*;
 import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.ActionOnMethodBinding;
@@ -164,9 +167,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         if (parameters == null) {
             doWithBindings(new ActionOnMethodBinding() {
                 private String toParameterName(TypeBinding parameterType) {
-                    String typeName = new StringBuilder("")
-                            .append('_')
-                            .append(parameterType.sourceName()).toString();
+                    String typeName = new String(parameterType.sourceName());
                     StringTokenizer tokens = new StringTokenizer(typeName, "$.[]");
                     String result = null;
                     while (tokens.hasMoreTokens()) {
@@ -185,6 +186,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                     TypeBinding[] parameterBindings;
                     AnnotationBinding[][] parameterAnnotationBindings;
                     parameterBindings = ((MethodBinding)methodBinding).parameters;
+                    String[] parameterNames = null;
                     parameterAnnotationBindings = ((MethodBinding)methodBinding).getParameterAnnotations();
                     if (parameterAnnotationBindings == null) {
                         parameterAnnotationBindings = new AnnotationBinding[parameterBindings.length][];
@@ -197,13 +199,36 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                     for(int i=0;i<parameterBindings.length;i++) {
                         Map<String, AnnotationMirror> parameterAnnotations = JDTUtils.getAnnotations(parameterAnnotationBindings[i]);
                         String parameterName;
-                        AnnotationMirror nameAnnotation = getAnnotation(Name.class.getName());
+                        AnnotationMirror nameAnnotation = parameterAnnotations.get(Name.class.getName());
+                        AnnotationMirror ignoredAnnotation = parameterAnnotations.get(Ignore.class.getName());
                         TypeBinding parameterTypeBinding = parameterBindings[i];
                         if(nameAnnotation != null) {
                             parameterName = (String) nameAnnotation.getValue();
                             givenNames.add(parameterName);
                         } else {
-                            String baseName = toParameterName(parameterTypeBinding);
+                            String baseName = null;
+                            if (ignoredAnnotation == null) {
+                                if (parameterNames == null) {
+                                    try {
+                                        for (IMethod imethod : declaringClassModel.getMethods()) {
+                                            if (new String(methodBinding.signature()).equals(imethod.getSignature())) {
+                                                parameterNames = imethod.getParameterNames();
+                                                break;
+                                            }
+                                        }
+                                    } catch (JavaModelException e) {
+                                    }
+                                    if (parameterNames == null) {
+                                        parameterNames = new String[0];
+                                    }
+                                }
+                                if (parameterNames.length > i) {
+                                    baseName = parameterNames[i];
+                                }
+                            }
+                            if (baseName == null || baseName.isEmpty()){
+                                baseName = toParameterName(parameterTypeBinding);
+                            }
                             int count = 0;
                             String nameToReturn = baseName;
                             for (String givenName : givenNames) {
