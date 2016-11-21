@@ -49,7 +49,11 @@ import org.eclipse.core.runtime {
 import org.eclipse.debug.core {
     ILaunch,
     ILaunchConfiguration,
-    DebugPlugin
+    DebugPlugin {
+        parseArguments,
+        renderArguments
+    },
+    DebugEvent
 }
 import org.eclipse.debug.core.model {
     ILaunchConfigurationDelegate
@@ -68,6 +72,9 @@ import org.eclipse.jdt.junit.launcher {
 }
 import org.eclipse.jdt.launching {
     JavaLaunchDelegate
+}
+import org.eclipse.pde.internal.launching.launcher {
+    VMHelper
 }
 import org.eclipse.pde.internal.launching.sourcelookup {
     PDESourceLookupDirector
@@ -308,7 +315,8 @@ shared class CeylonAwareJUnitLaunchConfigurationDelegate()
 
 shared class CeylonAwareEclipseApplicationLaunchConfiguration()
         extends EclipseApplicationLaunchConfiguration()
-        satisfies CeylonAwareLaunchConfigurationDelegate {
+        satisfies CeylonAwareLaunchConfigurationDelegate &
+        CeylonDebuggingSupportEnabled {
 
     overridenSourceLocator()
             => object extends PDESourceLookupDirector()
@@ -329,6 +337,29 @@ shared class CeylonAwareEclipseApplicationLaunchConfiguration()
         IProgressMonitor p)
             => (super of EclipseApplicationLaunchConfiguration)
             .launch(c, m, l, p);
+    
+    handleDebugEvents(ObjectArray<DebugEvent> _DebugEventArray) =>
+            (super of CeylonDebuggingSupportEnabled).handleDebugEvents(_DebugEventArray);
+    
+    getOriginalVMArguments(ILaunchConfiguration configuration) => 
+            renderArguments(
+                (super of EclipseApplicationLaunchConfiguration).getVMArguments(configuration), null);
+    
+    getVMArguments(ILaunchConfiguration configuration) => 
+            parseArguments(
+                (super of CeylonDebuggingSupportEnabled).getOverridenVMArguments(configuration));
+    
+    getOriginalVMRunner(ILaunchConfiguration configuration, String mode) => 
+            (super of EclipseApplicationLaunchConfiguration).getVMRunner(configuration, mode);
+    
+    getVMRunner(ILaunchConfiguration configuration, String mode) => 
+            (super of CeylonDebuggingSupportEnabled).getOverridenVMRunner(configuration, mode);
+    
+    getStartLocation(ILaunchConfiguration configuration) => null;
+    
+    getOriginalVMInstall(ILaunchConfiguration configuration) => VMHelper.createLauncher(configuration);
+    
+    shouldStopInMain(ILaunchConfiguration configuration) => false;
 }
 
 shared class CeylonAwarePDEJUnitLaunchConfigurationDelegate()

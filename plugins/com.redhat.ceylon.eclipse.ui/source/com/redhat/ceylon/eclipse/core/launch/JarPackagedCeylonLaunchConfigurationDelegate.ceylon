@@ -7,6 +7,11 @@ import ceylon.interop.java {
 import com.redhat.ceylon.eclipse.core.debug.model {
     CeylonJDIDebugTarget
 }
+import com.redhat.ceylon.eclipse.core.launch {
+    ICeylonLaunchConfigurationConstants {
+        ...
+    }
+}
 import com.redhat.ceylon.eclipse.ui {
     CeylonPlugin {
         ceylonPlugin=instance,
@@ -52,7 +57,7 @@ import org.eclipse.debug.core {
     DebugPlugin {
         renderArguments,
         parseArguments,
-        debugPlugin = default,
+        debugPlugin=default,
         newProcess
     },
     ILaunchListener
@@ -79,21 +84,16 @@ import org.eclipse.jdt.internal.launching {
 }
 import org.eclipse.jdt.launching {
     JavaLaunchDelegate,
-    IJavaLaunchConfigurationConstants { ... },
+    IJavaLaunchConfigurationConstants {
+        ...
+    },
     IVMRunner,
-    AbstractJavaLaunchConfigurationDelegate,
     IVMInstall,
     VMRunnerConfiguration
 }
-import com.redhat.ceylon.eclipse.core.launch {
-    ICeylonLaunchConfigurationConstants {
-        ...
-    }
-}
-
 import org.eclipse.ui.console {
-    ConsolePlugin{
-        consolePlugin = default
+    ConsolePlugin {
+        consolePlugin=default
     }
 }
 
@@ -121,15 +121,35 @@ String buildLaunchConfigurationName(
 shared class JarPackagedCeylonLaunchConfigurationDelegate() extends JavaLaunchDelegate()
         satisfies CeylonDebuggingSupportEnabled {
     
-    shared JarPackagingTool? jarPackagingTool(ILaunchConfiguration config) {
-        return jarCreationToolsMap[config.getAttribute(ICeylonLaunchConfigurationConstants.attrJarCreationToolName, jarCreationTools[0].type)];
-    }
+    shared JarPackagingTool? jarPackagingTool(ILaunchConfiguration config) => 
+            jarCreationToolsMap[config.getAttribute(ICeylonLaunchConfigurationConstants.attrJarCreationToolName, jarCreationTools[0].type)];
     
-    shared actual ObjectArray<JString> getClasspath(ILaunchConfiguration config) => createJavaStringArray {
+    shouldStopInMain(ILaunchConfiguration configuration) => 
+            isStopInMain(configuration);
+    
+    getOriginalVMInstall(ILaunchConfiguration configuration) => 
+            getVMInstall(configuration);
+    
+    handleDebugEvents(ObjectArray<DebugEvent> _DebugEventArray) =>
+            (super of CeylonDebuggingSupportEnabled).handleDebugEvents(_DebugEventArray);
+    
+    getOriginalVMArguments(ILaunchConfiguration configuration) => 
+            (super of JavaLaunchDelegate).getVMArguments(configuration);
+    
+    getVMArguments(ILaunchConfiguration configuration) => 
+            (super of CeylonDebuggingSupportEnabled).getOverridenVMArguments(configuration);
+
+    getOriginalVMRunner(ILaunchConfiguration configuration, String mode) => 
+            (super of JavaLaunchDelegate).getVMRunner(configuration, mode);
+    
+    getVMRunner(ILaunchConfiguration configuration, String mode) => 
+            (super of CeylonDebuggingSupportEnabled).getOverridenVMRunner(configuration, mode);
+
+    getClasspath(ILaunchConfiguration config) => createJavaStringArray {
         if (exists jar = jarPackagingTool(config)?.outputFile(config)) 
-            jar.absolutePath
+        jar.absolutePath
     };
-    
+
     shared actual String? verifyMainTypeName(ILaunchConfiguration configuration) {
         value outputFile = jarPackagingTool(configuration)?.outputFile(configuration);
         if (! exists outputFile) {
@@ -151,23 +171,6 @@ shared class JarPackagedCeylonLaunchConfigurationDelegate() extends JavaLaunchDe
         throw;
     }
     
-    shared actual AbstractJavaLaunchConfigurationDelegate this_ => this;
-    
-    shared actual void handleDebugEvents(ObjectArray<DebugEvent> _DebugEventArray) =>
-            (super of CeylonDebuggingSupportEnabled).handleDebugEvents(_DebugEventArray);
-    
-    shared actual String getOriginalVMArguments(ILaunchConfiguration configuration) => 
-            (super of JavaLaunchDelegate).getVMArguments(configuration);
-    
-    shared actual String getVMArguments(ILaunchConfiguration configuration) => 
-            (super of CeylonDebuggingSupportEnabled).getOverridenVMArguments(configuration);
-
-    shared actual IVMRunner getOriginalVMRunner(ILaunchConfiguration configuration, String mode) => 
-            (super of JavaLaunchDelegate).getVMRunner(configuration, mode);
-    
-    shared actual IVMRunner getVMRunner(ILaunchConfiguration configuration, String mode) => 
-            (super of CeylonDebuggingSupportEnabled).getOverridenVMRunner(configuration, mode);
-
     IStatus createFile(ILaunchConfiguration config, ILaunch launch, IProgressMonitor? monitor) {
         value tool = jarPackagingTool(config);
         if (! exists tool) {
@@ -287,13 +290,15 @@ shared class JarPackagedCeylonLaunchConfigurationDelegate() extends JavaLaunchDe
 }
 
 shared interface CeylonDebuggingSupportEnabled satisfies IDebugEventSetListener {
-    shared formal AbstractJavaLaunchConfigurationDelegate this_;
     shared formal String getOriginalVMArguments(ILaunchConfiguration configuration);
     shared formal IVMRunner getOriginalVMRunner(ILaunchConfiguration configuration, String mode);
     
     "Should return the Java type and method"
     shared formal [String, String]? getStartLocation(ILaunchConfiguration configuration);
-
+    
+    shared formal Boolean shouldStopInMain(ILaunchConfiguration configuration);
+    shared formal IVMInstall? getOriginalVMInstall(ILaunchConfiguration configuration);
+    
     shared default actual void handleDebugEvents(ObjectArray<DebugEvent> events) {
         for (event in events) {
             if (event.kind == DebugEvent.create,
@@ -302,7 +307,7 @@ shared interface CeylonDebuggingSupportEnabled satisfies IDebugEventSetListener 
                 exists configuration = launch.launchConfiguration) {
 
                 try {
-                    if (this_.isStopInMain(configuration),
+                    if (shouldStopInMain(configuration),
                         exists [type, method] = getStartLocation(configuration)) {
 
                         HashMap<JString, Object> attrs = HashMap<JString, Object>();
@@ -344,7 +349,7 @@ shared interface CeylonDebuggingSupportEnabled satisfies IDebugEventSetListener 
         value runner = getOriginalVMRunner(configuration, mode);
         
         if (is StandardVMDebugger runner) {
-            IVMInstall? vmInstall = this_.getVMInstall(configuration);
+            IVMInstall? vmInstall = getOriginalVMInstall(configuration);
             return object extends StandardVMDebugger(vmInstall) {
                 variable IJavaDebugTarget? target = null;
                 shared actual void run(VMRunnerConfiguration config, ILaunch launch, IProgressMonitor monitor) 
