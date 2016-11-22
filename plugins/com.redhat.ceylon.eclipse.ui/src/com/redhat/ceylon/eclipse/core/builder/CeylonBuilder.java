@@ -2226,6 +2226,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 options.add("-auto-export-maven-dependencies");
             }
 
+            if (config.getFullyExportMavenDependencies()) {
+                options.add("-fully-export-maven-dependencies");
+            }
+
             final File modulesOutputDir = getCeylonModulesOutputDirectory(project);
             if (modulesOutputDir!=null) {
                 options.add("-out");
@@ -2235,31 +2239,71 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
             CeylonConfig ceylonConfig = config.getCeylonConfig();
 
-            if (ceylonConfig.isOptionDefined(DefaultToolOptions.COMPILER_NOOSGI)) {
+            if (DefaultToolOptions.getCompilerNoOsgi(ceylonConfig)) {
                 options.add("-noosgi");
             }
-            if (ceylonConfig.isOptionDefined(DefaultToolOptions.COMPILER_OSGIPROVIDEDBUNDLES)) {
+            String providedBundles = DefaultToolOptions.getCompilerOsgiProvidedBundles(ceylonConfig);
+            if (providedBundles != null
+                    && ! providedBundles.isEmpty()) {
                 options.add("-osgi-provided-bundles");
-                options.add(ceylonConfig.getOption(DefaultToolOptions.COMPILER_OSGIPROVIDEDBUNDLES));
+                options.add(providedBundles);
             }
-            if (ceylonConfig.isOptionDefined(DefaultToolOptions.COMPILER_NOPOM)) {
+            if (DefaultToolOptions.getCompilerNoPom(ceylonConfig)) {
                 options.add("-nopom");
             }
-            if (ceylonConfig.isOptionDefined(DefaultToolOptions.COMPILER_PACK200)) {
+            if (DefaultToolOptions.getCompilerPack200()) {
                 options.add("-pack200");
             }
-            if (ceylonConfig.isOptionDefined(DefaultToolOptions.COMPILER_RESOURCE_ROOT)) {
+            
+            String resourceRoot = DefaultToolOptions.getCompilerResourceRootName(ceylonConfig);
+            if (resourceRoot != null) {
                 options.add("-resroot");
-                options.add(ceylonConfig.getOption(DefaultToolOptions.COMPILER_RESOURCE_ROOT));
+                options.add(resourceRoot);
             }
 
+            String[] aptModules = DefaultToolOptions.getCompilerAptModules(ceylonConfig);
+            if(aptModules != null){
+                for(String mod : aptModules){
+                    options.add("-apt");
+                    options.add(mod.toString());
+                }
+            }
+
+            if (DefaultToolOptions.getCompilerGenerateModuleInfo()) {
+                options.add("-module-info");
+            }
+
+            Long targetVersion = DefaultToolOptions.getCompilerTargetVersion(ceylonConfig);
+            if (targetVersion != null) {
+                options.add("-source");
+                options.add(targetVersion.toString());
+                options.add("-target");
+                options.add(targetVersion.toString());
+            }
+            
+            if (DefaultToolOptions.getCompilerEe(ceylonConfig)) {
+                options.add("-ee");
+            }
+            
+            List<String> eeImports = DefaultToolOptions.getCompilerEeImport(ceylonConfig);
+            if (eeImports != null) {
+                for (String eeImport: eeImports) {
+                    options.add("-ee-import");
+                    options.add(eeImport);
+                }
+            }
+            
+            List<String> eeAnnotations = DefaultToolOptions.getCompilerEeAnnotation(ceylonConfig);
+            if (eeAnnotations != null) {
+                for (String eeAnnotation: eeAnnotations) {
+                    options.add("-ee-annotation");
+                    options.add(eeAnnotation);
+                }
+            }
+            
             List<String> javacOptions = CeylonHelper.toJavaStringList(config.getJavacOptions());
             if (javacOptions != null) {
                 CeylonCompileTool.addJavacArguments(options, javacOptions);
-            }
-            if (!options.contains("-target")) {
-                options.add("-target");
-                options.add(String.valueOf(DefaultToolOptions.getCompilerTargetVersion(ceylonConfig)));
             }
             
             progress.worked(20);
