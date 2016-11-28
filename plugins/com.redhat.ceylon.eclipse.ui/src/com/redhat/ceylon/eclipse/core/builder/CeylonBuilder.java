@@ -182,6 +182,7 @@ import com.redhat.ceylon.langtools.tools.javac.file.RelativePath.RelativeFile;
 import com.redhat.ceylon.langtools.tools.javac.tree.JCTree;
 import com.redhat.ceylon.langtools.tools.javac.tree.JCTree.JCClassDecl;
 import com.redhat.ceylon.langtools.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.redhat.ceylon.langtools.tools.javac.util.Context;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.typechecker.context.TypeCache;
 import com.redhat.ceylon.model.typechecker.model.Cancellable;
@@ -331,7 +332,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         }
     }
 
-    private static final class BuildFileManager extends CeyloncFileManager {
+    private static class BuildFileManager extends CeyloncFileManager {
         private final IProject project;
         final boolean explodeModules;
         private Map<RegularFileObject, Set<String>> inputFilesToGenerate = null;
@@ -2530,8 +2531,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     }
 
     @SuppressWarnings("deprecation")
-    private boolean compile(CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject, IJavaProject javaProject, 
-            List<String> options, Collection<PhasedUnit> unitsTypecheckedIncrementally,
+    private boolean compile(final CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject, IJavaProject javaProject, 
+            List<String> options, final Collection<PhasedUnit> unitsTypecheckedIncrementally,
             List<File> sources, List<File> resources,
             final TypeChecker typeChecker, PrintWriter printWriter,
             ProgressMonitor<IProgressMonitor> mon) 
@@ -2573,8 +2574,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             CeylonLog.preRegister(context);
             
             final Map<RegularFileObject, Set<String>> inputFilesToGenerate = new HashMap<RegularFileObject, Set<String>>();
-            BuildFileManager fileManager = new BuildFileManager(context, true, null, project, inputFilesToGenerate);
-
             final TaskListener taskListener = new TaskListener() {
                 @Override
                 public void started(TaskEvent ta) {
@@ -2630,8 +2629,19 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                     progress.worked(1);
                 }
             };
-            context.put(TaskListener.class, taskListener);
-            
+
+            BuildFileManager fileManager = new BuildFileManager(context, true, null, project, inputFilesToGenerate) {
+                @Override
+                public void setContext(Context context) {
+                    super.setContext(context);
+                    context.put(TaskListener.class, taskListener);
+
+                    if (reuseEclipseModelInCompilation(project)) {
+                        setupJDTModelLoader(ceylonProject, typeChecker, context, unitsTypecheckedIncrementally);
+                    }
+                }
+            };
+
             computeCompilerClasspath(project, javaProject, options);
             
             List<File> allFiles = new ArrayList<>(sources.size()+ resources.size());
@@ -2639,10 +2649,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
             allFiles.addAll(resources);
             Iterable<? extends JavaFileObject> unitsToCompile =
                     fileManager.getJavaFileObjectsFromFiles(allFiles);
-            
-            if (reuseEclipseModelInCompilation(project)) {
-                setupJDTModelLoader(ceylonProject, typeChecker, context, unitsTypecheckedIncrementally);
-            }
             
             CeyloncTaskImpl task = (CeyloncTaskImpl) compiler.getTask(printWriter, 
                     fileManager, errorReporter, options, null, 
