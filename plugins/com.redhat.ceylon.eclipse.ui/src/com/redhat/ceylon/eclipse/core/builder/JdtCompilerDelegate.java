@@ -21,6 +21,7 @@ import com.redhat.ceylon.compiler.java.loader.CeylonClassReader;
 import com.redhat.ceylon.compiler.java.loader.CeylonEnter;
 import com.redhat.ceylon.compiler.java.loader.CeylonModelLoader;
 import com.redhat.ceylon.compiler.java.tools.CeylonPhasedUnit;
+import com.redhat.ceylon.compiler.java.tools.LanguageCompiler;
 import com.redhat.ceylon.compiler.java.tools.LanguageCompiler.CompilerDelegate;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisError;
@@ -141,6 +142,7 @@ final class JdtCompilerDelegate implements CompilerDelegate {
     public void visitModules(PhasedUnits phasedUnits) {
         Context context = contextRef.get();
         CeylonEnter ceylonEnter = CeylonEnter.instance(context);
+        LanguageCompiler languageCompiler = (LanguageCompiler) LanguageCompiler.instance(context);
         assert(context != null);
         Set<ProjectSourceFile<IProject,IResource,IFolder,IFile>> compiledModules = new HashSet<>();  
         for (PhasedUnit pu : phasedUnits.getPhasedUnits()) {
@@ -175,7 +177,10 @@ final class JdtCompilerDelegate implements CompilerDelegate {
                     phasedUnits.addPhasedUnit(pu.getUnitFile(), cpu);
                 }
             }
-            ceylonEnter.addOutputModuleToClassPath(pu.getPackage().getModule());
+            Module m = pu.getPackage().getModule();
+            ceylonEnter.addOutputModuleToClassPath(m);
+            languageCompiler.getCompiledModules().add(m);
+            
         }
     }
 
