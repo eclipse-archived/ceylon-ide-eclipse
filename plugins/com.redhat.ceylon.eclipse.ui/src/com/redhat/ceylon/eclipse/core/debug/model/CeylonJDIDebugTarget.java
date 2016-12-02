@@ -60,7 +60,7 @@ public class CeylonJDIDebugTarget extends JDIDebugTarget {
             ILaunchConfiguration config = launch.getLaunchConfiguration();
             String projectName;
             projectName = config.getAttribute("org.eclipse.jdt.launching.PROJECT_ATTR", "");
-            if (projectName != null) {
+            if (projectName != null && ! projectName.isEmpty()) {
                 IProject theProject = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
                 if (theProject.exists()) {
                     project = theProject;
