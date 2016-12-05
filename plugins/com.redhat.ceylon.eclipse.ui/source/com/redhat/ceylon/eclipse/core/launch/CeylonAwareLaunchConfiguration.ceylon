@@ -240,7 +240,7 @@ shared interface ClassPathEnricher {
 shared class CeylonAwareJavaLaunchDelegate()
         extends JavaLaunchDelegate()
         satisfies CeylonAwareLaunchConfigurationDelegate
-                    & ClassPathEnricher {
+                    & ClassPathEnricher & CeylonDebuggingSupportEnabled {
 
     launch(
         ILaunchConfiguration c,
@@ -262,6 +262,29 @@ shared class CeylonAwareJavaLaunchDelegate()
             => enrichClassPath(super.getClasspath(launchConfiguration), launchConfiguration);
     getTheJavaProject(ILaunchConfiguration launchConfiguration) 
             => getJavaProject(launchConfiguration);
+    
+    
+    handleDebugEvents(ObjectArray<DebugEvent> _DebugEventArray) =>
+            (super of CeylonDebuggingSupportEnabled).handleDebugEvents(_DebugEventArray);
+    
+    getOriginalVMArguments(ILaunchConfiguration configuration) => 
+            (super of JavaLaunchDelegate).getVMArguments(configuration);
+    
+    getVMArguments(ILaunchConfiguration configuration) => 
+            (super of CeylonDebuggingSupportEnabled).getOverridenVMArguments(configuration);
+    
+    getOriginalVMRunner(ILaunchConfiguration configuration, String mode) => 
+            (super of JavaLaunchDelegate).getVMRunner(configuration, mode);
+    
+    getVMRunner(ILaunchConfiguration configuration, String mode) => 
+            (super of CeylonDebuggingSupportEnabled).getOverridenVMRunner(configuration, mode);
+    
+    getStartLocation(ILaunchConfiguration configuration) => null;
+    
+    getOriginalVMInstall(ILaunchConfiguration configuration) =>
+            (super of JavaLaunchDelegate).getVMInstall(configuration);
+    
+    shouldStopInMain(ILaunchConfiguration configuration) => false;
 }
 
 shared class CeylonAwareJavaRemoteApplicationLaunchConfigurationDelegate()
