@@ -1,5 +1,7 @@
 package com.redhat.ceylon.eclipse.core.debug;
 
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -7,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.internal.utils.Cache;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -34,6 +37,7 @@ import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
+import org.eclipse.jdt.internal.debug.core.JavaDebugUtils;
 import org.eclipse.jdt.internal.debug.core.model.JDIClassObjectValue;
 import org.eclipse.jdt.internal.debug.core.model.JDIClassType;
 import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
@@ -57,6 +61,7 @@ import com.redhat.ceylon.eclipse.util.JavaSearch;
 import com.redhat.ceylon.eclipse.util.JavaSearch.DefaultArgumentMethodSearch;
 import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.typechecker.CrossProjectPhasedUnit;
 import com.redhat.ceylon.ide.common.util.escaping_;
 import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
@@ -79,11 +84,72 @@ import com.sun.jdi.ReferenceType;
 
 public class DebugUtils {
 
+    public static Cache packagePathToProjectCache = new Cache(20);
+    
     public static IJavaProject getProject(IDebugElement debugElement) {
         IDebugTarget target = debugElement.getDebugTarget();
         if (target instanceof CeylonJDIDebugTarget) {
             IProject project = ((CeylonJDIDebugTarget) target).getProject();
-            return project == null ? null : JavaCore.create(project);
+            if (project != null) {
+                return JavaCore.create(project);
+            }
+        }
+        
+        String sourceName = null;
+        try {
+            sourceName = JavaDebugUtils.getSourceName(debugElement);
+            String packagePath; 
+            int lastSlash = sourceName.lastIndexOf('/');
+            if (lastSlash >= 0) {
+                packagePath = sourceName.substring(0, lastSlash);
+            } else {
+                packagePath = sourceName;
+            }
+            
+            synchronized (packagePathToProjectCache) {
+                Cache.Entry entry = packagePathToProjectCache.getEntry(packagePath);
+                if (entry != null) {
+                    IJavaProject javaProject = (IJavaProject) entry.getCached();
+                    if (javaProject == null) {
+                        return null;
+                    } else if(javaProject.getProject().isAccessible()) {
+                        return javaProject;
+                    } else {
+                        entry.discard();
+                    }
+                }
+                String packageName = packagePath.replace('/', '.');
+                List<CeylonProject<IProject, IResource, IFolder, IFile>> ceylonProjects = modelJ2C().ceylonModel().getCeylonProjectsAsJavaList();
+                if (packageName.startsWith(Module.LANGUAGE_MODULE_NAME) ||
+                        packageName.startsWith("com.redhat.ceylon.") &&
+                        ! ceylonProjects.isEmpty()) {
+                    IJavaProject jp = JavaCore.create(ceylonProjects.get(0).getIdeArtifact());
+                    packagePathToProjectCache.addEntry(packagePath, jp);
+                    return jp;
+                }
+                for (CeylonProject<IProject,?,?,?> cp : ceylonProjects) {
+                    IProject p = cp.getIdeArtifact();
+                    for (Module m : CeylonBuilder.getProjectDeclaredSourceModules(p)) {
+                        if (m.getDirectPackage(packageName) != null) {
+                            IJavaProject jp = JavaCore.create(p);
+                            packagePathToProjectCache.addEntry(packagePath, jp);
+                            return jp;
+                        }
+                    }
+                }
+                for (CeylonProject<IProject,?,?,?> cp : ceylonProjects) {
+                    IProject p = cp.getIdeArtifact();
+                    for (Module m : CeylonBuilder.getProjectExternalModules(p)) {
+                        if (m.getDirectPackage(packageName) != null) {
+                            IJavaProject jp = JavaCore.create(p);
+                            packagePathToProjectCache.addEntry(packagePath, jp);
+                            return jp;
+                        }
+                    }
+                }
+            }
+        } catch (CoreException e) {
+            e.printStackTrace();
         }
         return null;
     }
