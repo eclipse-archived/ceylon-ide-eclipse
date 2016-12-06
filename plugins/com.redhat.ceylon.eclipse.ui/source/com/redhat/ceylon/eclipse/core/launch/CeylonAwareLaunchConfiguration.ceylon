@@ -13,22 +13,24 @@ import com.redhat.ceylon.cmr.ceylon {
         CeylonRepoManagerBuilder
     }
 }
+import com.redhat.ceylon.common {
+    Versions
+}
 import com.redhat.ceylon.eclipse.core.builder {
     CeylonBuilder
 }
 import com.redhat.ceylon.eclipse.core.model {
-    ceylonModel,
-    JDTModule
+    ceylonModel
 }
 import com.redhat.ceylon.ide.common.platform {
     platformUtils,
     Status
 }
-import com.redhat.ceylon.model.cmr {
-    ArtifactResult
-}
 import com.redhat.ceylon.tools.classpath {
     CeylonClasspathTool
+}
+import com.redhat.ceylon.tools.moduleloading {
+    ToolModuleLoader
 }
 
 import java.io {
@@ -39,8 +41,7 @@ import java.lang {
     ObjectArray
 }
 import java.util {
-    Arrays,
-    Collection
+    Arrays
 }
 
 import org.eclipse.core.runtime {
@@ -204,27 +205,29 @@ shared interface ClassPathEnricher {
                         .logger(platformUtils.cmrLogger)
                         .isJDKIncluded(false);
             
-            if (exists modules = CeylonBuilder.getProjectModules(referencedProject.ideArtifact)) {
-                function moduleClassPath(JDTModule m) {
-                    object tool extends CeylonClasspathTool() {
-                        shared Collection<ArtifactResult> modules 
-                                => super.loadedModules.values();
-                        createRepositoryManagerBuilder() => repoManagerBuilder;
-                    }
-                    tool.setModules(Arrays.asList(javaString(m.nameAsString + "/" + m.version)));
-                    tool.run();
-                    return tool.modules;
+            if (exists modules = referencedProject.modules) {
+                object tool extends CeylonClasspathTool() {
+                    shared ToolModuleLoader theLoader => super.loader;
+                    loadModule(String? namespace, String? moduleName, String? moduleVersion) => 
+                            super.loadModule(namespace, moduleName, moduleVersion);
+                    createRepositoryManagerBuilder() => repoManagerBuilder;
                 }
-                value moduleList 
-                        = { for (m in modules.listOfModules)
-                            if (is JDTModule m, m.isProjectModule && !m.defaultModule)
-                            for (artifactResult in moduleClassPath(m))
-                            if (exists artifact = artifactResult.artifact())
-                            artifact.absolutePath };
-                classpathEntries.addAll(moduleList);
+                tool.initialize(null);
+                tool.loadModule(null, "com.redhat.ceylon.java.main", Versions.ceylonVersionNumber);
+                for (m in modules) {
+                    if (m.isProjectModule && !m.defaultModule) {
+                        tool.loadModule(m.namespace, m.nameAsString, m.version);
+                    }
+                }
+                tool.theLoader.resolve();
+                tool.theLoader.visitModules((m) { 
+                    if (exists file = m.artifact.artifact()) {
+                        classpathEntries.add(file.absolutePath);
+                    }
+                });
                 value defaultCar 
                         = File(CeylonBuilder.getCeylonModulesOutputDirectory(
-                                referencedProject.ideArtifact), "default.car");
+                    referencedProject.ideArtifact), "default.car");
                 if (defaultCar.\iexists()) {
                     classpathEntries.add(defaultCar.absolutePath);
                 }
