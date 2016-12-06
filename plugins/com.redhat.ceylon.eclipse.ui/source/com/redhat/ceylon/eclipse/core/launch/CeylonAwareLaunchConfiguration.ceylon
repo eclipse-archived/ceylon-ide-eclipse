@@ -155,7 +155,8 @@ shared class CeylonAwareJavaRemoteApplicationLaunchConfigurationDelegate()
 shared class CeylonAwareJUnitLaunchConfigurationDelegate()
         extends JUnitLaunchConfigurationDelegate()
         satisfies CeylonAwareLaunchConfigurationDelegate
-                    & ClassPathEnricher {
+        & ClassPathEnricher
+        & CeylonDebuggingSupportEnabled {
 
     launch(
         ILaunchConfiguration c,
@@ -178,6 +179,29 @@ shared class CeylonAwareJUnitLaunchConfigurationDelegate()
                                launchConfiguration);
     getTheJavaProject(ILaunchConfiguration launchConfiguration) 
             => getJavaProject(launchConfiguration);
+    
+    
+    handleDebugEvents(ObjectArray<DebugEvent> _DebugEventArray) =>
+            (super of CeylonDebuggingSupportEnabled).handleDebugEvents(_DebugEventArray);
+    
+    getOriginalVMArguments(ILaunchConfiguration configuration) => 
+            (super of JUnitLaunchConfigurationDelegate).getVMArguments(configuration);
+    
+    getVMArguments(ILaunchConfiguration configuration) => 
+            (super of CeylonDebuggingSupportEnabled).getOverridenVMArguments(configuration);
+    
+    getOriginalVMRunner(ILaunchConfiguration configuration, String mode) => 
+            (super of JUnitLaunchConfigurationDelegate).getVMRunner(configuration, mode);
+    
+    getVMRunner(ILaunchConfiguration configuration, String mode) => 
+            (super of CeylonDebuggingSupportEnabled).getOverridenVMRunner(configuration, mode);
+    
+    getStartLocation(ILaunchConfiguration configuration) => null;
+    
+    getOriginalVMInstall(ILaunchConfiguration configuration) =>
+            (super of JUnitLaunchConfigurationDelegate).getVMInstall(configuration);
+    
+    shouldStopInMain(ILaunchConfiguration configuration) => false;
 }
 
 shared class CeylonAwareEclipseApplicationLaunchConfiguration()
@@ -231,7 +255,8 @@ shared class CeylonAwareEclipseApplicationLaunchConfiguration()
 
 shared class CeylonAwarePDEJUnitLaunchConfigurationDelegate()
         extends PDEJUnitLaunchConfigurationDelegate()
-        satisfies CeylonAwareLaunchConfigurationDelegate {
+        satisfies CeylonAwareLaunchConfigurationDelegate
+        & CeylonDebuggingSupportEnabled {
 
     overridenSourceLocator()
             => object extends PDESourceLookupDirector()
@@ -252,11 +277,34 @@ shared class CeylonAwarePDEJUnitLaunchConfigurationDelegate()
         IProgressMonitor p)
             => (super of PDEJUnitLaunchConfigurationDelegate)
             .launch(c, m, l, p);
+
+    handleDebugEvents(ObjectArray<DebugEvent> _DebugEventArray) =>
+            (super of CeylonDebuggingSupportEnabled).handleDebugEvents(_DebugEventArray);
+    
+    getOriginalVMArguments(ILaunchConfiguration configuration) => 
+            (super of PDEJUnitLaunchConfigurationDelegate).getVMArguments(configuration);
+    
+    getVMArguments(ILaunchConfiguration configuration) => 
+            (super of CeylonDebuggingSupportEnabled).getOverridenVMArguments(configuration);
+    
+    getOriginalVMRunner(ILaunchConfiguration configuration, String mode) => 
+            (super of PDEJUnitLaunchConfigurationDelegate).getVMRunner(configuration, mode);
+    
+    getVMRunner(ILaunchConfiguration configuration, String mode) => 
+            (super of CeylonDebuggingSupportEnabled).getOverridenVMRunner(configuration, mode);
+    
+    getStartLocation(ILaunchConfiguration configuration) => null;
+    
+    getOriginalVMInstall(ILaunchConfiguration configuration) =>
+            (super of PDEJUnitLaunchConfigurationDelegate).getVMInstall(configuration);
+    
+    shouldStopInMain(ILaunchConfiguration configuration) => false;
 }
 
 shared class CeylonAwareSWTBotJUnitLaunchConfigurationDelegate()
         extends PDEJUnitLaunchConfigurationDelegate()
-        satisfies CeylonAwareLaunchConfigurationDelegate {
+        satisfies CeylonAwareLaunchConfigurationDelegate
+        & CeylonDebuggingSupportEnabled {
 
     overridenSourceLocator()
             => object extends PDESourceLookupDirector()
@@ -280,5 +328,28 @@ shared class CeylonAwareSWTBotJUnitLaunchConfigurationDelegate()
 
     getApplication(ILaunchConfiguration configuration)
             => "org.eclipse.swtbot.eclipse.core.swtbottestapplication";
+
+    
+    handleDebugEvents(ObjectArray<DebugEvent> _DebugEventArray) =>
+            (super of CeylonDebuggingSupportEnabled).handleDebugEvents(_DebugEventArray);
+    
+    getOriginalVMArguments(ILaunchConfiguration configuration) => 
+            (super of PDEJUnitLaunchConfigurationDelegate).getVMArguments(configuration);
+    
+    getVMArguments(ILaunchConfiguration configuration) => 
+            (super of CeylonDebuggingSupportEnabled).getOverridenVMArguments(configuration);
+    
+    getOriginalVMRunner(ILaunchConfiguration configuration, String mode) => 
+            (super of PDEJUnitLaunchConfigurationDelegate).getVMRunner(configuration, mode);
+    
+    getVMRunner(ILaunchConfiguration configuration, String mode) => 
+            (super of CeylonDebuggingSupportEnabled).getOverridenVMRunner(configuration, mode);
+    
+    getStartLocation(ILaunchConfiguration configuration) => null;
+    
+    getOriginalVMInstall(ILaunchConfiguration configuration) =>
+            (super of PDEJUnitLaunchConfigurationDelegate).getVMInstall(configuration);
+    
+    shouldStopInMain(ILaunchConfiguration configuration) => false;
 }
 
