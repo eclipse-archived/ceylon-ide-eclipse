@@ -45,10 +45,6 @@ public class CeylonSourcePathComputer implements ISourcePathComputerDelegate {
         // When it's a Ceylon CAR archive that has a SRC attachment, 
         // also add the SRC archive as an archive container not only a PackageFragmentRoot-based container
         
-        IJavaProject javaProject = JavaRuntime.getJavaProject(configuration);
-        IProject project = javaProject != null ? javaProject.getProject() : null;
-        Collection<BaseIdeModule> modules = project != null ? CeylonBuilder.getProjectExternalModules(project) : null;
-                
         for (ISourceContainer container : JavaRuntime.getSourceContainers(resolvedEntries.toArray(new IRuntimeClasspathEntry[0]))) {
             containers.add(container);
             if (container instanceof PackageFragmentRootSourceContainer) {
@@ -60,6 +56,9 @@ public class CeylonSourcePathComputer implements ISourcePathComputerDelegate {
                         if (sourceAttachment.lastSegment().endsWith(ArtifactContext.SRC)) {
                             containers.add(new ExternalArchiveSourceContainer(sourceAttachment.toOSString(), true));
                         } else if (sourceAttachment.lastSegment().endsWith("javaSources.zip")) {
+                            IJavaProject javaProject = pfr.getJavaProject();
+                            IProject project = javaProject != null ? javaProject.getProject() : null;
+                            Collection<BaseIdeModule> modules = project != null ? CeylonBuilder.getProjectExternalModules(project) : null;
                             File archiveFile = pfr.getPath().toFile();
                             if (archiveFile != null 
                                     && modules != null) {

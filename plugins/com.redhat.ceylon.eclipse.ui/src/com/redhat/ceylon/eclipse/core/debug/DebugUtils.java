@@ -53,6 +53,7 @@ import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationListener;
 import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationRunner;
@@ -90,7 +91,9 @@ public class DebugUtils {
         IDebugTarget target = debugElement.getDebugTarget();
         if (target instanceof CeylonJDIDebugTarget) {
             IProject project = ((CeylonJDIDebugTarget) target).getProject();
-            if (project != null) {
+            if (project != null 
+                    && project.isAccessible() 
+                    && CeylonNature.isEnabled(project)) {
                 return JavaCore.create(project);
             }
         }
