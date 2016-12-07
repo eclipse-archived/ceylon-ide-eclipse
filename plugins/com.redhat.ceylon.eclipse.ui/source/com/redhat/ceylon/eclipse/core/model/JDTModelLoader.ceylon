@@ -22,6 +22,11 @@ import com.redhat.ceylon.eclipse.core.model.mirror {
 import com.redhat.ceylon.eclipse.util {
     withJavaModel
 }
+import com.redhat.ceylon.eclipse.ui {
+    CeylonPlugin {
+        log
+    }
+}
 import com.redhat.ceylon.ide.common.model {
     IdeModelLoader,
     BaseIdeModule
@@ -76,7 +81,8 @@ import org.eclipse.core.resources {
 }
 import org.eclipse.core.runtime {
     Path,
-    IPath
+    IPath,
+    Status
 }
 import org.eclipse.jdt.core {
     IJavaProject,
@@ -598,10 +604,15 @@ shared class JDTModelLoader
                     return;
                 }
                 assert(exists scope = javaProjectInfos?.dummyCompilationUnitScope);
-                value method = referenceBinding.getSingleAbstractMethod(scope, true) else null;
-                if (exists method,
-                    method.validBinding) {
-                    holder.methodBinding = method;
+                try {
+                    value method = referenceBinding.getSingleAbstractMethod(scope, true) else null;
+                    if (exists method,
+                        method.validBinding) {
+                        holder.methodBinding = method;
+                    }
+                } catch(Exception e) {
+                    log(Status.error, "Exception when trying to retrieve Functional interface of type `` type.fullyQualifiedParameterizedName ``
+                                           -> functional interface search skipped:", e);
                 }
             }
         });
