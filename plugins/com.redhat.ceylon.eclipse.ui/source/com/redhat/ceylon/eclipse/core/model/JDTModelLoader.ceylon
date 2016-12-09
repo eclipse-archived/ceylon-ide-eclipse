@@ -1,7 +1,6 @@
 import ceylon.interop.java {
     javaString,
-    createJavaObjectArray,
-    JavaList
+    createJavaObjectArray
 }
 
 import com.redhat.ceylon.common {
@@ -22,11 +21,6 @@ import com.redhat.ceylon.eclipse.core.model.mirror {
 import com.redhat.ceylon.eclipse.util {
     withJavaModel
 }
-import com.redhat.ceylon.eclipse.ui {
-    CeylonPlugin {
-        log
-    }
-}
 import com.redhat.ceylon.ide.common.model {
     IdeModelLoader,
     BaseIdeModule
@@ -38,16 +32,12 @@ import com.redhat.ceylon.ide.common.util {
 import com.redhat.ceylon.model.cmr {
     ArtifactResult
 }
-import com.redhat.ceylon.model.loader {
-    NamingBase
-}
 import com.redhat.ceylon.model.loader.mirror {
     ClassMirror,
     MethodMirror,
     AnnotatedMirror,
     FunctionalInterfaceType,
-    TypeMirror,
-    TypeKind
+    TypeMirror
 }
 import com.redhat.ceylon.model.loader.model {
     LazyPackage
@@ -81,8 +71,7 @@ import org.eclipse.core.resources {
 }
 import org.eclipse.core.runtime {
     Path,
-    IPath,
-    Status
+    IPath
 }
 import org.eclipse.jdt.core {
     IJavaProject,
@@ -122,8 +111,7 @@ import org.eclipse.jdt.internal.compiler.lookup {
     ReferenceBinding,
     CompilationUnitScope,
     MethodBinding,
-    TypeIds,
-    ArrayBinding
+    TypeIds
 }
 import org.eclipse.jdt.internal.compiler.problem {
     ProblemReporter,
@@ -570,7 +558,7 @@ shared class JDTModelLoader
     
     logVerbose(String message) => noop();
     
-    Boolean isGetter(MethodBinding methodBinding, String methodName) {
+    shared actual Boolean isGetter(MethodBinding methodBinding, String methodName) {
         if(! methodBinding.typeVariables().size > 0) {            
             return false;
         }
@@ -593,77 +581,26 @@ shared class JDTModelLoader
         return (matchesGet && hasNonVoidReturn || matchesIs && hasBooleanReturn) && hasNoParams;
     }
     
-    MethodBinding? getFunctionalInterfaceMethodBinding(JDTClass klass) {
-        object holder {
-            shared variable MethodBinding? methodBinding = null;
-        }
-        
-        klass.doWithBindings(object satisfies LookupEnvironmentUtilities.ActionOnClassBinding {
-            shared actual void doWithBinding(IType type, ReferenceBinding referenceBinding) {
-                if (! referenceBinding.\iinterface) {
-                    return;
-                }
-                assert(exists scope = javaProjectInfos?.dummyCompilationUnitScope);
-                try {
-                    value method = referenceBinding.getSingleAbstractMethod(scope, true) else null;
-                    if (exists method,
-                        method.validBinding) {
-                        holder.methodBinding = method;
-                    }
-                } catch(Exception e) {
-                    log(Status.error, "Exception when trying to retrieve Functional interface of type `` type.fullyQualifiedParameterizedName ``
-                                           -> functional interface search skipped:", e);
-                }
-            }
-        });
-        
-        return holder.methodBinding;
-    }
-    
     shared actual String? isFunctionalInterface(ClassMirror klass){
-        if (is JDTClass klass,
-            exists method = getFunctionalInterfaceMethodBinding(klass) ,
-            ! JDTMethod.ignoreMethodInAncestorSearch(method)) {
-            variable String name = CharOperation.charToString(method.selector);
-            if(isGetter(method, name)){
-                name = NamingBase.getJavaAttributeName(name);
-            }
-            return name;
+        if (is JDTClass klass) {
+            return klass.isFunctionalInterface();
         }
         return null;
     }
 
     shared actual Boolean isFunctionalInterfaceType(TypeMirror typeMirror){
-        if (typeMirror.kind == TypeKind.declared,
-            is JDTClass klass = typeMirror.declaredClass,
-            exists method = getFunctionalInterfaceMethodBinding(klass)) {
+        if (is JDTType jdtType = typeMirror,
+            exists fit = jdtType.functionalInterfaceType) {
             return true;
         }
         return false;
     }
     
     shared actual FunctionalInterfaceType? getFunctionalInterfaceType(TypeMirror typeMirror) {
-        if (typeMirror.kind == TypeKind.declared,
-            is JDTClass klass = typeMirror.declaredClass,
-            exists method = getFunctionalInterfaceMethodBinding(klass),
-            is ReferenceBinding enclosingClass = method.declaringClass) {
-            value parameters = method.parameters.array;
-            return FunctionalInterfaceType(
-                JDTMethod(JDTClass(enclosingClass, LookupEnvironmentUtilities.toType(enclosingClass)), method),
-                JDTType.newJDTType(method.returnType),
-                JavaList( { 
-                    for (paramType in parameters.exceptLast)
-                        JDTType.newJDTType(paramType)
-                }.chain {
-                    if (exists lastParamType = parameters.last)
-                        if (method.varargs,
-                            is ArrayBinding lastParamType)
-                        then JDTType.newJDTType(lastParamType.elementsType())
-                        else JDTType.newJDTType(lastParamType)
-                }.sequence()),
-                method.varargs);
+        if (is JDTType jdtType = typeMirror,
+            exists fit = jdtType.functionalInterfaceType) {
+            return fit;
         }
         return null;
     }
-    
 }

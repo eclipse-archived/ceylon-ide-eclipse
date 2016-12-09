@@ -27,16 +27,23 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.CompilationUnitScope;
+import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
+import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MissingTypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.PackageBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ProblemReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.RawTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
+import org.eclipse.jdt.internal.compiler.lookup.Scope;
 import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
@@ -44,8 +51,11 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 import org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 
+import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.model.UnknownTypeMirror;
 import com.redhat.ceylon.model.loader.mirror.ClassMirror;
+import com.redhat.ceylon.model.loader.mirror.FunctionalInterfaceType;
 import com.redhat.ceylon.model.loader.mirror.TypeKind;
 import com.redhat.ceylon.model.loader.mirror.TypeMirror;
 import com.redhat.ceylon.model.loader.mirror.TypeParameterMirror;
@@ -65,7 +75,12 @@ public class JDTType implements TypeMirror {
     private boolean isRaw;
 
     private TypeMirror qualifyingType;
+    private FunctionalInterfaceType functionalInterfaceType = null;
     
+    public FunctionalInterfaceType getFunctionalInterfaceType() {
+        return functionalInterfaceType;
+    }
+
     public static TypeMirror newJDTType(TypeBinding type) {
         return newJDTType(type, new IdentityHashMap<TypeBinding, JDTType>());
     }
@@ -121,7 +136,7 @@ public class JDTType implements TypeMirror {
         return newJDTType(typeBinding, originatingTypes);
     }
     
-    public JDTType(TypeBinding type, IdentityHashMap<TypeBinding, JDTType> originatingTypes) {
+    JDTType(TypeBinding type, IdentityHashMap<TypeBinding, JDTType> originatingTypes) {
         originatingTypes.put(type, this);
 
         if (type instanceof UnresolvedReferenceBinding) {
@@ -143,7 +158,7 @@ public class JDTType implements TypeMirror {
         isRaw = type.isRawType();
 
         if(type instanceof ParameterizedTypeBinding && ! (type instanceof RawTypeBinding)){
-            TypeBinding[] javaTypeArguments = ((ParameterizedTypeBinding)type).arguments;
+            TypeBinding[] javaTypeArguments = ((ParameterizedTypeBinding)type).typeArguments();
             if (javaTypeArguments == null) {
                 javaTypeArguments = new TypeBinding[0];
             }
@@ -203,8 +218,10 @@ public class JDTType implements TypeMirror {
             }
         }
         
-        if(type instanceof ParameterizedTypeBinding ||
-                type instanceof SourceTypeBinding ||
+        if(type instanceof ParameterizedTypeBinding) {
+            ParameterizedTypeBinding refBinding = (ParameterizedTypeBinding) type;
+            declaredClass = new JDTClass(refBinding, toType(refBinding.genericType()));
+        } else if(type instanceof SourceTypeBinding ||
                 type instanceof BinaryTypeBinding){
             ReferenceBinding refBinding = (ReferenceBinding) type;
             declaredClass = new JDTClass(refBinding, toType(refBinding));
@@ -212,6 +229,52 @@ public class JDTType implements TypeMirror {
 
         if(type instanceof TypeVariableBinding){
             typeParameter = new JDTTypeParameter((TypeVariableBinding) type, this, originatingTypes);
+        }
+        
+        if (type instanceof ReferenceBinding) {
+            ReferenceBinding referenceBinding = (ReferenceBinding) type;
+            PackageBinding p = referenceBinding.getPackage();
+            if (p != null) {
+                LookupEnvironment environment = p.environment;
+                
+                if (referenceBinding.isInterface()) {
+                    try {
+                        Scope scope = new CompilationUnitScope(
+                                new CompilationUnitDeclaration(
+                                     environment.problemReporter, 
+                                    null, 
+                                    0), environment);
+                        MethodBinding method = referenceBinding.getSingleAbstractMethod(scope, true);
+                        if (method != null &&
+                            method.isValidBinding()) {
+                            ReferenceBinding enclosingClass = method.declaringClass;
+                            TypeBinding[] parameters = method.parameters;
+                            ArrayList<TypeMirror> jdtTypes = new ArrayList<TypeMirror>();
+                            if (parameters.length > 0) {
+                                for (int i=0; i<parameters.length -1; i++) {
+                                    jdtTypes.add(toTypeMirror(parameters[i], type, this, originatingTypes));
+                                }
+                                TypeBinding lastParameterBinding = parameters[parameters.length-1];
+                                if (method.isVarargs() &&
+                                    lastParameterBinding instanceof ArrayBinding) {
+                                    jdtTypes.add(toTypeMirror(((ArrayBinding)lastParameterBinding).elementsType(), type, this, originatingTypes));
+                                } else {
+                                    jdtTypes.add(toTypeMirror(lastParameterBinding, type, this, originatingTypes));
+                                }
+                            }
+
+                            functionalInterfaceType = new FunctionalInterfaceType(
+                                new JDTMethod(new JDTClass(enclosingClass, LookupEnvironmentUtilities.toType(enclosingClass)), method),
+                                toTypeMirror(method.returnType, type, this, originatingTypes),
+                                jdtTypes,
+                                method.isVarargs());
+                        }
+                    } catch(Exception e) {
+                        CeylonPlugin.log(Status.ERROR, "Exception when trying to retrieve Functional interface of type" + referenceBinding.debugName() +
+                                              "\n    -> functional interface search skipped:", e);
+                    }
+                }
+            }
         }
     }
 

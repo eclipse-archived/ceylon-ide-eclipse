@@ -37,6 +37,7 @@ public class LookupEnvironmentUtilities {
         LookupEnvironment createLookupEnvironmentForGeneratedCode();
         Object getLookupEnvironmentMutex();
         void refreshNameEnvironment();
+        boolean isGetter(MethodBinding methodBinding, String methodName);
     }
 
     public static interface ActionOnResolvedType {

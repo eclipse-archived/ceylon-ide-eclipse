@@ -30,27 +30,37 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.compiler.CharOperation;
+import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileReader;
 import org.eclipse.jdt.internal.compiler.env.IDependent;
+import org.eclipse.jdt.internal.compiler.lookup.CompilationUnitScope;
 import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 import org.eclipse.jdt.internal.compiler.lookup.LocalTypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
+import org.eclipse.jdt.internal.compiler.lookup.Scope;
 import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 
 import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.*;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+
+import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities;
 import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.ActionOnClassBinding;
 import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.ActionOnResolvedType;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.model.unknownClassMirror_;
 import com.redhat.ceylon.ide.common.model.mirror.IdeClassMirror;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.loader.ModelResolutionException;
+import com.redhat.ceylon.model.loader.NamingBase;
 import com.redhat.ceylon.model.loader.mirror.AnnotationMirror;
 import com.redhat.ceylon.model.loader.mirror.ClassMirror;
 import com.redhat.ceylon.model.loader.mirror.FieldMirror;
@@ -81,6 +91,8 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
     private boolean enclosingMethodSet;
     private JDTClass enclosingClass;
     private boolean enclosingClassSet;
+    private String functionalInterface;
+    private boolean functionalInterfaceSet;
   
     private IType type = null;
     private int modifiers;
@@ -529,5 +541,40 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
     @Override
     public String toString() {
         return "[JDTClass: "+qualifiedName+" ( " + fileName + ")]";
+    }
+    
+    public String isFunctionalInterface() {
+        if (! functionalInterfaceSet) {
+            doWithBindings(new ActionOnClassBinding() {
+                @Override
+                public void doWithBinding(IType classModel, ReferenceBinding klass) {
+                    try {
+                        LookupEnvironment environment = klass.fPackage.environment;
+                        Scope scope = new CompilationUnitScope(
+                                new CompilationUnitDeclaration(
+                                     environment.problemReporter, 
+                                    null, 
+                                    0), environment);
+                        MethodBinding method = klass.getSingleAbstractMethod(scope, true);
+                        if (method != null &&
+                            method.isValidBinding() &&
+                            ! JDTMethod.ignoreMethodInAncestorSearch(method)) {
+                            String name = CharOperation.charToString(method.selector);
+                            LookupEnvironmentUtilities.Provider modelLoader = modelJ2C().getLookupEnvironmentProvider(type);
+                            if(modelLoader != null &&
+                                    modelLoader.isGetter(method, name)) {
+                                name = NamingBase.getJavaAttributeName(name);
+                            }
+                            functionalInterface = name;
+                        }
+                    } catch(Exception e) {
+                        CeylonPlugin.log(Status.ERROR, "Exception when trying to retrieve Functional interface of type" + klass.debugName() +
+                                              "\n    -> functional interface search skipped:", e);
+                    }
+                }
+            });
+            functionalInterfaceSet = true;
+        }
+        return functionalInterface;
     }
 }
