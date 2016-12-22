@@ -9,7 +9,8 @@ import ceylon.interop.java {
 
 import com.redhat.ceylon.eclipse.core.model.mirror {
     IBindingProvider,
-    JDTMethod
+    JDTMethod,
+	JDTClass
 }
 import com.redhat.ceylon.eclipse.util {
     withJavaModel
@@ -30,11 +31,13 @@ import com.redhat.ceylon.model.loader.model {
     JavaBeanValue,
     FieldValue,
     LazyFunction,
-    JavaMethod
+    JavaMethod,
+	AnnotationProxyClass
 }
 import com.redhat.ceylon.model.typechecker.model {
     Declaration,
-    Scope
+    Scope,
+	Value
 }
 
 import java.lang {
@@ -237,6 +240,19 @@ shared interface EclipseJavaModelAware
         if (is JavaMethod ceylonDeclaration) {
             assert(is IBindingProvider methodMirror = ceylonDeclaration.mirror);
             mirror = methodMirror;
+        }
+        if (is Value ceylonDeclaration,
+        	is AnnotationProxyClass container = ceylonDeclaration.container,
+        	is JDTClass classMirror = container.iface.classMirror) {
+            
+            // the AnnotationProxyClass does not store the method mirror, so we look it up by name
+            for (method in classMirror.directMethods) {
+                if (method.name == ceylonDeclaration.name,
+                	is IBindingProvider method) {
+                    mirror = method;
+                    break;
+                }
+            }
         }
         return declarationMatched(javaMethod, mirror, resolvedElements);
     }
