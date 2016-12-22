@@ -70,6 +70,7 @@ import org.eclipse.jdt.internal.ui.util.CoreUtility;
 
 import com.redhat.ceylon.cmr.api.ArtifactContext;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
+import com.redhat.ceylon.cmr.impl.MavenRepository;
 import com.redhat.ceylon.common.ModuleSpec;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.Context;
@@ -85,8 +86,6 @@ import com.redhat.ceylon.ide.common.util.ProgressMonitor$impl;
 import com.redhat.ceylon.ide.common.util.ProgressMonitorChild;
 import com.redhat.ceylon.model.cmr.ArtifactResultType;
 import com.redhat.ceylon.model.typechecker.model.Module;
-
-import ceylon.interop.java.javaString_;
 
 /**
  * Eclipse classpath container that will contain the Ceylon resolved entries.
@@ -510,7 +509,9 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
         // In this case it will not try the second extension (-sources.jar).
         String suffix = module.getArtifactType().equals(ArtifactResultType.MAVEN) ? 
                 ArtifactContext.LEGACY_SRC : ArtifactContext.SRC; 
-        ArtifactContext ctx = new ArtifactContext(null, module.getNameAsString(), 
+        String namespace = module.getArtifactType().equals(ArtifactResultType.MAVEN) ? 
+                MavenRepository.NAMESPACE : null; 
+        ArtifactContext ctx = new ArtifactContext(namespace, module.getNameAsString(), 
                 module.getVersion(), suffix);
         File srcArtifact = null;
         try {
