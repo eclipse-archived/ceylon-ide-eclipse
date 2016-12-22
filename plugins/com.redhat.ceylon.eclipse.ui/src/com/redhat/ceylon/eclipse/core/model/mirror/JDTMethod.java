@@ -20,6 +20,8 @@
 
 package com.redhat.ceylon.eclipse.core.model.mirror;
 
+import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.doWithMethodBinding;
+import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.doWithResolvedType;
 import static java.lang.Character.toLowerCase;
 
 import java.lang.ref.Reference;
@@ -51,8 +53,8 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 import com.redhat.ceylon.common.JVMModuleUtil;
 import com.redhat.ceylon.compiler.java.metadata.Ignore;
 import com.redhat.ceylon.compiler.java.metadata.Name;
-import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.*;
 import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.ActionOnMethodBinding;
+import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.ActionOnResolvedType;
 import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.loader.ModelResolutionException;
 import com.redhat.ceylon.model.loader.mirror.AnnotationMirror;
@@ -63,24 +65,31 @@ import com.redhat.ceylon.model.loader.mirror.TypeParameterMirror;
 import com.redhat.ceylon.model.loader.mirror.VariableMirror;
 
 public class JDTMethod implements MethodMirror, IBindingProvider {
-    private Reference<MethodBinding> bindingRef;
+
+    private static final short IS_OVERRIDING_MASK = 1;
+    private static final short IS_OVERRIDING_SET_MASK = 2;
+    private static final short IS_OVERLOADING_MASK = 4;
+    private static final short IS_OVERLOADING_SET_MASK = 8;
+    private static final short IS_CONSTRUCTOR_MASK = 16;
+    private static final short IS_STATIC_INIT_MASK = 32;
+    private static final short IS_DECLARED_VOID_MASK = 64;
+    private static final short IS_VARIADIC_MASK = 128;
+    private static final short IS_DEFAULT_MASK = 256;
+    private static final short IS_DEFAULT_METHOD_MASK = 512;
+
+    // A bit field that allows us to save memory by using the masks above
+    private short properties = 0;
+
+	private Reference<MethodBinding> bindingRef;
     private Map<String, AnnotationMirror> annotations;
     private String name;
     private List<VariableMirror> parameters;
     private TypeMirror returnType;
     private List<TypeParameterMirror> typeParameters;
-    Boolean isOverriding;
-    private Boolean isOverloading;
     private JDTClass enclosingClass;
     private int modifiers;
-    private boolean isConstructor;
-    private boolean isStaticInit;
     private char[] bindingKey;
     private String readableName;
-    private boolean isDeclaredVoid;
-    private boolean isVariadic;
-    private boolean isDefault;
-    private boolean isDefaultMethod;
     
     private static final Map<String, AnnotationMirror> noAnnotations = Collections.emptyMap();
 
@@ -90,20 +99,32 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
         name = new String(method.selector);
         readableName = new String(method.readableName());
         modifiers = method.modifiers;
-        isConstructor = method.isConstructor();
-        isStaticInit = method.selector == TypeConstants.CLINIT; // TODO : check if it is right
-        isDeclaredVoid = method.returnType.id == TypeIds.T_void;
-        isVariadic = method.isVarargs();
-        isDefault = method.getDefaultValue()!=null;
-        isDefaultMethod = method.isDefaultMethod();
+        if (method.isConstructor()) {
+        	set(IS_CONSTRUCTOR_MASK);
+        }
+        if (method.selector == TypeConstants.CLINIT) { // TODO : check if it is right
+        	set(IS_STATIC_INIT_MASK);
+        }
+        if (method.returnType.id == TypeIds.T_void) {
+        	set(IS_DECLARED_VOID_MASK);
+        }
+        if (method.isVarargs()) {
+        	set(IS_VARIADIC_MASK);
+        }
+        if (method.getDefaultValue()!=null) {
+        	set(IS_DEFAULT_MASK);
+        }
+        if (method.isDefaultMethod()) {
+        	set(IS_DEFAULT_METHOD_MASK);
+        }
         bindingKey = method.computeUniqueKey();
         if (method instanceof ProblemMethodBinding) {
             annotations = new HashMap<>();
             parameters = Collections.emptyList();
             returnType = JDTType.UNKNOWN_TYPE;
             typeParameters = Collections.emptyList();
-            isOverriding = false;
-            isOverloading = false;
+            set(IS_OVERRIDING_SET_MASK);
+            set(IS_OVERLOADING_SET_MASK);
         }
     }
 
@@ -154,12 +175,12 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
 
     @Override
     public boolean isConstructor() {
-        return isConstructor;
+        return isSet(IS_CONSTRUCTOR_MASK);
     }
 
     @Override
     public boolean isStaticInit() {
-        return isStaticInit;
+        return isSet(IS_STATIC_INIT_MASK);
     }
 
     @Override
@@ -294,10 +315,10 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
     }
 
     public boolean isOverridingMethod() {
-        if (isOverriding == null) {
-            isOverriding = false;
+        if (!isSet(IS_OVERRIDING_SET_MASK)) {
+    		set(IS_OVERRIDING_SET_MASK);
 
-            doWithBindings(new ActionOnMethodBinding() {
+    		doWithBindings(new ActionOnMethodBinding() {
                 @Override
                 public void doWithBinding(IType declaringClassModel,
                         ReferenceBinding declaringClass,
@@ -306,7 +327,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                     if (CharOperation.equals(declaringClass.readableName(), "ceylon.language.Identifiable".toCharArray())) {
                         if ("equals".equals(name) 
                                 || "hashCode".equals(name)) {
-                            isOverriding = true;
+                            set(IS_OVERRIDING_MASK);
                             return;
                         }
                     }
@@ -314,22 +335,22 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                         if ("equals".equals(name) 
                                 || "hashCode".equals(name)
                                 || "toString".equals(name)) {
-                            isOverriding = false;
+                            //isOverriding = false;
                             return;
                         }
                     }
                     
                     // try the superclass first
                     if (isDefinedInSuperClass(declaringClass, method)) {
-                        isOverriding = true;
+                    	set(IS_OVERRIDING_MASK);
                     } 
                     if (isDefinedInSuperInterfaces(declaringClass, method)) {
-                        isOverriding = true;
+                    	set(IS_OVERRIDING_MASK);
                     }
                 }
             });
         }
-        return isOverriding.booleanValue();
+        return isSet(IS_OVERRIDING_MASK);
     }
 
     private void doWithBindings(final ActionOnMethodBinding action) {
@@ -357,8 +378,8 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
     }
     
     public boolean isOverloadingMethod() {
-        if (isOverloading == null) {
-            isOverloading = Boolean.FALSE;
+        if (!isSet(IS_OVERLOADING_SET_MASK)) {
+            set(IS_OVERLOADING_SET_MASK);
 
             doWithBindings(new ActionOnMethodBinding() {
                 @Override
@@ -369,21 +390,21 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                     // Exception has a pretend supertype of Object, unlike its Java supertype of java.lang.RuntimeException
                     // so we stop there for it, especially since it does not have any overloading
                     if(CharOperation.equals(declaringClass.qualifiedSourceName(), "ceylon.language.Exception".toCharArray())) {
-                        isOverloading = false;
+                        //isOverloading = false;
                         return;
                     }
 
                     // try the superclass first
                     if (isOverloadingInSuperClasses(declaringClass, method)) {
-                        isOverloading = Boolean.TRUE;
+                    	set(IS_OVERLOADING_MASK);
                     } 
                     if (isOverloadingInSuperInterfaces(declaringClass, method)) {
-                        isOverloading = Boolean.TRUE;
+                    	set(IS_OVERLOADING_MASK);
                     }
                 }
             });
         }
-        return isOverloading.booleanValue();
+        return isSet(IS_OVERLOADING_MASK);
     }
 
     public static boolean ignoreMethodInAncestorSearch(MethodBinding methodBinding) {
@@ -533,17 +554,17 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
     
     @Override
     public boolean isDeclaredVoid() {
-        return isDeclaredVoid;
+        return isSet(IS_DECLARED_VOID_MASK);
     }
 
     @Override
     public boolean isVariadic() {
-        return isVariadic;
+        return isSet(IS_VARIADIC_MASK);
     }
 
     @Override
     public boolean isDefault() {
-        return isDefault;
+        return isSet(IS_DEFAULT_MASK);
     }
     
     @Override
@@ -558,6 +579,15 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
 
     @Override
     public boolean isDefaultMethod() {
-        return isDefaultMethod;
+        return isSet(IS_DEFAULT_METHOD_MASK);
+    }
+    
+    
+    private boolean isSet(int mask) {
+    	return (properties & mask) == mask;
+    }
+    
+    private void set(int mask) {
+    	properties |= mask;
     }
 }

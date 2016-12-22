@@ -73,6 +73,19 @@ import com.redhat.ceylon.model.typechecker.model.Module;
 public class JDTClass implements IdeClassMirror, IBindingProvider {
     public static final ClassMirror UNKNOWN_CLASS = unknownClassMirror_.get_();
     
+    private static final short SUPERCLASS_MASK = 1;
+    private static final short ENCLOSING_METHOD_MASK = 2;
+    private static final short ENCLOSING_CLASS_MASK = 4;
+    private static final short FUNCTIONAL_INTERFACE_MASK = 8;
+    private static final short IS_INNER_TYPE_MASK = 16;
+    private static final short IS_LOCAL_TYPE_MASK = 32;
+    private static final short IS_BINARY_MASK = 64;
+    private static final short IS_ANONYMOUS_MASK = 128;
+    private static final short IS_JAVA_SOURCE_MASK = 256;
+    
+    // A bit field that allows us to save memory by using the masks above
+    private short properties = 0;
+
     Reference<ReferenceBinding> bindingRef;
     private PackageMirror pkg;
     private TypeMirror superclass;
@@ -84,24 +97,15 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
     private String qualifiedName;
     private String flatName;
     private String simpleName;
-    private boolean superClassSet = false;
     private List<ClassMirror> innerClasses;
     private String cacheKey;
     private JDTMethod enclosingMethod;
-    private boolean enclosingMethodSet;
     private JDTClass enclosingClass;
-    private boolean enclosingClassSet;
     private String functionalInterface;
-    private boolean functionalInterfaceSet;
   
     private IType type = null;
     private int modifiers;
-    private boolean isInnerType;
-    private boolean isLocalType;
     private String fileName;
-    private boolean isBinary;
-    private boolean isAnonymous;
-    private boolean isJavaSource;
     private String javaModelPath;
     private String fullPath;
     private char[] bindingKey;
@@ -134,10 +138,19 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
             flatName = qualifiedName;
         }
         modifiers = klass.modifiers;
-        isLocalType = klass.isLocalType();
-        isBinary = klass.isBinaryBinding();
-        isAnonymous = klass.isAnonymousType();
-        isJavaSource = (klass instanceof SourceTypeBinding) && new String(((SourceTypeBinding) klass).getFileName()).endsWith(".java");
+        if (klass.isLocalType()) {
+        	set(IS_LOCAL_TYPE_MASK);
+        }
+        if (klass.isBinaryBinding()) {
+        	set(IS_BINARY_MASK);
+        }
+        if (klass.isAnonymousType()) {
+        	set(IS_ANONYMOUS_MASK);
+        }
+        if ((klass instanceof SourceTypeBinding) 
+        		&& new String(((SourceTypeBinding) klass).getFileName()).endsWith(".java")) {
+        	set(IS_JAVA_SOURCE_MASK);
+        }
         bindingKey = klass.computeUniqueKey();
 
         char[] bindingFileName = klass.getFileName();
@@ -203,7 +216,9 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
                         annots = noAnnotations;
                     }
                     annotations = annots;
-                    isInnerType = getAnnotation(AbstractModelLoader.CEYLON_CONTAINER_ANNOTATION) != null || klass.isMemberType();
+                    if (getAnnotation(AbstractModelLoader.CEYLON_CONTAINER_ANNOTATION) != null || klass.isMemberType()) {
+                    	set(IS_INNER_TYPE_MASK);
+                    }
                 }
             });
         }
@@ -298,7 +313,7 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
 
     @Override
     public TypeMirror getSuperclass() {
-        if (! superClassSet) {
+        if (!isSet(SUPERCLASS_MASK)) {
             doWithBindings(new ActionOnClassBinding() {
                 @Override
                 public void doWithBinding(IType classModel, ReferenceBinding klass) {
@@ -314,7 +329,7 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
                     }
                 }
             });
-            superClassSet = true;
+            set(SUPERCLASS_MASK);
         }
         return superclass;
     }
@@ -397,12 +412,12 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
     @Override
     public boolean isInnerClass() {
         retrieveAnnotations();
-        return isInnerType;
+        return isSet(IS_INNER_TYPE_MASK);
     }
     
     @Override
     public ClassMirror getEnclosingClass() {
-        if(!enclosingClassSet){
+        if(!isSet(ENCLOSING_CLASS_MASK)){
             doWithBindings(new ActionOnClassBinding() {
                 @Override
                 public void doWithBinding(IType classModel, ReferenceBinding klass) {
@@ -418,15 +433,15 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
                     }
                 }
             });
-            enclosingClassSet = true;
+            set(ENCLOSING_CLASS_MASK);
         }
         return enclosingClass;
     }
     
     @Override
     public MethodMirror getEnclosingMethod() {
-        if(!enclosingMethodSet){
-            if(isLocalType){
+        if(!isSet(ENCLOSING_METHOD_MASK)){
+            if(isSet(IS_LOCAL_TYPE_MASK)){
                 doWithBindings(new ActionOnClassBinding() {
                     @Override
                     public void doWithBinding(IType classModel, ReferenceBinding klass) {
@@ -436,7 +451,7 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
                     }
                 });
             }
-            enclosingMethodSet = true;
+            set(ENCLOSING_METHOD_MASK);
         }
         return enclosingMethod;
     }
@@ -483,22 +498,22 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
 
     @Override
     public boolean getIsBinary() {
-        return isBinary;
+        return isSet(IS_BINARY_MASK);
     }
 
     @Override
     public boolean isLoadedFromSource() {
-        return isJavaSource;
+        return isJavaSource();
     }
 
     @Override
     public boolean isAnonymous() {
-        return isAnonymous;
+        return isSet(IS_ANONYMOUS_MASK);
     }
 
     @Override
     public boolean isJavaSource() {
-        return isJavaSource;
+        return isSet(IS_JAVA_SOURCE_MASK);
     }
     
     public String getJavaModelPath() {
@@ -517,7 +532,7 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
     @Override
     public boolean isLocalClass() {
         return getAnnotation(AbstractModelLoader.CEYLON_LOCAL_CONTAINER_ANNOTATION) != null 
-                || isLocalType;
+                || isSet(IS_LOCAL_TYPE_MASK);
     }
     
     @Override
@@ -544,7 +559,7 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
     }
     
     public String isFunctionalInterface() {
-        if (! functionalInterfaceSet) {
+        if (!isSet(FUNCTIONAL_INTERFACE_MASK)) {
             doWithBindings(new ActionOnClassBinding() {
                 @Override
                 public void doWithBinding(IType classModel, ReferenceBinding klass) {
@@ -573,8 +588,16 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
                     }
                 }
             });
-            functionalInterfaceSet = true;
+            set(FUNCTIONAL_INTERFACE_MASK);
         }
         return functionalInterface;
+    }
+    
+    private boolean isSet(int mask) {
+    	return (properties & mask) == mask;
+    }
+    
+    private void set(int mask) {
+    	properties |= mask;
     }
 }
