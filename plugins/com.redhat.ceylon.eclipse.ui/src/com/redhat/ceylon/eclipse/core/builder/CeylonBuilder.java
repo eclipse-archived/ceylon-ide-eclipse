@@ -2152,6 +2152,10 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 srcPath += sourcePathElement.getAbsolutePath();
                 js_srcdir.add(sourcePathElement);
             }
+            
+            options.add("-cwd");
+            options.add(project.getLocation().toFile().getAbsolutePath());
+            
             options.add("-src");
             options.add(srcPath);
             String resPath = "";
