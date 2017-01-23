@@ -1,6 +1,7 @@
 package com.redhat.ceylon.eclipse.core.model;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -9,6 +10,10 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import org.eclipse.core.internal.jobs.InternalJob;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
@@ -17,11 +22,19 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.core.compiler.CharOperation;
+import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.env.AccessRestriction;
+import org.eclipse.jdt.internal.compiler.env.IBinaryAnnotation;
+import org.eclipse.jdt.internal.compiler.env.IBinaryField;
+import org.eclipse.jdt.internal.compiler.env.IBinaryMethod;
+import org.eclipse.jdt.internal.compiler.env.IBinaryNestedType;
 import org.eclipse.jdt.internal.compiler.env.IBinaryType;
+import org.eclipse.jdt.internal.compiler.env.IBinaryTypeAnnotation;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.eclipse.jdt.internal.compiler.env.ISourceType;
 import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
@@ -36,8 +49,16 @@ import org.eclipse.jdt.internal.core.NameLookup;
 import org.eclipse.jdt.internal.core.SearchableEnvironment;
 import org.eclipse.jdt.internal.core.SourceType;
 import org.eclipse.jdt.internal.core.SourceTypeElementInfo;
+import org.eclipse.jdt.internal.eval.CodeSnippetSkeleton;
 
+import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
+import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import com.redhat.ceylon.ide.common.model.IdeModelLoader;
+import com.redhat.ceylon.ide.common.model.mirror.SourceDeclarationHolder;
+import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
 
 public class ModelLoaderNameEnvironment extends SearchableEnvironment {
     public ModelLoaderNameEnvironment(IJavaProject javaProject) throws JavaModelException {
@@ -257,6 +278,7 @@ public class ModelLoaderNameEnvironment extends SearchableEnvironment {
         }
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     protected NameEnvironmentAnswer find(String typeName, String packageName) {
         if (packageName == null)

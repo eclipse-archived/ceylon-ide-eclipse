@@ -7,6 +7,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
@@ -21,6 +22,7 @@ import com.redhat.ceylon.ide.common.model.CeylonProject;
 import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
 import com.redhat.ceylon.ide.common.model.CeylonProjects;
 import com.redhat.ceylon.ide.common.model.CrossProjectBinaryUnit;
+import com.redhat.ceylon.ide.common.model.IdeModelLoader;
 import com.redhat.ceylon.ide.common.model.IdeModuleManager;
 import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
 import com.redhat.ceylon.ide.common.model.JavaClassFile;
@@ -63,6 +65,8 @@ public interface ModelJ2C {
             String fullPath, LazyPackage pkg);
 
     LookupEnvironmentUtilities.Provider getLookupEnvironmentProvider(IType type);
+
+    IdeModelLoader<IProject, IResource, IFolder, IFile, ITypeRoot, IType> javaProjectModelLoader(IJavaProject javaProject);
 
     void setTypeCheckerOnCeylonProject(
             CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject,

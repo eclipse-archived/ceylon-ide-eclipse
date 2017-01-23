@@ -120,6 +120,9 @@ import org.eclipse.jdt.internal.compiler.problem {
 import org.eclipse.jdt.internal.core {
     JavaProject
 }
+import java.util.concurrent.locks {
+    ReentrantReadWriteLock
+}
 
 CharArray toCharArray(String s) => javaString(s).toCharArray();
 
@@ -251,6 +254,9 @@ shared class JDTModelLoader
     String? jdkProvider;
     
     shared actual Object lookupEnvironmentMutex = object extends Basic() {};
+
+    value typeMirrorCache = Cache(1000);
+    value typeMirrorCacheLock = ReentrantReadWriteLock();
     
     shared new (
         JDTModuleManager moduleManager,
@@ -362,6 +368,11 @@ shared class JDTModelLoader
         try {
             javaProjectInfos?.createLookupEnvironment();
         } catch (JavaModelException e) {
+            e.printStackTrace();
+        }
+        try {
+            typeMirrorCache.discardAll();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -602,5 +613,33 @@ shared class JDTModelLoader
             return fit;
         }
         return null;
+    }
+    
+    
+    shared actual TypeMirror? getCachedTypeMirror(CharArray bindingKey) {
+        value lock = typeMirrorCacheLock.readLock();
+        lock.lock();
+        try {
+            Cache.Entry? cacheEntry = typeMirrorCache.getEntry(bindingKey);
+            if (exists cacheEntry) {
+                WeakReference<TypeMirror>? cachedTypeMirrorRef = unsafeCast<WeakReference<TypeMirror>>(cacheEntry.cached);
+                if (exists cachedTypeMirrorRef) {
+                    return cachedTypeMirrorRef.get();
+                }
+            }
+        } finally {
+            lock.unlock();
+        }
+        return null;
+    }
+    
+    shared actual void cacheTypeMirror(CharArray bindingKey, TypeMirror mirror) {
+        value lock = typeMirrorCacheLock.writeLock();
+        lock.lock();
+        try {
+            typeMirrorCache.addEntry(bindingKey, WeakReference(mirror));
+        } finally {
+            lock.unlock();
+        }
     }
 }

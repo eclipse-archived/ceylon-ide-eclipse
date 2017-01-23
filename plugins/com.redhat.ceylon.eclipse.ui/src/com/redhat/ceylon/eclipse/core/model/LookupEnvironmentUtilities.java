@@ -21,6 +21,8 @@ import org.eclipse.jdt.internal.core.ClassFile;
 
 import com.redhat.ceylon.compiler.java.codegen.Naming;
 import com.redhat.ceylon.model.loader.ModelResolutionException;
+import com.redhat.ceylon.model.loader.mirror.TypeMirror;
+
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 public class LookupEnvironmentUtilities {
@@ -38,6 +40,9 @@ public class LookupEnvironmentUtilities {
         Object getLookupEnvironmentMutex();
         void refreshNameEnvironment();
         boolean isGetter(MethodBinding methodBinding, String methodName);
+        
+        TypeMirror getCachedTypeMirror(char[] bindingKey);
+        void cacheTypeMirror(char[] bindingKey, TypeMirror mirror);
     }
 
     public static interface ActionOnResolvedType {

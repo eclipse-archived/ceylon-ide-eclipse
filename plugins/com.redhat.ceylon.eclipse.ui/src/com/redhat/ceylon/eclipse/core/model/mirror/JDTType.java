@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright Red Hat Inc. and/or its affiliates and other contributors	
  * as indicated by the authors tag. All rights reserved.
  *
  * This copyrighted material is made available to anyone wishing to use,
@@ -21,6 +21,7 @@
 package com.redhat.ceylon.eclipse.core.model.mirror;
 
 import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.toType;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,9 +29,11 @@ import java.util.IdentityHashMap;
 import java.util.List;
 
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.env.INameEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BinaryTypeBinding;
@@ -52,8 +55,10 @@ import org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 
 import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities;
+import com.redhat.ceylon.eclipse.core.model.ModelLoaderNameEnvironment;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.ide.common.model.UnknownTypeMirror;
+import com.redhat.ceylon.model.loader.AbstractModelLoader;
 import com.redhat.ceylon.model.loader.mirror.ClassMirror;
 import com.redhat.ceylon.model.loader.mirror.FunctionalInterfaceType;
 import com.redhat.ceylon.model.loader.mirror.TypeKind;
@@ -69,11 +74,10 @@ public class JDTType implements TypeMirror {
     private TypeMirror componentType;
     private TypeMirror upperBound;
     private TypeMirror lowerBound;
-    private JDTClass declaredClass;
+    private ClassMirror declaredClass;
     private JDTTypeParameter typeParameter;
     private boolean isPrimitive;
-    private boolean isRaw;
-
+    private boolean isRaw;    
     private TypeMirror qualifyingType;
     private FunctionalInterfaceType functionalInterfaceType = null;
     
@@ -95,8 +99,26 @@ public class JDTType implements TypeMirror {
     	}
         return UNKNOWN_TYPE;
     }
+
+    static private LookupEnvironmentUtilities.Provider getModelLoader(TypeBinding binding) {
+        PackageBinding pkgBinding = binding.getPackage();
+        if (pkgBinding == null) {
+            return null;
+        }
+        LookupEnvironment lookupEnv = pkgBinding.environment;
+        INameEnvironment nameEnv = lookupEnv.nameEnvironment;
+        if (! (nameEnv instanceof ModelLoaderNameEnvironment)) {
+            return null;
+        }
+        IJavaProject javaProject = ((ModelLoaderNameEnvironment)nameEnv).getJavaProject();
+        AbstractModelLoader modelLoader = modelJ2C().javaProjectModelLoader(javaProject);
+        if (modelLoader instanceof LookupEnvironmentUtilities.Provider) {
+            return (LookupEnvironmentUtilities.Provider) modelLoader;
+        }
+        return null;
+    }
     
-    public static TypeMirror newJDTType(TypeBinding type, IdentityHashMap<TypeBinding, JDTType> originatingTypes) {
+    static TypeMirror newJDTType(TypeBinding type, IdentityHashMap<TypeBinding, JDTType> originatingTypes) {
 		if (type instanceof UnresolvedReferenceBinding) {
             type = BinaryTypeBinding.resolveType(type, type.getPackage().environment, false);
         }
@@ -121,23 +143,27 @@ public class JDTType implements TypeMirror {
             return unknownTypeMirror(type);
         }
         
-		return new JDTType(type, originatingTypes);
-	}
-
-    public static TypeMirror toTypeMirror(TypeBinding typeBinding, TypeBinding currentBinding, JDTType currentType, IdentityHashMap<TypeBinding, JDTType> originatingTypes) {
-        if (typeBinding == currentBinding && currentType != null) {
-            return currentType;
+        TypeMirror typeMirror = null;
+        char[] bindingKey = null;
+        LookupEnvironmentUtilities.Provider modelLoader = getModelLoader(type);
+        if (modelLoader != null) {
+            bindingKey = type.computeUniqueKey();
+            typeMirror = modelLoader.getCachedTypeMirror(bindingKey);
         }
-        
-        JDTType originatingType = originatingTypes.get(typeBinding);
-        if (originatingType != null) {
-            return originatingType;
+        if (typeMirror == null) {
+            typeMirror = createJDTType(type, originatingTypes);
+            if (modelLoader != null) {
+                modelLoader.cacheTypeMirror(bindingKey, typeMirror);
+            }
         }
-        return newJDTType(typeBinding, originatingTypes);
+        return typeMirror;
     }
-    
-    JDTType(TypeBinding type, IdentityHashMap<TypeBinding, JDTType> originatingTypes) {
-        originatingTypes.put(type, this);
+
+    private static TypeMirror createJDTType(TypeBinding type,
+            IdentityHashMap<TypeBinding, JDTType> originatingTypes) {
+        JDTType typeMirror = new JDTType();
+
+        originatingTypes.put(type, typeMirror);
 
         if (type instanceof UnresolvedReferenceBinding) {
             type = BinaryTypeBinding.resolveType(type, type.getPackage().environment, false);
@@ -145,29 +171,29 @@ public class JDTType implements TypeMirror {
         
         // type params are not qualified
         if(type instanceof TypeVariableBinding)
-            qualifiedName = new String(type.qualifiedSourceName());
+            typeMirror.qualifiedName = new String(type.qualifiedSourceName());
         else
-            qualifiedName = JDTUtils.getFullyQualifiedName(type);
+            typeMirror.qualifiedName = JDTUtils.getFullyQualifiedName(type);
 
-        typeKind = findKind(type);
+        typeMirror.typeKind = findKind(type);
 
-        isPrimitive = type.isBaseType() && 
+        typeMirror.isPrimitive = type.isBaseType() && 
                 type.id != TypeIds.T_void && 
                         type.id != TypeIds.T_null;
         
-        isRaw = type.isRawType();
+        typeMirror.isRaw = type.isRawType();
 
         if(type instanceof ParameterizedTypeBinding && ! (type instanceof RawTypeBinding)){
             TypeBinding[] javaTypeArguments = ((ParameterizedTypeBinding)type).typeArguments();
             if (javaTypeArguments == null) {
                 javaTypeArguments = new TypeBinding[0];
             }
-            typeArguments = new ArrayList<TypeMirror>(javaTypeArguments.length);
+            typeMirror.typeArguments = new ArrayList<TypeMirror>(javaTypeArguments.length);
             for(TypeBinding typeArgument : javaTypeArguments)
-                typeArguments.add(toTypeMirror(typeArgument, type, this, originatingTypes));
+                typeMirror.typeArguments.add(toTypeMirror(typeArgument, type, typeMirror, originatingTypes));
         }
         else  {
-            typeArguments = Collections.emptyList();
+            typeMirror.typeArguments = Collections.emptyList();
         }
 
         if(type.enclosingType() instanceof ParameterizedTypeBinding){
@@ -179,15 +205,15 @@ public class JDTType implements TypeMirror {
                 }
             }
             if (!isStatic) {
-                qualifyingType = toTypeMirror(type.enclosingType(), type, this, originatingTypes);
+                typeMirror.qualifyingType = toTypeMirror(type.enclosingType(), type, typeMirror, originatingTypes);
             }
         }
         
         if (type instanceof ArrayBinding) {
             TypeBinding jdtComponentType = ((ArrayBinding)type).elementsType();
-            componentType = toTypeMirror(jdtComponentType, type, this, originatingTypes);
+            typeMirror.componentType = toTypeMirror(jdtComponentType, type, typeMirror, originatingTypes);
         } else {
-            componentType = null;
+            typeMirror.componentType = null;
         }
 
         if (type.isWildcard()) {
@@ -195,17 +221,17 @@ public class JDTType implements TypeMirror {
             if (wildcardBinding.boundKind == Wildcard.EXTENDS) {
                 TypeBinding upperBoundBinding = wildcardBinding.bound;
                 if (upperBoundBinding != null) {
-                    upperBound = toTypeMirror(upperBoundBinding, type, this, originatingTypes);
+                    typeMirror.upperBound = toTypeMirror(upperBoundBinding, type, typeMirror, originatingTypes);
                 }
             }
         } else if (type.isTypeVariable()){
             TypeVariableBinding typeVariableBinding = (TypeVariableBinding) type;
             TypeBinding boundBinding = typeVariableBinding.firstBound; // TODO : we should confirm this
             if (boundBinding != null) {
-                upperBound = toTypeMirror(boundBinding, type, this, originatingTypes);
+                typeMirror.upperBound = toTypeMirror(boundBinding, type, typeMirror, originatingTypes);
             }
         } else {
-            upperBound = null;
+            typeMirror.upperBound = null;
         }
 
         if (type.isWildcard()) {
@@ -213,22 +239,27 @@ public class JDTType implements TypeMirror {
             if (wildcardBinding.boundKind == Wildcard.SUPER) {
                 TypeBinding lowerBoundBinding = wildcardBinding.bound;
                 if (lowerBoundBinding != null) {
-                    lowerBound = toTypeMirror(lowerBoundBinding, type, this, originatingTypes);
+                    typeMirror.lowerBound = toTypeMirror(lowerBoundBinding, type, typeMirror, originatingTypes);
                 }
             }
         }
         
         if(type instanceof ParameterizedTypeBinding) {
             ParameterizedTypeBinding refBinding = (ParameterizedTypeBinding) type;
-            declaredClass = new JDTClass(refBinding, toType(refBinding.genericType()));
+            TypeBinding genericType = refBinding.genericType();
+            if (genericType instanceof MissingTypeBinding) {
+                return unknownTypeMirror(genericType);
+            } else {
+                typeMirror.declaredClass = new JDTClass(refBinding, toType(refBinding.genericType()));
+            }
         } else if(type instanceof SourceTypeBinding ||
                 type instanceof BinaryTypeBinding){
             ReferenceBinding refBinding = (ReferenceBinding) type;
-            declaredClass = new JDTClass(refBinding, toType(refBinding));
+            typeMirror.declaredClass = new JDTClass(refBinding, toType(refBinding));
         }
 
         if(type instanceof TypeVariableBinding){
-            typeParameter = new JDTTypeParameter((TypeVariableBinding) type, this, originatingTypes);
+            typeMirror.typeParameter = new JDTTypeParameter((TypeVariableBinding) type, typeMirror, originatingTypes);
         }
         
         if (type instanceof ReferenceBinding) {
@@ -252,20 +283,20 @@ public class JDTType implements TypeMirror {
                             ArrayList<TypeMirror> jdtTypes = new ArrayList<TypeMirror>();
                             if (parameters.length > 0) {
                                 for (int i=0; i<parameters.length -1; i++) {
-                                    jdtTypes.add(toTypeMirror(parameters[i], type, this, originatingTypes));
+                                    jdtTypes.add(toTypeMirror(parameters[i], type, typeMirror, originatingTypes));
                                 }
                                 TypeBinding lastParameterBinding = parameters[parameters.length-1];
                                 if (method.isVarargs() &&
                                     lastParameterBinding instanceof ArrayBinding) {
-                                    jdtTypes.add(toTypeMirror(((ArrayBinding)lastParameterBinding).elementsType(), type, this, originatingTypes));
+                                    jdtTypes.add(toTypeMirror(((ArrayBinding)lastParameterBinding).elementsType(), type, typeMirror, originatingTypes));
                                 } else {
-                                    jdtTypes.add(toTypeMirror(lastParameterBinding, type, this, originatingTypes));
+                                    jdtTypes.add(toTypeMirror(lastParameterBinding, type, typeMirror, originatingTypes));
                                 }
                             }
 
-                            functionalInterfaceType = new FunctionalInterfaceType(
+                            typeMirror.functionalInterfaceType = new FunctionalInterfaceType(
                                 new JDTMethod(new JDTClass(enclosingClass, LookupEnvironmentUtilities.toType(enclosingClass)), method),
-                                toTypeMirror(method.returnType, type, this, originatingTypes),
+                                toTypeMirror(method.returnType, type, typeMirror, originatingTypes),
                                 jdtTypes,
                                 method.isVarargs());
                         }
@@ -276,7 +307,21 @@ public class JDTType implements TypeMirror {
                 }
             }
         }
+        return typeMirror;
     }
+
+    public static TypeMirror toTypeMirror(TypeBinding typeBinding, TypeBinding currentBinding, JDTType currentType, IdentityHashMap<TypeBinding, JDTType> originatingTypes) {
+        if (typeBinding == currentBinding && currentType != null) {
+            return currentType;
+        }
+        
+        JDTType originatingType = originatingTypes.get(typeBinding);
+        if (originatingType != null) {
+            return originatingType;
+        }
+        return newJDTType(typeBinding, originatingTypes);
+    }
+    
 
     @Override
     public String getQualifiedName() {
@@ -293,7 +338,7 @@ public class JDTType implements TypeMirror {
         return typeKind;
     }
 
-    private TypeKind findKind(TypeBinding type) {
+    private static TypeKind findKind(TypeBinding type) {
         if(type instanceof ArrayBinding)
             return TypeKind.ARRAY;
         if(type instanceof TypeVariableBinding)
