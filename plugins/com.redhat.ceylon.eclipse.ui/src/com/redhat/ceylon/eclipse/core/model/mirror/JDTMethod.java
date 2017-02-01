@@ -316,8 +316,6 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
 
     public boolean isOverridingMethod() {
         if (!isSet(IS_OVERRIDING_SET_MASK)) {
-    		set(IS_OVERRIDING_SET_MASK);
-
     		doWithBindings(new ActionOnMethodBinding() {
                 @Override
                 public void doWithBinding(IType declaringClassModel,
@@ -349,6 +347,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                     }
                 }
             });
+            set(IS_OVERRIDING_SET_MASK);
         }
         return isSet(IS_OVERRIDING_MASK);
     }
@@ -379,8 +378,6 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
     
     public boolean isOverloadingMethod() {
         if (!isSet(IS_OVERLOADING_SET_MASK)) {
-            set(IS_OVERLOADING_SET_MASK);
-
             doWithBindings(new ActionOnMethodBinding() {
                 @Override
                 public void doWithBinding(IType declaringClassModel,
@@ -403,6 +400,7 @@ public class JDTMethod implements MethodMirror, IBindingProvider {
                     }
                 }
             });
+            set(IS_OVERLOADING_SET_MASK);
         }
         return isSet(IS_OVERLOADING_MASK);
     }
