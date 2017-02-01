@@ -255,7 +255,7 @@ shared class JDTModelLoader
     
     shared actual Object lookupEnvironmentMutex = object extends Basic() {};
 
-    value typeMirrorCache = Cache(1000);
+    value typeMirrorCache = Cache(2000);
     value typeMirrorCacheLock = ReentrantReadWriteLock();
     
     shared new (
