@@ -56,34 +56,44 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
         fProject = JavaCore.create(project);
         BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
         RepositoryManager repoManager = ceylonProject != null ? ceylonProject.getRepositoryManager() : null;
+        List<IClasspathEntry> entriesList = new ArrayList<IClasspathEntry>();
+        List<String> moduleNames = Arrays.asList("ceylon.language", "com.redhat.ceylon.model", "com.redhat.ceylon.common");
+        String moduleVersion = TypeChecker.LANGUAGE_MODULE_VERSION;
+
         if (repoManager != null) {
-            String moduleName = "ceylon.language";
-            String moduleVersion = TypeChecker.LANGUAGE_MODULE_VERSION;
-            File languageModuleArtifact = null;
-            try {
-                languageModuleArtifact = repoManager.getArtifact(new ArtifactContext(null, moduleName, moduleVersion, ArtifactContext.CAR));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            if (languageModuleArtifact != null) {
-                IPath ceylonLanguageBinaries = new Path(languageModuleArtifact.getAbsolutePath());
-                File ceylonLanguageJavaSources = null;
+            for (String moduleName : moduleNames) {
+                File moduleArtifact = null;
                 try {
-                    ceylonLanguageJavaSources = ceylonSourceArchiveToJavaSourceArchive(
-                            moduleName,
-                            moduleVersion,
-                            repoManager.getArtifact(new ArtifactContext(null, moduleName,moduleVersion, ArtifactContext.SRC)));
-                } catch(Exception e) {
+                    moduleArtifact = repoManager.getArtifact(new ArtifactContext(null, moduleName, moduleVersion, ArtifactContext.CAR, ArtifactContext.JAR));
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
-                IPath ceylonLanguageSources = ceylonLanguageJavaSources != null ? 
-                        new Path(ceylonLanguageJavaSources.getAbsolutePath()) : null;
-                IClasspathEntry entry = newLibraryEntry(ceylonLanguageBinaries, ceylonLanguageSources, null);
-                entries = new IClasspathEntry[] { entry };
-                return;
+                if (moduleArtifact != null) {
+                    IPath moduleBinaries = new Path(moduleArtifact.getAbsolutePath());
+                    File sourceArchive = repoManager.getArtifact(new ArtifactContext(null, moduleName,moduleVersion, ArtifactContext.SRC));
+                    IPath moduleSources = null;
+                    if (moduleArtifact.getName().endsWith(ArtifactContext.CAR)) {
+                        File moduleJavaSources = null;
+                        try {
+                            moduleJavaSources = ceylonSourceArchiveToJavaSourceArchive(
+                                    moduleName,
+                                    moduleVersion,
+                                    sourceArchive);
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+                        moduleSources = moduleJavaSources != null ? 
+                                new Path(moduleJavaSources.getAbsolutePath()) : null;
+                    } else {
+                        moduleSources = new Path(sourceArchive.getAbsolutePath());
+                    }
+                    IClasspathEntry entry = newLibraryEntry(moduleBinaries, moduleSources, null);
+                    entriesList.add(entry);
+                }
             }
         }
-        entries = new IClasspathEntry[] {};
+        IClasspathEntry[] entriesArray = new IClasspathEntry[entriesList.size()];
+        entries = entriesList.toArray(entriesArray);
     }
     
     public IClasspathEntry[] constructModifiedClasspath() 
