@@ -1,7 +1,6 @@
-import ceylon.interop.java {
-    javaString
+import com.redhat.ceylon.eclipse.code.correct {
+    EclipseDocument
 }
-
 import com.redhat.ceylon.eclipse.code.preferences {
     CeylonPreferenceInitializer
 }
@@ -14,12 +13,16 @@ import com.redhat.ceylon.eclipse.util {
 import com.redhat.ceylon.ide.common.completion {
     CommonCompletionProposal
 }
+import com.redhat.ceylon.ide.common.platform {
+    CommonDocument
+}
 import com.redhat.ceylon.model.typechecker.model {
     ModelUtil
 }
 
 import java.lang {
-    CharSequence
+    CharSequence,
+    Types
 }
 
 import org.eclipse.jface.text {
@@ -40,12 +43,6 @@ import org.eclipse.swt {
 }
 import org.eclipse.swt.graphics {
     Point
-}
-import com.redhat.ceylon.ide.common.platform {
-    CommonDocument
-}
-import com.redhat.ceylon.eclipse.code.correct {
-    EclipseDocument
 }
 
 // see CompletionProposal
@@ -95,9 +92,8 @@ shared interface EclipseCompletionProposal
 
     }
     
-    shared default Boolean isProposalMatching(variable String currentPrefix, variable String text) {
-        return ModelUtil.isNameMatching(currentPrefix, text);
-    }
+    shared default Boolean isProposalMatching(String currentPrefix, String text) 
+            => ModelUtil.isNameMatching(currentPrefix, text);
 
     String? getCurrentPrefix(IDocument document, Integer offset) {
         try {
@@ -108,18 +104,15 @@ shared interface EclipseCompletionProposal
         }
     }
 
-    shared actual CharSequence getPrefixCompletionText(IDocument document, Integer completionOffset) {
-        return javaString(withoutDupeSemi(EclipseDocument(document)));
-    }
+    shared actual CharSequence getPrefixCompletionText(IDocument document, Integer completionOffset) 
+            => Types.nativeString(withoutDupeSemi(EclipseDocument(document)));
     
-    shared actual Integer getPrefixCompletionStart(IDocument document, Integer completionOffset) {
-        return start;
-    }
+    shared actual Integer getPrefixCompletionStart(IDocument document, Integer completionOffset) => start;
     
     shared actual IInformationControlCreator? informationControlCreator => null;
     
     shared actual Point getSelection(IDocument document)
-            => let(reg=getSelectionInternal(EclipseDocument(document)))
+            => let (reg=getSelectionInternal(EclipseDocument(document)))
                Point(reg.start, reg.length);
     
     shared actual String completionMode => CeylonPlugin.preferences.getString(CeylonPreferenceInitializer.\iCOMPLETION);

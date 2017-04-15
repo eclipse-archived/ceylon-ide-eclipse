@@ -1,8 +1,17 @@
-import java.util {
-    Arrays
+import ceylon.collection {
+    HashSet
 }
-import org.eclipse.jdt.core {
-    IJavaProject
+
+import com.redhat.ceylon.cmr.ceylon {
+    CeylonUtils {
+        CeylonRepoManagerBuilder
+    }
+}
+import com.redhat.ceylon.common {
+    Versions
+}
+import com.redhat.ceylon.eclipse.core.builder {
+    CeylonBuilder
 }
 import com.redhat.ceylon.eclipse.core.model {
     ceylonModel
@@ -13,36 +22,27 @@ import com.redhat.ceylon.ide.common.platform {
 import com.redhat.ceylon.tools.classpath {
     CeylonClasspathTool
 }
-import ceylon.collection {
-    HashSet
-}
-import org.eclipse.debug.core {
-    ILaunchConfiguration
-}
-import com.redhat.ceylon.eclipse.core.builder {
-    CeylonBuilder
-}
-import java.lang {
-    ObjectArray,
-    JString=String
-}
-import com.redhat.ceylon.common {
-    Versions
-}
-import java.io {
-    File
-}
-import ceylon.interop.java {
-    javaString,
-    createJavaObjectArray
-}
 import com.redhat.ceylon.tools.moduleloading {
     ToolModuleLoader
 }
-import com.redhat.ceylon.cmr.ceylon {
-    CeylonUtils {
-        CeylonRepoManagerBuilder
-    }
+
+import java.io {
+    File
+}
+import java.lang {
+    ObjectArray,
+    JString=String,
+    Types
+}
+import java.util {
+    Arrays
+}
+
+import org.eclipse.debug.core {
+    ILaunchConfiguration
+}
+import org.eclipse.jdt.core {
+    IJavaProject
 }
 
 shared interface ClassPathEnricher {
@@ -71,7 +71,7 @@ shared interface ClassPathEnricher {
                             referencedProject.ideArtifact).absolutePath)
                         .extraUserRepos(Arrays.asList(
                             for (p in referencedProject.referencedCeylonProjects)
-                            javaString(p.ceylonModulesOutputDirectory.absolutePath)))
+                            Types.nativeString(p.ceylonModulesOutputDirectory.absolutePath)))
                         .logger(platformUtils.cmrLogger)
                         .isJDKIncluded(false);
             
@@ -104,7 +104,7 @@ shared interface ClassPathEnricher {
             }
         }
         classpathEntries.addAll { for (cp in original) cp.string };
-        return createJavaObjectArray(classpathEntries.map(javaString));
+        return ObjectArray.with(classpathEntries.map(Types.nativeString));
     }
     
     shared formal IJavaProject getTheJavaProject(ILaunchConfiguration launchConfiguration);

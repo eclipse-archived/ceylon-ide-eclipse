@@ -2,8 +2,6 @@ import ceylon.collection {
     ArrayList
 }
 import ceylon.interop.java {
-    javaString,
-    createJavaObjectArray,
     JavaRunnable
 }
 
@@ -46,7 +44,8 @@ import com.redhat.ceylon.model.typechecker.model {
 
 import java.lang {
     ObjectArray,
-    System
+    System,
+    Types
 }
 import java.util.concurrent {
     Executors,
@@ -151,10 +150,10 @@ class CeylonCompletionProcessor(CeylonEditor editor)
     }
     
     completionProposalAutoActivationCharacters =
-        javaString(preferences.getString(autoActivationChars)).toCharArray();
+            Types.nativeString(preferences.getString(autoActivationChars)).toCharArray();
     
     contextInformationAutoActivationCharacters
-            = javaString(",(;{").toCharArray();
+            = Types.nativeString(",(;{").toCharArray();
 
     
     object completionSchedulingRule satisfies ISchedulingRule {
@@ -449,7 +448,7 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                 if(completionJob.shouldStillShowCompletion) {
                     contentAssistant.setStatusMessage("Results truncated for rapid completion. "
                         + CeylonContentAssistant.retrieveCompleteResultsStatusMessage);
-                    return createJavaObjectArray(completionJob._contentProposals);
+                    return ObjectArray.with(completionJob._contentProposals);
                 } else {
                     contentAssistant.setShowEmptyList(false);
                     return noCompletions;
@@ -460,13 +459,13 @@ class CeylonCompletionProcessor(CeylonEditor editor)
             if (status == Status.cancelStatus) {
                 contentAssistant.setStatusMessage("Results truncated for rapid completion. "
                     + CeylonContentAssistant.retrieveCompleteResultsStatusMessage);
-                return createJavaObjectArray(completionJob._contentProposals);
+                return ObjectArray.with(completionJob._contentProposals);
             }
             
             if (status.severity == Status.error) {
                 contentAssistant.setStatusMessage("The results might be incomplete because an error occured");
                 (CeylonPlugin.instance of AbstractUIPlugin).log.log(status);
-                return createJavaObjectArray(completionJob._contentProposals);
+                return ObjectArray.with(completionJob._contentProposals);
             }
             
             if (exists statusMessage = completionJob.incompleteResultsMessage) {
@@ -474,7 +473,7 @@ class CeylonCompletionProcessor(CeylonEditor editor)
             }
             
             if (status == Status.okStatus) {
-                return createJavaObjectArray(completionJob._contentProposals);
+                return ObjectArray.with(completionJob._contentProposals);
             } else {
                 return noCompletions;
             }
@@ -493,7 +492,7 @@ class CeylonCompletionProcessor(CeylonEditor editor)
         if (exists phasedUnit = controller.parseAndTypecheck(
                 viewer.document, 10, NullProgressMonitor(), null)) {
             
-            return createJavaObjectArray<IContextInformation>(
+            return ObjectArray<IContextInformation>.with(
                 computeParameterContextInformation {
                     offset = offset;
                     rootNode = controller.lastCompilationUnit;

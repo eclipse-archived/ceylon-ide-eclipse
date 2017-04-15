@@ -1,10 +1,16 @@
-import ceylon.interop.java {
-    createJavaObjectArray,
-    createJavaStringArray
-}
-
 import com.redhat.ceylon.eclipse.core.builder {
     CeylonNature
+}
+import com.redhat.ceylon.eclipse.core.launch {
+    ICeylonLaunchConfigurationConstants {
+        ...
+    },
+    LaunchHelper {
+        ...
+    },
+    SWTFactory {
+        ...
+    }
 }
 import com.redhat.ceylon.eclipse.ui {
     CeylonPlugin {
@@ -16,6 +22,11 @@ import com.redhat.ceylon.model.typechecker.model {
     Module {
         defaultModuleName
     }
+}
+
+import java.lang {
+    Types,
+    ObjectArray
 }
 
 import org.eclipse.core.runtime {
@@ -37,7 +48,9 @@ import org.eclipse.jdt.debug.ui.launchConfigurations {
     JavaJRETab
 }
 import org.eclipse.jdt.internal.debug.ui {
-    IJavaDebugHelpContextIds { launchConfigurationDialogMainTab },
+    IJavaDebugHelpContextIds {
+        launchConfigurationDialogMainTab
+    },
     JDIDebugUIPlugin
 }
 import org.eclipse.jdt.internal.debug.ui.actions {
@@ -48,12 +61,9 @@ import org.eclipse.jdt.internal.debug.ui.launcher {
     LauncherMessages
 }
 import org.eclipse.jdt.launching {
-    IJavaLaunchConfigurationConstants { ... }
-}
-import com.redhat.ceylon.eclipse.core.launch {
-    ICeylonLaunchConfigurationConstants { ... },
-    LaunchHelper { ... },
-    SWTFactory { ... }
+    IJavaLaunchConfigurationConstants {
+        ...
+    }
 }
 import org.eclipse.swt {
     SWT
@@ -80,14 +90,16 @@ import org.eclipse.ui {
     }
 }
 
-shared class JarPackagedCeylonLaunchConfigurationTabGroup() extends AbstractLaunchConfigurationTabGroup() {
-    createTabs(ILaunchConfigurationDialog d, String s) => setTabs(createJavaObjectArray<ILaunchConfigurationTab> {
-            CeylonModuleOnlyTab(),
-            JavaArgumentsTab(),
-            JavaJRETab(),
-            EnvironmentTab(),
-            CommonTab()            
-         });
+shared class JarPackagedCeylonLaunchConfigurationTabGroup() 
+        extends AbstractLaunchConfigurationTabGroup() {
+    createTabs(ILaunchConfigurationDialog d, String s) 
+            => setTabs(ObjectArray<ILaunchConfigurationTab>.with {
+                CeylonModuleOnlyTab(),
+                JavaArgumentsTab(),
+                JavaJRETab(),
+                EnvironmentTab(),
+                CommonTab()            
+             });
 }
 
 shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
@@ -259,7 +271,7 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
     void createToolSelector(Composite parent, String text) {
         value group = createGroup(parent, text, 2, 1, GridData.fillHorizontal);
         fJarCreationToolText = createCombo(group, SWT.none, 2, 
-            createJavaStringArray { for (t in jarCreationTools) t.type });
+            ObjectArray.with { for (t in jarCreationTools) Types.nativeString(t.type) });
 
         value canStopInMain 
                 => jarCreationTools[fJarCreationToolText.selectionIndex]?.canStopInMain

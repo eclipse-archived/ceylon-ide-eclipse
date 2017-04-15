@@ -1,15 +1,36 @@
+import com.redhat.ceylon.eclipse.core.debug.model {
+    CeylonJDIDebugTarget
+}
+import com.redhat.ceylon.eclipse.ui {
+    CeylonPlugin {
+        ceylonPluginId=pluginId,
+        ceylonPlugin=instance
+    }
+}
+import com.sun.jdi {
+    VirtualMachine
+}
+
+import java.lang {
+    ObjectArray,
+    JString=String,
+    Types
+}
 import java.util {
     HashMap
 }
-import org.eclipse.debug.core.model {
-    IDebugTarget,
-    IProcess
+
+import org.eclipse.core.resources {
+    IWorkspaceRunnable,
+    ResourcesPlugin {
+        workspace
+    }
 }
-import org.eclipse.jdt.launching {
-    IVMRunner,
-    IJavaLaunchConfigurationConstants,
-    IVMInstall,
-    VMRunnerConfiguration
+import org.eclipse.core.runtime {
+    IStatus,
+    IProgressMonitor,
+    Status,
+    CoreException
 }
 import org.eclipse.debug.core {
     IDebugEventSetListener,
@@ -19,52 +40,30 @@ import org.eclipse.debug.core {
     DebugPlugin {
         parseArguments,
         renderArguments,
-        debugPlugin = default
+        debugPlugin=default
     }
 }
-import java.lang {
-    ObjectArray,
-    JString=String
-}
-import org.eclipse.core.runtime {
-    IStatus,
-    IProgressMonitor,
-    Status,
-    CoreException
-}
-import org.eclipse.jdt.internal.launching {
-    StandardVMDebugger,
-    LaunchingPlugin
-}
-import ceylon.interop.java {
-    javaString,
-    createJavaStringArray
-}
-import com.redhat.ceylon.eclipse.core.debug.model {
-    CeylonJDIDebugTarget
-}
-import com.redhat.ceylon.eclipse.ui {
-    CeylonPlugin {
-        ceylonPluginId = pluginId,
-        ceylonPlugin = instance
-    }
+import org.eclipse.debug.core.model {
+    IDebugTarget,
+    IProcess
 }
 import org.eclipse.jdt.debug.core {
     JDIDebugModel,
     IJavaDebugTarget,
     IJavaMethodBreakpoint
 }
-import org.eclipse.core.resources {
-    IWorkspaceRunnable,
-    ResourcesPlugin {
-        workspace
-    }
-}
-import com.sun.jdi {
-    VirtualMachine
-}
 import org.eclipse.jdt.internal.debug.core {
     JDIDebugPlugin
+}
+import org.eclipse.jdt.internal.launching {
+    StandardVMDebugger,
+    LaunchingPlugin
+}
+import org.eclipse.jdt.launching {
+    IVMRunner,
+    IJavaLaunchConfigurationConstants,
+    IVMInstall,
+    VMRunnerConfiguration
 }
 
 shared interface CeylonDebuggingSupportEnabled satisfies IDebugEventSetListener {
@@ -89,7 +88,7 @@ shared interface CeylonDebuggingSupportEnabled satisfies IDebugEventSetListener 
                         exists [type, method] = getStartLocation(configuration)) {
 
                         HashMap<JString, Object> attrs = HashMap<JString, Object>();
-                        value attr = javaString(IJavaLaunchConfigurationConstants.attrStopInMain);
+                        value attr = Types.nativeString(IJavaLaunchConfigurationConstants.attrStopInMain);
                         attrs.put(attr, attr);
                         
                         IJavaMethodBreakpoint bp = JDIDebugModel
@@ -115,9 +114,10 @@ shared interface CeylonDebuggingSupportEnabled satisfies IDebugEventSetListener 
      {
         return 
             if (exists javaDebugAgentPath = ceylonPlugin.debugAgentJar)
-            then renderArguments(createJavaStringArray {
-                    "-javaagent:" + javaDebugAgentPath.absolutePath,
-                    for(arg in parseArguments(getOriginalVMArguments(configuration))) arg.string
+            then renderArguments(ObjectArray.with {
+                    Types.nativeString("-javaagent:" + javaDebugAgentPath.absolutePath),
+                    for(arg in parseArguments(getOriginalVMArguments(configuration))) 
+                    Types.nativeString(arg.string)
             }, null)
             else getOriginalVMArguments(configuration);
     }

@@ -1,8 +1,3 @@
-import ceylon.interop.java {
-    javaString,
-    createJavaObjectArray
-}
-
 import com.redhat.ceylon.common {
     ModuleSpec
 }
@@ -51,13 +46,17 @@ import com.redhat.ceylon.model.typechecker.model {
 import java.lang {
     CharArray,
     ObjectArray,
-    System
+    System,
+    Types
 }
 import java.lang.ref {
     WeakReference
 }
 import java.util {
     WeakHashMap
+}
+import java.util.concurrent.locks {
+    ReentrantReadWriteLock
 }
 
 import org.eclipse.core.internal.utils {
@@ -120,11 +119,8 @@ import org.eclipse.jdt.internal.compiler.problem {
 import org.eclipse.jdt.internal.core {
     JavaProject
 }
-import java.util.concurrent.locks {
-    ReentrantReadWriteLock
-}
 
-CharArray toCharArray(String s) => javaString(s).toCharArray();
+CharArray toCharArray(String s) => Types.nativeString(s).toCharArray();
 
 WeakHashMap<IProject, WeakReference<JDTModelLoader>> modelLoaders = WeakHashMap<IProject, WeakReference<JDTModelLoader>>();
 Cache archivesRootsToModelLoaderCache = Cache(20);
@@ -215,7 +211,7 @@ shared class JDTModelLoader
             lookupEnvironment = LookupEnvironment(requestor, compilerOptions, problemReporter, createSearchableEnvironment());
             requestor.initialize(lookupEnvironment);
             lookupEnvironment.mayTolerateMissingType = true;
-            missingTypeBinding = MissingTypeBinding(lookupEnvironment.defaultPackage, createJavaObjectArray { toCharArray("unknown") }, lookupEnvironment);
+            missingTypeBinding = MissingTypeBinding(lookupEnvironment.defaultPackage, ObjectArray.with { toCharArray("unknown") }, lookupEnvironment);
             dummyCompilationUnitScope = CompilationUnitScope(
                 CompilationUnitDeclaration(
                     lookupEnvironment.problemReporter, 
@@ -427,8 +423,8 @@ shared class JDTModelLoader
             IClasspathEntry? newEntry = container.addNewClasspathEntryIfNecessary(modulePath);
             if (exists newEntry) {
                 try {
-                    JavaCore.setClasspathContainer(container.path, createJavaObjectArray { javaProject }, 
-                        createJavaObjectArray<IClasspathContainer>{ CeylonProjectModulesContainer(container) } , null);
+                    JavaCore.setClasspathContainer(container.path, ObjectArray.with { javaProject }, 
+                        ObjectArray<IClasspathContainer>.with{ CeylonProjectModulesContainer(container) } , null);
                 } catch (JavaModelException e) {
                     e.printStackTrace();
                 }
@@ -444,7 +440,7 @@ shared class JDTModelLoader
         try {
             value theLookupEnvironment = upToDateLookupEnvironment;
             value nameEnvironment = unsafeCast<ModelLoaderNameEnvironment>(theLookupEnvironment.nameEnvironment);
-            ObjectArray<CharArray> uncertainCompoundName = CharOperation.splitOn('.', javaString(name).toCharArray());
+            ObjectArray<CharArray> uncertainCompoundName = CharOperation.splitOn('.', Types.nativeString(name).toCharArray());
             Integer numberOfParts = uncertainCompoundName.size;
 
             variable ObjectArray<CharArray>? compoundName = null;

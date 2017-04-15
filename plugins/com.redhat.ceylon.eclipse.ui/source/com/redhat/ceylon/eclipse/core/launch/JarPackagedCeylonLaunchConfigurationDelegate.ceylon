@@ -1,9 +1,3 @@
-import ceylon.interop.java {
-    createJavaStringArray,
-    javaString,
-    createJavaObjectArray
-}
-
 import com.redhat.ceylon.eclipse.core.launch {
     ICeylonLaunchConfigurationConstants {
         ...
@@ -19,7 +13,9 @@ import java.io {
     File
 }
 import java.lang {
-    ObjectArray
+    ObjectArray,
+    JString=String,
+    Types
 }
 import java.util.jar {
     JarFile,
@@ -108,9 +104,9 @@ shared class JarPackagedCeylonLaunchConfigurationDelegate() extends JavaLaunchDe
     getVMRunner(ILaunchConfiguration configuration, String mode) => 
             (super of CeylonDebuggingSupportEnabled).getOverridenVMRunner(configuration, mode);
 
-    getClasspath(ILaunchConfiguration config) => createJavaStringArray {
+    getClasspath(ILaunchConfiguration config) => ObjectArray<JString>.with {
         if (exists jar = jarPackagingTool(config)?.outputFile(config)) 
-        jar.absolutePath
+        Types.nativeString(jar.absolutePath)
     };
 
     shared actual String? verifyMainTypeName(ILaunchConfiguration configuration) {
@@ -183,8 +179,8 @@ shared class JarPackagedCeylonLaunchConfigurationDelegate() extends JavaLaunchDe
         value env = processBuilder.environment();
         value vmInstall = getVMInstall(config);
         env.put(
-            javaString("JAVA_HOME"), 
-            javaString(vmInstall.installLocation.absolutePath));  
+            Types.nativeString("JAVA_HOME"), 
+            Types.nativeString(vmInstall.installLocation.absolutePath));  
         value systemProcess = processBuilder.start();
         
         value process = newProcess(launch, systemProcess, "``tool.type`` packaging of module `` moduleToJar.nameAsString ``");
@@ -193,14 +189,14 @@ shared class JarPackagedCeylonLaunchConfigurationDelegate() extends JavaLaunchDe
         } finally {
             value console = DebugUIPlugin.default.processConsoleManager.getConsole(process);
             launch.removeProcess(process);
-            consolePlugin.consoleManager.addConsoles(createJavaObjectArray { console });
+            consolePlugin.consoleManager.addConsoles(ObjectArray.with { console });
             
             debugPlugin.launchManager.addLaunchListener(object satisfies ILaunchListener {
                 launchAdded(ILaunch launch) => noop();
                 launchChanged(ILaunch launch) => noop();
                 shared actual void launchRemoved(ILaunch launchToRemove) {
                     if (launchToRemove == launch) {
-                        consolePlugin.consoleManager.removeConsoles(createJavaObjectArray { console });
+                        consolePlugin.consoleManager.removeConsoles(ObjectArray.with { console });
                         debugPlugin.launchManager.removeLaunchListener(this);
                     }
                 }

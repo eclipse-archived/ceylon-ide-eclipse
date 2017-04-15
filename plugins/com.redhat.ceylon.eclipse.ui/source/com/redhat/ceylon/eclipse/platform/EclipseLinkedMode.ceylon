@@ -1,7 +1,3 @@
-import ceylon.interop.java {
-    createJavaObjectArray
-}
-
 import com.redhat.ceylon.eclipse.code.correct {
     EclipseDocument
 }
@@ -17,6 +13,10 @@ import com.redhat.ceylon.ide.common.completion {
 }
 import com.redhat.ceylon.ide.common.platform {
     LinkedMode
+}
+
+import java.lang {
+    ObjectArray
 }
 
 import org.eclipse.jface.text.link {
@@ -36,7 +36,7 @@ shared class EclipseLinkedMode(document, model = LinkedModeModel()) extends Link
         
         if (is EclipseProposalsHolder holder) {
             value linkedPosition = ProposalPosition(document.document, start,
-                length, exitSeqNumber, createJavaObjectArray(holder.proposals));
+                length, exitSeqNumber, ObjectArray.with(holder.proposals));
             ELinkedMode.addLinkedPosition(model, linkedPosition);
         }
     }

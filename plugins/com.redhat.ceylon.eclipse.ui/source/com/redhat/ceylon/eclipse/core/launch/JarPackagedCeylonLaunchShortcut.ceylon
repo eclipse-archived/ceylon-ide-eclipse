@@ -1,68 +1,75 @@
-import org.eclipse.debug.ui {
-    ILaunchShortcut,
-    DebugUITools
+import com.redhat.ceylon.eclipse.code.navigator {
+    SourceModuleNode
 }
-import org.eclipse.jface.viewers {
-    ISelection,
-    IStructuredSelection
+import com.redhat.ceylon.eclipse.core.builder {
+    CeylonBuilder
 }
-import org.eclipse.ui {
-    IEditorPart
+import com.redhat.ceylon.eclipse.core.launch {
+    ICeylonLaunchConfigurationConstants {
+        ...
+    },
+    LaunchHelper {
+        ...
+    }
+}
+import com.redhat.ceylon.eclipse.ui {
+    CeylonPlugin
+}
+import com.redhat.ceylon.eclipse.util {
+    EditorUtil
+}
+import com.redhat.ceylon.ide.common.model {
+    AnyIdeModule
+}
+import com.redhat.ceylon.model.typechecker.model {
+    Module
+}
+
+import java.lang {
+    Types,
+    ObjectArray
+}
+
+import org.eclipse.core.resources {
+    IResource,
+    IProject,
+    IFile
 }
 import org.eclipse.core.runtime {
     IAdaptable,
     CoreException,
     IStatus
 }
-import ceylon.interop.java {
-    javaClass,
-    createJavaObjectArray
-}
-import org.eclipse.core.resources {
-    IResource,
-    IProject,
-    IFile
-}
-import com.redhat.ceylon.model.typechecker.model {
-    Module
-}
-import com.redhat.ceylon.eclipse.code.navigator {
-    SourceModuleNode
-}
 import org.eclipse.debug.core {
     ILaunchConfiguration,
     DebugPlugin {
-        debugPlugin = default
+        debugPlugin=default
     }
 }
-import org.eclipse.ui.dialogs {
-    ElementListSelectionDialog
-}
-import com.redhat.ceylon.eclipse.util {
-    EditorUtil
-}
-import org.eclipse.jface.window {
-    Window
-}
-import com.redhat.ceylon.ide.common.model {
-    AnyIdeModule
-}
-
-import com.redhat.ceylon.eclipse.core.launch {
-    ICeylonLaunchConfigurationConstants { ... },
-    LaunchHelper { ... }
+import org.eclipse.debug.ui {
+    ILaunchShortcut,
+    DebugUITools
 }
 import org.eclipse.jdt.launching {
-    IJavaLaunchConfigurationConstants { ... }
-}
-import com.redhat.ceylon.eclipse.ui {
-    CeylonPlugin
+    IJavaLaunchConfigurationConstants {
+        ...
+    }
 }
 import org.eclipse.jface.dialogs {
     MessageDialog
 }
-import com.redhat.ceylon.eclipse.core.builder {
-    CeylonBuilder
+import org.eclipse.jface.viewers {
+    ISelection,
+    IStructuredSelection
+}
+import org.eclipse.jface.window {
+    Window
+}
+import org.eclipse.ui {
+    IEditorPart
+}
+import org.eclipse.ui.dialogs {
+    ElementListSelectionDialog
 }
 
 shared abstract class JarPackagedCeylonLaunchShortcut(String jarPackagingToolName) satisfies ILaunchShortcut {
@@ -106,7 +113,7 @@ shared abstract class JarPackagedCeylonLaunchShortcut(String jarPackagingToolNam
                 DebugUITools.newDebugModelPresentation();
         value dialog = 
                 ElementListSelectionDialog(EditorUtil.shell, labelProvider);
-        dialog.setElements(createJavaObjectArray(configs));
+        dialog.setElements(ObjectArray.with(configs));
         dialog.setTitle("Ceylon ``jarPackagingToolName`` Launcher");  
         dialog.setMessage("Please choose a configuration to start the Ceylon application");
         dialog.setMultipleSelection(false);
@@ -179,7 +186,7 @@ shared abstract class JarPackagedCeylonLaunchShortcut(String jarPackagingToolNam
             mod = selectedItem.\imodule;
         } else if (is IAdaptable selectedItem,
             is IProject project = 
-                    selectedItem.getAdapter(javaClass<IResource>())) {
+                    selectedItem.getAdapter(Types.classForType<IResource>())) {
             mod = LaunchHelper.getDefaultOrOnlyModule(project, true);
             if (! mod exists) {
                 mod = LaunchHelper.chooseModule(project, true);

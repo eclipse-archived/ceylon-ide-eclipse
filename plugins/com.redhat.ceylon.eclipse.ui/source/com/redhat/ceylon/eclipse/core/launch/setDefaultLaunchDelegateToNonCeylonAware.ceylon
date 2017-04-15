@@ -1,16 +1,18 @@
-import ceylon.interop.java {
-    javaClass,
-    javaClassFromInstance
-}
 import com.redhat.ceylon.ide.common.platform {
     platformUtils,
     Status
 }
+
+import java.lang {
+    JClass=Class,
+    Types {
+        classForType,
+        classForInstance
+    }
+}
+
 import org.eclipse.debug.core {
     DebugPlugin
-}
-import java.lang {
-    JClass = Class
 }
 import org.eclipse.debug.core.model {
     ILaunchConfigurationDelegate
@@ -18,37 +20,29 @@ import org.eclipse.debug.core.model {
 
 JClass<out ILaunchConfigurationDelegate>? ceylonAwareJUnitLaunchConfigurationDelegateClass() {
     try {
-        return javaClass<CeylonAwareJUnitLaunchConfigurationDelegate>();
-    } catch(Throwable e) {
-        noop();
-    }
+        return classForType<CeylonAwareJUnitLaunchConfigurationDelegate>();
+    } catch(Throwable e) {}
     return null;
 }
 
 JClass<out ILaunchConfigurationDelegate>? ceylonAwareEclipseApplicationLaunchConfigurationClass() {
     try {
-        return javaClass<CeylonAwareEclipseApplicationLaunchConfiguration>();
-    } catch(Throwable e) {
-        noop();
-    }
+        return classForType<CeylonAwareEclipseApplicationLaunchConfiguration>();
+    } catch(Throwable e) {}
     return null;
 }
 
 JClass<out ILaunchConfigurationDelegate>? ceylonAwarePDEJUnitLaunchConfigurationDelegateClass() {
     try {
-        return javaClass<CeylonAwarePDEJUnitLaunchConfigurationDelegate>();
-    } catch(Throwable e) {
-        noop();
-    }
+        return classForType<CeylonAwarePDEJUnitLaunchConfigurationDelegate>();
+    } catch(Throwable e) {}
     return null;
 }
 
 JClass<out ILaunchConfigurationDelegate>? ceylonAwareSWTBotJUnitLaunchConfigurationDelegateClass() {
     try {
-        return javaClass<CeylonAwareSWTBotJUnitLaunchConfigurationDelegate>();
-    } catch(Throwable e) {
-        noop();
-    }
+        return classForType<CeylonAwareSWTBotJUnitLaunchConfigurationDelegate>();
+    } catch(Throwable e) {}
     return null;
 }
 
@@ -56,8 +50,8 @@ shared void setDefaultLaunchDelegateToNonCeylonAware() {
     try {
         value ceylonDelegatesClasses = [
             for (classGetter in {
-                    javaClass<CeylonAwareJavaLaunchDelegate>,
-                    javaClass<CeylonAwareJavaRemoteApplicationLaunchConfigurationDelegate>,
+                    classForType<CeylonAwareJavaLaunchDelegate>,
+                    classForType<CeylonAwareJavaRemoteApplicationLaunchConfigurationDelegate>,
                     ceylonAwareJUnitLaunchConfigurationDelegateClass,
                     ceylonAwareEclipseApplicationLaunchConfigurationClass,
                     ceylonAwarePDEJUnitLaunchConfigurationDelegateClass,
@@ -75,7 +69,7 @@ shared void setDefaultLaunchDelegateToNonCeylonAware() {
                 }
                 value delegatesWithClasses = {
                     for (delegate in delegates)
-                    delegate -> javaClassFromInstance(delegate.delegate)
+                    delegate -> classForInstance(delegate.delegate)
                 };
                 if (delegatesWithClasses.any((delegate -> clazz) 
                     => clazz in ceylonDelegatesClasses)) {

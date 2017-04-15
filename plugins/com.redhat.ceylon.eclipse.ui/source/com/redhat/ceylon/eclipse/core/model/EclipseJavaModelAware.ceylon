@@ -2,15 +2,11 @@ import ceylon.collection {
     LinkedList,
     MutableList
 }
-import ceylon.interop.java {
-    createJavaObjectArray,
-    javaString
-}
 
 import com.redhat.ceylon.eclipse.core.model.mirror {
     IBindingProvider,
     JDTMethod,
-	JDTClass
+    JDTClass
 }
 import com.redhat.ceylon.eclipse.util {
     withJavaModel
@@ -32,16 +28,17 @@ import com.redhat.ceylon.model.loader.model {
     FieldValue,
     LazyFunction,
     JavaMethod,
-	AnnotationProxyClass
+    AnnotationProxyClass
 }
 import com.redhat.ceylon.model.typechecker.model {
     Declaration,
     Scope,
-	Value
+    Value
 }
 
 import java.lang {
-    ObjectArray
+    ObjectArray,
+    Types
 }
 import java.lang.ref {
     SoftReference
@@ -101,7 +98,7 @@ shared interface EclipseJavaModelAware
                         parser.setProject(typeRoot.javaProject);
                         value list = LinkedList<IJavaElement>();
                         traverseModel(typeRoot.primaryElement, list);
-                        value theModelElements = createJavaObjectArray(list);
+                        value theModelElements = ObjectArray.with(list);
                         value theBindings = parser.createBindings(theModelElements, monitor?.Progress(1000, null)?.newChild(1000)?.wrapped);
                         assert (theBindings.size == theModelElements.size);
                         value newResolvedElements = object satisfies ResolvedElements {
@@ -281,13 +278,13 @@ shared interface EclipseJavaModelAware
                         // Case of a constructor : let's go to the constructor and not to the type.
                         for (methodBinding in binding.declaredMethods.array.coalesced) {
                             //                            if (methodBinding.isConstructor()) {
-                            if (CharOperation.equals(javaString(methodBinding.key).toCharArray(), mirror.bindingKey)) {
+                            if (CharOperation.equals(Types.nativeString(methodBinding.key).toCharArray(), mirror.bindingKey)) {
                                 return methodBinding.javaElement;
                             }
                             //                            }
                         }
                     }
-                    if (CharOperation.equals(javaString(binding.key).toCharArray(), mirror.bindingKey)) {
+                    if (CharOperation.equals(Types.nativeString(binding.key).toCharArray(), mirror.bindingKey)) {
                         return javaElement;
                     }
                 }
