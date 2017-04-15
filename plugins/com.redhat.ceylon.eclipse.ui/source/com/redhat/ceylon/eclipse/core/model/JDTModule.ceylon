@@ -3,9 +3,6 @@ import ceylon.collection {
     MutableSet,
     MutableList
 }
-import ceylon.interop.java {
-    javaObjectArray
-}
 
 import com.redhat.ceylon.eclipse.core.classpath {
     CeylonLanguageModuleContainer,
@@ -45,6 +42,9 @@ import org.eclipse.jdt.internal.core {
     JarPackageFragmentRoot,
     JavaModelManager,
     PackageFragment
+}
+import java.lang {
+    ObjectArray
 }
 
 shared class JDTModule(
@@ -152,6 +152,6 @@ shared class JDTModule(
     shared actual void refreshJavaModel() {
         JavaModelManager.javaModelManager.resetClasspathListCache();
         JavaModelManager.javaModelManager.javaModel.refreshExternalArchives(
-            javaObjectArray(Array<IPackageFragmentRoot?>(packageFragmentRoots)), null);
+            ObjectArray.with(Array<IPackageFragmentRoot?>(packageFragmentRoots)), null);
     }
 }

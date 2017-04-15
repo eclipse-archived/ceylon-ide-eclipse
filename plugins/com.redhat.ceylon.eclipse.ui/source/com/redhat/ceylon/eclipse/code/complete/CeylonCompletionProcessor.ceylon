@@ -1,9 +1,6 @@
 import ceylon.collection {
     ArrayList
 }
-import ceylon.interop.java {
-    JavaRunnable
-}
 
 import com.redhat.ceylon.compiler.typechecker.tree {
     Visitor,
@@ -269,7 +266,7 @@ class CeylonCompletionProcessor(CeylonEditor editor)
             }
         }
         
-        value completionJobFuture = backgroundExecutor.submit(JavaRunnable(() {
+        value completionJobFuture = backgroundExecutor.submit(() {
             try (progress = wrapProgressMonitor(monitor)
                 .Progress(-1, "Preparing completions...")) {
                 
@@ -308,11 +305,11 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                         
                         value timeout =
                                 if (isAutoActivated)
-                        then timerExecutor.schedule(JavaRunnable((){
+                        then timerExecutor.schedule((){
                             try {
                                 completionMonitor.wrapped.canceled = true;
                             } catch(Throwable t) {}
-                        }), 1000, TimeUnit.milliseconds)
+                        }, 1000, TimeUnit.milliseconds)
                         else null;
                         try {
                             // print("`` System.currentTimeMillis() - start ``ms => Start constructing completions");
@@ -357,7 +354,7 @@ class CeylonCompletionProcessor(CeylonEditor editor)
             } catch(Throwable t) {
                 status = Status(Status.warning, CeylonPlugin.pluginId, "An exception occured during the Ceylon completion", t);
             }
-        }));
+        });
 
         shared actual void destroy(Throwable? error) {
             for (remove in removals) {
@@ -368,9 +365,9 @@ class CeylonCompletionProcessor(CeylonEditor editor)
                 }
             }
             for (e in keyEvents) {
-                Display.current.asyncExec(JavaRunnable(() {
+                Display.current.asyncExec(() {
                     contentAssistant.autoAssistListener?.verifyKey(e);
-                }));
+                });
             }
         }
         
