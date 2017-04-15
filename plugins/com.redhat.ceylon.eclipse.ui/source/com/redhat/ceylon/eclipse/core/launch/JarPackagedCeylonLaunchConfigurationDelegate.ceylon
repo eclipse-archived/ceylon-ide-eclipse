@@ -104,7 +104,7 @@ shared class JarPackagedCeylonLaunchConfigurationDelegate() extends JavaLaunchDe
     getVMRunner(ILaunchConfiguration configuration, String mode) => 
             (super of CeylonDebuggingSupportEnabled).getOverridenVMRunner(configuration, mode);
 
-    getClasspath(ILaunchConfiguration config) => ObjectArray<JString>.with {
+    getClasspath(ILaunchConfiguration config) => ObjectArray.with {
         if (exists jar = jarPackagingTool(config)?.outputFile(config)) 
         Types.nativeString(jar.absolutePath)
     };
