@@ -414,7 +414,7 @@ class CeylonCompletionProcessor(CeylonEditor editor)
         if (offset == lastOffset) {
             if(contentAssistant.areResultIncomplete()) {
                 isAutoActivated = false;
-                contentAssistant.setStatusMessage(contentAssistant.secondLevelStatusMessage);
+                contentAssistant.setStatusMessage(CeylonContentAssistant.secondLevelStatusMessage);
             } else {
                 secondLevel = !secondLevel;
             }
@@ -447,7 +447,8 @@ class CeylonCompletionProcessor(CeylonEditor editor)
             
             if (completionJob.canceledByTextEditorEvent) {
                 if(completionJob.shouldStillShowCompletion) {
-                    contentAssistant.setStatusMessage("Results truncated for rapid completion. "+ contentAssistant.retrieveCompleteResultsStatusMessage);
+                    contentAssistant.setStatusMessage("Results truncated for rapid completion. "
+                        + CeylonContentAssistant.retrieveCompleteResultsStatusMessage);
                     return createJavaObjectArray(completionJob._contentProposals);
                 } else {
                     contentAssistant.setShowEmptyList(false);
@@ -457,7 +458,8 @@ class CeylonCompletionProcessor(CeylonEditor editor)
             
             assert(exists status = completionJob.status);
             if (status == Status.cancelStatus) {
-                contentAssistant.setStatusMessage("Results truncated for rapid completion. "+ contentAssistant.retrieveCompleteResultsStatusMessage);
+                contentAssistant.setStatusMessage("Results truncated for rapid completion. "
+                    + CeylonContentAssistant.retrieveCompleteResultsStatusMessage);
                 return createJavaObjectArray(completionJob._contentProposals);
             }
             
