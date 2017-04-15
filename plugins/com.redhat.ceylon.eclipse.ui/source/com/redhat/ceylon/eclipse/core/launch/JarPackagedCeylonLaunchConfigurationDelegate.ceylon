@@ -14,7 +14,6 @@ import java.io {
 }
 import java.lang {
     ObjectArray,
-    JString=String,
     Types
 }
 import java.util.jar {
