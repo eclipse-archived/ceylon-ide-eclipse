@@ -464,14 +464,16 @@ public final class CeylonHierarchyContentProvider
                                             signature,
                                             isVariadic,
                                             refinedDeclaration,
-                                            mc, superDec);
+                                            mc, superDec,
+                                            true);
                             List<Declaration> all = 
                                     getInterveningRefinements(
                                             decname, 
                                             signature,
                                             isVariadic,
                                             refinedDeclaration,
-                                            mc, rc);
+                                            mc, rc,
+                                            true);
                             for (Declaration d: all) {
                                 TypeDeclaration dtd = 
                                         (TypeDeclaration) 
@@ -510,7 +512,8 @@ public final class CeylonHierarchyContentProvider
                                     signature, 
                                     isVariadic,
                                     declaration.getRefinedDeclaration(),
-                                    mc, rc);
+                                    mc, rc,
+                                    true);
                     directlyInheritedMembers.remove(refinedDeclaration);
                     if (directlyInheritedMembers.size()>1) {
                         //multiple intervening interfaces
@@ -644,7 +647,8 @@ public final class CeylonHierarchyContentProvider
                                     signature,
                                     isVariadic,
                                     refinedDeclaration, 
-                                    td, rdc);
+                                    td, rdc,
+                                    true);
                     //TODO: keep the directly refined declarations in the model
                     //      (get the typechecker to set this up)
                     for (Declaration candidate: refinements) {
@@ -657,7 +661,8 @@ public final class CeylonHierarchyContentProvider
                                         signature,
                                         isVariadic,
                                         refinedDeclaration, 
-                                        td, cc);
+                                        td, cc,
+                                        true);
                         if (refs.size()==1) {
                             add(member, candidate);
                         }
