@@ -4,7 +4,7 @@ This project is an Eclipse-based IDE for the [Ceylon programming language][Ceylo
 
 For more information about Ceylon IDE for Eclipse, go to:
 
-<http://ceylon-lang.org/documentation/ide>
+<https://ceylon-lang.org/documentation/ide/eclipse/>
 
 [Ceylon]: http://ceylon-lang.org/
 
