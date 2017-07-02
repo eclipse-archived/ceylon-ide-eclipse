@@ -44,7 +44,9 @@ public class CeylonStartup implements IStartup {
                             .getService(IContextService.class);
             // in case of previous crash, perspective may be null
             if (perspective != null && 
-                    perspective.getId() != null && 
+                    perspective.getId() != null &&
+                    perspective.getLabel() != null && 
+                    !perspective.getLabel().startsWith("<") &&
                     perspective.getId()
                         .equals(PLUGIN_ID + ".perspective")) {
                 contextActivation1 = 
