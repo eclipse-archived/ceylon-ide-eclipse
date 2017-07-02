@@ -444,7 +444,11 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     }
     
 
-    private static Pattern pattern = Pattern.compile("(.+)-(" + Pattern.quote(Versions.CEYLON_VERSION_NUMBER) + ")\\.(j|c)ar");
+    private static Pattern pattern = 
+            Pattern.compile("(.+)-(" 
+            + Pattern.quote(Versions.CEYLON_VERSION_NUMBER) 
+            + ")\\.(j|c)ar");
+    
     private static File getRepoFolder(File repoDir, String jarName) {
        Matcher matcher = pattern.matcher(jarName);
        if (matcher.matches()) {
