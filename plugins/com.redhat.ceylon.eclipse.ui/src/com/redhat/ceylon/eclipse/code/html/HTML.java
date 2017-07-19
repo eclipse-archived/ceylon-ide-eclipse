@@ -235,7 +235,7 @@ public class HTML {
     public static String declink(Referenceable model) {
         if (model instanceof Package) {
             Package p = (Package) model;
-            return declink(p.getModule()) + ":" + p.getNameAsString();
+            return declink(p.getModule()) + "/" + p.getNameAsString();
         }
         if (model instanceof Module) {
             Module module = (Module) model;
@@ -244,7 +244,9 @@ public class HTML {
         }
         else if (model instanceof Declaration) {
             Declaration declaration = (Declaration) model;
-            String result = ":" + declaration.getName();
+            String name = declaration.getName();
+            if (name == null) name = "new";
+            String result = "/" + name;
             Scope container = declaration.getContainer();
             if (container instanceof Referenceable) {
                 return declink((Referenceable) container)
