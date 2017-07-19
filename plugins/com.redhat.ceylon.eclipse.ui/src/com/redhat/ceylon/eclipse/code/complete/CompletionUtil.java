@@ -105,42 +105,42 @@ public class CompletionUtil {
     static boolean isPackageDescriptor(CeylonParseController cpc) {
         Tree.CompilationUnit lcu = 
                 cpc.getLastCompilationUnit();
-        return lcu != null && 
-                lcu.getUnit() != null &&
-                lcu.getUnit()
-                    .getFilename()
-                    .equals("package.ceylon"); 
+        return lcu != null 
+            && lcu.getUnit() != null 
+            && lcu.getUnit()
+                .getFilename()
+                .equals("package.ceylon"); 
     }
 
     static boolean isModuleDescriptor(CeylonParseController cpc) {
         Tree.CompilationUnit lcu = 
                 cpc.getLastCompilationUnit();
-        return lcu != null && 
-                lcu.getUnit() != null &&
-                lcu.getUnit()
-                    .getFilename()
-                    .equals("module.ceylon"); 
+        return lcu != null 
+            && lcu.getUnit() != null 
+            && lcu.getUnit()
+                .getFilename()
+                .equals("module.ceylon"); 
     }
 
     static boolean isEmptyModuleDescriptor(CeylonParseController cpc) {
         Tree.CompilationUnit lcu = 
                 cpc.getLastCompilationUnit();
-        return isModuleDescriptor(cpc) && 
-                lcu != null && 
-                lcu.getModuleDescriptors()
-                    .isEmpty(); 
+        return isModuleDescriptor(cpc) 
+            && lcu != null 
+            && lcu.getModuleDescriptors()
+                .isEmpty(); 
     }
 
     static boolean isEmptyPackageDescriptor(CeylonParseController cpc) {
         Tree.CompilationUnit lcu = 
                 cpc.getLastCompilationUnit();
-        return lcu != null &&
-                lcu.getUnit() != null &&
-                lcu.getUnit()
-                    .getFilename()
-                    .equals("package.ceylon") && 
-                lcu.getPackageDescriptors()
-                    .isEmpty();
+        return lcu != null 
+            && lcu.getUnit() != null 
+            && lcu.getUnit()
+                .getFilename()
+                .equals("package.ceylon") 
+            && lcu.getPackageDescriptors()
+                .isEmpty();
     }
 
     static int nextTokenType(CeylonParseController cpc,
@@ -214,45 +214,45 @@ public class CompletionUtil {
     }
 
     public static boolean isIgnoredLanguageModuleClass(Class clazz) {
-        return clazz.isString() ||
-                clazz.isInteger() ||
-                clazz.isFloat() ||
-                clazz.isCharacter() ||
-                clazz.isAnnotation();
+        return clazz.isString() 
+            || clazz.isInteger() 
+            || clazz.isFloat() 
+            || clazz.isCharacter() 
+            || clazz.isAnnotation();
     }
 
     public static boolean isIgnoredLanguageModuleValue(Value value) {
         String name = value.getName();
-        return name.equals("process") ||
-                name.equals("runtime") ||
-                name.equals("system") ||
-                name.equals("operatingSystem") ||
-                name.equals("language") ||
-                name.equals("emptyIterator") ||
-                name.equals("infinity") ||
-                name.endsWith("IntegerValue") ||
-                name.equals("finished");
+        return name.equals("process") 
+            || name.equals("runtime") 
+            || name.equals("system") 
+            || name.equals("operatingSystem") 
+            || name.equals("language") 
+            || name.equals("emptyIterator") 
+            || name.equals("infinity") 
+            || name.endsWith("IntegerValue") 
+            || name.equals("finished");
     }
 
     public static boolean isIgnoredLanguageModuleMethod(Function method) {
         String name = method.getName();
-        return name.equals("className") || 
-                name.equals("flatten") || 
-                name.equals("unflatten")|| 
-                name.equals("curry") || 
-                name.equals("uncurry") ||
-                name.equals("compose") ||
-                method.isAnnotation();
+        return name.equals("className") 
+            || name.equals("flatten") 
+            || name.equals("unflatten")
+            || name.equals("curry") 
+            || name.equals("uncurry") 
+            || name.equals("compose") 
+            || method.isAnnotation();
     }
 
     static boolean isIgnoredLanguageModuleType(TypeDeclaration td) {
-        return !td.isObject() && 
-                !td.isAnything() &&
-                !td.isString() &&
-                !td.isInteger() &&
-                !td.isCharacter() &&
-                !td.isFloat() &&
-                !td.isBoolean();
+        return !td.isObject() 
+            && !td.isAnything() 
+            && !td.isString() 
+            && !td.isInteger() 
+            && !td.isCharacter() 
+            && !td.isFloat() 
+            && !td.isBoolean();
     }
 
     public static String getInitialValueDescription(
