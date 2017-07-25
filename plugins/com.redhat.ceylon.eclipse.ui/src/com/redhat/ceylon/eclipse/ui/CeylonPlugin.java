@@ -43,6 +43,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -60,6 +61,7 @@ import com.redhat.ceylon.common.Versions;
 import com.redhat.ceylon.dist.osgi.Activator;
 import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
 import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
+import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
 import com.redhat.ceylon.eclipse.core.debug.CeylonDebugElementAdapterFactory;
 import com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugOptionsManager;
 import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
@@ -107,6 +109,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     
     private FontRegistry fontRegistry;
 
+    private boolean metaModelInitialized = false;
+
     /**
      * The unique instance of this plugin class
      */
@@ -135,63 +139,30 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     public CeylonPlugin() {
         pluginInstance = this;
     }
+    
+    public boolean isMetaModelInitialized() {
+    	return metaModelInitialized;
+    }
 
     @Override
     public void start(BundleContext context) 
             throws Exception {
         super.start(context);
         this.bundleContext = context;
-
-        javaSourceArchiveCacheDirectory = 
-                new File(getStateLocation().toFile(), 
-                        "JavaSourceArchiveCache");
-        javaSourceArchiveCacheDirectory.mkdirs();
+        
         String ceylonRepositoryProperty = 
                 System.getProperty("ceylon.repo", "");
         ceylonRepository = 
                 getCeylonPluginRepository(
                         ceylonRepositoryProperty);
+        
+        javaSourceArchiveCacheDirectory = 
+                new File(getStateLocation().toFile(), 
+                        "JavaSourceArchiveCache");
+        javaSourceArchiveCacheDirectory.mkdirs();
+
         addResourceFilterPreference();
-        
-        platformJ2C().platformServices().register();
-        
-        final IWorkspace workspace = getWorkspace();
-        IWorkspaceRoot root = workspace.getRoot();
 
-        Job registerCeylonModules = 
-                new Job("Load the Ceylon Metamodel for plugin dependencies") {
-            protected IStatus run(IProgressMonitor monitor) {
-                Activator.loadBundleAsModule(bundleContext.getBundle());
-                return Status.OK_STATUS;
-            };
-        };
-        registerCeylonModules.setRule(root);
-        registerCeylonModules.schedule();
-        
-        for (IProject project: root.getProjects()) {
-            if (project.isAccessible() && 
-                    CeylonNature.isEnabled(project)) {
-                modelJ2C().ceylonModel().addProject(project);
-            }
-        }
-        
-        registerProjectOpenCloseListener();
-        CeylonEncodingSynchronizer.getInstance().install();
-
-        Job refreshExternalSourceArchiveManager = 
-                new Job("Refresh External Ceylon Source Archives") {
-            protected IStatus run(IProgressMonitor monitor) {
-                ExternalSourceArchiveManager esam = 
-                        getExternalSourceArchiveManager();
-                esam.initialize();
-                workspace.addResourceChangeListener(esam);
-                return Status.OK_STATUS;
-            };
-        };
-        refreshExternalSourceArchiveManager.setRule(root);
-        refreshExternalSourceArchiveManager.schedule();
-        
-        CeylonDebugOptionsManager.getDefault().startup();
         InputStream contributionStream = 
                 new ByteArrayInputStream(new String(
                 "<plugin>\n" +
@@ -218,19 +189,71 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
                     null, key);
         
         /*iconChangeListener = 
-                new IPropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent event) {
-                if (event.getProperty()
-                        .equals(ALTERNATE_ICONS)) {
-                    initializeImageRegistry(getImageRegistry());
-                }
-            }
-        };
-        getPreferences()
-                .addPropertyChangeListener(iconChangeListener);*/
+        new IPropertyChangeListener() {
+		    @Override
+		    public void propertyChange(PropertyChangeEvent event) {
+		        if (event.getProperty()
+		                .equals(ALTERNATE_ICONS)) {
+		            initializeImageRegistry(getImageRegistry());
+		        }
+		    }
+		};
+		getPreferences()
+		        .addPropertyChangeListener(iconChangeListener);*/
+		
         
-        com.redhat.ceylon.eclipse.code.complete.setupCompletionExecutors_.setupCompletionExecutors();
+        final IWorkspace workspace = getWorkspace();
+        IWorkspaceRoot root = workspace.getRoot();
+
+        Job registerCeylonModules = 
+                new Job("Load the Ceylon Metamodel for plugin dependencies") {
+            protected IStatus run(IProgressMonitor monitor) {
+                Activator.loadBundleAsModule(bundleContext.getBundle());
+                
+                metaModelInitialized = true;
+
+                platformJ2C().platformServices().register();
+                
+                for (IProject project: root.getProjects()) {
+                    if (project.isAccessible() && 
+                            CeylonNature.isEnabled(project)) {
+                        modelJ2C().ceylonModel().addProject(project);
+                    }
+                }
+
+                for (IProject project: root.getProjects()) {
+                    if (project.isAccessible() && 
+                            CeylonNature.isEnabled(project)) {
+                    	IJavaProject javaProject = JavaCore.create(project);
+                    	CeylonClasspathUtil.getCeylonClasspathContainers(javaProject);
+                    }
+                }
+
+                registerProjectOpenCloseListener();
+                CeylonEncodingSynchronizer.getInstance().install();
+
+                Job refreshExternalSourceArchiveManager = 
+                        new Job("Refresh External Ceylon Source Archives") {
+                    protected IStatus run(IProgressMonitor monitor) {
+                        ExternalSourceArchiveManager esam = 
+                                getExternalSourceArchiveManager();
+                        esam.initialize();
+                        workspace.addResourceChangeListener(esam);
+                        return Status.OK_STATUS;
+                    };
+                };
+                refreshExternalSourceArchiveManager.setRule(root);
+                refreshExternalSourceArchiveManager.schedule();
+                
+                CeylonDebugOptionsManager.getDefault().startup();
+
+                com.redhat.ceylon.eclipse.code.complete.setupCompletionExecutors_.setupCompletionExecutors();
+                
+                return Status.OK_STATUS;
+            };
+        };
+        registerCeylonModules.setRule(root);
+        registerCeylonModules.schedule();
     }
     
     @Override

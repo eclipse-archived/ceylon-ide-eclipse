@@ -1,15 +1,20 @@
 package com.redhat.ceylon.eclipse.core.classpath;
 
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.isLanguageModuleClasspathContainer;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
 import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
@@ -33,20 +38,30 @@ public class InitDependenciesJob extends Job {
         try {
             final IJavaProject javaProject = container.getJavaProject();
             final IProject project = javaProject.getProject();
-            
-            boolean languageModuleContainerFound = false;
+
+            modelJ2C().ceylonModel().addProject(project.getProject());
+
+            CeylonLanguageModuleContainer languageModuleContainer = null;
             IClasspathEntry[] entries = javaProject.getRawClasspath();
             for (int i = 0; i < entries.length; i++) {
                 IClasspathEntry entry = entries[i];
                 if (entry != null && entry.getEntryKind() == IClasspathEntry.CPE_CONTAINER) {
-                    if (CeylonClasspathUtil.isLanguageModuleClasspathContainer(entry.getPath())) {
-                        languageModuleContainerFound = true;
-                        break;
+                    IPath path = entry.getPath();
+                    if (CeylonClasspathUtil.isLanguageModuleClasspathContainer(path)) {
+                        if (isLanguageModuleClasspathContainer(path)) {
+                            IClasspathContainer cp = JavaCore.getClasspathContainer(path, javaProject);
+                            if (cp instanceof CeylonLanguageModuleContainer) {
+                                languageModuleContainer = (CeylonLanguageModuleContainer) cp;
+                                break;
+                            }
+                        }
                     }
                 }
             }
             
-            if (!languageModuleContainerFound && !retriedAfterAddingTheLanguageModuleEntry) {
+            if ((languageModuleContainer == null 
+            		|| !languageModuleContainer.isInitialized())
+            		&& !retriedAfterAddingTheLanguageModuleEntry) {
                 retriedAfterAddingTheLanguageModuleEntry = true;
                 new CeylonLanguageModuleContainer(project).install();
                 schedule(1000);
@@ -110,7 +125,6 @@ public class InitDependenciesJob extends Job {
 
             CeylonBuilder.setContainerInitialized(project);
             return Status.OK_STATUS;
-            
         } 
         catch (JavaModelException ex) {
             // unless there are issues with the JDT, this should never happen
