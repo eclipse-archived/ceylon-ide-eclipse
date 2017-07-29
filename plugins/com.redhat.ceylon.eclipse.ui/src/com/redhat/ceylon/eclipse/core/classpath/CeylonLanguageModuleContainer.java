@@ -27,6 +27,9 @@ import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
 
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+
+
 /** 
  * Ceylon Language Module Classpath Container - resolves a classpath container id to the ceylon.language binary archive
  */
@@ -45,57 +48,66 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
     private IJavaProject fProject = null;
     
     IClasspathEntry[] entries = null;
+
+    boolean initialized = false;
     
     /**
      * Constructs a classpath container for the ceylon language runtime archive on the given project
      * 
      */
     public CeylonLanguageModuleContainer(IProject project) {
-        modelJ2C().ceylonModel().addProject(project);
-        fPath = new Path(CeylonLanguageModuleContainer.CONTAINER_ID + "/default");
-        fProject = JavaCore.create(project);
-        BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
-        RepositoryManager repoManager = ceylonProject != null ? ceylonProject.getRepositoryManager() : null;
         List<IClasspathEntry> entriesList = new ArrayList<IClasspathEntry>();
-        List<String> moduleNames = Arrays.asList("ceylon.language", "com.redhat.ceylon.model", "com.redhat.ceylon.common");
-        String moduleVersion = TypeChecker.LANGUAGE_MODULE_VERSION;
-
-        if (repoManager != null) {
-            for (String moduleName : moduleNames) {
-                File moduleArtifact = null;
-                try {
-                    moduleArtifact = repoManager.getArtifact(new ArtifactContext(null, moduleName, moduleVersion, ArtifactContext.CAR, ArtifactContext.JAR));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                if (moduleArtifact != null) {
-                    IPath moduleBinaries = new Path(moduleArtifact.getAbsolutePath());
-                    File sourceArchive = repoManager.getArtifact(new ArtifactContext(null, moduleName,moduleVersion, ArtifactContext.SRC));
-                    IPath moduleSources = null;
-                    if (moduleArtifact.getName().endsWith(ArtifactContext.CAR)) {
-                        File moduleJavaSources = null;
-                        try {
-                            moduleJavaSources = ceylonSourceArchiveToJavaSourceArchive(
-                                    moduleName,
-                                    moduleVersion,
-                                    sourceArchive);
-                        } catch(Exception e) {
-                            e.printStackTrace();
-                        }
-                        moduleSources = moduleJavaSources != null ? 
-                                new Path(moduleJavaSources.getAbsolutePath()) : null;
-                    } else {
-                        moduleSources = new Path(sourceArchive.getAbsolutePath());
-                    }
-                    IClasspathEntry entry = newLibraryEntry(moduleBinaries, moduleSources, null);
-                    entriesList.add(entry);
-                }
-            }
-        }
-        IClasspathEntry[] entriesArray = new IClasspathEntry[entriesList.size()];
-        entries = entriesList.toArray(entriesArray);
+		if (CeylonPlugin.getInstance().isMetaModelInitialized()) {
+			modelJ2C().ceylonModel().addProject(project);
+			fPath = new Path(CeylonLanguageModuleContainer.CONTAINER_ID + "/default");
+			fProject = JavaCore.create(project);
+			BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
+			RepositoryManager repoManager = ceylonProject != null ? ceylonProject.getRepositoryManager() : null;
+			List<String> moduleNames = Arrays.asList("ceylon.language", "com.redhat.ceylon.model", "com.redhat.ceylon.common");
+			String moduleVersion = TypeChecker.LANGUAGE_MODULE_VERSION;
+		
+			if (repoManager != null) {
+				for (String moduleName : moduleNames) {
+					File moduleArtifact = null;
+					try {
+						moduleArtifact = repoManager.getArtifact(new ArtifactContext(null, moduleName, moduleVersion, ArtifactContext.CAR, ArtifactContext.JAR));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					if (moduleArtifact != null) {
+						IPath moduleBinaries = new Path(moduleArtifact.getAbsolutePath());
+						File sourceArchive = repoManager.getArtifact(new ArtifactContext(null, moduleName,moduleVersion, ArtifactContext.SRC));
+						IPath moduleSources = null;
+						if (moduleArtifact.getName().endsWith(ArtifactContext.CAR)) {
+							File moduleJavaSources = null;
+							try {
+								moduleJavaSources = ceylonSourceArchiveToJavaSourceArchive(
+										moduleName,
+										moduleVersion,
+										sourceArchive);
+							} catch(Exception e) {
+								e.printStackTrace();
+							}
+							moduleSources = moduleJavaSources != null ? 
+									new Path(moduleJavaSources.getAbsolutePath()) : null;
+						} else {
+							moduleSources = new Path(sourceArchive.getAbsolutePath());
+						}
+						IClasspathEntry entry = newLibraryEntry(moduleBinaries, moduleSources, null);
+						entriesList.add(entry);
+					}
+				}
+			}
+			initialized = true;
+		}
+		IClasspathEntry[] entriesArray = new IClasspathEntry[entriesList.size()];
+		entries = entriesList.toArray(entriesArray);
     }
-    
+
+	public boolean isInitialized() {
+		return initialized;
+	}
+	
     public IClasspathEntry[] constructModifiedClasspath() 
             throws JavaModelException {
         // Modifies the project classpath :

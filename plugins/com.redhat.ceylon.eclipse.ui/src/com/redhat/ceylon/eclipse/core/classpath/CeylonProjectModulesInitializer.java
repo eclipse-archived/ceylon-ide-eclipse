@@ -18,7 +18,6 @@
 package com.redhat.ceylon.eclipse.core.classpath;
 
 import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathEntry;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.JavaCore.getClasspathContainer;
 import static org.eclipse.jdt.core.JavaCore.setClasspathContainer;
@@ -38,6 +37,7 @@ import org.eclipse.jdt.internal.ui.InitializeAfterLoadJob;
 import org.eclipse.jdt.ui.JavaUI;
 
 import com.redhat.ceylon.eclipse.core.classpath.InitDependenciesJob;
+import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 
 /**
  * Initializes the Ceylon class path container. It will create 
@@ -55,7 +55,6 @@ public class CeylonProjectModulesInitializer extends ClasspathContainerInitializ
         int size = containerPath.segmentCount();
         if (size > 0) {
             if (containerPath.segment(0).equals(CeylonProjectModulesContainer.CONTAINER_ID)) {
-                modelJ2C().ceylonModel().addProject(project.getProject());
                 IClasspathContainer c = getClasspathContainer(containerPath, project);
                 CeylonProjectModulesContainer container;
                 if (c instanceof CeylonProjectModulesContainer) {
@@ -102,8 +101,8 @@ public class CeylonProjectModulesInitializer extends ClasspathContainerInitializ
                             }
                         }
                         
-                        if (initJavaToolingJob != null) {
-                            if (initJavaToolingJob.getState() == Job.WAITING ||
+                        if (initJavaToolingJob != null || ! CeylonPlugin.getInstance().isMetaModelInitialized()) {
+                            if (! CeylonPlugin.getInstance().isMetaModelInitialized() || initJavaToolingJob.getState() == Job.WAITING ||
                                 initJavaToolingJob.getState() == Job.RUNNING) {
                                 if (System.currentTimeMillis() < waitUntil) {
 //                                    System.out.println("Waiting 1 seconde more for the end of the Java Tooling Initialization before initializing Ceylon dependencies for project " + project.getElementName() + " ...");
