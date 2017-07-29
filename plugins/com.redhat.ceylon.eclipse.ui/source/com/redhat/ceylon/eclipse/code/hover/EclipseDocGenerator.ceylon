@@ -44,9 +44,7 @@ import org.eclipse.jface.text {
     IInformationControlCreator
 }
 
-object eclipseDocGenerator extends EclipseDocGenerator(null) {
-    
-}
+object eclipseDocGenerator extends EclipseDocGenerator(null) {}
 
 class EclipseDocGenerator(CeylonEditor? editor) 
         extends SourceInfoHover(editor)
@@ -174,10 +172,12 @@ class EclipseDocGenerator(CeylonEditor? editor)
     }
     
     shared actual String buildLink(Referenceable|String model, String text, String protocol) {
-        value href = if (is String model) then "href='" + protocol + ":" + model + "'"
-                     else if (protocol == "dec")
-                     then "href='dec:``HTML.declink(model)``'"
-                     else HTML.link(model);
+        value href 
+                = if (is String model) 
+                then "href='``protocol``:``model``'"
+                else if (protocol == "dec")
+                then "href='dec:``HTML.declink(model)``'"
+                else HTML.link(model);
         
         return "<tt><a ``href``>``text``</a></tt>";
     }

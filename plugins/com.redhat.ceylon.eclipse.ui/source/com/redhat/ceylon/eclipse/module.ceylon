@@ -18,7 +18,7 @@ module com.redhat.ceylon.eclipse "1.3.3" {
     shared import com.redhat.ceylon.ide.common "1.3.3-SNAPSHOT";
     shared import com.redhat.ceylon.eclipseDependencies "1.3.3";
     shared import com.redhat.ceylon.dist "1.3.3-SNAPSHOT";
-    shared import org.tautua.markdownpapers.core "1.2.7";
+    shared import org.tautua.markdownpapers.core "1.3.4";
     shared import com.github.rjeschke.txtmark "0.13";
     shared import zip4j "1.3.2";
     shared import "org.antlr.antlr4-runtime-osgi" "4.5.1";
