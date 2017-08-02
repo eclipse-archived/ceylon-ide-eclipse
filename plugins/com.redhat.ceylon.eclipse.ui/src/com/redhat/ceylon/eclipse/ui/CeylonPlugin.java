@@ -203,7 +203,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 		
         
         final IWorkspace workspace = getWorkspace();
-        IWorkspaceRoot root = workspace.getRoot();
+        final IWorkspaceRoot root = workspace.getRoot();
 
         Job registerCeylonModules = 
                 new Job("Load the Ceylon Metamodel for plugin dependencies") {
