@@ -3,7 +3,7 @@
  This file is generated from :
  - the template file found in `source-templates/module.ceylon`
  - the list of imports containing all the `org.eclipse.*` OSGI bundles
- mentionned in :
+ mentioned in :
      - the `META-INF/MANIFEST.MF` file (in the `Require-Bundle` and
      `Import-Package` headers)
      - the `AdditionalBundles.properties` file"
