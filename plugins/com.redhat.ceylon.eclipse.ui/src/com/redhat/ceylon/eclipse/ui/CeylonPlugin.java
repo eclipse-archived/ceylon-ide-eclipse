@@ -109,8 +109,6 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     
     private FontRegistry fontRegistry;
 
-    private boolean metaModelInitialized = false;
-
     /**
      * The unique instance of this plugin class
      */
@@ -140,15 +138,16 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         pluginInstance = this;
     }
     
-    public boolean isMetaModelInitialized() {
-    	return metaModelInitialized;
-    }
-
     @Override
     public void start(BundleContext context) 
             throws Exception {
         super.start(context);
         this.bundleContext = context;
+        
+        long startTime = System.currentTimeMillis();
+        log(IStatus.INFO, "Starting Ceylon metamodel registering");
+        Activator.loadBundleAsModule(bundleContext.getBundle());
+        log(IStatus.INFO, "Finished Ceylon metamodel registering in " + ((System.currentTimeMillis() - startTime) / 1000) + "s");
         
         String ceylonRepositoryProperty = 
                 System.getProperty("ceylon.repo", "");
@@ -204,56 +203,43 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         
         final IWorkspace workspace = getWorkspace();
         final IWorkspaceRoot root = workspace.getRoot();
+        
+        platformJ2C().platformServices().register();
 
-        Job registerCeylonModules = 
-                new Job("Load the Ceylon Metamodel for plugin dependencies") {
+        for (IProject project: root.getProjects()) {
+            if (project.isAccessible() && 
+                    CeylonNature.isEnabled(project)) {
+                modelJ2C().ceylonModel().addProject(project);
+            }
+        }
+
+        for (IProject project: root.getProjects()) {
+            if (project.isAccessible() && 
+                    CeylonNature.isEnabled(project)) {
+            	IJavaProject javaProject = JavaCore.create(project);
+            	CeylonClasspathUtil.getCeylonClasspathContainers(javaProject);
+            }
+        }
+
+        registerProjectOpenCloseListener();
+        CeylonEncodingSynchronizer.getInstance().install();
+
+        Job refreshExternalSourceArchiveManager = 
+                new Job("Refresh External Ceylon Source Archives") {
             protected IStatus run(IProgressMonitor monitor) {
-                Activator.loadBundleAsModule(bundleContext.getBundle());
-                
-                metaModelInitialized = true;
-
-                platformJ2C().platformServices().register();
-                
-                for (IProject project: root.getProjects()) {
-                    if (project.isAccessible() && 
-                            CeylonNature.isEnabled(project)) {
-                        modelJ2C().ceylonModel().addProject(project);
-                    }
-                }
-
-                for (IProject project: root.getProjects()) {
-                    if (project.isAccessible() && 
-                            CeylonNature.isEnabled(project)) {
-                    	IJavaProject javaProject = JavaCore.create(project);
-                    	CeylonClasspathUtil.getCeylonClasspathContainers(javaProject);
-                    }
-                }
-
-                registerProjectOpenCloseListener();
-                CeylonEncodingSynchronizer.getInstance().install();
-
-                Job refreshExternalSourceArchiveManager = 
-                        new Job("Refresh External Ceylon Source Archives") {
-                    protected IStatus run(IProgressMonitor monitor) {
-                        ExternalSourceArchiveManager esam = 
-                                getExternalSourceArchiveManager();
-                        esam.initialize();
-                        workspace.addResourceChangeListener(esam);
-                        return Status.OK_STATUS;
-                    };
-                };
-                refreshExternalSourceArchiveManager.setRule(root);
-                refreshExternalSourceArchiveManager.schedule();
-                
-                CeylonDebugOptionsManager.getDefault().startup();
-
-                com.redhat.ceylon.eclipse.code.complete.setupCompletionExecutors_.setupCompletionExecutors();
-                
+                ExternalSourceArchiveManager esam = 
+                        getExternalSourceArchiveManager();
+                esam.initialize();
+                workspace.addResourceChangeListener(esam);
                 return Status.OK_STATUS;
             };
         };
-        registerCeylonModules.setRule(root);
-        registerCeylonModules.schedule();
+        refreshExternalSourceArchiveManager.setRule(root);
+        refreshExternalSourceArchiveManager.schedule();
+        
+        CeylonDebugOptionsManager.getDefault().startup();
+
+        com.redhat.ceylon.eclipse.code.complete.setupCompletionExecutors_.setupCompletionExecutors();
     }
     
     @Override

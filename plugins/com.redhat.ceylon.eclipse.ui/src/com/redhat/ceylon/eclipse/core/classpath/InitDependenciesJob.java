@@ -59,8 +59,7 @@ public class InitDependenciesJob extends Job {
                 }
             }
             
-            if ((languageModuleContainer == null 
-            		|| !languageModuleContainer.isInitialized())
+            if (languageModuleContainer == null 
             		&& !retriedAfterAddingTheLanguageModuleEntry) {
                 retriedAfterAddingTheLanguageModuleEntry = true;
                 new CeylonLanguageModuleContainer(project).install();

@@ -787,9 +787,6 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     @Override
     protected IProject[] build(final int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor mon) 
             throws CoreException {
-    	if (!CeylonPlugin.getInstance().isMetaModelInitialized() ) {
-            throw new OperationCanceledException();
-    	}
         final IProject project = getProject();
         modelJ2C().ceylonModel().addProject(project.getProject());
         final CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
