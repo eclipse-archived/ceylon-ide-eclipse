@@ -7,7 +7,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Localization: plugin
 Require-Bundle: ceylon.bootstrap;bundle-version="1.3.3",
  com.github.rjeschke.txtmark;bundle-version="0.13.0",
- org.antlr.runtime;bundle-version="3.4.0",
+ org.antlr.runtime;bundle-version="[3.4.0.CEYLON-DEPENDENCIES,3.4.1)";visibility:=reexport,
  org.antlr.antlr4-runtime-osgi;bundle-version="4.5.1",
  ceylon.runtime;bundle-version="1.3.3";visibility:=reexport,
  com.redhat.ceylon.module-resolver;bundle-version="1.3.3";visibility:=reexport,

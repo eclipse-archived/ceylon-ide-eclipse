@@ -25,7 +25,8 @@ Require-Bundle: com.redhat.ceylon.eclipse.ui;bundle-version="1.3.3",
  org.eclipse.compare,
  org.eclipse.compare.core,
  org.eclipse.ltk.core.refactoring,
- org.eclipse.ui.console
+ org.eclipse.ui.console,
+ org.antlr.runtime;bundle-version="[3.4.0.CEYLON-DEPENDENCIES,3.4.1)"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
