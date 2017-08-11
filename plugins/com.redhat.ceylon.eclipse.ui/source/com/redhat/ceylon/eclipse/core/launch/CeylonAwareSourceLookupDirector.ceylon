@@ -47,45 +47,45 @@ import org.eclipse.jdt.internal.launching {
 
 shared interface CeylonAwareSourceLookupDirector satisfies ISourcePresentation {
 
-    shared actual IEditorInput? getEditorInput(variable Object? item) {
-        if (is IMarker marker=item) {
-            item = DebugPlugin.default.breakpointManager.getBreakpoint(marker);
+    shared actual IEditorInput? getEditorInput(Object? element) {
+        if (!exists element) {
+            return null;
         }
-        if (is IJavaBreakpoint breakpoint=item) {
-            IType? type = BreakpointUtils.getType(breakpoint);
-            if (exists type) {
-                item = type;
-            }
-            else {
-                item = breakpoint.marker?.resource;
-            }
+        
+        value item
+                = switch (element)
+        		case (is IMarker) 
+        			DebugPlugin.default.breakpointManager.getBreakpoint(element)
+        		else case (is IJavaBreakpoint) 
+        			(BreakpointUtils.getType(element) 
+            			else element.marker?.resource)
+        		else element;
+        		
+       	switch (item)
+        case (is LocalFileStorage) {
+            return adjustEditorInput(LocalFileStorageEditorInput(item));
         }
-        if (is LocalFileStorage fileStorage=item) {
-            return adjustEditorInput(LocalFileStorageEditorInput(fileStorage));
-        }
-        if (is ZipEntryStorage entryStorage=item) {
-            if (entryStorage.name.endsWith(".ceylon")) {
-                assert(is ZipEntryStorage zes = item);
-                value archivePath = Path.fromOSString("``zes.archive.name``!");
-                variable IEditorInput input = EditorUtil.getEditorInput(archivePath.append(zes.zipEntry.name));
+        case (is ZipEntryStorage) {
+            if (item.name.endsWith(".ceylon")) {
+                value archivePath = Path.fromOSString("``item.archive.name``!");
+                IEditorInput input = EditorUtil.getEditorInput(archivePath.append(item.zipEntry.name));
                 return adjustEditorInput(input);
             }
             else {
-                return ZipEntryStorageEditorInput(entryStorage);
+                return ZipEntryStorageEditorInput(item);
             }
         }
-        if (is IType type=item) {
-            if (!(type of IJavaElement).\iexists()) {
-                return null;
-            }
+        else if (is IType item, !(item of IJavaElement).\iexists()) {
+            return null;
         }
-        return adjustEditorInput(EditorUtil.getEditorInput(item));
+        else {
+        	return adjustEditorInput(EditorUtil.getEditorInput(item));
+        }
     }
 
     shared actual String? getEditorId(variable IEditorInput input, variable Object element) {
         try {
-            variable IEditorDescriptor descriptor = IDE.getEditorDescriptor(input.name);
-            return descriptor.id;
+            return IDE.getEditorDescriptor(input.name).id;
         }
         catch (PartInitException e) {
             return null;
