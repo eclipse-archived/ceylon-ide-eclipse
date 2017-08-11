@@ -24,5 +24,5 @@ module com.redhat.ceylon.eclipse "1.3.3" {
     shared import "org.antlr.antlr4-runtime-osgi" "4.5.1";
     shared import ceylon.tool.converter.java2ceylon "1.3.3-SNAPSHOT";
     shared import com.redhat.ceylon.eclipse.ui.jdt.debug.fragment "current";
-    shared import org.antlr.runtime "3.4";
+    shared import org.antlr.runtime "3.5.2";
 }

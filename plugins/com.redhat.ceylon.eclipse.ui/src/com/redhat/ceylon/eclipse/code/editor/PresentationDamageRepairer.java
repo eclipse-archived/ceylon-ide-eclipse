@@ -12,6 +12,7 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.Token;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.DocumentEvent;
@@ -30,14 +31,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
 
-import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
+import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 
 class PresentationDamageRepairer implements IPresentationDamager, 
         IPresentationRepairer {
     
-    private volatile List<CommonToken> tokens;
+    private volatile List<? extends Token> tokens;
     private final CeylonEditor editor;
     private IDocument document;
     
@@ -89,9 +90,9 @@ class PresentationDamageRepairer implements IPresentationDamager,
     
     private Region getContainingTokenRegion(DocumentEvent event) {
         int tokenIndex = 
-                getTokenIndexAtCharacter(tokens, event.getOffset()-1);
+                getTokenIndexAtCharacter((List)tokens, event.getOffset()-1);
         if (tokenIndex<0) tokenIndex=-tokenIndex;
-        CommonToken t = tokens.get(tokenIndex);
+        CommonToken t = (CommonToken) tokens.get(tokenIndex);
         if (isWithinExistingToken(event, t)) {
             if (isWithinTokenChange(event, t)) {
                 //the edit just changes the text inside
@@ -228,10 +229,10 @@ class PresentationDamageRepairer implements IPresentationDamager,
         int inInterpolated=0;
         boolean afterMemberOp = false;
         //start iterating tokens
-        Iterator<CommonToken> iter = tokens.iterator();
+        Iterator<? extends Token> iter = tokens.iterator();
         if (iter!=null) {
             while (iter.hasNext()) {
-                CommonToken token= iter.next();
+                CommonToken token = (CommonToken) iter.next();
                 int tt = token.getType();
                 if (tt==CeylonLexer.EOF) {
                     break;

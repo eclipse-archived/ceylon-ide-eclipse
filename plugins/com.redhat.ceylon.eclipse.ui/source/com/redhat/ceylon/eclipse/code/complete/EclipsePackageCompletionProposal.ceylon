@@ -33,7 +33,8 @@ import com.redhat.ceylon.model.typechecker.model {
 }
 
 import java.lang {
-    JCharacter=Character
+    JCharacter=Character,
+    overloaded
 }
 
 import org.eclipse.jface.text {
@@ -92,7 +93,7 @@ shared class EclipseImportedModulePackageProposal(Integer offset, String prefix,
                     return length;
                 }
                 
-                shared actual void apply(IDocument document) {
+                shared actual overloaded void apply(IDocument document) {
                     try {
                         document.replace(selection.start,
                             length(document),
@@ -103,10 +104,10 @@ shared class EclipseImportedModulePackageProposal(Integer offset, String prefix,
                     }
                     
                     assert(is EclipseLinkedMode lm);
-                    lm.model.exit(ILinkedModeListener.\iUPDATE_CARET);
+                    lm.model.exit(ILinkedModeListener.updateCaret);
                 }
                 
-                shared actual void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
+                shared actual overloaded void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
                     apply(viewer.document);
                 }
                 
@@ -129,8 +130,8 @@ shared class EclipseImportedModulePackageProposal(Integer offset, String prefix,
                     Highlights.styleIdentifier(result, prefix,
                         displayString,
                         d is TypeDeclaration 
-                        then Highlights.\iTYPE_STYLER 
-                        else Highlights.\iMEMBER_STYLER,
+                        then Highlights.typeStyler 
+                        else Highlights.memberStyler,
                         CeylonPlugin.completionFont);
                     return result;
                 }

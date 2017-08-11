@@ -84,9 +84,9 @@ shared class EclipseCompletionContext(shared CeylonParseController cpc) satisfie
     shared actual List<Pattern> proposalFilters {
         value filters = ArrayList<Pattern>();
         value preferences = CeylonPlugin.preferences;
-        parseFilters(filters, preferences.getString(CeylonPreferenceInitializer.\iFILTERS));
-        if (preferences.getBoolean(CeylonPreferenceInitializer.\iENABLE_COMPLETION_FILTERS)) {
-            parseFilters(filters, preferences.getString(CeylonPreferenceInitializer.\iCOMPLETION_FILTERS));
+        parseFilters(filters, preferences.getString(CeylonPreferenceInitializer.filters));
+        if (preferences.getBoolean(CeylonPreferenceInitializer.enableCompletionFilters)) {
+            parseFilters(filters, preferences.getString(CeylonPreferenceInitializer.completionFilters));
         }
         return filters;
     }

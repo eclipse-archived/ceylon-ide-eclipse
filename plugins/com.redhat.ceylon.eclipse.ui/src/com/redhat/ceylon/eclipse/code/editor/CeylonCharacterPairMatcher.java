@@ -70,7 +70,7 @@ public class CeylonCharacterPairMatcher
         CeylonLexer lexer = new CeylonLexer(stream);
         CommonTokenStream ts = new CommonTokenStream(lexer);
         ts.fill();
-        return ts.getTokens();
+        return (List) ts.getTokens();
     }
 
     private IRegion getRegion(List<CommonToken> tokens, int index,

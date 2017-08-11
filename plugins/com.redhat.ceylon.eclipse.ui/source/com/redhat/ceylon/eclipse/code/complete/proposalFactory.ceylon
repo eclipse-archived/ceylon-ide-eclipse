@@ -103,7 +103,7 @@ shared object proposalFactory {
             
             styledDisplayString =>
                 StyledString(displayString, Highlights.FontStyler(
-                    CeylonPlugin.completionFont, Highlights.\iKW_STYLER));
+                    CeylonPlugin.completionFont, Highlights.kwStyler));
 
             shared actual Point? getSelection(IDocument document)
                     => selection;

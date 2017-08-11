@@ -80,6 +80,9 @@ import org.eclipse.swt.graphics {
     Point,
     Image
 }
+import java.lang {
+	overloaded
+}
 
 object eclipseCompletionServices satisfies CompletionServices {
     
@@ -310,11 +313,11 @@ class GenericProposal(String description, String text, DefaultRegion region,
     
     shared actual String? additionalProposalInfo => null;
     
-    shared actual void apply(IDocument iDocument) {
+    shared actual overloaded void apply(IDocument iDocument) {
         iDocument.replace(region.start, region.length, text);
     }
     
-    shared actual void apply(ITextViewer viewer, Character char,
+    shared actual overloaded void apply(ITextViewer viewer, Character char,
         Integer int, Integer int1) {
         
         apply(viewer.document);

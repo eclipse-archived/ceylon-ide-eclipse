@@ -33,7 +33,7 @@ shared class EclipseControlStructureProposal(Integer offset, String prefix, Stri
             
     shared actual variable String? currentPrefix = prefix;
     
-    shared actual Image image => CeylonResources.\iMINOR_CHANGE;
+    shared actual Image image => CeylonResources.minorChange;
     
     shared actual variable Boolean toggleOverwriteInternal = false;
     

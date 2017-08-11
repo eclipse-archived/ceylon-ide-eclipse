@@ -44,7 +44,7 @@ shared class EclipseFunctionCompletionProposal
     }
     
     shared actual Image image {
-        value img = declaration.shared then CeylonResources.\iCEYLON_FUN else CeylonResources.\iCEYLON_LOCAL_FUN;
+        value img = declaration.shared then CeylonResources.ceylonFun else CeylonResources.ceylonLocalFun;
         return CeylonLabelProvider.getDecoratedImage(img, CeylonLabelProvider.getDecorationAttributes(declaration), false);
     }
     

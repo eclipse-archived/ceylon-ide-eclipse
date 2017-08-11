@@ -27,7 +27,8 @@ import com.redhat.ceylon.model.typechecker.model {
 
 import java.lang {
     Types,
-    ObjectArray
+    ObjectArray,
+    overloaded
 }
 
 import org.eclipse.core.resources {
@@ -197,7 +198,7 @@ shared abstract class JarPackagedCeylonLaunchShortcut(String jarPackagingToolNam
         }
     }
     
-    shared actual void launch(IEditorPart editor, String mode) {
+    shared actual overloaded void launch(IEditorPart editor, String mode) {
         IFile file = EditorUtil.getFile(editor.editorInput);
         if (exists moduleToLaunch = CeylonBuilder.getModule(file)) {
             launchModule(moduleToLaunch, mode);

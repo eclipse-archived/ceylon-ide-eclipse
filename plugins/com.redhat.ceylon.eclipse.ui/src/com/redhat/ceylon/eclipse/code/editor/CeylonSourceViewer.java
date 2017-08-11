@@ -26,6 +26,7 @@ import static com.redhat.ceylon.eclipse.util.Nodes.getTokenStrictlyContainingOff
 import static java.lang.Character.isWhitespace;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
 
+import java.util.List;
 import java.util.Map;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -475,7 +476,7 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 new CommonTokenStream(lexer);
         tokens.fill();
         return getTokenStrictlyContainingOffset(offset, 
-                        tokens.getTokens());
+                        (List) tokens.getTokens());
     }
 
     private static boolean isStartOfLine(

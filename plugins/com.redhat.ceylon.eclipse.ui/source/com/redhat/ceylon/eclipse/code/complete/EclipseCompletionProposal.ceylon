@@ -22,7 +22,8 @@ import com.redhat.ceylon.model.typechecker.model {
 
 import java.lang {
     CharSequence,
-    Types
+    Types,
+    overloaded
 }
 
 import org.eclipse.jface.text {
@@ -70,10 +71,9 @@ shared interface EclipseCompletionProposal
     
     shared default actual IContextInformation? contextInformation => null;
         
-    shared default actual void apply(IDocument doc) {
-    }
+    shared default actual overloaded void apply(IDocument doc) {}
     
-    shared default actual void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
+    shared default actual overloaded void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
         toggleOverwriteInternal = stateMask.and(SWT.\iCTRL) != 0;
         length = prefix.size + offset - this.offset;
         apply(viewer.document);
@@ -115,7 +115,8 @@ shared interface EclipseCompletionProposal
             => let (reg=getSelectionInternal(EclipseDocument(document)))
                Point(reg.start, reg.length);
     
-    shared actual String completionMode => CeylonPlugin.preferences.getString(CeylonPreferenceInitializer.\iCOMPLETION);
+    shared actual String completionMode 
+            => CeylonPlugin.preferences.getString(CeylonPreferenceInitializer.completion);
     
     shared actual void replaceInDoc(CommonDocument doc, Integer start, Integer length, String newText) {
         if (is EclipseDocument doc) {

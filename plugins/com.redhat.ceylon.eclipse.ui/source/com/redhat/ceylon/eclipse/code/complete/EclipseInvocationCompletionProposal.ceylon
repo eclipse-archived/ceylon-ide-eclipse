@@ -55,6 +55,9 @@ import org.eclipse.swt.graphics {
     Point,
     Image
 }
+import java.lang {
+	overloaded
+}
 
 shared class EclipseInvocationCompletionProposal(Integer _offset, String prefix, 
             String description, String text, Declaration dec,
@@ -70,11 +73,11 @@ shared class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
     shared actual variable String? currentPrefix = prefix;
     shared actual variable Boolean toggleOverwriteInternal = false;
 
-    shared actual void apply(IDocument doc) {
+    shared actual overloaded void apply(IDocument doc) {
         value commonDocument = EclipseDocument(doc);
         createChange(commonDocument).apply();
         
-        if (CeylonPlugin.preferences.getBoolean(CeylonPreferenceInitializer.\iLINKED_MODE_ARGUMENTS)) {
+        if (CeylonPlugin.preferences.getBoolean(CeylonPreferenceInitializer.linkedModeArguments)) {
             activeLinkedMode(commonDocument, ctx);
         }
     }
@@ -149,7 +152,7 @@ shared class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
         
         shared actual String? additionalProposalInfo => null;
         
-        shared actual void apply(IDocument document) {
+        shared actual overloaded void apply(IDocument document) {
             //the following awfulness is necessary because the
             //insertion point may have changed (and even its
             //text may have changed, since the proposal was
@@ -193,21 +196,17 @@ shared class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
             return result;
         }
         
-        shared actual Image image {
-            return CeylonLabelProvider.getImageForDeclaration(dec);
-        }
+        shared actual Image image => CeylonLabelProvider.getImageForDeclaration(dec);
         
         shared actual IContextInformation? contextInformation => null;
         
-        shared actual void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
+        shared actual overloaded void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
             apply(viewer.document);
         }
         
-        shared actual void selected(ITextViewer viewer, Boolean smartToggle) {
-        }
+        shared actual void selected(ITextViewer viewer, Boolean smartToggle) {}
         
-        shared actual void unselected(ITextViewer viewer) {
-        }
+        shared actual void unselected(ITextViewer viewer) {}
         
         shared actual Boolean validate(IDocument document, Integer currentOffset, DocumentEvent? event) {
             if (!exists event) {
@@ -238,12 +237,12 @@ shared class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
                 content = content.spanFrom(op.size);
             }
             
-            String filter = content.trimmed.lowercased;
+            value filter = content.trimmed.lowercased;
             value unit = ctx.lastCompilationUnit.unit;
             
             return ModelUtil.isNameMatching(content, dec)
-                    || getProposedName(qualifier, dec, unit)
-                        .lowercased.startsWith(filter);
+                || getProposedName(qualifier, dec, unit)
+                    	.lowercased.startsWith(filter);
         }
     }
 
@@ -252,7 +251,7 @@ shared class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
         
         shared actual String? additionalProposalInfo => null;
         
-        shared actual void apply(IDocument document) {
+        shared actual overloaded void apply(IDocument document) {
             //the following awfulness is necessary because the
             //insertion point may have changed (and even its
             //text may have changed, since the proposal was
@@ -275,13 +274,9 @@ shared class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
             }
         }
         
-        shared actual Point? getSelection(IDocument document) {
-            return null;
-        }
+        shared actual Point? getSelection(IDocument document) => null;
         
-        shared actual String displayString {
-            return val;
-        }
+        shared actual String displayString => val;
         
         shared actual StyledString styledDisplayString {
             StyledString result = StyledString();
@@ -289,22 +284,18 @@ shared class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
             return result;
         }
         
-        shared actual Image image {
-            return CeylonLabelProvider.getDecoratedImage(
-                CeylonResources.\iCEYLON_LITERAL, 0, false);
-        }
+        shared actual Image image 
+                => CeylonLabelProvider.getDecoratedImage(CeylonResources.ceylonLiteral, 0, false);
         
         shared actual IContextInformation? contextInformation => null;
         
-        shared actual void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
+        shared actual overloaded void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
             apply(viewer.document);
         }
         
-        shared actual void selected(ITextViewer viewer, Boolean smartToggle) {
-        }
+        shared actual void selected(ITextViewer viewer, Boolean smartToggle) {}
         
-        shared actual void unselected(ITextViewer viewer) {
-        }
+        shared actual void unselected(ITextViewer viewer) {}
         
         shared actual Boolean validate(IDocument document, Integer currentOffset, DocumentEvent? event) {
             if (!exists event) {
@@ -320,7 +311,7 @@ shared class EclipseInvocationCompletionProposal(Integer _offset, String prefix,
                         content = content.spanFrom(eq + 1);
                     }
                     
-                    variable String filter = content.trimmed.lowercased;
+                    value filter = content.trimmed.lowercased;
                     if (val.lowercased.startsWith(filter)) {
                         return true;
                     }

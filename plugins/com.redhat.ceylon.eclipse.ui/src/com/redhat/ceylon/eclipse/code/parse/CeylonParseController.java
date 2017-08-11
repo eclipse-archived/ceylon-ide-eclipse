@@ -42,6 +42,7 @@ import java.util.concurrent.TimeoutException;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -157,7 +158,7 @@ public class CeylonParseController
      * The most-recently parsed token stream. May be null if 
      * this parse controller has never parsed anything.
      */
-    private List<CommonToken> tokens;
+    private List<? extends Token> tokens;
     
     /**
      * The type checker associated with the most recent parse. 
@@ -454,7 +455,7 @@ public class CeylonParseController
                             phasedUnits.getModuleManager(), 
                             (BaseIdeModuleSourceMapper)
                             phasedUnits.getModuleSourceMapper(), 
-                            typeChecker, tokens, 
+                            typeChecker, getTokens(), 
                             (ProjectPhasedUnit) 
                                 builtPhasedUnit);  
         }
@@ -465,7 +466,7 @@ public class CeylonParseController
                             phasedUnits.getModuleManager(),
                             (BaseIdeModuleSourceMapper)
                             phasedUnits.getModuleSourceMapper(), 
-                            typeChecker, tokens, 
+                            typeChecker, getTokens(), 
                             null);
             IdeModuleManager moduleManager = 
                     (IdeModuleManager)
@@ -799,8 +800,9 @@ public class CeylonParseController
         return null;
     }
     
-    public List<CommonToken> getTokens() {
-        return tokens;
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public List<CommonToken> getTokens() {
+        return (List) tokens;
     }
     
     public TypeChecker getTypeChecker() {

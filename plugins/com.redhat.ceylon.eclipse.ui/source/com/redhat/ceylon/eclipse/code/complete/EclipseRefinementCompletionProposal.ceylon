@@ -28,7 +28,8 @@ import com.redhat.ceylon.model.typechecker.model {
 }
 
 import java.lang {
-    JCharacter=Character
+    JCharacter=Character,
+    overloaded
 }
 
 import org.eclipse.jface.text {
@@ -81,7 +82,7 @@ class EclipseRefinementCompletionProposal(Integer _offset, String prefix, Refere
     class NestedCompletionProposal(Declaration dec, Integer offset, Unit unit) 
             satisfies IEclipseCompletionProposal2And6 {
                 
-        shared actual void apply(IDocument document) {
+        shared actual overloaded void apply(IDocument document) {
             try {
                 value region = getCurrentSpecifierRegion(document, offset);
                 document.replace(region.offset, region.length, getText(false));
@@ -116,15 +117,13 @@ class EclipseRefinementCompletionProposal(Integer _offset, String prefix, Refere
             return sb.string;
         }
         
-        shared actual void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
+        shared actual overloaded void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
             apply(viewer.document);
         }
         
-        shared actual void selected(ITextViewer viewer, Boolean smartToggle) {
-        }
+        shared actual void selected(ITextViewer viewer, Boolean smartToggle) {}
         
-        shared actual void unselected(ITextViewer viewer) {
-        }
+        shared actual void unselected(ITextViewer viewer) {}
         
         shared actual Boolean validate(IDocument document, Integer currentOffset, DocumentEvent? event) {
             if (!exists event) {
@@ -152,7 +151,7 @@ class EclipseRefinementCompletionProposal(Integer _offset, String prefix, Refere
         
         shared actual Point? getSelection(IDocument document) => null;
         
-        shared actual void apply(IDocument document) {
+        shared actual overloaded void apply(IDocument document) {
             try {
                 IRegion region = getCurrentSpecifierRegion(document, offset);
                 document.replace(region.offset, region.length, text);
@@ -161,7 +160,7 @@ class EclipseRefinementCompletionProposal(Integer _offset, String prefix, Refere
             }
         }
         
-        shared actual void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
+        shared actual overloaded void apply(ITextViewer viewer, Character trigger, Integer stateMask, Integer offset) {
             apply(viewer.document);
         }
         
@@ -173,28 +172,25 @@ class EclipseRefinementCompletionProposal(Integer _offset, String prefix, Refere
             return result;
         }
         
-        shared actual Image image {
-            return CeylonLabelProvider.getDecoratedImage(CeylonResources.\iCEYLON_LITERAL, 0, false);
-        }
+        shared actual Image image 
+                => CeylonLabelProvider.getDecoratedImage(CeylonResources.ceylonLiteral, 0, false);
         
         shared actual String? additionalProposalInfo => null;
         
         shared actual IContextInformation? contextInformation => null;
         
-        shared actual void selected(ITextViewer viewer, Boolean smartToggle) {
-        }
+        shared actual void selected(ITextViewer viewer, Boolean smartToggle) {}
         
-        shared actual void unselected(ITextViewer viewer) {
-        }
+        shared actual void unselected(ITextViewer viewer) {}
         
         shared actual Boolean validate(IDocument document, Integer currentOffset, DocumentEvent? event) {
             if (!exists event) {
                 return true;
             } else {
                 try {
-                    variable IRegion region = getCurrentSpecifierRegion(document, offset);
-                    variable String content = document.get(region.offset, currentOffset - region.offset);
-                    variable String filter = content.trimmed.lowercased;
+                    IRegion region = getCurrentSpecifierRegion(document, offset);
+                    String content = document.get(region.offset, currentOffset - region.offset);
+                    value filter = content.trimmed.lowercased;
                     if (text.lowercased.startsWith(filter)) {
                         return true;
                     }
