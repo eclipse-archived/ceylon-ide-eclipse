@@ -20,7 +20,7 @@
 	<property name="modules.dir"
         value="${basedir}/modules" />
 
-	<property name="eclipseUpdateSite" value="http://download.eclipse.org/releases/luna/"/>
+	<property name="eclipseUpdateSite" value="http://download.eclipse.org/releases/oxygen/"/>
 
     <property name="ceylon.repo.dir" location="${user.home}/.ceylon/repo" />
 

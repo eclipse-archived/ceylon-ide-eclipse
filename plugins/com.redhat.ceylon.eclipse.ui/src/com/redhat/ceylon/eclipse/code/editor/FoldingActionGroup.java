@@ -21,6 +21,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.projection.IProjectionListener;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
@@ -148,9 +149,8 @@ public class FoldingActionGroup extends ActionGroup {
                 if (editor instanceof CeylonEditor) {
                     ProjectionAnnotationModel pam = ((CeylonEditor) editor).getCeylonSourceViewer()
                             .getProjectionAnnotationModel();
-                    for (@SuppressWarnings("unchecked")
-                    Iterator<ProjectionAnnotation> iter=pam.getAnnotationIterator(); iter.hasNext();) {
-                        ProjectionAnnotation pa = iter.next();
+                    for (Iterator<Annotation> iter=pam.getAnnotationIterator(); iter.hasNext();) {
+                        Annotation pa = iter.next();
                         if (pa instanceof CeylonProjectionAnnotation) {
                             int tt = ((CeylonProjectionAnnotation) pa).getTokenType();
                             if (tt==CeylonLexer.MULTI_COMMENT || 
@@ -170,9 +170,8 @@ public class FoldingActionGroup extends ActionGroup {
                 if (editor instanceof CeylonEditor) {
                     ProjectionAnnotationModel pam = ((CeylonEditor) editor).getCeylonSourceViewer()
                             .getProjectionAnnotationModel();
-                    for (@SuppressWarnings("unchecked")
-                    Iterator<ProjectionAnnotation> iter=pam.getAnnotationIterator(); iter.hasNext();) {
-                        ProjectionAnnotation pa = iter.next();
+                    for (Iterator<Annotation> iter=pam.getAnnotationIterator(); iter.hasNext();) {
+                        Annotation pa = iter.next();
                         if (pa instanceof CeylonProjectionAnnotation) {
                             int tt = ((CeylonProjectionAnnotation) pa).getTokenType();
                             if (tt==CeylonLexer.IMPORT) {

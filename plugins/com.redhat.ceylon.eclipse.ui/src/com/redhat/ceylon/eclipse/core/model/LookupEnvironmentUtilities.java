@@ -155,7 +155,7 @@ public class LookupEnvironmentUtilities {
                 
                 BinaryTypeBinding binaryTypeBinding = null;
                 try {
-                    binaryType = classFile.getBinaryTypeInfo(classFileRsrc, true);
+                    binaryType = classFile.getBinaryTypeInfo();
                     binaryTypeBinding = lookupEnvironment.cacheBinaryType(binaryType, null);
                 } catch(JavaModelException e) {
                     if (! e.isDoesNotExist()) {
@@ -246,7 +246,7 @@ public class LookupEnvironmentUtilities {
                 if (type instanceof BinaryType) {
                     binaryType = (IBinaryType) ((BinaryType) type).getElementInfo();                    
                 } else {
-                    binaryType = classFile.getBinaryTypeInfo(classFileRsrc, true);                    
+                    binaryType = classFile.getBinaryTypeInfo();                    
                 }
                 if (readerHolder != null 
                         && readerHolder.length == 1

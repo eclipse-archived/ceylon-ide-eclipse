@@ -41,6 +41,10 @@
     <remove module="org.eclipse.equinox.simpleconfigurator.manipulator"/>
     <remove module="org.eclipse.pde.core"/>
     <remove module="org.eclipse.pde.build"/>
+    <remove module="org.eclipse.e4.core.di.extensions"/>
+    <remove module="org.eclipse.emf.ecore.xmi"/>
+    <remove module="org.eclipse.osgi.services"/>
+    <remove module="org.eclipse.e4.core.commands"/>
 
     <module module="org.eclipse.ui">
         <add module="org.eclipse.ui.ide" version="${org.eclipse.ui.ide.version.override}" shared="true"/>

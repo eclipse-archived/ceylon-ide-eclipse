@@ -108,11 +108,6 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
     protected StepIntoHandler newStepIntoHandler() {
         return new StepIntoHandler() {
             @Override
-            protected boolean locationIsFiltered(Method method) {
-                return DebugUtils.isMethodFiltered(method);
-            }
-
-            @SuppressWarnings("unused")
             protected boolean locationIsFiltered(Method method, boolean orig) {
                 return DebugUtils.isMethodFiltered(method);
             }
@@ -134,11 +129,6 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
     @Override
     protected StepOverHandler newStepOverHandler() {
         return new StepOverHandler() {
-            @Override
-            protected boolean locationIsFiltered(Method method) {
-                return DebugUtils.isMethodFiltered(method);
-            }
-            @SuppressWarnings("unused")
             protected boolean locationIsFiltered(Method method, boolean orig) {
                 return DebugUtils.isMethodFiltered(method);
             }
@@ -158,11 +148,6 @@ public class CeylonJDIThread extends PatchedForCeylonJDIThread {
     @Override
     protected StepReturnHandler newStepReturnHandler() {
         return new StepReturnHandler() {
-            @Override
-            protected boolean locationIsFiltered(Method method) {
-                return DebugUtils.isMethodFiltered(method);
-            }
-            @SuppressWarnings("unused")
             protected boolean locationIsFiltered(Method method, boolean orig) {
                 return DebugUtils.isMethodFiltered(method);
             }
