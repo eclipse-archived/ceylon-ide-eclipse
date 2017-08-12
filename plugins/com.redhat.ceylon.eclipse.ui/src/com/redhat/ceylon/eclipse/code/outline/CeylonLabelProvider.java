@@ -58,7 +58,6 @@ import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 
 import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
 import com.redhat.ceylon.compiler.typechecker.tree.Message;
@@ -106,8 +105,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     private Set<ILabelProviderListener> fListeners = 
             new HashSet<ILabelProviderListener>();
     
-    public static final Point BIG_SIZE = new Point(22,16);
-    public static final Point SMALL_SIZE = new Point(16,16);
+//    public static final Point BIG_SIZE = new Point(22,16);
+//    public static final Point SMALL_SIZE = new Point(16,16);
     
     private final boolean smallSize;
 
@@ -170,23 +169,38 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
 
     public static Image getDecoratedImage(String key, 
             int decorationAttributes, boolean smallSize) {
-        ImageDescriptor descriptor = 
-                imageRegistry.getDescriptor(key);
-        if (descriptor==null) {
+        if (imageRegistry.getDescriptor(key)==null) {
             return null;
         }
         String decoratedKey = 
-                key+'#'+decorationAttributes + 
-                    (smallSize ? "#small" : "");
+                decoratedKey(key, 
+                        decorationAttributes, smallSize);
         Image image = imageRegistry.get(decoratedKey);
         if (image==null) {
-            imageRegistry.put(decoratedKey, 
-                    new DecoratedImageDescriptor(descriptor, 
-                            decorationAttributes, 
-                            smallSize ? SMALL_SIZE : BIG_SIZE));
+            initDecoratedImage(key, 
+                    decoratedKey, decorationAttributes, 
+                    smallSize);
             image = imageRegistry.get(decoratedKey);
         }
         return image;
+    }
+
+    private static String decoratedKey(String key, 
+            int decorationAttributes, boolean smallSize) {
+        return key+'#'+decorationAttributes + 
+            (smallSize ? "#small" : "");
+    }
+
+    private static void initDecoratedImage(String key, 
+            String decoratedKey, int decorationAttributes,
+            boolean smallSize) {
+        ImageDescriptor baseDescriptor = 
+                imageRegistry.getDescriptor(key);
+        imageRegistry.put(decoratedKey, 
+                new DecoratedImageDescriptor(
+                        baseDescriptor, 
+                        decorationAttributes, 
+                        smallSize));
     }
 
     @Override

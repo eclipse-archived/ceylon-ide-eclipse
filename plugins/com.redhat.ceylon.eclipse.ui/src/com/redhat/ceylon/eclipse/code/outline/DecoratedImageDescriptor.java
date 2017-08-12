@@ -49,7 +49,8 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 public class DecoratedImageDescriptor extends CompositeImageDescriptor {
     private ImageDescriptor fBaseImage;
     private int fFlags;
-    private Point fSize;
+    private boolean fSmallSize;
+//    private Point fSize;
     private final ImageRegistry imageRegistry = CeylonPlugin.imageRegistry();
 
     /**
@@ -60,13 +61,14 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
      *  for valid values.
      * @param size the size of the resulting image
      */
-    public DecoratedImageDescriptor(ImageDescriptor baseImage, int flags, Point size) {
+    public DecoratedImageDescriptor(ImageDescriptor baseImage, int flags, boolean smallSize/*, Point size*/) {
         fBaseImage= baseImage;
+        this.fSmallSize = smallSize/*, Point size*/;
         Assert.isNotNull(fBaseImage);
         fFlags= flags;
         Assert.isTrue(fFlags >= 0);
-        fSize= size;
-        Assert.isNotNull(fSize);
+//        fSize= size;
+//        Assert.isNotNull(fSize);
     }
 
     /**
@@ -91,48 +93,68 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
         return fFlags;
     }
 
-    /**
-     * Sets the size of the image created by calling {@link #createImage()}.
-     * 
-     * @param size the size of the image returned from calling {@link #createImage()}
-     */
-    public void setImageSize(Point size) {
-        Assert.isNotNull(size);
-        Assert.isTrue(size.x >= 0 && size.y >= 0);
-        fSize= size;
-    }
+//    /**
+//     * Sets the size of the image created by calling {@link #createImage()}.
+//     * 
+//     * @param size the size of the image returned from calling {@link #createImage()}
+//     */
+//    public void setImageSize(Point size) {
+//        Assert.isNotNull(size);
+//        Assert.isTrue(size.x >= 0 && size.y >= 0);
+//        fSize= size;
+//    }
 
-    /**
-     * Returns the size of the image created by calling {@link #createImage()}.
-     * 
-     * @return the size of the image created by calling {@link #createImage()}
-     */
-    public Point getImageSize() {
-        return new Point(fSize.x, fSize.y);
-    }
+//    /**
+//     * Returns the size of the image created by calling {@link #createImage()}.
+//     * 
+//     * @return the size of the image created by calling {@link #createImage()}
+//     */
+//    public Point getImageSize() {
+//        return new Point(fSize.x, fSize.y);
+//    }
 
     @Override
     protected Point getSize() {
-        return fSize;
+        ImageData imageData = imageData(fBaseImage);
+        int width = imageData.width;
+        int height = imageData.height;
+        if (!fSmallSize) {
+            width = width * 22 / 16;
+        }
+        return new Point(width, height);
+    }
+
+    private ImageData imageData(ImageDescriptor descriptor) {
+        ImageData imageData = 
+                descriptor.getImageData(getZoomLevel());
+        if (imageData==null) {
+            imageData = descriptor.getImageData(100);
+        }
+        return imageData;
     }
 
     @Override
     public boolean equals(Object object) {
-        if (object == null || !DecoratedImageDescriptor.class.equals(object.getClass()))
+        if (object instanceof DecoratedImageDescriptor) {
+            DecoratedImageDescriptor other = 
+                    (DecoratedImageDescriptor) object;
+            return fBaseImage.equals(other.fBaseImage) 
+                && fFlags == other.fFlags 
+                && fSmallSize==other.fSmallSize;
+        }
+        else {
             return false;
-
-        DecoratedImageDescriptor other= (DecoratedImageDescriptor) object;
-        return fBaseImage.equals(other.fBaseImage) && fFlags == other.fFlags && fSize.equals(other.fSize);
+        }
     }
 
     @Override
     public int hashCode() {
-        return fBaseImage.hashCode() | fFlags | fSize.hashCode();
+        return fBaseImage.hashCode() | fFlags;
     }
 
     @Override
     protected void drawCompositeImage(int width, int height) {
-        ImageData bg= getImageData(fBaseImage);
+        ImageData bg = getImageData(fBaseImage);
 
         drawUnderlay();
         
@@ -145,10 +167,10 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
     }
 
     private ImageData getImageData(ImageDescriptor descriptor) {
-        ImageData data= descriptor.getImageData(); // see bug 51965: getImageData can return null
+        ImageData data = imageData(descriptor);
         if (data == null) {
-            data= DEFAULT_IMAGE_DATA;
-            System.err.println("Image data not available: " + descriptor.toString()); //$NON-NLS-1$
+            data = DEFAULT_IMAGE_DATA;
+            System.err.println("Image data not available: " + descriptor.toString());
         }
         return data;
     }
