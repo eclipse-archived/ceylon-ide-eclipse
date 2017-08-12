@@ -1538,7 +1538,7 @@
             <command
                   label="Show Repository &amp;Explorer..." 
                   commandId="org.eclipse.ui.views.showView"
-                  icon="icons/repositories.gif"
+                  icon="icons/repositories.png"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.showRepositoryExplorer">
                   <parameter
                         name="org.eclipse.ui.views.showView.viewId"
@@ -1565,7 +1565,7 @@
             <command
                   label="Show Repository Explorer..." 
                   commandId="org.eclipse.ui.views.showView"
-                  icon="icons/repositories.gif"
+                  icon="icons/repositories.png"
                   tooltip="Show Repository Explorer"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.showRepositoryExplorer">
                   <parameter
@@ -3258,7 +3258,7 @@
       <view
             category="com.redhat.ceylon.eclipse.ui.views"
             class="com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewPart"
-            icon="icons/repositories.gif"
+            icon="icons/repositories.png"
             id="com.redhat.ceylon.eclipse.ui.view.ModuleSearch"
             name="Ceylon Repository Explorer"/>
       <view

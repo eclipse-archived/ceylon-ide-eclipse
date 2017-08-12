@@ -291,7 +291,7 @@ public class DocumentationView extends ViewPart {
         HTMLPrinter.insertPageProlog(buffer, 0, 
                 HTML.getStyleSheet());
         HTML.addImageAndLabel(buffer, null, 
-                HTML.fileUrl("information.gif")
+                HTML.fileUrl("message_info.png")
                     .toExternalForm(), 
                 16, 16, 
                 "<i>Nothing selected in Ceylon editor.</i>", 
