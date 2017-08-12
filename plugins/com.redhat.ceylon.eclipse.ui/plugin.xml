@@ -200,7 +200,7 @@
              name="Ceylon"/>
        <wizard
              id="com.redhat.ceylon.eclipse.ui.newUnitWizard"
-             icon="icons/newunit_wiz.gif"
+             icon="icons/newunit.gif"
              name="Ceylon Source File"
              category="com.redhat.ceylon.eclipse.ui.category"
              hasPages="true"
@@ -211,7 +211,7 @@
        </wizard>
        <wizard
              id="com.redhat.ceylon.eclipse.ui.newProjectWizard"
-             icon="icons/newprj_wiz.gif"
+             icon="icons/newprj.gif"
              name="Ceylon Project" 
              finalPerspective="com.redhat.ceylon.eclipse.ui.perspective"
              category="com.redhat.ceylon.eclipse.ui.category"
@@ -223,7 +223,7 @@
        </wizard>
        <wizard
              id="com.redhat.ceylon.eclipse.ui.newModuleWizard"
-             icon="icons/newmod_wiz.gif"
+             icon="icons/newmod.gif"
              name="Ceylon Module"
              category="com.redhat.ceylon.eclipse.ui.category"
              hasPages="true"
@@ -1589,7 +1589,7 @@
             <command
                   label="New Ceylon Source File..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.newUnit"
-                  icon="icons/newunit_wiz.gif"
+                  icon="icons/newunit.gif"
                   tooltip="New Ceylon Source File"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.newUnit">
               <visibleWhen>
@@ -1617,7 +1617,7 @@
             <command
                   label="New Ceylon Module..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.newModule"
-                  icon="icons/newmod_wiz.gif"
+                  icon="icons/newmod.gif"
                   tooltip="New Ceylon Module"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.newModule">
               <visibleWhen>
@@ -1631,7 +1631,7 @@
             <command
                   label="New Ceylon Project..."
                   commandId="com.redhat.ceylon.eclipse.ui.action.newProject"
-                  icon="icons/newprj_wiz.gif"
+                  icon="icons/newprj.gif"
                   tooltip="New Ceylon Project"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.newProject">
               <visibleWhen>
