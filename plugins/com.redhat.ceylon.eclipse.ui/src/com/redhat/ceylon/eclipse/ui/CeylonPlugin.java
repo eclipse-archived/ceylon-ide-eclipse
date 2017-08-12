@@ -625,7 +625,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(PACKAGE_MODE, image("package_mode.png"));
         reg.put(MODULE_MODE, image("module_mode.png"));
         reg.put(FOLDER_MODE, image("folder_mode.png"));
-        reg.put(UNIT_MODE, image("unit_mode.gif"));
+        reg.put(UNIT_MODE, image("unit_mode.png"));
         reg.put(TYPE_MODE, image("type_mode.png"));
         reg.put(FLAT_MODE, image("flatLayout.png"));
         reg.put(TREE_MODE, image("hierarchicalLayout.png"));
