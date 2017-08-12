@@ -203,34 +203,14 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         }
         else if (element instanceof IPath) {
             IPath path = (IPath) element;
-            String name = path.lastSegment();
-            if (name.equals("module.ceylon")) {
-                return CEYLON_MODULE_DESC;
-            }
-            else if (name.equals("package.ceylon")) {
-                return CEYLON_PACKAGE_DESC;
-            }
-            return CEYLON_FILE;
+            return getImageKeyForPath(path);
         }
         if (element instanceof IFolder) {
             IFolder folder = (IFolder) element;
-            if (folder.getAdapter(IPackageFragmentRoot.class)!=null) {
-                return CEYLON_SOURCE_FOLDER;
-            }
-            else if (folder.getAdapter(IPackageFragment.class)!=null) {
-                return CEYLON_PACKAGE;
-            }
-            return CEYLON_FOLDER;
+            return getImageKeyForFolder(folder);
         }
         else if (element instanceof IPackageFragmentRoot) {
-            IPackageFragmentRoot pfr = 
-                    (IPackageFragmentRoot) element;
-            if (pfr.getPath().getFileExtension()!=null) {
-                return CEYLON_MODULE;
-            }
-            else {
-                return CEYLON_SOURCE_FOLDER;
-            }
+            return getImageKeyForPackageRoot(element);
         }
         if (element instanceof IProject ||
             element instanceof IJavaProject) {
@@ -258,6 +238,38 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return getImageKeyForNode(treeNode);
         }
         return null;
+    }
+
+    private String getImageKeyForPackageRoot(Object element) {
+        IPackageFragmentRoot pfr = 
+                (IPackageFragmentRoot) element;
+        return pfr.getPath().getFileExtension()!=null ? 
+                CEYLON_MODULE : CEYLON_SOURCE_FOLDER;
+    }
+
+    private String getImageKeyForFolder(IFolder folder) {
+        if (folder.getAdapter(IPackageFragmentRoot.class)!=null) {
+            return CEYLON_SOURCE_FOLDER;
+        }
+        else if (folder.getAdapter(IPackageFragment.class)!=null) {
+            return CEYLON_PACKAGE;
+        }
+        else {
+            return CEYLON_FOLDER;
+        }
+    }
+
+    private String getImageKeyForPath(IPath path) {
+        String name = path.lastSegment();
+        if (name.equals("module.ceylon")) {
+            return CEYLON_MODULE_DESC;
+        }
+        else if (name.equals("package.ceylon")) {
+            return CEYLON_PACKAGE_DESC;
+        }
+        else {
+            return CEYLON_FILE;
+        }
     }
 
     private static boolean isModule(IPackageFragment element) {
@@ -306,7 +318,16 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             return CEYLON_MODULE;
         }
         else if (n instanceof Tree.CompilationUnit) {
-            return CEYLON_FILE;
+            String filename = n.getUnit().getFilename();
+            if (filename.equals("package.ceylon")) {
+                return CEYLON_PACKAGE_DESC;
+            }
+            else if (filename.equals("module.ceylon")) {
+                return CEYLON_MODULE_DESC;
+            }
+            else {
+                return CEYLON_FILE;
+            }
         }
         else if (n instanceof Tree.ImportList) {
             return CEYLON_IMPORT_LIST;
@@ -778,10 +799,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (node instanceof Tree.CompilationUnit) {
             Tree.CompilationUnit ai = 
                     (Tree.CompilationUnit) node;
-            if (ai.getUnit()==null) {
-                return new StyledString("unknown");
-            }
-            return new StyledString(ai.getUnit().getFilename());
+            Unit unit = ai.getUnit();
+            return unit==null ? 
+                    new StyledString("unknown") : 
+                    new StyledString(unit.getFilename());
         }
         else if (node instanceof Tree.ModuleDescriptor) {
             Tree.ModuleDescriptor i = 

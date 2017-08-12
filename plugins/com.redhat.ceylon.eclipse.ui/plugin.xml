@@ -17,7 +17,7 @@
          point="org.eclipse.ui.editors">
       <editor
             name="Ceylon Editor"
-            icon="icons/unit.gif"
+            icon="icons/unit_obj.png"
             extensions="ceylon" 
             default="true" 
             class="com.redhat.ceylon.eclipse.code.editor.CeylonEditor"
@@ -1617,7 +1617,7 @@
             <command
                   label="New Ceylon Module..." 
                   commandId="com.redhat.ceylon.eclipse.ui.action.newModule"
-                  icon="icons/newmod.png"
+                  icon="icons/newmodule.png"
                   tooltip="New Ceylon Module"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.newModule">
               <visibleWhen>

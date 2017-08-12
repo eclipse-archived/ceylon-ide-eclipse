@@ -2008,7 +2008,7 @@ public class DocumentationHover extends SourceInfoHover {
         }
                 
         HTML.addImageAndLabel(buffer, null, 
-                HTML.fileUrl("unit.gif").toExternalForm(), 
+                HTML.fileUrl("unit_obj.png").toExternalForm(), 
                 16, 16, 
                 "<span>Declared in&nbsp;<tt><a href='dec:" + 
                 HTML.declink(dec) + "'>" + 
