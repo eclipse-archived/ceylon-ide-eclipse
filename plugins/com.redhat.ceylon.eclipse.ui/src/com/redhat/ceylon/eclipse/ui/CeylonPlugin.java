@@ -513,7 +513,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         else {
           reg.put(CEYLON_OBJECT, image("field_public_obj.png"));
           reg.put(CEYLON_LOCAL_OBJECT, image("field_private_obj.png"));
-          reg.put(CEYLON_CONSTRUCTOR, image("constructor.png"));
+          reg.put(CEYLON_CONSTRUCTOR, image("new_obj.png"));
           reg.put(CEYLON_CLASS, image("class_obj.png"));
           reg.put(CEYLON_INTERFACE, image("int_obj.png"));
           reg.put(CEYLON_LOCAL_CLASS, image("innerclass_private_obj.png"));

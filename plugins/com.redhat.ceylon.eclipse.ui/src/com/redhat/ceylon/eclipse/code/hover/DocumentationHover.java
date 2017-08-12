@@ -801,8 +801,8 @@ public class DocumentationHover extends SourceInfoHover {
             }
             else if (dec instanceof Constructor) {
                 String icon = dec.isShared() ? 
-                        "constructor.png" : 
-                        "constructor.png"; //TODO!!!!!!
+                        "new_obj.png" : 
+                        "new_obj.png"; //TODO!!!!!!
                 return icon;
 //                return decorateTypeIcon(dec, icon);
             }
