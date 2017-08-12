@@ -549,7 +549,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(CEYLON_OPEN_DECLARATION, image("opentype.png"));
         reg.put(CEYLON_SEARCH_RESULTS, image("search_ref_obj.png"));
         reg.put(CEYLON_CORRECTION, image("correction_change.png"));
-        reg.put(CEYLON_DELETE_IMPORT, image("correction_delete_import.gif"));
+        reg.put(CEYLON_DELETE_IMPORT, image("correction_delete_import.png"));
         reg.put(CEYLON_SUPPRESS_WARNINGS, image("suppress_warning_obj.gif"));
         reg.put(CEYLON_CHANGE, image("change.png"));
         reg.put(CEYLON_COMPOSITE_CHANGE, image("composite_change.png"));
@@ -565,7 +565,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(CEYLON_NEW_FILE, image("newfile_wiz.png"));
         reg.put(CEYLON_NEW_MODULE, image("addlibrary_wiz.png"));
         reg.put(CEYLON_NEW_PACKAGE, image("newpack_wiz.png"));
-        reg.put(CEYLON_NEW_FOLDER, image("newfolder_wiz.gif"));
+        reg.put(CEYLON_NEW_FOLDER, image("newfolder_wiz.png"));
         reg.put(CEYLON_EXPORT_CAR, image("jar_pack_wiz.png"));
         reg.put(CEYLON_REFS, image("search_ref_obj.png"));
         reg.put(CEYLON_DECS, image("search_decl_obj.png"));
@@ -584,7 +584,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(SHIFT_LEFT, image("shift_l_edit.png"));
         reg.put(SHIFT_RIGHT, image("shift_r_edit.png"));
         reg.put(QUICK_ASSIST, image("quickassist_obj.png"));
-        reg.put(BUILDER, image("builder.gif"));
+        reg.put(BUILDER, image("builder.png"));
         reg.put(CONFIG_LABELS, image("labels.gif"));
         reg.put(CONFIG_WARNINGS, image("configure_problem_severity.png"));
         reg.put(CONFIG_ANN, image("configure_annotations.png"));
@@ -633,10 +633,10 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(TERMINATE_STATEMENT, image("correction_cast.gif"));
         reg.put(FORMAT_BLOCK, image("format_block.gif"));
         reg.put(REMOVE_COMMENT, image("remove_comment_edit.gif"));
-        reg.put(ADD_COMMENT, image("comment_edit.gif"));
+        reg.put(ADD_COMMENT, image("comment_edit.png"));
         reg.put(TOGGLE_COMMENT, image("url.gif"));
         reg.put(CORRECT_INDENT, image("correctindent.gif"));
-        reg.put(LAST_EDIT, image("last_edit_pos.gif"));
+        reg.put(LAST_EDIT, image("last_edit_pos.png"));
         reg.put(NEXT_ANN, image("next_nav.png"));
         reg.put(PREV_ANN, image("prev_nav.png"));
         reg.put(SORT_ALPHA, image("alphab_sort_co.png"));

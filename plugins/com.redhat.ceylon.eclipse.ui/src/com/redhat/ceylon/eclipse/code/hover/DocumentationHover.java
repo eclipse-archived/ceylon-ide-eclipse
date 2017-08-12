@@ -1060,7 +1060,7 @@ public class DocumentationHover extends SourceInfoHover {
         if (pack.isShared()) {
             String ann = toHex(getCurrentThemeColor(ANNOTATIONS));
             HTML.addImageAndLabel(buffer, null, 
-                    HTML.fileUrl("annotation_obj.gif")
+                    HTML.fileUrl("annotation_obj.png")
                         .toExternalForm(), 
                     16, 16, 
                     "<tt><span style='font-size:" + annotationSize + 
@@ -1118,7 +1118,7 @@ public class DocumentationHover extends SourceInfoHover {
         StringBuilder buffer = new StringBuilder();
         String ann = toHex(getCurrentThemeColor(ANNOTATIONS));
         HTML.addImageAndLabel(buffer, null, 
-                HTML.fileUrl("annotation_obj.gif")
+                HTML.fileUrl("annotation_obj.png")
                     .toExternalForm(), 
                 16, 16, 
                 "<tt><span style='font-size:" + annotationSize + 
@@ -1224,7 +1224,7 @@ public class DocumentationHover extends SourceInfoHover {
         if (buf.length()!=0) {
             String color = toHex(getCurrentThemeColor(ANNOTATIONS));
             HTML.addImageAndLabel(buffer, null, 
-                    HTML.fileUrl("annotation_obj.gif")
+                    HTML.fileUrl("annotation_obj.png")
                         .toExternalForm(), 
                     16, 16, 
                     "<tt><span style='font-size:" + 
@@ -1437,7 +1437,7 @@ public class DocumentationHover extends SourceInfoHover {
         if (buf.length()!=0) {
             String color = toHex(getCurrentThemeColor(ANNOTATIONS));
             HTML.addImageAndLabel(buffer, null, 
-                    HTML.fileUrl("annotation_obj.gif")
+                    HTML.fileUrl("annotation_obj.png")
                         .toExternalForm(), 
                     16, 16, 
                     "<tt><span style='font-size:" + 
@@ -2413,7 +2413,7 @@ public class DocumentationHover extends SourceInfoHover {
                                             }
                                         }
                                         HTML.addImageAndLabel(documentation, dec, 
-                                                HTML.fileUrl("ihigh_obj.gif"/*getIcon(dec)*/)
+                                                HTML.fileUrl("ihigh_obj.png"/*getIcon(dec)*/)
                                                     .toExternalForm(), 
                                                 16, 16, 
                                                 "throws <tt><a "+HTML.link(dec)+">"+dn+"</a></tt>" + 
