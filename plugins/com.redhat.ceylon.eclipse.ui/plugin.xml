@@ -1510,7 +1510,7 @@
             <command
                   label="Open &amp;Resource..." 
                   commandId="org.eclipse.ui.navigate.openResource"
-                  icon="icons/openrsrc.gif"
+                  icon="icons/openrsrc.png"
                   id="com.redhat.ceylon.eclipse.ui.menu.openResource"/>
             <command
                   label="Open &amp;Declaration..." 
@@ -1553,7 +1553,7 @@
             <command
                   label="Open Resource..." 
                   commandId="org.eclipse.ui.navigate.openResource"
-                  icon="icons/openrsrc.gif"
+                  icon="icons/openrsrc.png"
                   tooltip="Open Resource"
                   id="com.redhat.ceylon.eclipse.ui.toolbar.openResource"/>
             <command
