@@ -168,7 +168,7 @@ shared abstract class JarPackagedCeylonLaunchShortcut(String jarPackagingToolNam
         
     }
     
-    shared actual void launch(ISelection selection, String mode) {
+    shared actual overloaded void launch(ISelection selection, String mode) {
         if (! is IStructuredSelection selection) {
             return;
         }

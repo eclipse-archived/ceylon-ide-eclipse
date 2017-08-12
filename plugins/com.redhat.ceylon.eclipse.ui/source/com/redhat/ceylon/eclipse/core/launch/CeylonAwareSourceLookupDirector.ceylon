@@ -34,7 +34,6 @@ import org.eclipse.jdt.internal.debug.ui {
     ZipEntryStorageEditorInput
 }
 import org.eclipse.ui {
-    IEditorDescriptor,
     IEditorInput,
     PartInitException
 }
