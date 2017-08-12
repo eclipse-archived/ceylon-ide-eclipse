@@ -130,7 +130,7 @@ class EclipseDocGenerator(CeylonEditor? editor)
         } else {
             value i = switch(icon)
             case (Icons.imports) HTML.fileUrl("imp_obj.png").toExternalForm()
-            case (Icons.annotations) HTML.fileUrl("annotation_obj.gif").toExternalForm()
+            case (Icons.annotations) HTML.fileUrl("annotation_obj.png").toExternalForm()
             case (Icons.returns) HTML.fileUrl("stepreturn_co.png").toExternalForm()
             case (Icons.units) HTML.fileUrl("unit.gif").toExternalForm()
             case (Icons.enumeration) HTML.fileUrl("sub.png").toExternalForm()

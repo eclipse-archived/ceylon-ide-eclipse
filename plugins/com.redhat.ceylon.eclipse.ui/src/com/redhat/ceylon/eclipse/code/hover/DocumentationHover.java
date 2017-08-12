@@ -752,7 +752,7 @@ public class DocumentationHover extends SourceInfoHover {
     
     static String getIcon(Object obj) {
         if (obj instanceof Module) {
-            return "jar_l_obj.gif";
+            return "module_obj.png";
         }
         else if (obj instanceof Package) {
             return "package_obj.png";
@@ -1138,7 +1138,7 @@ public class DocumentationHover extends SourceInfoHover {
             .append("</code>, which will be automatically added to the descriptor of the current module.<p>");
 
         HTML.addImageAndLabel(buffer, null, 
-                HTML.fileUrl("jar_l_obj.gif")
+                HTML.fileUrl("module_obj.png")
                     .toExternalForm(), 
                 16, 16, 
                 "<tt><span style='font-size:" + largerSize + "'>" + 
@@ -1160,7 +1160,7 @@ public class DocumentationHover extends SourceInfoHover {
             String version, String doc, Scope scope, Unit unit) {
         StringBuilder buffer = new StringBuilder();
         HTML.addImageAndLabel(buffer, null, 
-                HTML.fileUrl("jar_l_obj.gif")
+                HTML.fileUrl("module_obj.png")
                     .toExternalForm(), 
                 16, 16, 
                 "<tt><span style='font-size:" + largerSize + "'>" + 

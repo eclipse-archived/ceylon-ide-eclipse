@@ -780,7 +780,7 @@ public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
 
         if (versionNode != null) {
             HTML.addImageAndLabel(docBuilder, null, 
-                    HTML.fileUrl("jar_l_obj.gif").toExternalForm(), 
+                    HTML.fileUrl("module_obj.png").toExternalForm(), 
                     16, 16, 
                     "<tt><span style='font-size:"+ DocumentationHover.largerSize + "%'>" + 
                     HTML.highlightLine(description(versionNode)) +

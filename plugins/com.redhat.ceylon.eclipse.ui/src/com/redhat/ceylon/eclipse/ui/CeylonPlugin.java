@@ -537,7 +537,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(CEYLON_PACKAGE_DESC, image("p_desc.gif"));
         reg.put(CEYLON_FOLDER, image("fldr_obj.png"));
         reg.put(CEYLON_SOURCE_FOLDER, image("packagefolder_obj.png"));
-        reg.put(CEYLON_MODULE, image("jar_l_obj.gif"));
+        reg.put(CEYLON_MODULE, image("module_obj.png"));
         reg.put(CEYLON_BINARY_ARCHIVE, image("jar_obj.png"));
         reg.put(CEYLON_SOURCE_ARCHIVE, image("jar_lsrc_obj.png"));
         reg.put(CEYLON_PACKAGE, image("package_obj.png"));
@@ -623,8 +623,8 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         
         reg.put(PROJECT_MODE, image("prj_mode.png"));
         reg.put(PACKAGE_MODE, image("package_mode.png"));
-        reg.put(MODULE_MODE, image("module_mode.gif"));
-        reg.put(FOLDER_MODE, image("folder_mode.gif"));
+        reg.put(MODULE_MODE, image("module_mode.png"));
+        reg.put(FOLDER_MODE, image("folder_mode.png"));
         reg.put(UNIT_MODE, image("unit_mode.gif"));
         reg.put(TYPE_MODE, image("type_mode.png"));
         reg.put(FLAT_MODE, image("flatLayout.png"));
