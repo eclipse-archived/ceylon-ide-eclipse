@@ -58,12 +58,14 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.editor.CeylonInitializerAnnotation;
 import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;
+import com.redhat.ceylon.ide.common.model.ModifiableSourceFile;
 import com.redhat.ceylon.ide.common.util.escaping_;
 
 /**
@@ -253,7 +255,9 @@ class AnnotationInformationControl
             protected IStatus run(IProgressMonitor monitor) {
                 AnnotationInfo info = fInput;
                 final ICompletionProposal[] proposals;
-                if (getTypecheckedRootNode(info) == null) {
+                CompilationUnit rn = getTypecheckedRootNode(info);
+                if (rn == null || 
+                        !(rn.getUnit() instanceof ModifiableSourceFile)) {
                     proposals = NO_PROPOSAL;
                 }
                 else {
