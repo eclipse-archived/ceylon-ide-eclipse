@@ -1,7 +1,7 @@
 package com.redhat.ceylon.eclipse.code.wizard;
 
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonRepositories;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_EXPORT_CAR;
+import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_EXPORT_JAR;
 
 import java.io.File;
 
@@ -46,7 +46,7 @@ public class ExportJarWizardPage extends WizardPage implements IWizardPage {
         super("Export Java Archive", 
                 "Export Java Archive", 
                 CeylonPlugin.imageRegistry()
-                    .getDescriptor(CEYLON_EXPORT_CAR));
+                    .getDescriptor(CEYLON_EXPORT_JAR));
         setDescription("Export a Java archive to a module repository.");
         repositoryPath = defaultRepositoryPath;
         this.project = project;

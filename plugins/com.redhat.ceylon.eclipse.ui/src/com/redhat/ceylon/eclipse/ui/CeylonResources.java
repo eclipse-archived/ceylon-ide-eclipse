@@ -71,6 +71,7 @@ public interface CeylonResources {
     public static final String CEYLON_NEW_PACKAGE = "ceylon_new_package";
     public static final String CEYLON_NEW_FOLDER = "ceylon_new_folder";
     public static final String CEYLON_EXPORT_CAR = "ceylon_export_car";
+    public static final String CEYLON_EXPORT_JAR = "ceylon_export_jar";
     
     public static final String CEYLON_DECS = "ceylon_decs";
     public static final String CEYLON_REFS = "ceylon_refs";
