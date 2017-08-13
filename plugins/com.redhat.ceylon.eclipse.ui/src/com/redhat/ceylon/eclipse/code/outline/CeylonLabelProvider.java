@@ -1012,8 +1012,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         boolean types = 
                 prefs.getBoolean(PARAM_TYPES_IN_OUTLINES);
         if (names || types) {
-            if (pl==null ||
-                    pl.getParameters().isEmpty()) {
+            if (pl==null) {
+                //constructors
+            }
+            else if (pl.getParameters().isEmpty()) {
                 label.append("()");
             }
             else {
