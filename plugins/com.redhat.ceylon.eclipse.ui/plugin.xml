@@ -1849,7 +1849,7 @@
                    id="ceylonWelcome"
                    commandId="com.redhat.ceylon.eclipse.ui.action.welcome"
                    label="Welcome to &amp;Ceylon"
-                   icon="icons/ceylon_icon_16px.png"/>
+                   icon="icons/perspective.png"/>
       </menuContribution>
    </extension>
    <extension
@@ -2370,7 +2370,7 @@
             class="com.redhat.ceylon.eclipse.ui.CeylonPerspectiveFactory"
             id="com.redhat.ceylon.eclipse.ui.perspective"
             name="Ceylon"
-            icon="icons/ceylon_icon_16px.png">
+            icon="icons/perspective.png">
           <description>Ceylon development perspective</description>
       </perspective>
    </extension>
