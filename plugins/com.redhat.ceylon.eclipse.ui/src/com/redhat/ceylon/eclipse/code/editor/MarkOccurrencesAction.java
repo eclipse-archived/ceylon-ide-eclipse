@@ -397,9 +397,8 @@ public class MarkOccurrencesAction
         // Need to initialize the set of pre-existing annotations in order
         // for them to be removed properly when new occurrences are marked
         if (annotationModel != null) {
-            @SuppressWarnings("unchecked")
             Iterator<Annotation> annotationIterator = 
-            annotationModel.getAnnotationIterator();
+                    annotationModel.getAnnotationIterator();
             List<Annotation> annotationList = 
                     new ArrayList<Annotation>();
             while (annotationIterator.hasNext()) {

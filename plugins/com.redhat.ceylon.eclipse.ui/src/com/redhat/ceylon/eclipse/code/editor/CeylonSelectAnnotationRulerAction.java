@@ -32,8 +32,8 @@ public class CeylonSelectAnnotationRulerAction extends SelectMarkerRulerAction {
         int line = ruler.getLineOfLastMouseButtonActivity()+1;
         IAnnotationModel model= editor.getDocumentProvider()
                 .getAnnotationModel(editor.getEditorInput());
-        for (@SuppressWarnings("unchecked")
-        Iterator<Annotation> iter = model.getAnnotationIterator(); 
+        for (Iterator<Annotation> iter = 
+                    model.getAnnotationIterator(); 
                 iter.hasNext();) {
             Annotation ann = iter.next();
             if (ann instanceof RefinementAnnotation) {

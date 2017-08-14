@@ -75,8 +75,7 @@ public class RefinementAnnotationCreator
                 return;
             }
             
-            for (@SuppressWarnings("unchecked")
-                Iterator<Annotation> iter = 
+            for (Iterator<Annotation> iter = 
                         model.getAnnotationIterator(); 
                     iter.hasNext();) {
                 Annotation a = iter.next();

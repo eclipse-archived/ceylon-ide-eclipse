@@ -157,12 +157,12 @@ public class AnnotationUtils {
             return null;
         }
         List<Annotation> annotations = new ArrayList<Annotation>();
-        Iterator<?> iterator = model.getAnnotationIterator();
+        Iterator<Annotation> iterator = model.getAnnotationIterator();
 
         Map<Integer,List<Object>> map = new HashMap<Integer,List<Object>>();
 
         while (iterator.hasNext()) {
-            Annotation annotation = (Annotation) iterator.next();
+            Annotation annotation = iterator.next();
             Position position = model.getPosition(annotation);
             
             if (annotation instanceof MarkerAnnotation) {

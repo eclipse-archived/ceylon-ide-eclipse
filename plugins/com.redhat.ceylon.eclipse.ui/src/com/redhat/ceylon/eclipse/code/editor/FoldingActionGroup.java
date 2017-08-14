@@ -149,7 +149,9 @@ public class FoldingActionGroup extends ActionGroup {
                 if (editor instanceof CeylonEditor) {
                     ProjectionAnnotationModel pam = ((CeylonEditor) editor).getCeylonSourceViewer()
                             .getProjectionAnnotationModel();
-                    for (Iterator<Annotation> iter=pam.getAnnotationIterator(); iter.hasNext();) {
+                    for (Iterator<Annotation> iter =
+                                pam.getAnnotationIterator(); 
+                            iter.hasNext();) {
                         Annotation pa = iter.next();
                         if (pa instanceof CeylonProjectionAnnotation) {
                             int tt = ((CeylonProjectionAnnotation) pa).getTokenType();
@@ -170,7 +172,9 @@ public class FoldingActionGroup extends ActionGroup {
                 if (editor instanceof CeylonEditor) {
                     ProjectionAnnotationModel pam = ((CeylonEditor) editor).getCeylonSourceViewer()
                             .getProjectionAnnotationModel();
-                    for (Iterator<Annotation> iter=pam.getAnnotationIterator(); iter.hasNext();) {
+                    for (Iterator<Annotation> iter =
+                                pam.getAnnotationIterator(); 
+                            iter.hasNext();) {
                         Annotation pa = iter.next();
                         if (pa instanceof CeylonProjectionAnnotation) {
                             int tt = ((CeylonProjectionAnnotation) pa).getTokenType();

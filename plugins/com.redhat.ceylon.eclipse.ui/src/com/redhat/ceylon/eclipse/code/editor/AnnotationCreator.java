@@ -131,8 +131,8 @@ public class AnnotationCreator
                 modelExt.replaceAnnotations(oldAnnotations, newAnnotations);
             } 
             else if (model != null) { // model could be null if, e.g., we're directly browsing a file version in a src repo
-                for (@SuppressWarnings("unchecked") 
-                Iterator<Annotation> i = model.getAnnotationIterator(); 
+                for (Iterator<Annotation> i = 
+                            model.getAnnotationIterator(); 
                         i.hasNext();) {
                     Annotation a = i.next();
                     if (isParseAnnotation(a)) {
