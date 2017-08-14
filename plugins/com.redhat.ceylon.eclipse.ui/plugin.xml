@@ -1959,24 +1959,24 @@
       <launchConfigurationTypeImage
             id="com.redhat.ceylon.eclipse.ui.launching.ceylonJavaModuleImage"
             configTypeID="com.redhat.ceylon.eclipse.ui.launching.ceylonJavaModule"
-            icon="icons/start_application.gif">
+            icon="icons/launch.png">
       </launchConfigurationTypeImage>
       <launchConfigurationTypeImage
             id="com.redhat.ceylon.eclipse.ui.launching.ceylonJavascriptModuleImage"
             configTypeID="com.redhat.ceylon.eclipse.ui.launching.ceylonJavaScriptModule"
-            icon="icons/start_application.gif">
+            icon="icons/launch.png">
       </launchConfigurationTypeImage>  
       <launchConfigurationTypeImage
             id="com.redhat.ceylon.eclipse.ui.launching.jarPackagedCeylonApplicationImage"
             configTypeID="com.redhat.ceylon.eclipse.ui.launching.jarPackagedCeylonApplication"
-            icon="icons/start_application.gif">
+            icon="icons/launch.png">
       </launchConfigurationTypeImage>  
    </extension>
    
    <extension point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
             label="Ceylon Java Application"
-            icon="icons/start_application.gif"
+            icon="icons/launch.png"
             modes="run, debug"
             class="com.redhat.ceylon.eclipse.core.launch.CeylonJavaModuleShortcut"
             description="Launch a Ceylon Java application"
@@ -2008,7 +2008,7 @@
       </shortcut>
       <shortcut
             label="Ceylon JavaScript Application"
-            icon="icons/start_application.gif"
+            icon="icons/launch.png"
             modes="run, debug"
             class="com.redhat.ceylon.eclipse.core.launch.CeylonJsModuleShortcut"
             description="Launch a Ceylon JavaScript application"
@@ -2040,7 +2040,7 @@
       </shortcut>         
       <shortcut
             label="Ceylon Java Application Packaged As FatJar"
-            icon="icons/start_application.gif"
+            icon="icons/launch.png"
             modes="run, debug"
             class="com.redhat.ceylon.eclipse.core.launch.FatJarPackagedCeylonLaunchShortcut"
             description="Launch a Ceylon Java application packaged as a FatJar"
@@ -2080,7 +2080,7 @@
       </shortcut>
       <shortcut
             label="Ceylon Java Application Packaged By WildFly Swarm"
-            icon="icons/start_application.gif"
+            icon="icons/launch.png"
             modes="run, debug"
             class="com.redhat.ceylon.eclipse.core.launch.SwarmPackagedCeylonLaunchShortcut"
             description="Launch a Ceylon Java application packaged by Wildfly Swarm"
@@ -3023,7 +3023,7 @@
                label="Debug As Ceylon JavaScript Application"
                class="com.redhat.ceylon.eclipse.core.launch.DebugAsJsAction"
                enablesFor="1"
-               icon="icons/start_application.gif"
+               icon="icons/launch.png"
                id="debugAsJs"
                menubarPath="additions"/>
           <visibility>
@@ -3037,7 +3037,7 @@
                label="Debug As Ceylon Java Application"
                class="com.redhat.ceylon.eclipse.core.launch.DebugAsJavaAction"
                enablesFor="1"
-               icon="icons/start_application.gif"
+               icon="icons/launch.png"
                id="debugAsJava"
                menubarPath="additions"/>
           <visibility>
@@ -3052,7 +3052,7 @@
                label="Run As Ceylon JavaScript Application"
                class="com.redhat.ceylon.eclipse.core.launch.RunAsJsAction"
                enablesFor="1"
-               icon="icons/start_application.gif"
+               icon="icons/launch.png"
                id="runAsJs"
                menubarPath="additions"/>
           <visibility>
@@ -3066,7 +3066,7 @@
                label="Run As Ceylon Java Application"
                class="com.redhat.ceylon.eclipse.core.launch.RunAsJavaAction"
                enablesFor="1"
-               icon="icons/start_application.gif"
+               icon="icons/launch.png"
                id="runAsJava"
                menubarPath="additions"/>
           <visibility>
