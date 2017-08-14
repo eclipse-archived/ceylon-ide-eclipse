@@ -12,32 +12,32 @@ import org.osgi.framework.Bundle;
 
 public class CeylonTestImageRegistry {
 
-    public static final String ERROR_OVR = "error_ovr.gif";
-    public static final String FAILED_OVR = "failed_ovr.gif";
-    public static final String SUCCESS_OVR = "success_ovr.gif";
+    public static final String ERROR_OVR = "error_ovr.png";
+    public static final String FAILED_OVR = "failed_ovr.png";
+    public static final String SUCCESS_OVR = "success_ovr.png";
     
-    public static final String TEST = "test.gif";
-    public static final String TEST_ERROR = "test_error.gif";
-    public static final String TEST_FAILED = "test_failed.gif";
-    public static final String TEST_SKIPPED = "test_skipped.gif";
-    public static final String TEST_RUNNING = "test_running.gif";
-    public static final String TEST_SUCCESS = "test_success.gif";
+    public static final String TEST = "test.png";
+    public static final String TEST_ERROR = "testerr.png";
+    public static final String TEST_FAILED = "testfail.png";
+    public static final String TEST_SKIPPED = "testignored.png";
+    public static final String TEST_RUNNING = "testrun.png";
+    public static final String TEST_SUCCESS = "testok.png";
     
-    public static final String TESTS = "tests.gif";
-    public static final String TESTS_ERROR = "tests_error.gif";
-    public static final String TESTS_FAILED = "tests_failed.gif";
-    public static final String TESTS_SKIPPED = "tests_skipped.gif";
-    public static final String TESTS_RUNNING = "tests_running.gif";
-    public static final String TESTS_SUCCESS = "tests_success.gif";
-    public static final String TESTS_INTERRUPTED = "tests_interrupted.gif";
+    public static final String TESTS = "tsuite.png";
+    public static final String TESTS_ERROR = "tsuiteerror.png";
+    public static final String TESTS_FAILED = "testsuitefail.png";
+    public static final String TESTS_SKIPPED = "testsuiteignored.png";
+    public static final String TESTS_RUNNING = "tsuiterun.png";
+    public static final String TESTS_SUCCESS = "tsuiteok.png";
+    public static final String TESTS_INTERRUPTED = "testsuiteinterrupted.png";
     
-    public static final String STACK_TRACE = "stack_trace.gif";
-    public static final String STACK_TRACE_FILTER = "stack_trace_filter.gif";
+    public static final String STACK_TRACE = "stackframe.png";
+    public static final String STACK_TRACE_FILTER = "cfilter.png";
     public static final String STACK_TRACE_LINE = "stack_trace_line.gif";
     
-    public static final String SHOW_FAILURES = "show_failures.gif";
-    public static final String SHOW_NEXT = "show_next.gif";
-    public static final String SHOW_PREV = "show_prev.gif";
+    public static final String SHOW_FAILURES = "failures.png";
+    public static final String SHOW_NEXT = "show_next.png";
+    public static final String SHOW_PREV = "show_prev.png";
     
     public static final String STATE_FIXED = "state_fixed.gif";
     public static final String STATE_REGRESSED_ERROR = "state_regressed_error.gif";
@@ -47,14 +47,14 @@ public class CeylonTestImageRegistry {
     public static final String STATE_ADDED = "state_added.gif";
     public static final String STATE_REMOVED = "state_removed.gif";
     
-    public static final String RELAUNCH = "relaunch.gif";
-    public static final String RELAUNCH_FAILED = "relaunch_failed.gif";
-    public static final String STOP = "stop.gif";
-    public static final String SCROLL_LOCK = "scroll_lock.gif";
-    public static final String COLLAPSE_ALL = "collapse_all.gif";
-    public static final String EXPAND_ALL = "expand_all.gif";
-    public static final String COMPARE = "compare.gif";
-    public static final String HISTORY = "history.gif";
+    public static final String RELAUNCH = "relaunch.png";
+    public static final String RELAUNCH_FAILED = "relaunchfailed.png";
+    public static final String STOP = "stop.png";
+    public static final String SCROLL_LOCK = "lock.png";
+    public static final String COLLAPSE_ALL = "collapseall.png";
+    public static final String EXPAND_ALL = "expandall.png";
+    public static final String COMPARE = "compare.png";
+    public static final String HISTORY = "history_list.png";
     public static final String PIN = "pin.gif";
 
     private static final IPath ICONS_PATH = new Path("icons/");
