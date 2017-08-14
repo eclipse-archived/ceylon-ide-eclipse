@@ -25,11 +25,11 @@ public class CeylonTestImageRegistry {
     
     public static final String TESTS = "tsuite.png";
     public static final String TESTS_ERROR = "tsuiteerror.png";
-    public static final String TESTS_FAILED = "testsuitefail.png";
-    public static final String TESTS_SKIPPED = "testsuiteignored.png";
+    public static final String TESTS_FAILED = "tsuitefail.png";
+    public static final String TESTS_SKIPPED = "tsuiteignored.png";
     public static final String TESTS_RUNNING = "tsuiterun.png";
     public static final String TESTS_SUCCESS = "tsuiteok.png";
-    public static final String TESTS_INTERRUPTED = "testsuiteinterrupted.png";
+    public static final String TESTS_INTERRUPTED = "tsuiteinterrupted.png";
     
     public static final String STACK_TRACE = "stackframe.png";
     public static final String STACK_TRACE_FILTER = "cfilter.png";
