@@ -125,7 +125,8 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     private final static int ALIAS = 1 << 14;
     private final static int DEPRECATED = 1 << 15;
     private final static int NATIVE = 1 << 16;
-    final static int FOCUS = 1 << 17;
+    private final static int FOCUS = 1 << 17;
+    private final static int RUN = 1 << 18;
     
     static final DecorationDescriptor[] DECORATIONS = 
             new DecorationDescriptor[] {
@@ -134,6 +135,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         
         new DecorationDescriptor(REFINES, REFINES_IMAGE, BOTTOM_RIGHT),
         new DecorationDescriptor(IMPLEMENTS, IMPLEMENTS_IMAGE, BOTTOM_RIGHT),
+        new DecorationDescriptor(RUN, RUN_IMAGE, BOTTOM_RIGHT),
         
         new DecorationDescriptor(FORMAL, FORMAL_IMAGE, TOP_RIGHT),
         new DecorationDescriptor(DEFAULT, DEFAULT_IMAGE, TOP_RIGHT),
@@ -437,6 +439,14 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 return CEYLON_LOCAL_ATTRIBUTE;
             }
         }
+    }
+    
+    public static Image getImageForRunnableDeclaration(
+            Declaration element) {
+        String key = getImageKeyForDeclaration(element);
+        if (key==null) return null;
+        int attributes = getDecorationAttributes(element) | RUN;
+        return getDecoratedImage(key, attributes, false);
     }
     
     public static Image getImageForDeclaration(
@@ -1285,6 +1295,23 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 result |= getDecorationAttributes(
                         dec.getDeclarationModel());
             }
+            if (node instanceof Tree.AnyMethod) {
+                Tree.AnyMethod am =
+                        (Tree.AnyMethod) node;
+                if (!am.getParameterLists().isEmpty()) {
+                    result |= getRunAttribute(
+                            am.getDeclarationModel(), 
+                            am.getParameterLists()
+                                .get(0));
+                }
+            }
+            if (node instanceof Tree.ClassDefinition) {
+                Tree.ClassDefinition cd =
+                        (Tree.ClassDefinition) node;
+                result |= getRunAttribute(
+                        cd.getDeclarationModel(), 
+                        cd.getParameterList());
+            }
         }
         else if (node instanceof Tree.SpecifierStatement) {
             Tree.SpecifierStatement ss = 
@@ -1318,6 +1345,20 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             }
         }
         return result;
+    }
+    
+    private static int getRunAttribute(Declaration dec,
+            Tree.ParameterList parameterList) {
+        if (dec!=null 
+                && dec.isShared() 
+                && dec.isToplevel()
+                && parameterList.getParameters()
+                    .isEmpty()) {
+            return RUN;
+        }
+        else {
+            return 0;
+        }
     }
 
     private static int getDecorationAttributes(Declaration model) {

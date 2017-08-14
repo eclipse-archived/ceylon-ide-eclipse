@@ -310,6 +310,9 @@
       <type 
             markerSeverity="0"
             name="com.redhat.ceylon.eclipse.ui.todo"/>
+      <!--type 
+            markerSeverity="0"
+            name="com.redhat.ceylon.eclipse.ui.run"/-->
       <type
             markerSeverity="0"
             name="com.redhat.ceylon.eclipse.ui.declarationAnnotation"/>
@@ -354,7 +357,7 @@
             highlightPreferenceValue="false"
             verticalRulerPreferenceValue="true"
             overviewRulerPreferenceValue="true"/>
-            
+      
       <specification
             annotationType="com.redhat.ceylon.eclipse.ui.parseAnnotation.warning"
             label="Ceylon Compilation Warning"
@@ -382,7 +385,7 @@
             highlightPreferenceValue="false"
             verticalRulerPreferenceValue="true"
             overviewRulerPreferenceValue="true"/>
-            
+      
       <specification
             annotationType="com.redhat.ceylon.eclipse.ui.refinement"
             label="Ceylon Refinement Indicators"
@@ -405,7 +408,29 @@
             highlightPreferenceValue="false"
             verticalRulerPreferenceValue="true"
             overviewRulerPreferenceValue="false"/>
+      
+      <!--specification
+            annotationType="com.redhat.ceylon.eclipse.ui.run"
+            label="Ceylon Runnable Indicators"
+            icon="icons/run_exc.png"
+            presentationLayer="4"
+            contributesToHeader="true"
+            includeOnPreferencePage="true"
             
+            colorPreferenceKey="com.redhat.ceylon.eclipse.ui.run.color"
+            textPreferenceKey="com.redhat.ceylon.eclipse.ui.run.text"
+            textStylePreferenceKey="com.redhat.ceylon.eclipse.ui.run.textStyle"
+            highlightPreferenceKey="com.redhat.ceylon.eclipse.ui.run.highlight"
+            verticalRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.run.ruler"
+            overviewRulerPreferenceKey="com.redhat.ceylon.eclipse.ui.run.overview"
+
+            colorPreferenceValue="224,224,224"
+            textPreferenceValue="false"
+            textStylePreferenceValue="NONE"
+            highlightPreferenceValue="false"
+            verticalRulerPreferenceValue="true"
+            overviewRulerPreferenceValue="true"/--> <!-- was: 0,120,255 -->
+      
       <specification
             annotationType="com.redhat.ceylon.eclipse.ui.todo"
             label="Ceylon Tasks"
@@ -433,7 +458,7 @@
             highlightPreferenceValue="false"
             verticalRulerPreferenceValue="true"
             overviewRulerPreferenceValue="true"/> <!-- was: 0,120,255 -->
-            
+      
       <specification
             annotationType="com.redhat.ceylon.eclipse.ui.occurrenceAnnotation"
             label="Ceylon References"
@@ -465,7 +490,7 @@
             <!-- colorPreferenceValue="206,236,245"
                  colorPreferenceValue="224,240,224" 
                  colorPreferenceValue="224,224,240" -->
-            
+      
       <specification
             annotationType="com.redhat.ceylon.eclipse.ui.declarationAnnotation"
             label="Ceylon Declarations"
@@ -497,7 +522,7 @@
             <!-- colorPreferenceValue="206,236,245"
                  colorPreferenceValue="224,240,224" 
                  colorPreferenceValue="224,224,240" -->
-            
+      
       <specification
             annotationType="com.redhat.ceylon.eclipse.ui.assignmentAnnotation"
             label="Ceylon Assignments"

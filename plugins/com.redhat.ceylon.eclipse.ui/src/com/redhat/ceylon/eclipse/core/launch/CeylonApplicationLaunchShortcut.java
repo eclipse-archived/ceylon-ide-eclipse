@@ -3,14 +3,14 @@ package com.redhat.ceylon.eclipse.core.launch;
 import static com.redhat.ceylon.compiler.java.Util.declClassName;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForRunnableDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ID_CEYLON_APPLICATION;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,11 +60,6 @@ import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 
 import com.redhat.ceylon.compiler.typechecker.TypeChecker;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Function;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
@@ -74,6 +69,11 @@ import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.EditorUtil;
 import com.redhat.ceylon.eclipse.util.Nodes;
 import com.redhat.ceylon.ide.common.model.CeylonProject;
+import com.redhat.ceylon.model.typechecker.model.Class;
+import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.Function;
+import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
 
 public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
 
@@ -227,6 +227,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
     }
 
     private static final String SETTINGS_ID = CeylonPlugin.PLUGIN_ID + ".TOPLEVEL_DECLARATION_SELECTION_DIALOG";
+    
     public static Declaration chooseDeclaration(final List<Declaration> declarations) {
         FilteredItemsSelectionDialog sd = new FilteredItemsSelectionDialog(EditorUtil.getShell())
         {
@@ -345,13 +346,13 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
         @Override
         public Image getImage(Object element) {
             Declaration d = (Declaration) element;
-            return d==null ? null : getImageForDeclaration(d);
+            return getImageForRunnableDeclaration(d);
         }
         
         @Override
         public String getText(Object element) {
             Declaration d = (Declaration) element;
-            return d==null ? null : getLabelDescriptionFor(d);
+            return getLabelDescriptionFor(d);
         }
         
         @Override
@@ -515,7 +516,7 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
     protected ILaunchConfiguration chooseConfiguration(List<ILaunchConfiguration> configList) {
         IDebugModelPresentation labelProvider = 
                 DebugUITools.newDebugModelPresentation();
-        ElementListSelectionDialog dialog= 
+        ElementListSelectionDialog dialog = 
                 new ElementListSelectionDialog(EditorUtil.getShell(), labelProvider);
         dialog.setElements(configList.toArray());
         dialog.setTitle("Ceylon Launcher");  
@@ -568,7 +569,6 @@ public class CeylonApplicationLaunchShortcut implements ILaunchShortcut {
     }
 
     private String getJavaClassName(Declaration declaration) {
-        
         String name = declClassName(declaration.getQualifiedNameString());
         if(declaration instanceof Function)
             name += "_";

@@ -404,6 +404,10 @@ public class LaunchHelper {
                 return false;
             }
             @Override
+            protected boolean addRunDecorations() {
+                return true;
+            }
+            @Override
             protected IDialogSettings getDialogSettings() {
                 IDialogSettings settings = 
                         CeylonPlugin.getInstance().getDialogSettings();

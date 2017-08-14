@@ -7,6 +7,7 @@ import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getLinkedM
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.addPageEpilog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForRunnableDeclaration;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getModuleLabel;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_DIALOGS;
@@ -134,6 +135,10 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
 //    private ToggleMembersAction toggleMembersAction;
     
     protected String emptyDoc;
+    
+    protected boolean addRunDecorations() {
+        return false;
+    }
     
     @Override
     protected void applyFilter() {
@@ -631,7 +636,9 @@ public class OpenDeclarationDialog extends FilteredItemsSelectionDialog {
             Declaration dec = toDeclaration(element);
             if (dec!=null) {
                 try {
-                    return getImageForDeclaration(dec);
+                    return addRunDecorations() ?
+                            getImageForRunnableDeclaration(dec) :
+                            getImageForDeclaration(dec);
                 }
                 catch (Exception e) {
                     System.err.println(dec.getName());

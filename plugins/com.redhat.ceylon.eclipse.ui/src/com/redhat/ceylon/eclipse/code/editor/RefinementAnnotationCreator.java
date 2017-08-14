@@ -36,6 +36,9 @@ public class RefinementAnnotationCreator
     
     public static final String TODO_ANNOTATION_TYPE = 
             PLUGIN_ID + ".todo";
+//    public static final String RUN_ANNOTATION_TYPE = 
+//            PLUGIN_ID + ".run";
+
 
     private CeylonEditor editor;
     
@@ -79,8 +82,9 @@ public class RefinementAnnotationCreator
                         model.getAnnotationIterator(); 
                     iter.hasNext();) {
                 Annotation a = iter.next();
-                if (a instanceof RefinementAnnotation ||
-                        a.getType().equals(TODO_ANNOTATION_TYPE)) {
+                if (a instanceof RefinementAnnotation 
+//                        || a.getType().equals(RUN_ANNOTATION_TYPE)
+                        || a.getType().equals(TODO_ANNOTATION_TYPE)) {
                     model.removeAnnotation(a);
                 }
             }
@@ -89,33 +93,39 @@ public class RefinementAnnotationCreator
                 @Override
                 public void visit(Tree.Declaration that) {
                     super.visit(that);
-                    Declaration dec = 
-                            that.getDeclarationModel();
-                    if (dec!=null) {
-                        if (dec.isActual()) {
-                            addRefinementAnnotation(
-                                    model, that, 
-                                    that.getIdentifier(), 
-                                    dec);
-                        }
-                    }
+                    addRefinementAnnotation(
+                            model, that, 
+                            that.getIdentifier(), 
+                            that.getDeclarationModel());
                 }
                 @Override
                 public void visit(Tree.SpecifierStatement that) {
                     super.visit(that);
                     if (that.getRefinement()) {
-                        Declaration dec = 
-                                that.getDeclaration();
-                        if (dec!=null) {
-                            if (dec.isActual()) {
-                                addRefinementAnnotation(
-                                        model, that, 
-                                        that.getBaseMemberExpression(), 
-                                        dec);
-                            }
-                        }
+                        addRefinementAnnotation(
+                                model, that, 
+                                that.getBaseMemberExpression(), 
+                                that.getDeclaration());
                     }
                 }
+                //Disable until we have a good icon
+                /*@Override
+                public void visit(Tree.AnyMethod that) {
+                    super.visit(that);
+                    if (!that.getParameterLists().isEmpty()) {
+                        addRunAnnotation(model, that, 
+                                that.getDeclarationModel(), 
+                                that.getParameterLists()
+                                    .get(0));
+                    }
+                }
+                @Override
+                public void visit(Tree.ClassDefinition that) {
+                    super.visit(that);
+                    addRunAnnotation(model, that, 
+                            that.getDeclarationModel(), 
+                            that.getParameterList());
+                }*/
             }.visit(rootNode);
             
             for (CommonToken token : tokens) {
@@ -128,31 +138,53 @@ public class RefinementAnnotationCreator
         }
     }
     
-    private void addRefinementAnnotation(
-            IAnnotationModel model, 
-            Tree.StatementOrArgument that, 
-            Node node, Declaration dec) {
-        Declaration refined = 
-                types_.get_()
-                    .getRefinedDeclaration(dec);
-        if (refined!=null) {
-            Declaration container = 
-                    (Declaration) 
-                        refined.getContainer();
-            Unit unit = that.getUnit();
-            String description = 
-                    "refines " + 
-                    container.getName(unit) + 
-                    "." + refined.getName(unit);
-            int line = node.getToken().getLine();
-            RefinementAnnotation ra = 
-                    new RefinementAnnotation(description,  
-                            refined, line);
+    //Disable until we have a good icon
+    /*private void addRunAnnotation(IAnnotationModel model, 
+            Tree.Declaration that, Declaration dec,
+            Tree.ParameterList parameterList) {
+        if (dec!=null 
+                && dec.isShared() 
+                && dec.isToplevel()
+                && parameterList.getParameters()
+                    .isEmpty()) {
+            Annotation ra = 
+                    new Annotation(RUN_ANNOTATION_TYPE, 
+                            false, "Runnable function");
             Node identifyingNode = getIdentifyingNode(that);
             model.addAnnotation(ra, 
                     new Position(
                             identifyingNode.getStartIndex(), 
                             identifyingNode.getDistance()));
+        }
+    }*/
+    
+    private void addRefinementAnnotation(
+            IAnnotationModel model, 
+            Tree.StatementOrArgument that, 
+            Node node, Declaration dec) {
+        if (dec!=null && dec.isActual()) {
+            Declaration refined = 
+                    types_.get_()
+                        .getRefinedDeclaration(dec);
+            if (refined!=null) {
+                Declaration container = 
+                        (Declaration) 
+                            refined.getContainer();
+                Unit unit = that.getUnit();
+                String description = 
+                        "refines " + 
+                        container.getName(unit) + 
+                        "." + refined.getName(unit);
+                int line = node.getToken().getLine();
+                RefinementAnnotation ra = 
+                        new RefinementAnnotation(description,  
+                                refined, line);
+                Node identifyingNode = getIdentifyingNode(that);
+                model.addAnnotation(ra, 
+                        new Position(
+                                identifyingNode.getStartIndex(), 
+                                identifyingNode.getDistance()));
+            }
         }
     }
     

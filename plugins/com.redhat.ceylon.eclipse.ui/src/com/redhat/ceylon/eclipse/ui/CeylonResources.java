@@ -206,5 +206,6 @@ public interface CeylonResources {
     public static final String ALIAS_IMAGE = "linked_co.gif";
     public static final String DEPRECATED_IMAGE = "deprecated.png";
     public static final String FOCUS_IMAGE = "focus_ovr.png";
+    public static final String RUN_IMAGE = "run_co.png";
 
 }

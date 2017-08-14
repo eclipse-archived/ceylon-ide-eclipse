@@ -621,6 +621,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(ALIAS_IMAGE, image(ALIAS_IMAGE));
         reg.put(DEPRECATED_IMAGE, image(DEPRECATED_IMAGE));
         reg.put(FOCUS_IMAGE, image(FOCUS_IMAGE));
+        reg.put(RUN_IMAGE, image(RUN_IMAGE));
         
         reg.put(PROJECT_MODE, image("prj_mode.png"));
         reg.put(PACKAGE_MODE, image("package_mode.png"));
