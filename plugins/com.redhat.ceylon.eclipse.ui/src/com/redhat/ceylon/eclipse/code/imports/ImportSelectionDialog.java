@@ -162,13 +162,13 @@ class LabelProvider extends StyledCellLabelProvider
     @Override
     public Image getImage(Object element) {
         Declaration d = (Declaration) element;
-        return d==null ? null : getImageForDeclaration(d);
+        return getImageForDeclaration(d);
     }
 
     @Override
     public String getText(Object element) {
         Declaration d = (Declaration) element;
-        return d==null ? null : getLabelDescriptionFor(d);
+        return getLabelDescriptionFor(d);
     }
 
     @Override
