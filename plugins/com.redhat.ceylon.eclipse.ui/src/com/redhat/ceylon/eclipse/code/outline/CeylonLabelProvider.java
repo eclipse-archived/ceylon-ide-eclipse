@@ -105,9 +105,6 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     private Set<ILabelProviderListener> fListeners = 
             new HashSet<ILabelProviderListener>();
     
-//    public static final Point BIG_SIZE = new Point(22,16);
-//    public static final Point SMALL_SIZE = new Point(16,16);
-    
     private final boolean smallSize;
 
     public final static int WARNING = 1 << 2;
@@ -1352,6 +1349,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         if (dec!=null 
                 && dec.isShared() 
                 && dec.isToplevel()
+                && parameterList!=null //TODO: not quite right, what about default constructors?
                 && parameterList.getParameters()
                     .isEmpty()) {
             return RUN;
@@ -1398,9 +1396,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                     ((Class) model).isFinal()) {
                 result |= FINAL;
             }
-    //        if (model instanceof Class && ((Class) model).isFinal()) {
-            //            result |= FINAL;
-            //        }
+
             if (model instanceof TypeDeclaration) {
                 TypeDeclaration td = 
                         (TypeDeclaration) model;

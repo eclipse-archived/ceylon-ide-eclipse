@@ -145,6 +145,7 @@ public class RefinementAnnotationCreator
         if (dec!=null 
                 && dec.isShared() 
                 && dec.isToplevel()
+                && parameterList!=null //TODO: not quite right, what about default constructors?
                 && parameterList.getParameters()
                     .isEmpty()) {
             Annotation ra = 
