@@ -119,7 +119,7 @@ public class DecoratedImageDescriptor extends CompositeImageDescriptor {
         int width = imageData.width;
         int height = imageData.height;
         if (!fSmallSize) {
-            width = width * 22 / 16;
+            width = width * 24 / 16;
         }
         return new Point(width, height);
     }
