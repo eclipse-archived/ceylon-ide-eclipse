@@ -154,24 +154,19 @@ public class CeylonTopLevelSelectionDialog extends FilteredItemsSelectionDialog 
         @Override
         public Image getImage(Object element) {
             Declaration d = (Declaration) element;
-            return d==null ? null : getImageForDeclaration(d);
+            return getImageForDeclaration(d);
         }
         
         @Override
         public String getText(Object element) {
             Declaration d = (Declaration) element;
-            return d==null ? null : getLabelDescriptionFor(d);
+            return getLabelDescriptionFor(d);
         }
         
         @Override
         public StyledString getStyledText(Object element) {
-            if (element==null) {
-                return new StyledString();
-            }
-            else {
-                Declaration d = (Declaration) element;
-                return getStyledDescriptionFor(d);
-            }
+            Declaration d = (Declaration) element;
+            return getStyledDescriptionFor(d);
         }
         
         @Override

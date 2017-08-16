@@ -378,63 +378,28 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
                 hasAnnotation(n.getAnnotationList(), 
                         "shared", n.getUnit());
         if (n instanceof Tree.AnyClass) {
-            if (shared) {
-                return CEYLON_CLASS;
-            }
-            else {
-                return CEYLON_LOCAL_CLASS;
-            }
+            return shared ? CEYLON_CLASS : CEYLON_LOCAL_CLASS;
         }
         else if (n instanceof Tree.AnyInterface) {
-            if (shared) {
-                return CEYLON_INTERFACE;
-            }
-            else { 
-                return CEYLON_LOCAL_INTERFACE;
-            }
+            return shared ? CEYLON_INTERFACE : CEYLON_LOCAL_INTERFACE;
         }
         else if (n instanceof Tree.Constructor) {
-            if (shared) {
-                return CEYLON_CONSTRUCTOR;
-            }
-            else {
-                return CEYLON_CONSTRUCTOR; //TODO!!
-            }
+            return shared ? CEYLON_CONSTRUCTOR : CEYLON_CONSTRUCTOR; //TODO!
         }
         else if (n instanceof Tree.Enumerated) {
-            if (shared) {
-                return CEYLON_CONSTRUCTOR;
-            }
-            else {
-                return CEYLON_CONSTRUCTOR; //TODO!!
-            }
+            return shared ? CEYLON_CONSTRUCTOR : CEYLON_CONSTRUCTOR;
         }
         else if (n instanceof Tree.AnyMethod) {
-            if (shared) {
-                return CEYLON_METHOD;
-            }
-            else {
-                return CEYLON_LOCAL_METHOD;
-            }
+            return shared ? CEYLON_METHOD : CEYLON_LOCAL_METHOD;
         }
         else if (n instanceof Tree.TypeAliasDeclaration) {
             return CEYLON_ALIAS;
         }
         else if (n instanceof Tree.ObjectDefinition) {
-            if (shared) {
-                return CEYLON_OBJECT;
-            }
-            else {
-                return CEYLON_LOCAL_OBJECT;
-            }
+            return shared ? CEYLON_OBJECT : CEYLON_LOCAL_OBJECT;
         }
         else {
-            if (shared) {
-                return CEYLON_ATTRIBUTE;
-            }
-            else {
-                return CEYLON_LOCAL_ATTRIBUTE;
-            }
+            return shared ? CEYLON_ATTRIBUTE : CEYLON_LOCAL_ATTRIBUTE;
         }
     }
     
@@ -471,35 +436,15 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         boolean shared = d.isShared();
         if (d instanceof Class) {
             if (d.isAnonymous()) {
-                if (shared) {
-                    return CEYLON_OBJECT;
-                }
-                else {
-                    return CEYLON_LOCAL_OBJECT;
-                }
+                return shared ? CEYLON_OBJECT : CEYLON_LOCAL_OBJECT;
             }
-            if (shared) {
-                return CEYLON_CLASS;
-            }
-            else {
-                return CEYLON_LOCAL_CLASS;
-            }
+            return shared ? CEYLON_CLASS : CEYLON_LOCAL_CLASS;
         }
         else if (d instanceof Interface) {
-            if (shared) {
-                return CEYLON_INTERFACE;
-            }
-            else { 
-                return CEYLON_LOCAL_INTERFACE;
-            }
+            return shared ? CEYLON_INTERFACE : CEYLON_LOCAL_INTERFACE;
         }
         if (isConstructor(d)) {
-            if (shared) {
-                return CEYLON_CONSTRUCTOR;
-            }
-            else {
-                return CEYLON_CONSTRUCTOR; //TODO!
-            }
+            return shared ? CEYLON_CONSTRUCTOR : CEYLON_CONSTRUCTOR;
         }
         else if (d instanceof TypeParameter) {
             return CEYLON_TYPE_PARAMETER;
@@ -532,20 +477,10 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
             if (d instanceof Value) {
                 Value value = (Value) d;
                 if (ModelUtil.isObject(value)) {
-                    if (shared) {
-                        return CEYLON_OBJECT;
-                    }
-                    else {
-                        return CEYLON_LOCAL_OBJECT;
-                    }
+                    return shared ? CEYLON_OBJECT : CEYLON_LOCAL_OBJECT;
                 }
             }
-            if (shared) {
-                return CEYLON_ATTRIBUTE;
-            }
-            else {
-                return CEYLON_LOCAL_ATTRIBUTE;
-            }
+            return shared ? CEYLON_ATTRIBUTE : CEYLON_LOCAL_ATTRIBUTE;
         }
     }
     
