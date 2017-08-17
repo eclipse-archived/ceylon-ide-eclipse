@@ -563,8 +563,8 @@ public abstract class TreeViewPopup extends PopupDialog
     }
     
     public boolean hasContents() {
-        return treeViewer != null && 
-                treeViewer.getInput() != null;
+        return treeViewer != null 
+    		&& treeViewer.getInput() != null;
     }
     
     public void setSizeConstraints(int maxWidth, int maxHeight) {
