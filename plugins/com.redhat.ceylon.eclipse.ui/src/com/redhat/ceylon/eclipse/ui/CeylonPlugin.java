@@ -599,7 +599,6 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         
         reg.put(TERMINATE_STATEMENT, image("correction_cast.gif"));
         reg.put(FORMAT_BLOCK, image("format_block.gif"));
-        reg.put(REMOVE_COMMENT, image("remove_comment_edit.gif"));
         reg.put(ADD_COMMENT, image("comment_edit.png"));
         reg.put(TOGGLE_COMMENT, image("url.gif"));
         reg.put(CORRECT_INDENT, image("correctindent.gif"));
@@ -608,7 +607,6 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(PREV_ANN, image("prev_nav.png"));
         reg.put(SORT_ALPHA, image("alphab_sort_co.png"));
         
-//        reg.put(CEYLON_SEARCH, image("problem_category.gif"));
         reg.put(CEYLON_SEARCH, image("reltopics_co.gif"));
         
         reg.put(HISTORY, image("history_list.png"));
