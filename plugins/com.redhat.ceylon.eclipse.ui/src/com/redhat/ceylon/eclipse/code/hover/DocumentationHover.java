@@ -21,7 +21,6 @@ import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLConte
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.insertPageProlog;
 import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.toHex;
 import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.appendNativeBackends;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ALTERNATE_ICONS;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getModelLoader;
 import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getTypeCheckers;
 import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.getFrame;
@@ -35,10 +34,10 @@ import static com.redhat.ceylon.eclipse.util.Highlights.CHARS;
 import static com.redhat.ceylon.eclipse.util.Highlights.NUMBERS;
 import static com.redhat.ceylon.eclipse.util.Highlights.STRINGS;
 import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
+import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
 import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
-import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
 import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isResolvable;
 import static java.lang.Character.codePointCount;
 import static java.lang.Double.parseDouble;
@@ -91,7 +90,6 @@ import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.code.html.HTML;
 import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
 import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
 import com.redhat.ceylon.ide.common.model.CeylonUnit;
@@ -759,34 +757,6 @@ public class DocumentationHover extends SourceInfoHover {
         }
         else if (obj instanceof Declaration) {
             Declaration dec = (Declaration) obj;
-            if (CeylonPlugin.getPreferences().getBoolean(ALTERNATE_ICONS)) {
-                if (dec instanceof Class) {
-                    if (dec.isAnonymous()) {
-                        return "anonymousClass.png";
-                    }
-                    return "class.png";
-                }
-                else if (dec instanceof Interface) {
-                    return "interface.png"; 
-                }
-                else if (dec instanceof Constructor) {
-                    return "classInitializer.png";
-                }
-                else if (dec.isParameter()) {
-                    return "parameter.png";
-                }
-                else if (dec instanceof Value) {
-                    return "field.png";
-                }
-                else if (dec instanceof Function) {
-                    return dec.isShared() ?
-                            "method.png" :
-                            "function.png";
-                }
-                else if (dec instanceof TypeParameter) {
-                    return "variable.png";
-                }
-            }
             if (dec instanceof Class) {
                 String icon = dec.isShared() ? 
                         "class_obj.png" : 

@@ -1,6 +1,5 @@
 package com.redhat.ceylon.eclipse.ui;
 
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ALTERNATE_ICONS;
 import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.platformJ2C;
@@ -187,20 +186,6 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
                     PLUGIN_ID + ".xmlCatalogContribution", 
                     null, key);
         
-        /*iconChangeListener = 
-        new IPropertyChangeListener() {
-		    @Override
-		    public void propertyChange(PropertyChangeEvent event) {
-		        if (event.getProperty()
-		                .equals(ALTERNATE_ICONS)) {
-		            initializeImageRegistry(getImageRegistry());
-		        }
-		    }
-		};
-		getPreferences()
-		        .addPropertyChangeListener(iconChangeListener);*/
-		
-        
         final IWorkspace workspace = getWorkspace();
         final IWorkspaceRoot root = workspace.getRoot();
         
@@ -250,8 +235,6 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         CeylonDebugElementAdapterFactory.restoreJDTDebugElementAdapters();
         CeylonDebugOptionsManager.getDefault().shutdown();
         FileUtil.deleteQuietly(getJavaSourceArchiveCacheDirectory());
-        /*getPreferences()
-            .removePropertyChangeListener(iconChangeListener);*/
         com.redhat.ceylon.eclipse.code.complete.shutdownCompletionExecutors_.shutdownCompletionExecutors();
         
     }
@@ -493,40 +476,22 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     
     @Override
     protected void initializeImageRegistry(ImageRegistry reg) {
-        
-        if (CeylonPlugin.getPreferences().getBoolean(ALTERNATE_ICONS)) {
-            reg.put(CEYLON_OBJECT, image("anonymousClass.png"));
-            reg.put(CEYLON_LOCAL_OBJECT, image("anonymousClass.png"));
-            reg.put(CEYLON_CONSTRUCTOR, image("classInitializer.png"));
-            reg.put(CEYLON_CLASS, image("class.png"));
-            reg.put(CEYLON_INTERFACE, image("interface.png"));
-            reg.put(CEYLON_LOCAL_CLASS, image("class.png"));
-            reg.put(CEYLON_LOCAL_INTERFACE, image("interface.png"));
-            reg.put(CEYLON_METHOD, image("method.png"));
-            reg.put(CEYLON_LOCAL_METHOD, image("function.png"));
-            reg.put(CEYLON_PARAMETER_METHOD, image("methpro_obj.png"));
-            reg.put(CEYLON_ATTRIBUTE, image("field.png"));
-            reg.put(CEYLON_LOCAL_ATTRIBUTE, image("field.png"));
-            reg.put(CEYLON_PARAMETER, image("parameter.png"));
-            reg.put(CEYLON_TYPE_PARAMETER, image("variable.png"));
-        }
-        else {
-          reg.put(CEYLON_OBJECT, image("field_public_obj.png"));
-          reg.put(CEYLON_LOCAL_OBJECT, image("field_private_obj.png"));
-          reg.put(CEYLON_CONSTRUCTOR, image("new_obj.png"));
-          reg.put(CEYLON_CLASS, image("class_obj.png"));
-          reg.put(CEYLON_INTERFACE, image("int_obj.png"));
-          reg.put(CEYLON_LOCAL_CLASS, image("innerclass_private_obj.png"));
-          reg.put(CEYLON_LOCAL_INTERFACE, image("innerinterface_private_obj.png"));
-          reg.put(CEYLON_METHOD, image("methpub_obj.png"));
-          reg.put(CEYLON_PARAMETER_METHOD, image("methpro_obj.png"));
-          reg.put(CEYLON_LOCAL_METHOD, image("methpri_obj.png"));
-          reg.put(CEYLON_ATTRIBUTE, image("field_public_obj.png"));
-          reg.put(CEYLON_LOCAL_ATTRIBUTE, image("field_private_obj.png"));
-          reg.put(CEYLON_PARAMETER, image("field_protected_obj.png"));
-          reg.put(CEYLON_TYPE_PARAMETER, image("typevariable_obj.png"));
-        }
-        
+
+    	reg.put(CEYLON_OBJECT, image("field_public_obj.png"));
+    	reg.put(CEYLON_LOCAL_OBJECT, image("field_private_obj.png"));
+    	reg.put(CEYLON_CONSTRUCTOR, image("new_obj.png"));
+    	reg.put(CEYLON_CLASS, image("class_obj.png"));
+    	reg.put(CEYLON_INTERFACE, image("int_obj.png"));
+    	reg.put(CEYLON_LOCAL_CLASS, image("innerclass_private_obj.png"));
+    	reg.put(CEYLON_LOCAL_INTERFACE, image("innerinterface_private_obj.png"));
+    	reg.put(CEYLON_METHOD, image("methpub_obj.png"));
+    	reg.put(CEYLON_PARAMETER_METHOD, image("methpro_obj.png"));
+    	reg.put(CEYLON_LOCAL_METHOD, image("methpri_obj.png"));
+    	reg.put(CEYLON_ATTRIBUTE, image("field_public_obj.png"));
+    	reg.put(CEYLON_LOCAL_ATTRIBUTE, image("field_private_obj.png"));
+    	reg.put(CEYLON_PARAMETER, image("field_protected_obj.png"));
+    	reg.put(CEYLON_TYPE_PARAMETER, image("typevariable_obj.png"));
+
         reg.put(CEYLON_ALIAS, image("types.png"));
         reg.put(JAVA_FILE, image("jcu_obj.png"));
         reg.put(JAVA_CLASS_FILE, image("jclassf_obj.png"));
@@ -594,7 +559,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         reg.put(HIDE_PRIVATE, image("hideprivate.gif"));
         reg.put(EXPAND_ALL, image("expandall.png"));
         reg.put(PAGING, image("paging.gif"));
-        reg.put(SHOW_DOC, image("show_doc.gif"));
+        reg.put(SHOW_DOC, image("overview.png"));
         reg.put(SHOW_MEMBERS, image("members.gif"));
         reg.put(REPOSITORIES, image("repositories.png"));
         reg.put(RUNTIME_OBJ, image("repo.png"));
@@ -667,7 +632,6 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     IResourceChangeListener projectOpenCloseListener = 
             new ProjectChangeListener();
     private File javaSourceArchiveCacheDirectory;
-//    private IPropertyChangeListener iconChangeListener;
     
     public BundleContext getBundleContext() {
         return this.bundleContext;

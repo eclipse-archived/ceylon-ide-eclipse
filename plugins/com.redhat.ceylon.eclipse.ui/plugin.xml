@@ -3295,7 +3295,7 @@
       <view
             category="com.redhat.ceylon.eclipse.ui.views"
             class="com.redhat.ceylon.eclipse.code.hover.DocumentationView"
-            icon="icons/show_doc.gif"
+            icon="icons/overview.png"
             id="com.redhat.ceylon.eclipse.ui.view.DocumentationView"
             name="Ceylon Documentation"/>
       <view

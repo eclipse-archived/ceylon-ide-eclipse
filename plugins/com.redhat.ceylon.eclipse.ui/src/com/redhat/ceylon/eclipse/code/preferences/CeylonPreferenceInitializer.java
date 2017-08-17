@@ -66,7 +66,6 @@ public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
     public static final String RETURN_TYPES_IN_DIALOGS = "typesInDialogs";
     public static final String FULL_LOC_SEARCH_RESULTS = "fullLocationInSearchResults";
     public static final String MATCH_HIGHLIGHTING = "matchHighlighting";
-    public static final String ALTERNATE_ICONS = "alternativeIcons";
 
     public CeylonPreferenceInitializer() {}
 
