@@ -2186,12 +2186,6 @@ public class DocumentationHover extends SourceInfoHover {
             if (aa!=null) {
                 String text = aa.getStringLiteral().getText();
                 documentation.append(markdown(text, linkScope, unit));
-//                HTML.addImageAndLabel(documentation, null, 
-//                        HTML.fileUrl("toc_obj.gif").toExternalForm(), 
-//                        16, 16,
-//                        markdown(aa.getStringLiteral().getText(), 
-//                                linkScope, annotationList.getUnit()), 
-//                        20, 0);
             }
             for (Tree.Annotation annotation: 
                     annotationList.getAnnotations()) {
