@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Fragment
 Bundle-SymbolicName: com.redhat.ceylon.eclipse.ui.jdt.debug.fragment
-Bundle-Version: 1.3.3.qualifier
+Bundle-Version: 1.3.4.qualifier
 Bundle-Vendor: REDHAT
 Fragment-Host: org.eclipse.jdt.debug
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7

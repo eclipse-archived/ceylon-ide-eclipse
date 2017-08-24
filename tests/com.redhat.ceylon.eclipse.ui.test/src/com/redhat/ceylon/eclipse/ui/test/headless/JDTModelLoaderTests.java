@@ -34,7 +34,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.redhat.ceylon.compiler.java.codegen.Decl;
 import com.redhat.ceylon.compiler.java.test.model.ModelLoaderTests;
 import com.redhat.ceylon.compiler.java.test.model.RunnableTest;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
@@ -44,6 +43,7 @@ import com.redhat.ceylon.eclipse.ui.test.Utils;
 import com.redhat.ceylon.eclipse.ui.test.Utils.CeylonBuildSummary;
 import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
+import com.redhat.ceylon.model.typechecker.model.ModelUtil;
 import com.redhat.ceylon.model.typechecker.model.Module;
 import com.redhat.ceylon.model.typechecker.model.Value;
 
@@ -142,7 +142,7 @@ public class JDTModelLoaderTests extends ModelLoaderTests {
         
         for(Entry<String, Declaration> entry : decls.entrySet()){
             String quotedQualifiedName = entry.getKey().substring(1);
-            Module module = Decl.getModuleContainer(entry.getValue().getContainer());
+            Module module = ModelUtil.getModuleContainer(entry.getValue().getContainer());
             Declaration modelDeclaration = modelLoader.getDeclaration(module, quotedQualifiedName, 
                     entry.getValue() instanceof Value ? DeclarationType.VALUE : DeclarationType.TYPE);
             Assert.assertNotNull(modelDeclaration);
