@@ -39,5 +39,5 @@ public interface ICeylonLaunchConfigurationConstants extends
      * 
      * It cannot be part of a normal runnable identifier
      */
-    public static final String DEFAULT_RUN_MARKER = " - default";
+    public static final String DEFAULT_RUN_MARKER = " (default)";
 }
