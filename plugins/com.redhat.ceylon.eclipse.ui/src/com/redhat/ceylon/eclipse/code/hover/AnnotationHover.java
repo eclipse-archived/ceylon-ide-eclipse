@@ -116,7 +116,6 @@ public class AnnotationHover
         return null;
     }
     
-    @SuppressWarnings("unchecked")
     @Override
     public Object getHoverInfo2(ITextViewer textViewer, 
             IRegion hoverRegion) {

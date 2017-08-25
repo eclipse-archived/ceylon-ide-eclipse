@@ -159,7 +159,8 @@ public class BrowserInformationControl extends AbstractInformationControl
      * The listeners to be notified when the input changed.
      * @since 3.4
      */
-    private ListenerList/*<IInputChangedListener>*/fInputChangeListeners= new ListenerList(ListenerList.IDENTITY);
+    private ListenerList<IInputChangedListener> fInputChangeListeners= 
+            new ListenerList<IInputChangedListener>(ListenerList.IDENTITY);
 
     /**
      * The symbolic name of the font used for size computations, or <code>null</code> to use dialog font.
@@ -429,7 +430,6 @@ public class BrowserInformationControl extends AbstractInformationControl
 
         fTextLayout.setText(text);
         fTextLayout.setWidth(sizeConstraints==null ? SWT.DEFAULT : sizeConstraints.x-trim.width);
-        @SuppressWarnings("unchecked")
         Iterator<StyleRange> iter = presentation.getAllStyleRangeIterator();
         while (iter.hasNext()) {
             StyleRange sr = iter.next();

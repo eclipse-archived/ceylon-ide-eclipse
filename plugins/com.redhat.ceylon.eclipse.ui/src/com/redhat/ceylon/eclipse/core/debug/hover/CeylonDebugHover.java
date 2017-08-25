@@ -644,7 +644,7 @@ public class CeylonDebugHover extends SourceInfoHover {
         String jdiTypeQualifiedName = jdiType.getName();
         switch (jdiTypeQualifiedName) {
         case "java.lang.String":
-            if ("ceylon.language::String".equals(modelProducedType.asQualifiedString())) {
+            if (modelProducedType.isString()) {
                 primaryJdiObject = createCeylonObject(debugTarget, "ceylon.language.String", "(Ljava/lang/String;)V", primaryJdiValue);
             }
             break;

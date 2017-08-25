@@ -1,17 +1,12 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameterContextInfo;
-import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getParameters;
 import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getDocumentationFor;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
-import org.eclipse.swt.graphics.Image;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
@@ -19,18 +14,14 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
 import com.redhat.ceylon.model.typechecker.model.Declaration;
 import com.redhat.ceylon.model.typechecker.model.Functional;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
 import com.redhat.ceylon.model.typechecker.model.ParameterList;
 import com.redhat.ceylon.model.typechecker.model.Reference;
 import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypedReference;
 import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.Value;
 
 public class InvocationCompletionProposal extends CompletionProposal {
     
-    private static final List<Type> NO_TYPES = Collections.<Type>emptyList();
+//    private static final List<Type> NO_TYPES = Collections.<Type>emptyList();
 
 //    @Deprecated
 //    static void addProgramElementReferenceProposal(
@@ -313,16 +304,16 @@ public class InvocationCompletionProposal extends CompletionProposal {
 //        }
 //    }
 
-    private static String prefixWithoutTypeArgs(
-            String prefix, String typeArgs) {
-        if (typeArgs==null) {
-            return prefix;
-        }
-        else {
-            return prefix.substring(0, 
-                    prefix.length()-typeArgs.length());
-        }
-    }
+//    private static String prefixWithoutTypeArgs(
+//            String prefix, String typeArgs) {
+//        if (typeArgs==null) {
+//            return prefix;
+//        }
+//        else {
+//            return prefix.substring(0, 
+//                    prefix.length()-typeArgs.length());
+//        }
+//    }
     
 //    @Deprecated
 //    final class NestedCompletionProposal

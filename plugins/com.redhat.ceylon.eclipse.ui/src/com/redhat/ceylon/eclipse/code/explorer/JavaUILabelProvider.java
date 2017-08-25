@@ -36,7 +36,8 @@ import org.eclipse.jdt.ui.JavaElementLabels;
 
 public class JavaUILabelProvider implements ILabelProvider, IColorProvider, IStyledLabelProvider {
 
-    protected ListenerList fListeners = new ListenerList();
+    protected ListenerList<ILabelProviderListener> fListeners = 
+            new ListenerList<ILabelProviderListener>();
 
     protected JavaElementImageProvider fImageLabelProvider;
     protected StorageLabelProvider fStorageLabelProvider;
@@ -273,9 +274,7 @@ public class JavaUILabelProvider implements ILabelProvider, IColorProvider, ISty
      * @see ILabelProviderListener#labelProviderChanged
      */
     protected void fireLabelProviderChanged(final LabelProviderChangedEvent event) {
-        Object[] listeners = fListeners.getListeners();
-        for (int i = 0; i < listeners.length; ++i) {
-            final ILabelProviderListener l = (ILabelProviderListener) listeners[i];
+        for (final ILabelProviderListener l: fListeners) {
             SafeRunner.run(new SafeRunnable() {
                 public void run() {
                     l.labelProviderChanged(event);

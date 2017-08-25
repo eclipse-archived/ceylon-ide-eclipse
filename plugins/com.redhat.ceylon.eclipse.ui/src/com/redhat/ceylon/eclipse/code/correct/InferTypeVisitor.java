@@ -494,7 +494,7 @@ class InferTypeVisitor extends Visitor {
                 Type st = 
                         lhs.getTypeModel().getSupertype(sd);
                 Type at = 
-                        st.getTypeArguments().get(0);
+                        st.getTypeArgumentList().get(0);
                 result.intersect(at);
             }
         }

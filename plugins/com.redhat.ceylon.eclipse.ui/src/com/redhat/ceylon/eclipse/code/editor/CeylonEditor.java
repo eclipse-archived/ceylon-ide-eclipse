@@ -283,6 +283,7 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
         return new CeylonSourceViewerConfiguration(this);
     }
     
+    @Override
     public Object getAdapter(
             @SuppressWarnings("rawtypes") Class required) {
         if (IContentOutlinePage.class.equals(required)) {
@@ -330,6 +331,7 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
         menu.remove(ITextEditorActionConstants.UNDO);
     }
     
+    @Override
     protected void createActions() {
         super.createActions();
 
@@ -1543,7 +1545,6 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
                 (MarkerAnnotationPreferences) 
                     getAdapter(MarkerAnnotationPreferences.class);
         if (markerAnnotationPreferences != null) {
-            @SuppressWarnings("unchecked")
             List<AnnotationPreference> annPrefs = 
                     markerAnnotationPreferences.getAnnotationPreferences();
             for (Iterator<AnnotationPreference> e 

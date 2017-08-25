@@ -32,14 +32,14 @@ import org.eclipse.jdt.ui.actions.SelectionDispatchAction;
  */
 public class SimpleSelectionProvider implements ISelectionProvider {
 
-    private final ListenerList fSelectionChangedListeners;
+    private final ListenerList<ISelectionChangedListener> fSelectionChangedListeners;
     private ISelection fSelection;
 
     /**
      * Create a new SimpleSelectionProvider
      */
     public SimpleSelectionProvider() {
-        fSelectionChangedListeners= new ListenerList();
+        fSelectionChangedListeners= new ListenerList<ISelectionChangedListener>();
     }
 
     @Override
@@ -51,9 +51,8 @@ public class SimpleSelectionProvider implements ISelectionProvider {
     public void setSelection(ISelection selection) {
         fSelection= selection;
 
-        Object[] listeners= fSelectionChangedListeners.getListeners();
-        for (int i= 0; i < listeners.length; i++) {
-            ((ISelectionChangedListener) listeners[i]).selectionChanged(new SelectionChangedEvent(this, selection));
+        for (ISelectionChangedListener l: fSelectionChangedListeners) {
+            l.selectionChanged(new SelectionChangedEvent(this, selection));
         }
     }
 

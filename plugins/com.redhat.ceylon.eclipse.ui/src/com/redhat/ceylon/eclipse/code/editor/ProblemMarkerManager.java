@@ -30,10 +30,10 @@ import org.eclipse.swt.widgets.Display;
 public class ProblemMarkerManager implements IResourceChangeListener, 
         IAnnotationModelListener, IAnnotationModelListenerExtension {
     
-    private ListenerList fListeners;
+    private ListenerList<IProblemChangedListener> fListeners;
 
     public ProblemMarkerManager() {
-        fListeners= new ListenerList();
+        fListeners= new ListenerList<IProblemChangedListener>();
     }
 
     /**
@@ -139,9 +139,7 @@ public class ProblemMarkerManager implements IResourceChangeListener,
         if (display!=null && !display.isDisposed()) {
             display.asyncExec(new Runnable() {
                 public void run() {
-                    Object[] listeners= fListeners.getListeners();
-                    for(int i= 0; i < listeners.length; i++) {
-                        IProblemChangedListener curr= (IProblemChangedListener) listeners[i];
+                    for (IProblemChangedListener curr: fListeners) {
                         curr.problemsChanged(changes, isMarkerChange);
                     }
                 }

@@ -44,7 +44,6 @@ public class HTMLTextPresenter implements DefaultInformationControl.IInformation
         int yoursEnd=   offset + insertLength -1;
         yoursEnd= Math.max(yoursStart, yoursEnd);
 
-        @SuppressWarnings("unchecked")
         Iterator<StyleRange> e= presentation.getAllStyleRangeIterator();
         while (e.hasNext()) {
 

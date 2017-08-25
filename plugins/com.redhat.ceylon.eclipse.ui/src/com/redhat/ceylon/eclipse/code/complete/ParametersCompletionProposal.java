@@ -1,7 +1,5 @@
 package com.redhat.ceylon.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.complete.EclipseCompletionProcessor.LARGE_CORRECTION_IMAGE;
-import static com.redhat.ceylon.eclipse.code.complete.EclipseCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendPositionalArgs;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.anonFunctionHeader;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getAssignableLiterals;
@@ -12,6 +10,8 @@ import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLa
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleMethod;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isIgnoredLanguageModuleValue;
 import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isInBounds;
+import static com.redhat.ceylon.eclipse.code.complete.EclipseCompletionProcessor.LARGE_CORRECTION_IMAGE;
+import static com.redhat.ceylon.eclipse.code.complete.EclipseCompletionProcessor.NO_COMPLETIONS;
 import static com.redhat.ceylon.eclipse.code.complete.ParameterContextValidator.findCharCount;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
@@ -50,7 +50,6 @@ import org.eclipse.text.edits.MultiTextEdit;
 
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.complete.CompletionProposal.FixedImageRetriever;
 import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
 import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
 import com.redhat.ceylon.eclipse.util.Highlights;

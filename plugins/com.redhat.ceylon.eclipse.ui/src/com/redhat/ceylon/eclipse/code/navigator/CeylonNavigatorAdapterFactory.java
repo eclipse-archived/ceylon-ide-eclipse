@@ -17,10 +17,12 @@ public class CeylonNavigatorAdapterFactory implements IAdapterFactory {
         IJavaElement.class,
     };
 
+    @Override
     public Class<?>[] getAdapterList() {
         return ADAPTER_LIST;
     }
 
+    @Override
     public Object getAdapter(Object element, @SuppressWarnings("rawtypes") Class key) {
         SourceModuleNode sourceModule = (SourceModuleNode) element;
 
