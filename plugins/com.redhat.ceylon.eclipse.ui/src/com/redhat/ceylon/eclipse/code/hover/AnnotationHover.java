@@ -152,7 +152,7 @@ public class AnnotationHover
         Iterator<Annotation> iter = 
                 new AnnotationIterator(parent, rulerHover);
         while (iter.hasNext()) {
-            Annotation a = (Annotation) iter.next();
+            Annotation a = iter.next();
             Position p = model.getPosition(a);
             int l = annotationAccess.getLayer(a);
             //TODO: make higher-layer annotations suppress lower-layer ones

@@ -458,6 +458,8 @@ class AnnotationInformationControl
                     StyledString styled =
                             Highlights.styleProposal(
                                     message, true, true);
+                    int index = message.lastIndexOf(": ");
+                    if (index>0) styled.insert('\n', index+2);
                     text.setText(styled.getString());
                     StyleRange[] styleRanges = 
                             styled.getStyleRanges();
