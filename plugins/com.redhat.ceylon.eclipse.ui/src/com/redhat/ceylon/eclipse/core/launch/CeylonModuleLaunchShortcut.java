@@ -63,9 +63,6 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
                 + topLevelDisplayName.trim() + 
                 " \u2192 " + launchType();
         
-//        configurationName = configurationName
-//                .replaceAll("[\u00c0-\ufffe]", "_");
-        
         return getLaunchManager()
                 .generateLaunchConfigurationName(configurationName);
     }
@@ -142,9 +139,6 @@ public abstract class CeylonModuleLaunchShortcut implements ILaunchShortcut2 {
  
             Module mod = LaunchHelper.getModule(declaration);
             String moduleName = LaunchHelper.getFullModuleName(mod);
-            if (mod.isDefaultModule()) {
-                moduleName = mod.getNameAsString();
-            }
             
             String topLevelDisplayName = getTopLevelDisplayName(declaration);
             
