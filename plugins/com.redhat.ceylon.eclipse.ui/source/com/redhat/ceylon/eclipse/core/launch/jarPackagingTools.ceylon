@@ -45,6 +45,7 @@ shared [JarPackagingTool+] jarCreationTools = [
     JarPackagingTool {
         type = "Swarm";
         outputFileName(Module moduleToJar) => moduleString(moduleToJar, "-") + "-swarm.jar";
+        canRunFunction = false;
         function doCreateFile(File ceylonBinary, File outputFile, AnyCeylonProject ceylonProject, Module moduleToJar, File workingDirectory, String runFunction) {
             value processBuilder = ProcessBuilder(JavaList(JavaStringList(
                 [

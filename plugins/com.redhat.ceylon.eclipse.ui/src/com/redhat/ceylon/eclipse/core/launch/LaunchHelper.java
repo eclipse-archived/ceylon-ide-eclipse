@@ -244,7 +244,15 @@ public class LaunchHelper {
         }
     }
  
-    static Set<Module> getModules(IProject project, 
+    static String getModuleFullName(Module mod) {
+        if (mod.isDefaultModule()) {
+            return Module.DEFAULT_MODULE_NAME;
+        } else {
+            return getFullModuleName(mod);
+        }
+    }
+    
+   static Set<Module> getModules(IProject project, 
             boolean includeDefault) {
         Set<Module> modules = new HashSet<Module>();
         for(Module module: 

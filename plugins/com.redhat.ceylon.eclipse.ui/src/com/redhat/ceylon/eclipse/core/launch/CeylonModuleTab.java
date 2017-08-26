@@ -93,11 +93,7 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
     protected void handleModuleSearchButtonSelected() {
         Module mod = LaunchHelper.chooseModule(LaunchHelper.getProjectFromName(this.fProjText.getText()), true);
         if (mod != null) {
-            if (mod.isDefaultModule()) {
-                fModuleText.setText(Module.DEFAULT_MODULE_NAME);
-            } else {
-                fModuleText.setText(LaunchHelper.getFullModuleName(mod));
-            }
+            fModuleText.setText(LaunchHelper.getModuleFullName(mod));
             
             Declaration topLevel = LaunchHelper.getDefaultRunnableForModule(mod);
 
@@ -107,7 +103,6 @@ public class CeylonModuleTab extends AbstractJavaMainTab  {
             }
         }
     }
-    
  
     /**
      * Show a dialog that lists all runnable types

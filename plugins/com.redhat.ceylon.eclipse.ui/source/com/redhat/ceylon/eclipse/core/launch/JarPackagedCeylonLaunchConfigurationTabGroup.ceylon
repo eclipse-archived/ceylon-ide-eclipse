@@ -1,93 +1,91 @@
 import com.redhat.ceylon.eclipse.core.builder {
-    CeylonNature
+  CeylonNature
 }
 import com.redhat.ceylon.eclipse.core.launch {
-    ICeylonLaunchConfigurationConstants {
-        ...
-    },
-    LaunchHelper {
-        ...
-    },
-    SWTFactory {
-        ...
-    }
+  ICeylonLaunchConfigurationConstants {
+    ...
+  },
+  LaunchHelper {
+    ...
+  },
+  SWTFactory {
+    ...
+  }
 }
 import com.redhat.ceylon.eclipse.ui {
-    CeylonPlugin {
-        pluginId
-    },
-    CeylonResources
+  CeylonPlugin {
+    pluginId
+  },
+  CeylonResources
 }
 import com.redhat.ceylon.model.typechecker.model {
-    Module {
-        defaultModuleName
-    }
+  Module
 }
 
 import java.lang {
-    Types,
-    ObjectArray
+  Types,
+  ObjectArray
 }
 
 import org.eclipse.core.runtime {
-    CoreException
+  CoreException
 }
 import org.eclipse.debug.core {
-    ILaunchConfiguration,
-    ILaunchConfigurationWorkingCopy
+  ILaunchConfiguration,
+  ILaunchConfigurationWorkingCopy
 }
 import org.eclipse.debug.ui {
-    AbstractLaunchConfigurationTabGroup,
-    ILaunchConfigurationDialog,
-    EnvironmentTab,
-    CommonTab,
-    ILaunchConfigurationTab
+  AbstractLaunchConfigurationTabGroup,
+  ILaunchConfigurationDialog,
+  EnvironmentTab,
+  CommonTab,
+  ILaunchConfigurationTab
 }
 import org.eclipse.jdt.debug.ui.launchConfigurations {
-    JavaArgumentsTab,
-    JavaJRETab
+  JavaArgumentsTab,
+  JavaJRETab
 }
 import org.eclipse.jdt.internal.debug.ui {
-    IJavaDebugHelpContextIds {
-        launchConfigurationDialogMainTab
-    },
-    JDIDebugUIPlugin
+  IJavaDebugHelpContextIds {
+    launchConfigurationDialogMainTab
+  },
+  JDIDebugUIPlugin
 }
 import org.eclipse.jdt.internal.debug.ui.actions {
-    ControlAccessibleListener
+  ControlAccessibleListener
 }
 import org.eclipse.jdt.internal.debug.ui.launcher {
-    AbstractJavaMainTab,
-    LauncherMessages
+  AbstractJavaMainTab,
+  LauncherMessages
 }
 import org.eclipse.jdt.launching {
-    IJavaLaunchConfigurationConstants {
-        ...
-    }
+  IJavaLaunchConfigurationConstants {
+    ...
+  }
 }
 import org.eclipse.swt {
-    SWT
+  SWT
 }
 import org.eclipse.swt.events {
-    ModifyEvent,
-    ModifyListener,
-    SelectionEvent,
-    SelectionListener
+  ModifyEvent,
+  ModifyListener,
+  SelectionEvent,
+  SelectionListener
 }
 import org.eclipse.swt.layout {
-    GridData,
-    GridLayout
+  GridData,
+  GridLayout
 }
 import org.eclipse.swt.widgets {
-    Button,
-    Composite,
-    Text,
-    Combo
+  Button,
+  Composite,
+  Text,
+  Combo
 }
 import org.eclipse.ui {
-    PlatformUI {
-        workbench
-    }
+  PlatformUI {
+    workbench
+  }
 }
 
 shared class JarPackagedCeylonLaunchConfigurationTabGroup() 
@@ -104,10 +102,11 @@ shared class JarPackagedCeylonLaunchConfigurationTabGroup()
 
 shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
     variable late Text fModuleText;
-    variable late Text fRunText;
+    variable late Text fToplevelText;
     variable late Combo fJarCreationToolText;
     variable late Button fModuleSearchButton;
     variable late Button fStopInMainCheckButton;
+    variable late Button fRunSearchButton;
     
     shared actual void createControl(Composite parent) {
         value comp = createComposite(parent, parent.font, 1, 1, GridData.fillBoth);
@@ -131,11 +130,20 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
     id => "``pluginId``.ceylonModuleOnlyTab";
     
     void handleModuleSearchButtonSelected() {
-        if (exists mod = chooseModule(getProjectFromName(this.fProjText.text), true)) {
-            if (mod.defaultModule) {
-                fModuleText.text = defaultModuleName;
-            } else {
-                fModuleText.text = getFullModuleName(mod);
+        if (exists mod = chooseModule(getProjectFromName(fProjText.text), true)) {
+            fModuleText.text = getModuleFullName(mod);
+            if (exists topLevel = getDefaultRunnableForModule(mod)) {
+                fToplevelText.text = getTopLevelDisplayName(topLevel);
+            }
+        }
+    }
+    
+    void handleRunSearchButtonSelected() {
+        value toplevels = getDeclarationsForModule(fProjText.text, fModuleText.text);
+        if (exists fun = chooseDeclaration(toplevels)) {
+            fToplevelText.text =  getTopLevelDisplayName(fun);
+            if (!getModule(fun).defaultModule) {
+                fModuleText.text = getModuleFullName(fun);
             }
         }
     }
@@ -144,13 +152,14 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
         super.initializeFrom(config);
         try {
             fModuleText.text = config.getAttribute(attrModuleName, "");
-            fRunText.text = config.getAttribute(attrToplevelName, "");
+            fToplevelText.text = config.getAttribute(attrToplevelName, "");
             value toolName = config.getAttribute(attrJarCreationToolName, "");
             if (toolName.empty) {
                 fJarCreationToolText.select(-1);
             } else {
-                if (exists index = jarCreationTools.firstIndexWhere((tool) 
-                    => tool.type == toolName)) {
+                if (exists index 
+                        = jarCreationTools.firstIndexWhere((tool) 
+                                => tool.type == toolName)) {
                     fJarCreationToolText.select(index);
                 }
             }
@@ -167,17 +176,17 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
         value project = getProjectFromName(projectName);
         if (exists project) {
             if (!project.\iexists()) {
-                setErrorMessage("The project " + projectName + " does no exist.");
+                setErrorMessage("The project ``projectName`` does no exist.");
                 return false;
             }
             
             if (!project.open) {
-                setErrorMessage("The project " + projectName + " is not opened");
+                setErrorMessage("The project ``projectName`` is not opened");
                 return false;
             }
             
             if (!CeylonNature.isEnabled(project)) {
-                setErrorMessage("The project " + projectName + " is not a Ceylon project");
+                setErrorMessage("The project ``projectName`` is not a Ceylon project");
                 return false;
             }
         } else {
@@ -206,7 +215,7 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
     
     shared actual void performApply(ILaunchConfigurationWorkingCopy config) {
         config.setAttribute(attrProjectName, fProjText.text.trim(' '.equals));
-        config.setAttribute(attrToplevelName, fRunText.text.trim(' '.equals));
+        config.setAttribute(attrToplevelName, fToplevelText.text.trim(' '.equals));
         config.setAttribute(attrModuleName, fModuleText.text.trim(' '.equals));
         config.setAttribute(attrJarCreationToolName, fJarCreationToolText.text.trim(' '.equals));
         mapResources(config);
@@ -254,11 +263,18 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
     
     void createRunEditor(Composite parent, String text) {
         value group = createGroup(parent, text, 2, 1, GridData.fillHorizontal);
-        fRunText = createSingleText(group, 1);
-        fRunText.addModifyListener(object satisfies ModifyListener {
+        fToplevelText = createSingleText(group, 1);
+        fToplevelText.addModifyListener(object satisfies ModifyListener {
             modifyText(ModifyEvent e) => updateLaunchConfigurationDialog();
         });
-        ControlAccessibleListener.addListener(fRunText, group.text);
+        ControlAccessibleListener.addListener(fToplevelText, group.text);
+        fRunSearchButton = createPushButton(group, LauncherMessages.abstractJavaMainTab_2, null);
+        fRunSearchButton.addSelectionListener(object satisfies SelectionListener {
+            widgetDefaultSelected(SelectionEvent e) 
+                => noop();
+            widgetSelected(SelectionEvent e)
+                => handleRunSearchButtonSelected();
+        });
     }
     
     void createModuleEditor(Composite parent, String text) {
@@ -270,13 +286,11 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
         ControlAccessibleListener.addListener(fModuleText, group.text);
         fModuleSearchButton = createPushButton(group, LauncherMessages.abstractJavaMainTab_2, null);
         fModuleSearchButton.addSelectionListener(object satisfies SelectionListener {
-                widgetDefaultSelected(SelectionEvent e) 
-                        => noop();
-                widgetSelected(SelectionEvent e)
-                        => handleModuleSearchButtonSelected();
-            }
-            
-        );
+            widgetDefaultSelected(SelectionEvent e) 
+                    => noop();
+            widgetSelected(SelectionEvent e)
+                    => handleModuleSearchButtonSelected();
+        });
     }
     
     void createToolSelector(Composite parent, String text) {
@@ -288,18 +302,22 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
                 => jarCreationTools[fJarCreationToolText.selectionIndex]?.canStopInMain
                 else false;
 
+        value canRunFunction
+            => jarCreationTools[fJarCreationToolText.selectionIndex]?.canRunFunction
+            else false;
+        
         fJarCreationToolText.addSelectionListener(object satisfies SelectionListener {
             shared actual void widgetDefaultSelected(SelectionEvent selectionEvent) {
                 fStopInMainCheckButton.enabled = canStopInMain;
+                fToplevelText.enabled = canRunFunction;
                 fStopInMainCheckButton.selection &&= fStopInMainCheckButton.enabled;
                 updateLaunchConfigurationDialog();
-                
             }
             
             shared actual void widgetSelected(SelectionEvent selectionEvent) {
-                fStopInMainCheckButton.enabled = 
-                        jarCreationTools[fJarCreationToolText.selectionIndex]?.canStopInMain
-                        else false;
+                value tool = jarCreationTools[fJarCreationToolText.selectionIndex];
+                fStopInMainCheckButton.enabled = tool?.canStopInMain else false;
+                fToplevelText.enabled = tool?.canRunFunction else true;
                 fStopInMainCheckButton.enabled = canStopInMain;
                 fStopInMainCheckButton.selection &&= fStopInMainCheckButton.enabled;
                 updateLaunchConfigurationDialog();

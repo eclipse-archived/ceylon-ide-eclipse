@@ -26,7 +26,8 @@ shared class JarPackagingTool(
     shared String type,
     String outputFileName(Module moduleToJar),
     shared ProcessBuilder doCreateFile(File ceylonBinary, File outputFile, AnyCeylonProject ceylonProject, Module moduleToJar, File workingDirectory, String runFunction),
-    shared Boolean canStopInMain = false) {
+    shared Boolean canStopInMain = false,
+    shared Boolean canRunFunction = true) {
     
     shared Module? getModule(ILaunchConfiguration config) {
         value project = LaunchHelper.getProjectFromName(config.getAttribute(IJavaLaunchConfigurationConstants.attrProjectName, ""));
