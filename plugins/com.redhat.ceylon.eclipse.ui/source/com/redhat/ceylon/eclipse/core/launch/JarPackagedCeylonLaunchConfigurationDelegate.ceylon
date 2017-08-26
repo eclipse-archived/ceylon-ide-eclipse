@@ -56,20 +56,23 @@ import org.eclipse.ui.console {
 String getLaunchConfigurationName(ILaunchConfiguration config)
     => let (attr = (String s) => config.getAttribute(s,""))
         buildLaunchConfigurationName {
-        projectName => attr(attrProjectName);
-        moduleName => attr(attrModuleName);
-        jarPackagingToolName => attr(attrJarCreationToolName);
-    };
+            projectName = attr(attrProjectName);
+            moduleName = attr(attrModuleName);
+            runName = attr(attrToplevelName);
+            jarPackagingToolName => attr(attrJarCreationToolName);
+        };
 
 String buildLaunchConfigurationName(
         String projectName,
         String moduleName,
+        String runName,
         String jarPackagingToolName)
     => let (launchManager = debugPlugin.launchManager)
     " \{#2014} ".join {
         for (name in
                 { projectName,
                   moduleName,
+                  runName,
                   jarPackagingToolName})
         launchManager.generateLaunchConfigurationName(name)
     };
@@ -202,10 +205,12 @@ shared class JarPackagedCeylonLaunchConfigurationDelegate() extends JavaLaunchDe
         }
         
         if (systemProcess.exitValue() != 0) {
-            return Status(IStatus.error, CeylonPlugin.pluginId, "The ``tool.type`` packaging tool failed with exit code: ``systemProcess.exitValue()``.");
+            return Status(IStatus.error, CeylonPlugin.pluginId, 
+                    "The ``tool.type`` packaging tool failed with exit code: ``systemProcess.exitValue()``.");
         }
         if (! outputFile.\iexists()) {
-            return Status(IStatus.error, CeylonPlugin.pluginId, "The ``tool.type`` packaging tool didn't produce the expected archive.");
+            return Status(IStatus.error, CeylonPlugin.pluginId, 
+                    "The ``tool.type`` packaging tool didn't produce the expected archive.");
         }
         return Status.okStatus;
     }

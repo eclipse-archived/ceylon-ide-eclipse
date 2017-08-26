@@ -104,6 +104,7 @@ shared class JarPackagedCeylonLaunchConfigurationTabGroup()
 
 shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
     variable late Text fModuleText;
+    variable late Text fRunText;
     variable late Combo fJarCreationToolText;
     variable late Button fModuleSearchButton;
     variable late Button fStopInMainCheckButton;
@@ -115,6 +116,8 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
         createProjectEditor(comp);
         createVerticalSpacer(comp, 1);
         createModuleEditor(comp, "Module:");
+        createVerticalSpacer(comp, 1);
+        createRunEditor(comp, "Runnable function:");
         createVerticalSpacer(comp, 1);
         createToolSelector(comp, "Jar packaging type:");
         setControl(comp);
@@ -141,6 +144,7 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
         super.initializeFrom(config);
         try {
             fModuleText.text = config.getAttribute(attrModuleName, "");
+            fRunText.text = config.getAttribute(attrToplevelName, "");
             value toolName = config.getAttribute(attrJarCreationToolName, "");
             if (toolName.empty) {
                 fJarCreationToolText.select(-1);
@@ -202,13 +206,14 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
     
     shared actual void performApply(ILaunchConfigurationWorkingCopy config) {
         config.setAttribute(attrProjectName, fProjText.text.trim(' '.equals));
+        config.setAttribute(attrToplevelName, fRunText.text.trim(' '.equals));
         config.setAttribute(attrModuleName, fModuleText.text.trim(' '.equals));
         config.setAttribute(attrJarCreationToolName, fJarCreationToolText.text.trim(' '.equals));
         mapResources(config);
         if (fStopInMainCheckButton.selection) {
             config.setAttribute(attrStopInMain, true);
         } else {
-            config.setAttribute(attrStopInMain, (null of String?));
+            config.setAttribute(attrStopInMain, null of String?);
         }
         config.rename(getLaunchConfigurationName(config));
     }
@@ -241,21 +246,27 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
         }
         
         config.setAttribute(attrModuleName, moduleName);
+        config.setAttribute(attrToplevelName, "");
         config.setAttribute(attrJarCreationToolName, jarCreationTools[0].type);
         
         config.rename(getLaunchConfigurationName(config));
+    }
+    
+    void createRunEditor(Composite parent, String text) {
+        value group = createGroup(parent, text, 2, 1, GridData.fillHorizontal);
+        fRunText = createSingleText(group, 1);
+        fRunText.addModifyListener(object satisfies ModifyListener {
+            modifyText(ModifyEvent e) => updateLaunchConfigurationDialog();
+        });
+        ControlAccessibleListener.addListener(fRunText, group.text);
     }
     
     void createModuleEditor(Composite parent, String text) {
         value group = createGroup(parent, text, 2, 1, GridData.fillHorizontal);
         fModuleText = createSingleText(group, 1);
         fModuleText.addModifyListener(object satisfies ModifyListener {
-                shared actual void modifyText(ModifyEvent e) {
-                    updateLaunchConfigurationDialog();
-                }
-            }
-            
-        );
+            modifyText(ModifyEvent e) => updateLaunchConfigurationDialog();
+        });
         ControlAccessibleListener.addListener(fModuleText, group.text);
         fModuleSearchButton = createPushButton(group, LauncherMessages.abstractJavaMainTab_2, null);
         fModuleSearchButton.addSelectionListener(object satisfies SelectionListener {
@@ -295,7 +306,7 @@ shared class CeylonModuleOnlyTab() extends AbstractJavaMainTab() {
             }
         });
         
-        ControlAccessibleListener.addListener(fModuleText, group.text);
+        ControlAccessibleListener.addListener(fJarCreationToolText, group.text);
         value checks = createComposite(group, 2, 2, GridData.beginning);
         fStopInMainCheckButton = createCheckButton(checks, "St&op inside");
         fStopInMainCheckButton.addSelectionListener(defaultListener);

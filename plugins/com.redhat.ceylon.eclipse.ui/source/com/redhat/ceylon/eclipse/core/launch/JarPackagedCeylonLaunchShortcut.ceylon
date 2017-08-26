@@ -22,7 +22,8 @@ import com.redhat.ceylon.ide.common.model {
     AnyIdeModule
 }
 import com.redhat.ceylon.model.typechecker.model {
-    Module
+    Module,
+  Function
 }
 
 import java.lang {
@@ -71,6 +72,15 @@ import org.eclipse.ui {
 }
 import org.eclipse.ui.dialogs {
     ElementListSelectionDialog
+}
+import com.redhat.ceylon.eclipse.code.editor {
+  CeylonEditor
+}
+import com.redhat.ceylon.ide.common.util {
+  nodes
+}
+import com.redhat.ceylon.compiler.typechecker.tree {
+  Tree
 }
 
 shared abstract class JarPackagedCeylonLaunchShortcut(String jarPackagingToolName) satisfies ILaunchShortcut {
@@ -135,7 +145,7 @@ shared abstract class JarPackagedCeylonLaunchShortcut(String jarPackagingToolNam
         then candidateConfigs.first 
         else chooseConfiguration(candidateConfigs);
     
-    function createConfiguration(Module moduleToLaunch) {
+    function createConfiguration(Module moduleToLaunch, Function? run) {
         try {
             value projectName = projectNameFromModule(moduleToLaunch);
             if (! exists projectName) {
@@ -143,11 +153,19 @@ shared abstract class JarPackagedCeylonLaunchShortcut(String jarPackagingToolNam
             }
             
             value moduleName = getFullModuleName(moduleToLaunch);
-            value configurationName = buildLaunchConfigurationName(projectName, moduleName, jarPackagingToolName);
+            value runName = run?.qualifiedNameString else moduleName+"::run";
+            
+            value configurationName = buildLaunchConfigurationName {
+                projectName = projectName;
+                moduleName = moduleName;
+                runName = runName;
+                jarPackagingToolName = jarPackagingToolName;
+            };
             
             value wc = configType.newInstance(null, configurationName);
             wc.setAttribute(attrProjectName, projectName);
             wc.setAttribute(attrModuleName, moduleName);
+            wc.setAttribute(attrToplevelName, runName);
             wc.setAttribute(attrJarCreationToolName, jarPackagingToolName);
             return wc.doSave();
         } catch (CoreException exception) {
@@ -157,11 +175,11 @@ shared abstract class JarPackagedCeylonLaunchShortcut(String jarPackagingToolNam
         } 
     }
     
-    shared void launchModule(Module existingModule, String mode) {
+    shared void launchModule(Module existingModule, Function? run, String mode) {
         variable ILaunchConfiguration? config = 
                 findLaunchConfiguration(existingModule);
         if (! config exists) {
-            config = createConfiguration(existingModule);
+            config = createConfiguration(existingModule, run);
         }
         if (exists configToUse = config) {
             DebugUITools.launch(config, mode);
@@ -195,14 +213,22 @@ shared abstract class JarPackagedCeylonLaunchShortcut(String jarPackagingToolNam
             }
         }
         if (exists existingModule = mod) {
-            launchModule(existingModule, mode);
+            launchModule(existingModule, null, mode);
         }
     }
     
     shared actual overloaded void launch(IEditorPart editor, String mode) {
         IFile file = EditorUtil.getFile(editor.editorInput);
         if (exists moduleToLaunch = CeylonBuilder.getModule(file)) {
-            launchModule(moduleToLaunch, mode);
+            if (is CeylonEditor editor,
+                exists root = editor.parseController.lastCompilationUnit,
+                exists node = editor.selectedNode,
+                is Tree.AnyMethod fun = nodes.findTopLevelStatement(root, node)) {
+                launchModule(moduleToLaunch, fun.declarationModel, mode);
+            }
+            else {
+                launchModule(moduleToLaunch, null, mode);
+            }
         }
     }
 }
