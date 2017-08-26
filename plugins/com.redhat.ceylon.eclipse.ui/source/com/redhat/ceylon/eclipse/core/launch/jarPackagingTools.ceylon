@@ -35,6 +35,7 @@ shared [JarPackagingTool+] jarCreationTools = [
                     "--out=``outputFile``",
                     "--rep=``ceylonProject.ceylonModulesOutputDirectory.absolutePath``",
                     "--run=``runFunction.empty then "run" else runFunction``",
+                    "--force",
                     for (repo in ceylonProject.ceylonRepositories) "--rep=``repo``" 
                 ]
                 .withTrailing(moduleString(moduleToJar)))));
@@ -75,6 +76,7 @@ shared [JarPackagingTool+] jarCreationTools = [
                     "--include-language",
                     "--rep=``ceylonProject.ceylonModulesOutputDirectory.absolutePath``",
                     "--run=``runFunction.empty then "run" else runFunction``",
+                    "--force",
                     for (repo in ceylonProject.ceylonRepositories) "--rep=``repo``" 
                 ]
                 .withTrailing(moduleString(moduleToJar)))));
