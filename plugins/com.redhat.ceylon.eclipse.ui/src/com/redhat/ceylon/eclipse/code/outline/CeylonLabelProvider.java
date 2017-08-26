@@ -428,7 +428,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
     public static Image getImageForFile(IFile file) {
         return getDecoratedImage(file, 
                 getImageKeyForFile(file), 
-                false, false);
+                true, false);
     }
     
     static String getImageKeyForDeclaration(Declaration d) {
