@@ -25,7 +25,7 @@ import org.eclipse.jdt.launching {
 shared class JarPackagingTool(
     shared String type,
     String outputFileName(Module moduleToJar),
-    shared ProcessBuilder doCreateFile(File ceylonBinary, File outputFile, AnyCeylonProject ceylonProject, Module moduleToJar, File workingDirectory),
+    shared ProcessBuilder doCreateFile(File ceylonBinary, File outputFile, AnyCeylonProject ceylonProject, Module moduleToJar, File workingDirectory, String runFunction),
     shared Boolean canStopInMain = false) {
     
     shared Module? getModule(ILaunchConfiguration config) {

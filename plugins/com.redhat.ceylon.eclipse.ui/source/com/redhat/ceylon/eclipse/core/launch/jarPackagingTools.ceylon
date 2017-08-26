@@ -25,15 +25,16 @@ String moduleString(Module moduleToJar, String sep="/")
 shared [JarPackagingTool+] jarCreationTools = [
     JarPackagingTool {
         type = "Fat Jar";
-        outputFileName(Module moduleToJar) => moduleString(moduleToJar) + ".jar";
+        outputFileName(Module moduleToJar) => moduleString(moduleToJar, "-") + ".jar";
         canStopInMain = true;
-        function doCreateFile(File ceylonBinary, File outputFile, AnyCeylonProject ceylonProject, Module moduleToJar, File workingDirectory) {
+        function doCreateFile(File ceylonBinary, File outputFile, AnyCeylonProject ceylonProject, Module moduleToJar, File workingDirectory, String runFunction) {
             value processBuilder = ProcessBuilder(JavaList(JavaStringList(
                 [
                     ceylonBinary.absolutePath,
                     "fat-jar",
                     "--out=``outputFile``",
                     "--rep=``ceylonProject.ceylonModulesOutputDirectory.absolutePath``",
+                    "--run=``runFunction.empty then "run" else runFunction``",
                     for (repo in ceylonProject.ceylonRepositories) "--rep=``repo``" 
                 ]
                 .withTrailing(moduleString(moduleToJar)))));
@@ -43,8 +44,8 @@ shared [JarPackagingTool+] jarCreationTools = [
     },
     JarPackagingTool {
         type = "Swarm";
-        outputFileName(Module moduleToJar) => moduleString(moduleToJar) + "-swarm.jar";
-        function doCreateFile(File ceylonBinary, File outputFile, AnyCeylonProject ceylonProject, Module moduleToJar, File workingDirectory) {
+        outputFileName(Module moduleToJar) => moduleString(moduleToJar, "-") + "-swarm.jar";
+        function doCreateFile(File ceylonBinary, File outputFile, AnyCeylonProject ceylonProject, Module moduleToJar, File workingDirectory, String runFunction) {
             value processBuilder = ProcessBuilder(JavaList(JavaStringList(
                 [
                     ceylonBinary.absolutePath,
@@ -61,8 +62,8 @@ shared [JarPackagingTool+] jarCreationTools = [
     },  
     JarPackagingTool {
         type = "Assembly";
-        outputFileName(Module moduleToJar) => moduleString(moduleToJar) + ".cas";
-        function doCreateFile(File ceylonBinary, File outputFile, AnyCeylonProject ceylonProject, Module moduleToJar, File workingDirectory) {
+        outputFileName(Module moduleToJar) => moduleString(moduleToJar, "-") + ".cas";
+        function doCreateFile(File ceylonBinary, File outputFile, AnyCeylonProject ceylonProject, Module moduleToJar, File workingDirectory, String runFunction) {
             value processBuilder = ProcessBuilder(JavaList(JavaStringList(
                 [
                     ceylonBinary.absolutePath,
@@ -72,6 +73,7 @@ shared [JarPackagingTool+] jarCreationTools = [
                     "--include-runtime",
                     "--include-language",
                     "--rep=``ceylonProject.ceylonModulesOutputDirectory.absolutePath``",
+                    "--run=``runFunction.empty then "run" else runFunction``",
                     for (repo in ceylonProject.ceylonRepositories) "--rep=``repo``" 
                 ]
                 .withTrailing(moduleString(moduleToJar)))));

@@ -4,9 +4,7 @@ import com.redhat.ceylon.eclipse.core.launch {
     }
 }
 import com.redhat.ceylon.eclipse.ui {
-    CeylonPlugin {
-        ceylonPlugin=instance
-    }
+    CeylonPlugin
 }
 
 import java.io {
@@ -166,15 +164,16 @@ shared class JarPackagedCeylonLaunchConfigurationDelegate() extends JavaLaunchDe
             if (operatingSystem.name == "windows") "bat"
         };
         
-        suppressWarnings("syntaxDeprecation")
-        File ceylonBinary = File(File(ceylonPlugin.embeddedCeylonRepository.parentFile, "bin"), ceylonCommandName);
+        File ceylonBinary = File(File(CeylonPlugin.embeddedCeylonRepository.parentFile, "bin"), ceylonCommandName);
         if (! ceylonBinary.canExecute()) {
             if (!ceylonBinary.setExecutable(true)) {
                 return Status(IStatus.error, CeylonPlugin.pluginId, "The '`` ceylonBinary ``' command cannot be set as executable.");
             }
         }
         
-        value processBuilder = tool.doCreateFile(ceylonBinary, outputFile, ceylonProject, moduleToJar, workingDirectory);
+        value runFunction = config.getAttribute(ICeylonLaunchConfigurationConstants.attrToplevelName, "");
+        
+        value processBuilder = tool.doCreateFile(ceylonBinary, outputFile, ceylonProject, moduleToJar, workingDirectory, runFunction);
         value env = processBuilder.environment();
         value vmInstall = getVMInstall(config);
         env.put(
