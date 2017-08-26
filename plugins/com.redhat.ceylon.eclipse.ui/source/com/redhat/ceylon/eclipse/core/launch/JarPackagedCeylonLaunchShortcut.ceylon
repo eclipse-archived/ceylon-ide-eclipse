@@ -89,16 +89,17 @@ shared abstract class JarPackagedCeylonLaunchShortcut(String jarPackagingToolNam
         }
         
         try {
-            String moduleName = if (moduleToLaunch.defaultModule)
-            then moduleToLaunch.nameAsString
-            else LaunchHelper.getFullModuleName(moduleToLaunch);
+            String moduleName 
+                = moduleToLaunch.defaultModule
+                then moduleToLaunch.nameAsString
+                else LaunchHelper.getFullModuleName(moduleToLaunch);
             
             return [
                 for (config in launchManager.getLaunchConfigurations(configType))
-                    if (config.getAttribute(attrProjectName, "") == projectName &&
-                        config.getAttribute(attrModuleName, "") == moduleName &&
-                        config.getAttribute(attrJarCreationToolName, "") == jarPackagingToolName)
-                        config
+                if (config.getAttribute(attrProjectName, "") == projectName &&
+                    config.getAttribute(attrModuleName, "") == moduleName &&
+                    config.getAttribute(attrJarCreationToolName, "") == jarPackagingToolName)
+                config
             ];
         }
         catch (CoreException e) {
@@ -208,6 +209,8 @@ shared abstract class JarPackagedCeylonLaunchShortcut(String jarPackagingToolNam
 
 
 
-shared class FatJarPackagedCeylonLaunchShortcut() extends JarPackagedCeylonLaunchShortcut("FatJar") {}
+shared class FatJarPackagedCeylonLaunchShortcut() extends JarPackagedCeylonLaunchShortcut("Fat Jar") {}
+
+shared class AssemblyPackagedCeylonLaunchShortcut() extends JarPackagedCeylonLaunchShortcut("Assembly") {}
 
 shared class SwarmPackagedCeylonLaunchShortcut() extends JarPackagedCeylonLaunchShortcut("Swarm") {}

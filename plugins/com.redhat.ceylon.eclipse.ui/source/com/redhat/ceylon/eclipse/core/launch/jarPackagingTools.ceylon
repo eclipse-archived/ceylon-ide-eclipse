@@ -17,39 +17,64 @@ import java.lang {
     ProcessBuilder
 }
 
+String moduleString(Module moduleToJar, String sep="/")
+    => moduleToJar.defaultModule 
+    then moduleToJar.nameAsString
+    else moduleToJar.nameAsString + sep + moduleToJar.version;
+
 shared [JarPackagingTool+] jarCreationTools = [
     JarPackagingTool {
-        type = "FatJar";
+        type = "Fat Jar";
+        outputFileName(Module moduleToJar) => moduleString(moduleToJar) + ".jar";
         canStopInMain = true;
-        outputFileSuffix = "";
         function doCreateFile(File ceylonBinary, File outputFile, AnyCeylonProject ceylonProject, Module moduleToJar, File workingDirectory) {
             value processBuilder = ProcessBuilder(JavaList(JavaStringList(
-                concatenate({
+                [
                     ceylonBinary.absolutePath,
                     "fat-jar",
                     "--out=``outputFile``",
                     "--rep=``ceylonProject.ceylonModulesOutputDirectory.absolutePath``",
-                    for (repo in ceylonProject.ceylonRepositories) "--rep=``repo``" }, { 
-                    "``moduleToJar.nameAsString``/``moduleToJar.version``"
-                }))));
+                    for (repo in ceylonProject.ceylonRepositories) "--rep=``repo``" 
+                ]
+                .withTrailing(moduleString(moduleToJar)))));
             processBuilder.directory(workingDirectory);
             return processBuilder;
         }
     },
     JarPackagingTool {
         type = "Swarm";
-        canStopInMain = false;
+        outputFileName(Module moduleToJar) => moduleString(moduleToJar) + "-swarm.jar";
         function doCreateFile(File ceylonBinary, File outputFile, AnyCeylonProject ceylonProject, Module moduleToJar, File workingDirectory) {
             value processBuilder = ProcessBuilder(JavaList(JavaStringList(
-                concatenate({
+                [
                     ceylonBinary.absolutePath,
                     "swarm",
                     "--provided-module=javax:javaee-api",
                     "--out=``outputFile.parent``",
                     "--rep=``ceylonProject.ceylonModulesOutputDirectory.absolutePath``",
-                    for (repo in ceylonProject.ceylonRepositories) "--rep=``repo``" }, { 
-                    "``moduleToJar.nameAsString``/``moduleToJar.version``"
-                }))));
+                    for (repo in ceylonProject.ceylonRepositories) "--rep=``repo``" 
+                ]
+                .withTrailing(moduleString(moduleToJar)))));
+            processBuilder.directory(workingDirectory);
+            return processBuilder;
+        }
+    },  
+    JarPackagingTool {
+        type = "Assembly";
+        outputFileName(Module moduleToJar) => moduleString(moduleToJar) + ".cas";
+        function doCreateFile(File ceylonBinary, File outputFile, AnyCeylonProject ceylonProject, Module moduleToJar, File workingDirectory) {
+            value processBuilder = ProcessBuilder(JavaList(JavaStringList(
+                [
+                    ceylonBinary.absolutePath,
+                    "assemble",
+                    "--out=``outputFile``",
+                    "--jvm",
+                    "--include-runtime",
+                    "--include-language",
+                    "--rep=``ceylonProject.ceylonModulesOutputDirectory.absolutePath``",
+                    for (repo in ceylonProject.ceylonRepositories) "--rep=``repo``" 
+                ]
+                .withTrailing(moduleString(moduleToJar)))));
             processBuilder.directory(workingDirectory);
             return processBuilder;
         }

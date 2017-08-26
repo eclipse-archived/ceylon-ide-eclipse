@@ -56,7 +56,7 @@ import org.eclipse.ui.console {
 }
 
 String getLaunchConfigurationName(ILaunchConfiguration config)
-    => let (attr = (String s) => (config.getAttribute(s,"")))
+    => let (attr = (String s) => config.getAttribute(s,""))
         buildLaunchConfigurationName {
         projectName => attr(attrProjectName);
         moduleName => attr(attrModuleName);
@@ -69,12 +69,12 @@ String buildLaunchConfigurationName(
         String jarPackagingToolName)
     => let (launchManager = debugPlugin.launchManager)
     " \{#2014} ".join {
-        for (name in { 
-            projectName,
-            moduleName,
-            jarPackagingToolName})
-            launchManager.generateLaunchConfigurationName(name)
-        };
+        for (name in
+                { projectName,
+                  moduleName,
+                  jarPackagingToolName})
+        launchManager.generateLaunchConfigurationName(name)
+    };
     
 shared class JarPackagedCeylonLaunchConfigurationDelegate() extends JavaLaunchDelegate()
         satisfies CeylonDebuggingSupportEnabled {

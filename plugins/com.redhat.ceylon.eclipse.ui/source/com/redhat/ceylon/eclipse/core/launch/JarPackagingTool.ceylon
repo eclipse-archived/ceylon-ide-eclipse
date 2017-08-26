@@ -24,9 +24,9 @@ import org.eclipse.jdt.launching {
 
 shared class JarPackagingTool(
     shared String type,
-    shared Boolean canStopInMain,
+    String outputFileName(Module moduleToJar),
     shared ProcessBuilder doCreateFile(File ceylonBinary, File outputFile, AnyCeylonProject ceylonProject, Module moduleToJar, File workingDirectory),
-    String outputFileSuffix = type.lowercased) {
+    shared Boolean canStopInMain = false) {
     
     shared Module? getModule(ILaunchConfiguration config) {
         value project = LaunchHelper.getProjectFromName(config.getAttribute(IJavaLaunchConfigurationConstants.attrProjectName, ""));
@@ -75,6 +75,6 @@ shared class JarPackagingTool(
             return null;
         }
         
-        return File(projectRootDirectory, "``ideModule.nameAsString``-``ideModule.version````if (! outputFileSuffix.empty) then "-"+outputFileSuffix else "" ``.jar");
+        return File(projectRootDirectory, outputFileName(ideModule));
     }    
 }

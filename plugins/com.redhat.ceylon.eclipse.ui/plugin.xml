@@ -2039,18 +2039,18 @@
          </configurationType>
       </shortcut>         
       <shortcut
-            label="Ceylon Java Application Packaged As FatJar"
+            label="Ceylon Fat Jar"
             icon="icons/launch.png"
             modes="run, debug"
             class="com.redhat.ceylon.eclipse.core.launch.FatJarPackagedCeylonLaunchShortcut"
-            description="Launch a Ceylon Java application packaged as a FatJar"
+            description="Launch a Ceylon Java application packaged as a fat jar"
             id="com.redhat.ceylon.eclipse.ui.launcher.fatJarPackagedModuleShortcut">
          <description 
-               description="Runs a Ceylon Java application packaged as a FatJar"
+               description="Runs a Ceylon Java application packaged as a fat jar"
                mode="run">
          </description>
          <description
-               description="Debugs a Ceylon Java application packaged as a FatJar"
+               description="Debugs a Ceylon Java application packaged as a fat jar"
                mode="debug">
          </description>
          <contextualLaunch>
@@ -2079,7 +2079,47 @@
          </configurationType>
       </shortcut>
       <shortcut
-            label="Ceylon Java Application Packaged By WildFly Swarm"
+            label="Ceylon Assembly"
+            icon="icons/launch.png"
+            modes="run, debug"
+            class="com.redhat.ceylon.eclipse.core.launch.AssemblyPackagedCeylonLaunchShortcut"
+            description="Launch a Ceylon Java application packaged as an Assembly"
+            id="com.redhat.ceylon.eclipse.ui.launcher.assemblyPackagedModuleShortcut">
+         <description 
+               description="Runs a Ceylon Java application packaged as an assembly"
+               mode="run">
+         </description>
+         <description
+               description="Debugs a Ceylon Java application packaged as an assembly"
+               mode="debug">
+         </description>
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <and>
+                         <test
+                               forcePluginActivation="true"
+                               property="com.redhat.ceylon.eclipse.ui.canLaunchAsCeylonJavaModule">
+                         </test>
+                         <or>
+                             <instanceof value="com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode"/>
+                             <adapt type="org.eclipse.core.resources.IResource">
+                                 <instanceof value="org.eclipse.core.resources.IResource"/>
+                             </adapt>
+                         </or>
+                     </and>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+            id="com.redhat.ceylon.eclipse.ui.launching.jarPackagedCeylonApplication">
+         </configurationType>
+      </shortcut>
+      <shortcut
+            label="Ceylon WildFly Swarm Jar"
             icon="icons/launch.png"
             modes="run, debug"
             class="com.redhat.ceylon.eclipse.core.launch.SwarmPackagedCeylonLaunchShortcut"
