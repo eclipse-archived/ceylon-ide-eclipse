@@ -1901,11 +1901,11 @@
       </launchConfigurationType>
       <launchConfigurationType
             delegate="com.redhat.ceylon.eclipse.core.launch.JarPackagedCeylonLaunchConfigurationDelegate"
-            delegateDescription="Packages the whole Ceylon application as a single Jar file, and runs it with a pure Java command"
-            delegateName="Ceylon Jar-packaged Application Launcher"
+            delegateDescription="Assembles the whole Ceylon application as a single jar file, and runs via Java"
+            delegateName="Ceylon Assembly Launcher"
             id="com.redhat.ceylon.eclipse.ui.launching.jarPackagedCeylonApplication"
             modes="run, debug"
-            name="Ceylon Jar-packaged Application"
+            name="Ceylon Assembly"
             sourceLocatorId="com.redhat.ceylon.eclipse.ui.launching.sourceLocator.CeylonSourceLookupDirector"
             sourcePathComputerId="com.redhat.ceylon.eclipse.ui.launching.sourceLookup.ceylonSourcePathComputer">
       </launchConfigurationType>
@@ -1919,11 +1919,11 @@
             <launchMode 
                   mode="debug"
                   perspective="org.eclipse.debug.ui.DebugPerspective"
-                  description="Debug Ceylon Java Application">
+                  description="Debug a Ceylon program on the JVM">
             </launchMode>
             <launchMode
                   mode="run"
-                  description="Run Ceylon Java Application">
+                  description="Run a Ceylon program on the JVM">
             </launchMode>
       </launchConfigurationTabGroup>
       <launchConfigurationTabGroup
@@ -1933,11 +1933,11 @@
             <launchMode 
                   mode="debug"
                   perspective="org.eclipse.debug.ui.DebugPerspective"
-                  description="Debug Ceylon JavaScript Application">
+                  description="Debug a Ceylon program on node.js">
             </launchMode>
             <launchMode
                   mode="run"
-                  description="Run Ceylon JavaScript Application">
+                  description="Run a Ceylon program on node.js">
             </launchMode>
       </launchConfigurationTabGroup>        
       <launchConfigurationTabGroup
@@ -1947,11 +1947,11 @@
             <launchMode 
                   mode="debug"
                   perspective="org.eclipse.debug.ui.DebugPerspective"
-                  description="Debug Ceylon Jar-packaged Application">
+                  description="Debug a Ceylon assembly on the JVM">
             </launchMode>
             <launchMode
                   mode="run"
-                  description="Run Ceylon Jar-packaged Application">
+                  description="Run a Ceylon assembly on the JVM">
             </launchMode>
       </launchConfigurationTabGroup>
    </extension>
@@ -1979,14 +1979,14 @@
             icon="icons/launch.png"
             modes="run, debug"
             class="com.redhat.ceylon.eclipse.core.launch.CeylonJavaModuleShortcut"
-            description="Launch a Ceylon Java application"
+            description="Launch a Ceylon program on the JVM"
             id="com.redhat.ceylon.eclipse.ui.launcher.javaModuleShortcut">
          <description 
-               description="Runs a Ceylon Java application"
+               description="Run a Ceylon program on the JVM"
                mode="run">
          </description>
          <description
-               description="Debugs a Ceylon Java application"
+               description="Debug a Ceylon program on the JVM"
                mode="debug">
          </description>
          <contextualLaunch>
@@ -2011,14 +2011,14 @@
             icon="icons/launch.png"
             modes="run, debug"
             class="com.redhat.ceylon.eclipse.core.launch.CeylonJsModuleShortcut"
-            description="Launch a Ceylon JavaScript application"
+            description="Launch a Ceylon program on node.js"
             id="com.redhat.ceylon.eclipse.ui.launcher.javaScriptModuleShortcut">
          <description 
-               description="Runs a Ceylon JavaScript application"
+               description="Run a Ceylon program on node.js"
                mode="run">
          </description>
          <description
-               description="Debugs a Ceylon JavaScript application"
+               description="Debug a Ceylon program on node.js"
                mode="debug">
          </description>
          <contextualLaunch>
@@ -2043,14 +2043,14 @@
             icon="icons/launch.png"
             modes="run, debug"
             class="com.redhat.ceylon.eclipse.core.launch.FatJarPackagedCeylonLaunchShortcut"
-            description="Launch a Ceylon Java application packaged as a fat jar"
+            description="Assemble and launch a Ceylon program packaged as a fat jar"
             id="com.redhat.ceylon.eclipse.ui.launcher.fatJarPackagedModuleShortcut">
          <description 
-               description="Runs a Ceylon Java application packaged as a fat jar"
+               description="Package and run a Ceylon program as a fat jar"
                mode="run">
          </description>
          <description
-               description="Debugs a Ceylon Java application packaged as a fat jar"
+               description="Package and debug a Ceylon program as a fat jar"
                mode="debug">
          </description>
          <contextualLaunch>
@@ -2083,14 +2083,14 @@
             icon="icons/launch.png"
             modes="run, debug"
             class="com.redhat.ceylon.eclipse.core.launch.AssemblyPackagedCeylonLaunchShortcut"
-            description="Launch a Ceylon Java application packaged as an Assembly"
+            description="Assemble and launch a Ceylon program on the JVM"
             id="com.redhat.ceylon.eclipse.ui.launcher.assemblyPackagedModuleShortcut">
          <description 
-               description="Runs a Ceylon Java application packaged as an assembly"
+               description="Assemble and run a Ceylon program on the JVM"
                mode="run">
          </description>
          <description
-               description="Debugs a Ceylon Java application packaged as an assembly"
+               description="Assemble and debug a Ceylon program on the JVM"
                mode="debug">
          </description>
          <contextualLaunch>
@@ -2119,18 +2119,18 @@
          </configurationType>
       </shortcut>
       <shortcut
-            label="Ceylon WildFly Swarm Jar"
+            label="Ceylon WildFly Swarm Application"
             icon="icons/launch.png"
             modes="run, debug"
             class="com.redhat.ceylon.eclipse.core.launch.SwarmPackagedCeylonLaunchShortcut"
-            description="Launch a Ceylon Java application packaged by Wildfly Swarm"
+            description="Assemble and launch a Ceylon application using Wildfly Swarm"
             id="com.redhat.ceylon.eclipse.ui.launcher.swarmPackagedModuleShortcut">
          <description 
-               description="Runs a Ceylon Java application packaged by Wildfly Swarm"
+               description="Package and run a Ceylon application using Wildfly Swarm"
                mode="run">
          </description>
          <description
-               description="Debugs a Ceylon Java application packaged by Wildfly Swarm"
+               description="Package and debug a Ceylon application using Wildfly Swarm"
                mode="debug">
          </description>
          <contextualLaunch>
