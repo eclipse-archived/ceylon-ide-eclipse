@@ -23,3 +23,6 @@ lookup=flat:./target/repo/plugins
 lookup=./../../../ceylon/dist/osgi/embeddedRepository/repo
 lookup=flat:./lib/sources
 lookup=flat:./eclipse-sources-repo/plugins
+lookup=./../../../ceylon-sdk/modules
+lookup=./../../../ceylon.formatter/modules
+lookup=./../../../ceylon-ide-common/modules
