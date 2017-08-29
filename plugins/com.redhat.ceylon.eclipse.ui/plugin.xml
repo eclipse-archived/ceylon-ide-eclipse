@@ -1969,7 +1969,7 @@
       <launchConfigurationTypeImage
             id="com.redhat.ceylon.eclipse.ui.launching.jarPackagedCeylonApplicationImage"
             configTypeID="com.redhat.ceylon.eclipse.ui.launching.jarPackagedCeylonApplication"
-            icon="icons/launch.png">
+            icon="icons/fatjar.png">
       </launchConfigurationTypeImage>  
    </extension>
    
@@ -2040,7 +2040,7 @@
       </shortcut>         
       <shortcut
             label="Ceylon Fat Jar"
-            icon="icons/launch.png"
+            icon="icons/fatjar.png"
             modes="run, debug"
             class="com.redhat.ceylon.eclipse.core.launch.FatJarPackagedCeylonLaunchShortcut"
             description="Assemble and launch a Ceylon program packaged as a fat jar"
@@ -2080,7 +2080,7 @@
       </shortcut>
       <shortcut
             label="Ceylon Assembly"
-            icon="icons/launch.png"
+            icon="icons/fatjar.png"
             modes="run, debug"
             class="com.redhat.ceylon.eclipse.core.launch.AssemblyPackagedCeylonLaunchShortcut"
             description="Assemble and launch a Ceylon program on the JVM"
@@ -2120,7 +2120,7 @@
       </shortcut>
       <shortcut
             label="Ceylon WildFly Swarm Application"
-            icon="icons/launch.png"
+            icon="icons/fatjar.png"
             modes="run, debug"
             class="com.redhat.ceylon.eclipse.core.launch.SwarmPackagedCeylonLaunchShortcut"
             description="Assemble and launch a Ceylon application using Wildfly Swarm"
