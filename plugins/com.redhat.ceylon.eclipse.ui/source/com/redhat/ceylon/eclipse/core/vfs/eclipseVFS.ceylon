@@ -19,9 +19,6 @@ import com.redhat.ceylon.model.typechecker.model {
 import java.io {
     InputStream
 }
-import java.lang {
-    RuntimeException
-}
 import java.util {
     JList=List,
     ArrayList
@@ -110,26 +107,11 @@ shared class IFileVirtualFile
         ceylonProject = ceylonModel.getProject(nativeProject);
     }
 
-    shared actual Boolean equals(Object that)
-            => (super of FileVirtualFile<IProject,IResource, IFolder, IFile>).equals(that);
-    shared actual Integer hash
-            => (super of FileVirtualFile<IProject,IResource, IFolder, IFile>).hash;
-    shared actual InputStream inputStream {
-        try {
-            return nativeResource.getContents(true);
-        } catch (CoreException e) {
-            throw RuntimeException(e);
-        }
-    }
+    equals(Object that) => (super of FileVirtualFile<IProject,IResource, IFolder, IFile>).equals(that);
+    hash => (super of FileVirtualFile<IProject,IResource, IFolder, IFile>).hash;
+    
+    inputStream => nativeResource.getContents(true);
 
-    shared actual String charset {
-        try {
-            return nativeResource.project.defaultCharset; // in the future, we could return the charset of the file
-        }
-        catch (Exception e) {
-            throw RuntimeException(e);
-        }
-
-    }
+    charset => nativeResource.project.defaultCharset; // in the future, we could return the charset of the file
 }
 
