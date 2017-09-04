@@ -10,6 +10,7 @@ import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 
 import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonInterpolatingLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 
@@ -21,7 +22,9 @@ public class CeylonAutoEditStrategy implements IAutoEditStrategy {
         ANTLRStringStream stream = 
                 new NewlineFixingStringStream(document.get());
         CeylonLexer lexer = new CeylonLexer(stream);
-        CommonTokenStream ts = new CommonTokenStream(lexer);
+        CommonTokenStream ts = 
+                new CommonTokenStream(
+                        new CeylonInterpolatingLexer(lexer));
         ts.fill();
         try {
             new CeylonParser(ts).compilationUnit();

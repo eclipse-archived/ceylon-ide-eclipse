@@ -13,6 +13,7 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.source.ICharacterPairMatcherExtension;
 
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonInterpolatingLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 import com.redhat.ceylon.eclipse.util.Nodes;
@@ -68,7 +69,9 @@ public class CeylonCharacterPairMatcher
         ANTLRStringStream stream = 
                 new NewlineFixingStringStream(document.get());
         CeylonLexer lexer = new CeylonLexer(stream);
-        CommonTokenStream ts = new CommonTokenStream(lexer);
+        CommonTokenStream ts = 
+                new CommonTokenStream(
+                        new CeylonInterpolatingLexer(lexer));
         ts.fill();
         return (List) ts.getTokens();
     }

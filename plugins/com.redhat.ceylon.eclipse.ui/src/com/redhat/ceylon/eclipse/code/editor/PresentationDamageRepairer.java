@@ -31,6 +31,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
 
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonInterpolatingLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
@@ -93,14 +94,13 @@ class PresentationDamageRepairer implements IPresentationDamager,
                 getTokenIndexAtCharacter((List)tokens, event.getOffset()-1);
         if (tokenIndex<0) tokenIndex=-tokenIndex;
         CommonToken t = (CommonToken) tokens.get(tokenIndex);
-        if (isWithinExistingToken(event, t)) {
-            if (isWithinTokenChange(event, t)) {
-                //the edit just changes the text inside
-                //a token, leaving the rest of the
-                //document structure unchanged
-                return new Region(event.getOffset(), 
-                        event.getText().length());
-            }
+        if (isWithinExistingToken(event, t) 
+                && isWithinTokenChange(event, t)) {
+            //the edit just changes the text inside
+            //a token, leaving the rest of the
+            //document structure unchanged
+            return new Region(event.getOffset(), 
+                    event.getText().length());
         }
         return null;
     }
@@ -201,7 +201,8 @@ class PresentationDamageRepairer implements IPresentationDamager,
         CeylonLexer lexer = 
                 new CeylonLexer(input);
         CommonTokenStream tokenStream = 
-                new CommonTokenStream(lexer);
+                new CommonTokenStream(
+                        new CeylonInterpolatingLexer(lexer));
         
         CeylonParser parser = 
                 new CeylonParser(tokenStream);
@@ -249,21 +250,24 @@ class PresentationDamageRepairer implements IPresentationDamager,
                     break;
                 }
                 
-                int startOffset= token.getStartIndex();
-                int endOffset= token.getStopIndex()+1;
+                int startOffset = token.getStartIndex();
+                int endOffset = token.getStopIndex()+1;
                 if (endOffset<damage.getOffset()) continue;
                 if (startOffset>damage.getOffset()+damage.getLength()) break;
                 
-                switch (tt) {
-                case CeylonParser.STRING_MID:
-                    endOffset-=2; startOffset+=2; 
-                    break;
-                case CeylonParser.STRING_START:
+                int realStartOffset = startOffset;
+                int realEndOffset = endOffset;
+                if (tt==CeylonParser.STRING_START ||
+                    tt==CeylonParser.STRING_MID) {
                     endOffset-=2;
-                    break;
-                case CeylonParser.STRING_END:
-                    startOffset+=2; 
-                    break;
+                }
+                if (tt==CeylonParser.STRING_MID ||
+                    tt==CeylonParser.STRING_END) {
+                    boolean isBacktick = false;
+                    try {
+                        isBacktick = document.getChar(startOffset)=='`';
+                    } catch (BadLocationException e) {}
+                    startOffset+=isBacktick?2:1; 
                 }
                 /*if (startOffset <= prevEndOffset && 
                         endOffset >= prevStartOffset) {
@@ -276,7 +280,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
                     tt==CeylonParser.STRING_END) {
                     changeTokenPresentation(presentation,
                             getInterpolationColoring(),
-                            startOffset-2,startOffset-1,
+                            realStartOffset,startOffset,
                             inInterpolated>1 ? SWT.ITALIC : SWT.NORMAL);
                 }
                 changeTokenPresentation(presentation, 
@@ -293,7 +297,7 @@ class PresentationDamageRepairer implements IPresentationDamager,
                     tt==CeylonParser.STRING_START) {
                     changeTokenPresentation(presentation, 
                             getInterpolationColoring(),
-                            endOffset+1,endOffset+2,
+                            endOffset,realEndOffset,
                             inInterpolated>1 ? SWT.ITALIC : SWT.NORMAL);
                 }
                 //prevStartOffset= startOffset;

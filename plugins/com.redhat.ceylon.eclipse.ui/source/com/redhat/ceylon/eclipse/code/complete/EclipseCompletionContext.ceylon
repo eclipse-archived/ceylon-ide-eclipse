@@ -68,8 +68,8 @@ shared class EclipseCompletionContext(shared CeylonParseController cpc) satisfie
         if (!filtersString.trimmed.empty) {
             value regexes 
                     = filtersString
-                    .replace("\\(\\w+\\)", "")
-                    .replace(".", "\\.")
+                    .replace("""\(\w+\)""", "")
+                    .replace(".", """\.""")
                     .replace("*", ".*")
                     .split(','.equals);
             for (String regex in regexes) {

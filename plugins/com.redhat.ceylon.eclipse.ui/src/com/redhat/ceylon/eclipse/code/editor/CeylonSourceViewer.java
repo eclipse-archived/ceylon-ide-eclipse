@@ -60,6 +60,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.PartInitException;
 
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonInterpolatingLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
@@ -473,7 +474,8 @@ public class CeylonSourceViewer extends ProjectionViewer {
                 new NewlineFixingStringStream(doc.get());
         CeylonLexer lexer = new CeylonLexer(stream);
         CommonTokenStream tokens = 
-                new CommonTokenStream(lexer);
+                new CommonTokenStream(
+                        new CeylonInterpolatingLexer(lexer));
         tokens.fill();
         return getTokenStrictlyContainingOffset(offset, 
                         (List) tokens.getTokens());

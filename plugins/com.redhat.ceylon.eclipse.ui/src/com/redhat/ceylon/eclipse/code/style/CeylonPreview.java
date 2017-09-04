@@ -36,6 +36,7 @@ import ceylon.formatter.options.SparseFormattingOptions;
 import ceylon.formatter.options.combinedOptions_;
 import ceylon.language.Singleton;
 
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonInterpolatingLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
@@ -248,8 +249,10 @@ public class CeylonPreview {
         fPreviewText = previewText;
         fPreviewLexer = new CeylonLexer(new ANTLRStringStream(previewText));
         try {
-            fPreviewCu = new CeylonParser(new CommonTokenStream(
-                    fPreviewLexer)).compilationUnit();
+            fPreviewCu = 
+                    new CeylonParser(new CommonTokenStream(
+                            new CeylonInterpolatingLexer(fPreviewLexer)))
+                        .compilationUnit();
         } catch (RecognitionException re) {
             CeylonPlugin.getInstance().getLog()
                     .log(new Status(IStatus.WARNING, CeylonPlugin.PLUGIN_ID,

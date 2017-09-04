@@ -70,6 +70,7 @@ import com.redhat.ceylon.compiler.typechecker.context.Context;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
 import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
 import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonInterpolatingLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
 import com.redhat.ceylon.compiler.typechecker.parser.LexError;
@@ -1006,7 +1007,8 @@ public class CeylonParseController
               new NewlineFixingStringStream(code);
       CeylonLexer lexer = new CeylonLexer(stream);
       CommonTokenStream tokenStream = 
-              new CommonTokenStream(lexer);
+              new CommonTokenStream(
+                      new CeylonInterpolatingLexer(lexer));
       tokenStream.fill();
       tokens = tokenStream.getTokens();
 
