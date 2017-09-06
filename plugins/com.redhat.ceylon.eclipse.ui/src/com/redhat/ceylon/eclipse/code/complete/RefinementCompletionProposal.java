@@ -329,12 +329,14 @@ public final class RefinementCompletionProposal extends CompletionProposal {
         if (explicitReturnType) {
             importProposals()
                 .importSignatureTypes(declaration, cu, 
-                    new CeylonMutableSet<>(null, decs));
+                    new CeylonMutableSet<>(null, decs),
+                    scope);
         }
         else {
             importProposals()
                 .importParameterTypes(declaration, cu, 
-                        new CeylonMutableSet<>(null, decs));
+                        new CeylonMutableSet<>(null, decs),
+                        scope);
         }
         int il = (int) importProposals()
                 .applyImports(commonChange, 

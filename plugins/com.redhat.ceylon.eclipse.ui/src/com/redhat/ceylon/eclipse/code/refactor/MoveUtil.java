@@ -85,7 +85,7 @@ public class MoveUtil {
                             !pn.equals(Module.LANGUAGE_MODULE_NAME) &&
                             (ncu==null 
                                 || !importProposals()
-                                    .isImported(d, ncu))) {
+                                    .isImported(d, ncu.getUnit()))) {
                         imports.put(d, id.getText());
                         packages.add(pn);
                     }
