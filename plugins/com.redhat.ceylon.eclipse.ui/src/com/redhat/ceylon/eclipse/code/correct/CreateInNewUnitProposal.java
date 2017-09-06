@@ -125,7 +125,7 @@ class CreateInNewUnitProposal implements ICompletionProposal,
         TextFileChange tfc = 
                 new TextFileChange("Add Import", file);
         Tree.Import importNode = 
-                importProposals().findImportNode(rootNode, packageName);
+                importProposals().findImportNode(rootNode, packageName, rootNode.getScope());
         if (importNode==null) {
             tfc.setEdit(new InsertEdit(
                     (int) importProposals().getBestImportInsertPosition(rootNode), 

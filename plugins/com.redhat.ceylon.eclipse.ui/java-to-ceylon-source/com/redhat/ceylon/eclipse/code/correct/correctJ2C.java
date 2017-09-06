@@ -190,7 +190,7 @@ public class correctJ2C implements CorrectJ2C {
                         rootNode,
                         new CeylonSet<>(null,declarations),
                         new CeylonStringIterable(aliases),
-                        null, newDocument(doc)));
+                        null, null, newDocument(doc)));
 
         for (InsertEdit importEdit: edits) {
             org.eclipse.text.edits.InsertEdit ie = 

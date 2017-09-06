@@ -173,7 +173,7 @@ public class CopyFileRefactoringParticipant extends CopyParticipant {
                             imports.values(), getDocument(change));
                 }
                 Tree.Import toDelete = 
-                        importProposals().findImportNode(cu, newName);
+                        importProposals().findImportNode(cu, newName, cu.getScope());
                 if (toDelete!=null) {
                     int start = toDelete.getStartIndex();
                     int len = toDelete.getDistance();

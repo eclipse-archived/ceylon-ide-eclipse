@@ -85,9 +85,10 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                     movingFiles.add(r);
                 }
             }
-            return file.getFileExtension()!=null &&
-                        (file.getFileExtension().equals("ceylon") ||
-                         file.getFileExtension().equals("java"));
+            String ext = file.getFileExtension();
+            return ext!=null 
+                && (ext.equals("ceylon") 
+                 || ext.equals("java"));
         }
         else {
             return false;
@@ -383,7 +384,7 @@ public class MoveFileRefactoringParticipant extends MoveParticipant {
                         imports.keySet(), imports.values(),
                         EditorUtil.getDocument(change));
             }
-            Tree.Import toDelete = importProposals().findImportNode(cu, newName);
+            Tree.Import toDelete = importProposals().findImportNode(cu, newName, cu.getScope());
             if (toDelete!=null) {
                 change.addEdit(new DeleteEdit(toDelete.getStartIndex(), 
                         toDelete.getDistance()));

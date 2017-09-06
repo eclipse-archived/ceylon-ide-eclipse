@@ -65,7 +65,8 @@ public class MoveUtil {
         return (int) importProposals()
                 .applyImportsWithAliases(change, 
                         new CeylonMap<>(null, null, imports), 
-                        ncu, change.getDocument(), declaration);
+                        ncu, change.getDocument(),
+                        null, declaration);
     }
 
     public static Map<Declaration,String> getImports(Node node,
