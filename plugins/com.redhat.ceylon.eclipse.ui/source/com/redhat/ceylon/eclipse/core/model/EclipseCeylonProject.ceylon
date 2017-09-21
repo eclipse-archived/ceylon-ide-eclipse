@@ -87,11 +87,12 @@ object eclipseSpecificAnalysisBuildHook
             switch(change)
             case(is [NativeResourceChange, IProject]) {
                 // Change outside project sources or resources
-                value [nonModelChange, changeProject] = change;
+                let ([nonModelChange, changeProject] = change);
                 switch(nonModelChange)
                 case(is NativeFolderRemoval) {
                     if (exists fullPath = nonModelChange.resource.fullPath,
-                        exists explodedDirPath = CeylonBuilder.getCeylonClassesOutputFolder(changeProject)?.fullPath, 
+                        exists explodedDirPath 
+                                = CeylonBuilder.getCeylonClassesOutputFolder(changeProject)?.fullPath, 
                         explodedDirPath.isPrefixOf(fullPath)) {
                         state.buildType.requireFullBuild();
                         state.buildType.requireClasspathResolution();

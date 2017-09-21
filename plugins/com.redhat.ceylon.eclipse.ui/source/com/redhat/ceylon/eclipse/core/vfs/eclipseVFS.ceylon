@@ -16,9 +16,6 @@ import com.redhat.ceylon.model.typechecker.model {
     Package
 }
 
-import java.io {
-    InputStream
-}
 import java.util {
     JList=List,
     ArrayList

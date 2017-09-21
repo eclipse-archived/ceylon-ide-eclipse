@@ -45,7 +45,7 @@ shared class EclipseLinkedMode(document, model = LinkedModeModel()) extends Link
         value group = LinkedPositionGroup();
         
         for (pos in positions) {
-            value [offset, length, exitSeq] = pos;
+            let ([offset, length, exitSeq] = pos);
             group.addPosition(LinkedPosition(document.document, offset, length, exitSeq));
         }
         
