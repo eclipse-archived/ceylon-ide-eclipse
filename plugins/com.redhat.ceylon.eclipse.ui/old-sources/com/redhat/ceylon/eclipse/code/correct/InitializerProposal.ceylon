@@ -1,36 +1,36 @@
-import com.redhat.ceylon.eclipse.code.complete {
+import org.eclipse.ceylon.ide.eclipse.code.complete {
     IEclipseCompletionProposal2And6,
     CompletionUtil
 }
-import com.redhat.ceylon.eclipse.code.editor {
+import org.eclipse.ceylon.ide.eclipse.code.editor {
     CeylonEditor,
     Navigation
 }
-import com.redhat.ceylon.eclipse.code.outline {
+import org.eclipse.ceylon.ide.eclipse.code.outline {
     CeylonLabelProvider
 }
-import com.redhat.ceylon.eclipse.ui {
+import org.eclipse.ceylon.ide.eclipse.ui {
     CeylonPlugin,
     CeylonResources
 }
-import com.redhat.ceylon.eclipse.util {
+import org.eclipse.ceylon.ide.eclipse.util {
     Highlights
 }
-import com.redhat.ceylon.ide.common.completion {
+import org.eclipse.ceylon.ide.common.completion {
     getProposedName,
     appendPositionalArgs,
     ProposalsHolder
 }
-import com.redhat.ceylon.ide.common.correct {
+import org.eclipse.ceylon.ide.common.correct {
     AbstractInitializerQuickFix
 }
-import com.redhat.ceylon.ide.common.model {
+import org.eclipse.ceylon.ide.common.model {
     ModifiableSourceFile
 }
-import com.redhat.ceylon.ide.common.refactoring {
+import org.eclipse.ceylon.ide.common.refactoring {
     DefaultRegion
 }
-import com.redhat.ceylon.model.typechecker.model {
+import org.eclipse.ceylon.model.typechecker.model {
     Declaration,
     Scope,
     Unit,
@@ -68,7 +68,7 @@ import org.eclipse.swt.graphics {
     Image,
     Point
 }
-import com.redhat.ceylon.eclipse.platform {
+import org.eclipse.ceylon.ide.eclipse.platform {
     EclipseProposalsHolder
 }
 

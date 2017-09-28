@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
 
 import java.lang.reflect.InvocationTargetException;
@@ -38,7 +38,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.PlatformUI;
 
-import com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsBlock;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonBuildPathsBlock;
 
 /**
  * Basic wizard page for creating new Java projects. This page can be used in

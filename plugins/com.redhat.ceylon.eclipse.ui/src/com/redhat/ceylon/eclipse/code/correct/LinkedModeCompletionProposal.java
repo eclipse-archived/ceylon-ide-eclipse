@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_LITERAL;
+import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,12 +26,12 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.model.typechecker.model.ModelUtil;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
+import org.eclipse.ceylon.model.typechecker.model.ModelUtil;
+import org.eclipse.ceylon.model.typechecker.model.Type;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 public class LinkedModeCompletionProposal 
         implements ICompletionProposal, 

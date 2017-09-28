@@ -1,16 +1,16 @@
-package com.redhat.ceylon.eclipse.code.preferences;
+package org.eclipse.ceylon.ide.eclipse.code.preferences;
 
-import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.addModuleImports;
-import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.makeModuleImportShared;
-import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.removeModuleImports;
-import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.removeSharedAnnotation;
-import static com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModules;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
-import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleSearchResults;
+import static org.eclipse.ceylon.ide.eclipse.code.imports.ModuleImportUtil.addModuleImports;
+import static org.eclipse.ceylon.ide.eclipse.code.imports.ModuleImportUtil.makeModuleImportShared;
+import static org.eclipse.ceylon.ide.eclipse.code.imports.ModuleImportUtil.removeModuleImports;
+import static org.eclipse.ceylon.ide.eclipse.code.imports.ModuleImportUtil.removeSharedAnnotation;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectModules;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getDocument;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.performChange;
+import static org.eclipse.ceylon.ide.eclipse.util.ModuleQueries.getModuleSearchResults;
 import static org.eclipse.swt.layout.GridData.FILL_BOTH;
 import static org.eclipse.swt.layout.GridData.FILL_HORIZONTAL;
 import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
@@ -57,20 +57,20 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
-import com.redhat.ceylon.cmr.api.ModuleSearchResult;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.Navigation;
-import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
-import com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
-import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
-import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.ModuleImport;
-import com.redhat.ceylon.model.typechecker.model.Modules;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.cmr.api.ModuleSearchResult;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.code.editor.Navigation;
+import org.eclipse.ceylon.ide.eclipse.code.navigator.SourceModuleNode;
+import org.eclipse.ceylon.ide.eclipse.code.wizard.NewPackageWizard;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.common.model.ProjectSourceFile;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleVersionNode;
+import org.eclipse.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.ModuleImport;
+import org.eclipse.ceylon.model.typechecker.model.Modules;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 public class CeylonModulePropertiesPage extends PropertyPage 
         implements IWorkbenchPropertyPage {

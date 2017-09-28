@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.explorer;
+package org.eclipse.ceylon.ide.eclipse.code.explorer;
 
 /*******************************************************************************
  * Copyright (c) 2000, 2011 IBM Corporation and others.
@@ -11,7 +11,7 @@ package com.redhat.ceylon.eclipse.code.explorer;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import java.io.IOException;
 import java.io.StringReader;

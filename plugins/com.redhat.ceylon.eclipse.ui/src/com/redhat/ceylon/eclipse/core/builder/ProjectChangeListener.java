@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.core.builder;
+package org.eclipse.ceylon.ide.eclipse.core.builder;
 
-import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
+import static org.eclipse.ceylon.ide.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.*;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import org.eclipse.core.resources.IProject;

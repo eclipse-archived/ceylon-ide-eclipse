@@ -1,14 +1,14 @@
-package com.redhat.ceylon.eclipse.code.search;
+package org.eclipse.ceylon.ide.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getIdentifyingNode;
 
 import org.eclipse.search.ui.text.Match;
 
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.ide.common.search.FindContainerVisitor;
+import org.eclipse.ceylon.compiler.typechecker.io.VirtualFile;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.common.search.FindContainerVisitor;
 
 public class CeylonSearchMatch extends Match {
     

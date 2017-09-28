@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.preferences;
+package org.eclipse.ceylon.ide.eclipse.code.preferences;
 import org.eclipse.jdt.internal.debug.ui.Filter;
 import org.eclipse.jdt.ui.ISharedImages;
 import org.eclipse.jdt.ui.JavaUI;

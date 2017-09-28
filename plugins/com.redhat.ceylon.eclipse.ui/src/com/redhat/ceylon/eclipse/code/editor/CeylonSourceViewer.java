@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
 /*******************************************************************************
 * Copyright (c) 2007 IBM Corporation.
@@ -12,17 +12,17 @@ package com.redhat.ceylon.eclipse.code.editor;
 *******************************************************************************/
 
 
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_END;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_MID;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
-import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_CORRECT_INDENTATION;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_ESCAPE_QUOTED;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_IMPORTS;
-import static com.redhat.ceylon.eclipse.util.Nodes.getTokenStrictlyContainingOffset;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_END;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_MID;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.HierarchyView.showHierarchyView;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_CORRECT_INDENTATION;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_ESCAPE_QUOTED;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.PASTE_IMPORTS;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getTokenStrictlyContainingOffset;
 import static java.lang.Character.isWhitespace;
 import static org.eclipse.jface.text.DocumentRewriteSessionType.SEQUENTIAL;
 
@@ -60,15 +60,15 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.PartInitException;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonInterpolatingLexer;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
-import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.ide.common.imports.SelectedImportsVisitor;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonInterpolatingLexer;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
+import org.eclipse.ceylon.ide.eclipse.code.correct.correctJ2C;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.common.imports.SelectedImportsVisitor;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
 
 public class CeylonSourceViewer extends ProjectionViewer {
     /**

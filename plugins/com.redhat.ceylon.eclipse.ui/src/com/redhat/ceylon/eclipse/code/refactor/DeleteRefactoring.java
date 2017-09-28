@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,17 +17,17 @@ import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.ide.eclipse.code.search.CeylonSearchMatch;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.FunctionOrValue;
+import org.eclipse.ceylon.model.typechecker.model.Parameter;
+import org.eclipse.ceylon.model.typechecker.model.Referenceable;
+import org.eclipse.ceylon.model.typechecker.model.Type;
+import org.eclipse.ceylon.model.typechecker.model.TypedDeclaration;
 
 public class DeleteRefactoring extends AbstractRefactoring {
     

@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.outline;
+package org.eclipse.ceylon.ide.eclipse.code.outline;
 
 import java.util.Arrays;
 
-import com.redhat.ceylon.eclipse.util.ModelProxy;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.ide.eclipse.util.ModelProxy;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
 
 class CeylonHierarchyNode 
         implements Comparable<CeylonHierarchyNode> {

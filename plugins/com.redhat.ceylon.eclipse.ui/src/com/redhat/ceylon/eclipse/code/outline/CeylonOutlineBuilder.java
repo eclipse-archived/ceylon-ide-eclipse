@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.code.outline;
+package org.eclipse.ceylon.ide.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.DEFAULT_CATEGORY;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.IMPORT_LIST_CATEGORY;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.PACKAGE_CATEGORY;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.ROOT_CATEGORY;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.UNIT_CATEGORY;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonOutlineNode.DEFAULT_CATEGORY;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonOutlineNode.IMPORT_LIST_CATEGORY;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonOutlineNode.PACKAGE_CATEGORY;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonOutlineNode.ROOT_CATEGORY;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonOutlineNode.UNIT_CATEGORY;
 
 import java.util.Stack;
 
@@ -13,15 +13,15 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.ide.common.model.CeylonUnit;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.common.model.CeylonUnit;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.TypedDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 public class CeylonOutlineBuilder extends Visitor {
     

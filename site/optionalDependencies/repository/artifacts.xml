@@ -11,7 +11,7 @@
     <rule filter='(&amp; (classifier=org.eclipse.update.feature))' output='${repoUrl}/features/${id}_${version}.jar'/>
   </mappings>
   <artifacts size='1'>
-    <artifact classifier='osgi.bundle' id='com.redhat.ceylon.eclipse.fragment.sun.misc' version='1.0.0'>
+    <artifact classifier='osgi.bundle' id='org.eclipse.ceylon.ide.eclipse.fragment.sun.misc' version='1.0.0'>
       <properties size='3'>
         <property name='artifact.size' value='2700'/>
         <property name='download.size' value='2700'/>

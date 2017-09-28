@@ -1,14 +1,14 @@
-package com.redhat.ceylon.eclipse.code.outline;
+package org.eclipse.ceylon.ide.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.MULTIPLE_TYPES_IMAGE;
-import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.MULTIPLE_TYPES_IMAGE;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.PACKAGE_STYLER;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -18,10 +18,10 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Font;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
+import org.eclipse.ceylon.model.typechecker.model.ClassOrInterface;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
 
 abstract class CeylonHierarchyLabelProvider 
         extends StyledCellLabelProvider {

@@ -3,24 +3,24 @@ import ceylon.collection {
     MutableList
 }
 
-import com.redhat.ceylon.eclipse.core.model.mirror {
+import org.eclipse.ceylon.ide.eclipse.core.model.mirror {
     IBindingProvider,
     JDTMethod,
     JDTClass
 }
-import com.redhat.ceylon.eclipse.util {
+import org.eclipse.ceylon.ide.eclipse.util {
     withJavaModel
 }
-import com.redhat.ceylon.ide.common.model {
+import org.eclipse.ceylon.ide.common.model {
     IJavaModelAware
 }
-import com.redhat.ceylon.ide.common.util {
+import org.eclipse.ceylon.ide.common.util {
     ProgressMonitor,
     synchronize,
     equalsWithNulls,
     BaseProgressMonitor
 }
-import com.redhat.ceylon.model.loader.model {
+import org.eclipse.ceylon.model.loader.model {
     LazyClass,
     LazyInterface,
     LazyValue,
@@ -30,7 +30,7 @@ import com.redhat.ceylon.model.loader.model {
     JavaMethod,
     AnnotationProxyClass
 }
-import com.redhat.ceylon.model.typechecker.model {
+import org.eclipse.ceylon.model.typechecker.model {
     Declaration,
     Scope,
     Value

@@ -111,7 +111,7 @@
     <module module="org.eclipse.jdt.ui">
         <share module="org.eclipse.jdt.core.manipulation"/>
     </module>
-    <module module="com.redhat.ceylon.eclipse.ui.jdt.debug.fragment">
+    <module module="org.eclipse.ceylon.ide.eclipse.ui.jdt.debug.fragment">
         <add module="org.eclipse.debug.core" version="${org.eclipse.debug.core.version.override}"/>
         <add module="org.eclipse.jdt.debug" version="${org.eclipse.jdt.debug.version.override}"/>
     </module>

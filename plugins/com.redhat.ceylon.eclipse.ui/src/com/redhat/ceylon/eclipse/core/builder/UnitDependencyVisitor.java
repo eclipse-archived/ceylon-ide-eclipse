@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.core.builder;
+package org.eclipse.ceylon.ide.eclipse.core.builder;
 
-import static com.redhat.ceylon.model.typechecker.model.Module.LANGUAGE_MODULE_NAME;
+import static org.eclipse.ceylon.model.typechecker.model.Module.LANGUAGE_MODULE_NAME;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,25 +15,25 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
 
-import com.redhat.ceylon.compiler.java.loader.TypeFactory;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
-import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
-import com.redhat.ceylon.ide.common.model.ICrossProjectReference;
-import com.redhat.ceylon.ide.common.model.IdeUnit;
-import com.redhat.ceylon.ide.common.model.JavaClassFile;
-import com.redhat.ceylon.ide.common.model.JavaCompilationUnit;
-import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
-import com.redhat.ceylon.model.cmr.JDKUtils;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ModelUtil;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.compiler.java.loader.TypeFactory;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.ide.common.model.CeylonBinaryUnit;
+import org.eclipse.ceylon.ide.common.model.ExternalSourceFile;
+import org.eclipse.ceylon.ide.common.model.ICrossProjectReference;
+import org.eclipse.ceylon.ide.common.model.IdeUnit;
+import org.eclipse.ceylon.ide.common.model.JavaClassFile;
+import org.eclipse.ceylon.ide.common.model.JavaCompilationUnit;
+import org.eclipse.ceylon.ide.common.model.ProjectSourceFile;
+import org.eclipse.ceylon.model.cmr.JDKUtils;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.ModelUtil;
+import org.eclipse.ceylon.model.typechecker.model.Parameter;
+import org.eclipse.ceylon.model.typechecker.model.Type;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.TypedDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 public class UnitDependencyVisitor extends Visitor {
     

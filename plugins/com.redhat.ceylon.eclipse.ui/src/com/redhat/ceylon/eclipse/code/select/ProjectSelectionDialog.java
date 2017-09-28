@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.select;
+package org.eclipse.ceylon.ide.eclipse.code.select;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.PROJECT;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.PROJECT;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
 
 public class ProjectSelectionDialog extends ElementListSelectionDialog {
 

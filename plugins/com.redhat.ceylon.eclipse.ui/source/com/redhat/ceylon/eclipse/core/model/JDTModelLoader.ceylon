@@ -1,43 +1,43 @@
-import com.redhat.ceylon.common {
+import org.eclipse.ceylon.common {
     ModuleSpec
 }
-import com.redhat.ceylon.eclipse.core.classpath {
+import org.eclipse.ceylon.ide.eclipse.core.classpath {
     CeylonClasspathUtil,
     CeylonProjectModulesContainer
 }
-import com.redhat.ceylon.eclipse.core.model {
+import org.eclipse.ceylon.ide.eclipse.core.model {
     isCeylonSourceEntry
 }
-import com.redhat.ceylon.eclipse.core.model.mirror {
+import org.eclipse.ceylon.ide.eclipse.core.model.mirror {
     JDTClass,
     JDTMethod,
     JDTType
 }
-import com.redhat.ceylon.eclipse.util {
+import org.eclipse.ceylon.ide.eclipse.util {
     withJavaModel
 }
-import com.redhat.ceylon.ide.common.model {
+import org.eclipse.ceylon.ide.common.model {
     IdeModelLoader,
     BaseIdeModule
 }
-import com.redhat.ceylon.ide.common.util {
+import org.eclipse.ceylon.ide.common.util {
     synchronize,
     unsafeCast
 }
-import com.redhat.ceylon.model.cmr {
+import org.eclipse.ceylon.model.cmr {
     ArtifactResult
 }
-import com.redhat.ceylon.model.loader.mirror {
+import org.eclipse.ceylon.model.loader.mirror {
     ClassMirror,
     MethodMirror,
     AnnotatedMirror,
     FunctionalInterfaceType,
     TypeMirror
 }
-import com.redhat.ceylon.model.loader.model {
+import org.eclipse.ceylon.model.loader.model {
     LazyPackage
 }
-import com.redhat.ceylon.model.typechecker.model {
+import org.eclipse.ceylon.model.typechecker.model {
     Modules,
     Declaration,
     ClassOrInterface

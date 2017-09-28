@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.navigator;
+package org.eclipse.ceylon.ide.eclipse.code.navigator;
 
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
 
 public interface ModuleNode {
     BaseIdeModule getModule();

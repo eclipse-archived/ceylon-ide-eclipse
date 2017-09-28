@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.ui;
+package org.eclipse.ceylon.ide.eclipse.ui;
 
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.intro.config.IntroURLFactory.createIntroURL;
@@ -23,7 +23,7 @@ public class WelcomeAction extends AbstractHandler {
         }
         else {
             getWorkbench().getIntroManager().showIntro(window, false);
-            IIntroURL url = createIntroURL("http://org.eclipse.ui.intro/showPage?id=com.redhat.ceylon.ui.intro");
+            IIntroURL url = createIntroURL("http://org.eclipse.ui.intro/showPage?id=org.eclipse.ceylon.ui.intro");
             url.execute();
         }
         return null;

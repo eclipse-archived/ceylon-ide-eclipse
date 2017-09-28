@@ -8,9 +8,9 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.io.File;
 import java.io.FileInputStream;

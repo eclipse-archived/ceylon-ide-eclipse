@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.model;
+package org.eclipse.ceylon.ide.eclipse.core.model;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -7,11 +7,11 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-import com.redhat.ceylon.ide.common.model.IResourceAware;
-import com.redhat.ceylon.ide.common.model.IdeUnit;
-import com.redhat.ceylon.ide.common.util.toJavaIterable_;
-import com.redhat.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.ide.common.model.IResourceAware;
+import org.eclipse.ceylon.ide.common.model.IdeUnit;
+import org.eclipse.ceylon.ide.common.util.toJavaIterable_;
+import org.eclipse.ceylon.model.typechecker.model.Package;
 
 public abstract class JavaUnit extends IdeUnit implements IJavaModelAware, IResourceAware {
     

@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.ui.test;
+package org.eclipse.ceylon.ide.eclipse.ui.test;
 
 import static org.junit.Assert.assertTrue;
 
@@ -21,10 +21,10 @@ import org.eclipse.swtbot.swt.finder.utils.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.ui.test.Utils.CeylonBuildSummary;
+import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.eclipse.core.model.JDTModelLoader;
+import org.eclipse.ceylon.ide.eclipse.ui.test.Utils.CeylonBuildSummary;
 
 @SuppressWarnings("deprecation")
 public abstract class AbstractMultiProjectTest {

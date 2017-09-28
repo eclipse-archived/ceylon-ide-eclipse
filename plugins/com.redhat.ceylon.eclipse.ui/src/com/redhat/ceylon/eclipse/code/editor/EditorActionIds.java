@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 /**
  * This interface houses action definition IDs, which match command IDs, so that they

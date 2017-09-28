@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.debug.preferences;
+package org.eclipse.ceylon.ide.eclipse.core.debug.preferences;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.internal.ui.actions.StatusInfo;
@@ -19,7 +19,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 public class CreateFilterDialog extends StatusDialog {
 

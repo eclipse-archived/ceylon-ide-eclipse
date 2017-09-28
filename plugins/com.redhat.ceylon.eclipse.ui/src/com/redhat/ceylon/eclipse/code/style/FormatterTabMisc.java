@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.code.style;
+package org.eclipse.ceylon.ide.eclipse.code.style;
 
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_braceOnOwnLine;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_elseOnOwnLine;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_failFast;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_inlineAnnotations;
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.FORMATTER_inlineAnnotations_List;
+import static org.eclipse.ceylon.ide.eclipse.code.style.CeylonFormatterConstants.FORMATTER_braceOnOwnLine;
+import static org.eclipse.ceylon.ide.eclipse.code.style.CeylonFormatterConstants.FORMATTER_elseOnOwnLine;
+import static org.eclipse.ceylon.ide.eclipse.code.style.CeylonFormatterConstants.FORMATTER_failFast;
+import static org.eclipse.ceylon.ide.eclipse.code.style.CeylonFormatterConstants.FORMATTER_inlineAnnotations;
+import static org.eclipse.ceylon.ide.eclipse.code.style.CeylonFormatterConstants.FORMATTER_inlineAnnotations_List;
 
 import java.util.Observable;
 import java.util.Observer;

@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.util;
+package org.eclipse.ceylon.ide.eclipse.util;
 
 import com.github.rjeschke.txtmark.SpanEmitter;
 

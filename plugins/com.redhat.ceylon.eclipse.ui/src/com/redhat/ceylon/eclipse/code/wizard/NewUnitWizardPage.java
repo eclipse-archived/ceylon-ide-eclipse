@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.code.select.PackageSelectionDialog.selectPackage;
-import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.getSelectedJavaElement;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.code.select.PackageSelectionDialog.selectPackage;
+import static org.eclipse.ceylon.ide.eclipse.code.wizard.WizardUtil.getSelectedJavaElement;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
 import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.getSourceContainer;
@@ -51,9 +51,9 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
-import com.redhat.ceylon.eclipse.code.navigator.GenerateBuildPathActionGroup;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
+import org.eclipse.ceylon.ide.eclipse.code.navigator.GenerateBuildPathActionGroup;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.EditorUtil;
 
 class NewUnitWizardPage extends WizardPage {
 

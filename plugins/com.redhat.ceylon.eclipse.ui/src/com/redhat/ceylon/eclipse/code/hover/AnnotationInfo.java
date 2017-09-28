@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.hover;
+package org.eclipse.ceylon.ide.eclipse.code.hover;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,11 +13,11 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
-import com.redhat.ceylon.eclipse.code.correct.CeylonCorrectionProcessor;
-import com.redhat.ceylon.eclipse.code.correct.ProblemLocation;
-import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
+import org.eclipse.ceylon.ide.eclipse.code.correct.CeylonCorrectionProcessor;
+import org.eclipse.ceylon.ide.eclipse.code.correct.ProblemLocation;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonAnnotation;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.core.builder.MarkerCreator;
 
 /**
  * An annotation info contains information about an 

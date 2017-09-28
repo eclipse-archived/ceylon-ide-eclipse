@@ -1,19 +1,19 @@
-package com.redhat.ceylon.eclipse.core.builder;
+package org.eclipse.ceylon.ide.eclipse.core.builder;
 
-import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
-import static com.redhat.ceylon.compiler.java.util.Util.getModuleArchiveName;
-import static com.redhat.ceylon.compiler.java.util.Util.getModulePath;
-import static com.redhat.ceylon.compiler.java.util.Util.getSourceArchiveName;
-import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.util.CeylonHelper.list;
-import static com.redhat.ceylon.eclipse.util.CeylonHelper.td;
-import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringList;
-import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
-import static com.redhat.ceylon.model.typechecker.model.Module.LANGUAGE_MODULE_NAME;
+import static org.eclipse.ceylon.cmr.ceylon.CeylonUtils.repoManager;
+import static org.eclipse.ceylon.compiler.java.util.Util.getModuleArchiveName;
+import static org.eclipse.ceylon.compiler.java.util.Util.getModulePath;
+import static org.eclipse.ceylon.compiler.java.util.Util.getSourceArchiveName;
+import static org.eclipse.ceylon.ide.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathContainers;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.util.CeylonHelper.list;
+import static org.eclipse.ceylon.ide.eclipse.util.CeylonHelper.td;
+import static org.eclipse.ceylon.ide.eclipse.util.CeylonHelper.toJavaStringList;
+import static org.eclipse.ceylon.ide.eclipse.util.InteropUtils.toJavaString;
+import static org.eclipse.ceylon.model.typechecker.model.Module.LANGUAGE_MODULE_NAME;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -95,103 +95,103 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 
-import com.redhat.ceylon.cmr.api.ArtifactContext;
-import com.redhat.ceylon.cmr.api.ArtifactCreator;
-import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
-import com.redhat.ceylon.cmr.impl.ShaSigner;
-import com.redhat.ceylon.common.Backend;
-import com.redhat.ceylon.common.Backends;
-import com.redhat.ceylon.common.Constants;
-import com.redhat.ceylon.common.config.CeylonConfig;
-import com.redhat.ceylon.common.config.DefaultToolOptions;
-import com.redhat.ceylon.common.log.Logger;
-import com.redhat.ceylon.compiler.CeylonCompileTool;
-import com.redhat.ceylon.compiler.java.codegen.CeylonCompilationUnit;
-import com.redhat.ceylon.compiler.java.codegen.CeylonFileObject;
-import com.redhat.ceylon.compiler.java.codegen.Naming;
-import com.redhat.ceylon.compiler.java.loader.ModelLoaderFactory;
-import com.redhat.ceylon.compiler.java.loader.TypeFactory;
-import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
-import com.redhat.ceylon.compiler.java.tools.CeylonLog;
-import com.redhat.ceylon.compiler.java.tools.CeyloncFileManager;
-import com.redhat.ceylon.compiler.java.tools.CeyloncTaskImpl;
-import com.redhat.ceylon.compiler.java.tools.JarEntryFileObject;
-import com.redhat.ceylon.compiler.java.tools.LanguageCompiler;
-import com.redhat.ceylon.compiler.java.util.RepositoryLister;
-import com.redhat.ceylon.compiler.js.JsCompiler;
-import com.redhat.ceylon.compiler.js.util.Options;
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
-import com.redhat.ceylon.compiler.typechecker.analyzer.Warning;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
-import com.redhat.ceylon.compiler.typechecker.tree.Message;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
-import com.redhat.ceylon.compiler.typechecker.util.WarningSuppressionVisitor;
-import com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil;
-import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
-import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.CeylonHelper;
-import com.redhat.ceylon.eclipse.util.EclipseLogger;
-import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
-import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-import com.redhat.ceylon.ide.common.model.BaseIdeModuleManager;
-import com.redhat.ceylon.ide.common.model.BaseIdeModuleSourceMapper;
-import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
-import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
-import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
-import com.redhat.ceylon.ide.common.model.CeylonUnit;
-import com.redhat.ceylon.ide.common.model.IJavaModelAware;
-import com.redhat.ceylon.ide.common.model.IResourceAware;
-import com.redhat.ceylon.ide.common.model.IdeModelLoader;
-import com.redhat.ceylon.ide.common.model.JavaCompilationUnit;
-import com.redhat.ceylon.ide.common.model.JavaUnit;
-import com.redhat.ceylon.ide.common.model.ModuleDependencies;
-import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
-import com.redhat.ceylon.ide.common.model.ProjectState;
-import com.redhat.ceylon.ide.common.model.SourceFile;
-import com.redhat.ceylon.ide.common.model.delta.CompilationUnitDelta;
-import com.redhat.ceylon.ide.common.model.parsing.ProjectSourceParser;
-import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
-import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.ide.common.util.CarUtils;
-import com.redhat.ceylon.ide.common.util.ProgressMonitor;
-import com.redhat.ceylon.ide.common.util.ProgressMonitor$impl;
-import com.redhat.ceylon.ide.common.util.ProgressMonitorChild;
-import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
-import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
-import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
-import com.redhat.ceylon.javax.tools.DiagnosticListener;
-import com.redhat.ceylon.javax.tools.FileObject;
-import com.redhat.ceylon.javax.tools.JavaFileObject;
-import com.redhat.ceylon.langtools.source.tree.CompilationUnitTree;
-import com.redhat.ceylon.langtools.source.util.TaskEvent;
-import com.redhat.ceylon.langtools.source.util.TaskEvent.Kind;
-import com.redhat.ceylon.langtools.source.util.TaskListener;
-import com.redhat.ceylon.langtools.tools.javac.file.RegularFileObject;
-import com.redhat.ceylon.langtools.tools.javac.file.RelativePath.RelativeFile;
-import com.redhat.ceylon.langtools.tools.javac.tree.JCTree;
-import com.redhat.ceylon.langtools.tools.javac.tree.JCTree.JCClassDecl;
-import com.redhat.ceylon.langtools.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.redhat.ceylon.langtools.tools.javac.util.Context;
-import com.redhat.ceylon.model.loader.AbstractModelLoader;
-import com.redhat.ceylon.model.typechecker.context.TypeCache;
-import com.redhat.ceylon.model.typechecker.model.Cancellable;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Modules;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.util.ModuleManager;
+import org.eclipse.ceylon.cmr.api.ArtifactContext;
+import org.eclipse.ceylon.cmr.api.ArtifactCreator;
+import org.eclipse.ceylon.cmr.api.RepositoryManager;
+import org.eclipse.ceylon.cmr.ceylon.CeylonUtils;
+import org.eclipse.ceylon.cmr.impl.ShaSigner;
+import org.eclipse.ceylon.common.Backend;
+import org.eclipse.ceylon.common.Backends;
+import org.eclipse.ceylon.common.Constants;
+import org.eclipse.ceylon.common.config.CeylonConfig;
+import org.eclipse.ceylon.common.config.DefaultToolOptions;
+import org.eclipse.ceylon.common.log.Logger;
+import org.eclipse.ceylon.compiler.CeylonCompileTool;
+import org.eclipse.ceylon.compiler.java.codegen.CeylonCompilationUnit;
+import org.eclipse.ceylon.compiler.java.codegen.CeylonFileObject;
+import org.eclipse.ceylon.compiler.java.codegen.Naming;
+import org.eclipse.ceylon.compiler.java.loader.ModelLoaderFactory;
+import org.eclipse.ceylon.compiler.java.loader.TypeFactory;
+import org.eclipse.ceylon.compiler.java.loader.UnknownTypeCollector;
+import org.eclipse.ceylon.compiler.java.tools.CeylonLog;
+import org.eclipse.ceylon.compiler.java.tools.CeyloncFileManager;
+import org.eclipse.ceylon.compiler.java.tools.CeyloncTaskImpl;
+import org.eclipse.ceylon.compiler.java.tools.JarEntryFileObject;
+import org.eclipse.ceylon.compiler.java.tools.LanguageCompiler;
+import org.eclipse.ceylon.compiler.java.util.RepositoryLister;
+import org.eclipse.ceylon.compiler.js.JsCompiler;
+import org.eclipse.ceylon.compiler.js.util.Options;
+import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+import org.eclipse.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
+import org.eclipse.ceylon.compiler.typechecker.analyzer.Warning;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnits;
+import org.eclipse.ceylon.compiler.typechecker.io.VirtualFile;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+import org.eclipse.ceylon.compiler.typechecker.tree.AnalysisMessage;
+import org.eclipse.ceylon.compiler.typechecker.tree.Message;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import org.eclipse.ceylon.compiler.typechecker.tree.UnexpectedError;
+import org.eclipse.ceylon.compiler.typechecker.util.WarningSuppressionVisitor;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonTaskUtil;
+import org.eclipse.ceylon.ide.eclipse.core.classpath.CeylonLanguageModuleContainer;
+import org.eclipse.ceylon.ide.eclipse.core.classpath.CeylonProjectModulesContainer;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.eclipse.util.CeylonHelper;
+import org.eclipse.ceylon.ide.eclipse.util.EclipseLogger;
+import org.eclipse.ceylon.ide.common.model.BaseCeylonProject;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModelLoader;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModuleManager;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModuleSourceMapper;
+import org.eclipse.ceylon.ide.common.model.CeylonBinaryUnit;
+import org.eclipse.ceylon.ide.common.model.CeylonIdeConfig;
+import org.eclipse.ceylon.ide.common.model.CeylonProject;
+import org.eclipse.ceylon.ide.common.model.CeylonProjectConfig;
+import org.eclipse.ceylon.ide.common.model.CeylonUnit;
+import org.eclipse.ceylon.ide.common.model.IJavaModelAware;
+import org.eclipse.ceylon.ide.common.model.IResourceAware;
+import org.eclipse.ceylon.ide.common.model.IdeModelLoader;
+import org.eclipse.ceylon.ide.common.model.JavaCompilationUnit;
+import org.eclipse.ceylon.ide.common.model.JavaUnit;
+import org.eclipse.ceylon.ide.common.model.ModuleDependencies;
+import org.eclipse.ceylon.ide.common.model.ProjectSourceFile;
+import org.eclipse.ceylon.ide.common.model.ProjectState;
+import org.eclipse.ceylon.ide.common.model.SourceFile;
+import org.eclipse.ceylon.ide.common.model.delta.CompilationUnitDelta;
+import org.eclipse.ceylon.ide.common.model.parsing.ProjectSourceParser;
+import org.eclipse.ceylon.ide.common.typechecker.ExternalPhasedUnit;
+import org.eclipse.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import org.eclipse.ceylon.ide.common.util.CarUtils;
+import org.eclipse.ceylon.ide.common.util.ProgressMonitor;
+import org.eclipse.ceylon.ide.common.util.ProgressMonitor$impl;
+import org.eclipse.ceylon.ide.common.util.ProgressMonitorChild;
+import org.eclipse.ceylon.ide.common.vfs.FileVirtualFile;
+import org.eclipse.ceylon.ide.common.vfs.FolderVirtualFile;
+import org.eclipse.ceylon.ide.common.vfs.ResourceVirtualFile;
+import org.eclipse.ceylon.javax.tools.DiagnosticListener;
+import org.eclipse.ceylon.javax.tools.FileObject;
+import org.eclipse.ceylon.javax.tools.JavaFileObject;
+import org.eclipse.ceylon.langtools.source.tree.CompilationUnitTree;
+import org.eclipse.ceylon.langtools.source.util.TaskEvent;
+import org.eclipse.ceylon.langtools.source.util.TaskEvent.Kind;
+import org.eclipse.ceylon.langtools.source.util.TaskListener;
+import org.eclipse.ceylon.langtools.tools.javac.file.RegularFileObject;
+import org.eclipse.ceylon.langtools.tools.javac.file.RelativePath.RelativeFile;
+import org.eclipse.ceylon.langtools.tools.javac.tree.JCTree;
+import org.eclipse.ceylon.langtools.tools.javac.tree.JCTree.JCClassDecl;
+import org.eclipse.ceylon.langtools.tools.javac.tree.JCTree.JCCompilationUnit;
+import org.eclipse.ceylon.langtools.tools.javac.util.Context;
+import org.eclipse.ceylon.model.loader.AbstractModelLoader;
+import org.eclipse.ceylon.model.typechecker.context.TypeCache;
+import org.eclipse.ceylon.model.typechecker.model.Cancellable;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Modules;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.model.typechecker.util.ModuleManager;
 
 import ceylon.interop.java.JavaIterable;
 import net.lingala.zip4j.core.ZipFile;
@@ -337,7 +337,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         final boolean explodeModules;
         private Map<RegularFileObject, Set<String>> inputFilesToGenerate = null;
         
-        private BuildFileManager(com.redhat.ceylon.langtools.tools.javac.util.Context context,
+        private BuildFileManager(org.eclipse.ceylon.langtools.tools.javac.util.Context context,
                 boolean register, Charset charset, IProject project, Map<RegularFileObject, Set<String>> inputFilesToGenerate) {
             super(context, register, charset);
             this.project = project;
@@ -348,7 +348,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         public static RegularFileObject getSourceFile(FileObject fileObject) {
             JavaFileObject sourceJavaFileObject;
             if (fileObject instanceof JavaFileObject
-                    && ((JavaFileObject) fileObject).getKind() == com.redhat.ceylon.javax.tools.JavaFileObject.Kind.SOURCE){
+                    && ((JavaFileObject) fileObject).getKind() == org.eclipse.ceylon.javax.tools.JavaFileObject.Kind.SOURCE){
                 if (fileObject instanceof CeylonFileObject) {
                     sourceJavaFileObject = ((CeylonFileObject) fileObject).getFile();
                 } else {
@@ -378,7 +378,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                         inputFilesToGenerate.remove(sourceFile);
                     }
                 } else {
-                    System.out.println("WARNING : com.redhat.ceylon.eclipse.core.builder.CeylonBuilder$BuildFileManager.getFileForOutput().expectedClasses is null for source file "
+                    System.out.println("WARNING : org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder$BuildFileManager.getFileForOutput().expectedClasses is null for source file "
                             + sourceFile
                             + "\n Is it normal ? it seems getFileForOutput was called several times on the same file during binary generation.");
                 }
@@ -2026,7 +2026,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                                         + project.getName());
                 
                                 Module languageModule = loader.getLanguageModule();
-                                loader.loadPackage(languageModule, "com.redhat.ceylon.compiler.java.metadata", true);
+                                loader.loadPackage(languageModule, "org.eclipse.ceylon.compiler.java.metadata", true);
                                 loader.loadPackage(languageModule, LANGUAGE_MODULE_NAME, true);
                                 loader.loadPackage(languageModule, "ceylon.language.descriptor", true);
                                 loader.loadPackageDescriptors();
@@ -2562,9 +2562,9 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
                 ceylon.language.String.instance("Generating binaries for " + numberOfSourceFiles + 
                                 " source files in project " + project.getName()));
         try {
-            com.redhat.ceylon.compiler.java.tools.CeyloncTool compiler;
+            org.eclipse.ceylon.compiler.java.tools.CeyloncTool compiler;
             try {
-                compiler = new com.redhat.ceylon.compiler.java.tools.CeyloncTool();
+                compiler = new org.eclipse.ceylon.compiler.java.tools.CeyloncTool();
             } catch (VerifyError e) {
                 System.err.println("ERROR: Cannot run tests! Did you maybe forget to configure the -Xbootclasspath/p: parameter?");
                 throw e;
@@ -2572,8 +2572,8 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 
             CompileErrorReporter errorReporter = new CompileErrorReporter(project);
 
-            final com.redhat.ceylon.langtools.tools.javac.util.Context context = new com.redhat.ceylon.langtools.tools.javac.util.Context();
-            context.put(com.redhat.ceylon.langtools.tools.javac.util.Log.outKey, printWriter);
+            final org.eclipse.ceylon.langtools.tools.javac.util.Context context = new org.eclipse.ceylon.langtools.tools.javac.util.Context();
+            context.put(org.eclipse.ceylon.langtools.tools.javac.util.Log.outKey, printWriter);
             context.put(DiagnosticListener.class, errorReporter);
             CeylonLog.preRegister(context);
             
@@ -2734,7 +2734,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
     private void setupJDTModelLoader(
             final CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject,
             final TypeChecker typeChecker,
-            final com.redhat.ceylon.langtools.tools.javac.util.Context context,
+            final org.eclipse.ceylon.langtools.tools.javac.util.Context context,
             final Collection<PhasedUnit> unitsTypecheckedIncrementally) {
 
         
@@ -2749,7 +2749,7 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
         context.put(ModelLoaderFactory.class, new ModelLoaderFactory() {
             @Override
             public AbstractModelLoader createModelLoader(
-                    com.redhat.ceylon.langtools.tools.javac.util.Context context) {
+                    org.eclipse.ceylon.langtools.tools.javac.util.Context context) {
                 return modelLoader;
             }
         });
@@ -3385,13 +3385,13 @@ public class CeylonBuilder extends IncrementalProjectBuilder {
 //        CeylonProject<IProject,IResource,IFolder,IFile> ceylonProject = modelJ2C().ceylonModel().getProject(project);
 //
 //        RepositoryManager repositoryManager = new CeylonUtils.CeylonRepoManagerBuilder() {
-//                    protected com.redhat.ceylon.cmr.api.Overrides getOverrides(String path) {
+//                    protected org.eclipse.ceylon.cmr.api.Overrides getOverrides(String path) {
 //                        if (path == null) {
 //                            removeOverridesProblemMarker(project);
 //                        }
 //                        return super.getOverrides(path);
 //                    }
-//                    protected com.redhat.ceylon.cmr.api.Overrides getOverrides(File absoluteFile) {
+//                    protected org.eclipse.ceylon.cmr.api.Overrides getOverrides(File absoluteFile) {
 //                        Overrides result = null;
 //                        Exception overridesException = null;
 //                        int overridesLine = -1;

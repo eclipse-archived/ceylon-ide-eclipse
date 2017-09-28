@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.outline;
+package org.eclipse.ceylon.ide.eclipse.code.outline;
 
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
-import static com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog.isMatchingGlob;
+import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
+import static org.eclipse.ceylon.ide.eclipse.code.open.OpenDeclarationDialog.isMatchingGlob;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;

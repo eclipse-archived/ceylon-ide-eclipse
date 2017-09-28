@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.preferences;
+package org.eclipse.ceylon.ide.eclipse.code.preferences;
 
-import static com.redhat.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE_VERSION;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonSystemRepo;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.interpolateVariablesInRepositoryPath;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.compiler.typechecker.TypeChecker.LANGUAGE_MODULE_VERSION;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getCeylonSystemRepo;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.interpolateVariablesInRepositoryPath;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static org.eclipse.jface.layout.GridDataFactory.swtDefaults;
 import static org.eclipse.ui.views.navigator.ResourceComparator.NAME;
 
@@ -43,13 +43,13 @@ import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.views.navigator.ResourceComparator;
 
-import com.redhat.ceylon.common.Constants;
-import com.redhat.ceylon.common.config.CeylonConfigFinder;
-import com.redhat.ceylon.common.config.Repositories;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.ide.common.configuration.CeylonRepositoryConfigurator;
-import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
+import org.eclipse.ceylon.common.Constants;
+import org.eclipse.ceylon.common.config.CeylonConfigFinder;
+import org.eclipse.ceylon.common.config.Repositories;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.common.configuration.CeylonRepositoryConfigurator;
+import org.eclipse.ceylon.ide.common.model.CeylonProjectConfig;
 
 @SuppressWarnings("serial")
 public class CeylonRepoConfigBlock extends CeylonRepositoryConfigurator {

@@ -1,15 +1,15 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.computeSelection;
+import static org.eclipse.ceylon.ide.eclipse.code.correct.CorrectionUtil.computeSelection;
 
 import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Image;
 
-import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.model.typechecker.model.Scope;
+import org.eclipse.ceylon.model.typechecker.model.Type;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 class CreateProposal extends InitializerProposal {
     

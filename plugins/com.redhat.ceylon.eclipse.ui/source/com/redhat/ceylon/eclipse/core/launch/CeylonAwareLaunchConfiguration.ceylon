@@ -49,7 +49,7 @@ shared interface CeylonAwareLaunchConfigurationDelegate
         | CeylonAwareSWTBotJUnitLaunchConfigurationDelegate
         satisfies ILaunchConfigurationDelegate {
     shared default String overridenSourcePathComputerId
-            => "com.redhat.ceylon.eclipse.ui.launching.sourceLookup.ceylonSourcePathComputer";
+            => "org.eclipse.ceylon.ide.eclipse.ui.launching.sourceLookup.ceylonSourcePathComputer";
 
     shared default ISourceLookupDirector overridenSourceLocator()
             => CeylonSourceLookupDirector();

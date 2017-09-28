@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.core.debug.presentation;
+package org.eclipse.ceylon.ide.eclipse.core.debug.presentation;
 
-import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonContentProviderFilter.filterVariables;
-import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonPresentationContext.isCeylonContext;
-import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonPresentationContext.toCeylonContextIfNecessary;
+import static org.eclipse.ceylon.ide.eclipse.core.debug.presentation.CeylonContentProviderFilter.filterVariables;
+import static org.eclipse.ceylon.ide.eclipse.core.debug.presentation.CeylonPresentationContext.isCeylonContext;
+import static org.eclipse.ceylon.ide.eclipse.core.debug.presentation.CeylonPresentationContext.toCeylonContextIfNecessary;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IPresentationContext;

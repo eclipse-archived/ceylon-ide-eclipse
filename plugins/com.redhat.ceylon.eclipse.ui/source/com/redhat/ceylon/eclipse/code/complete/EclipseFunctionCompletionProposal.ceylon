@@ -1,23 +1,23 @@
-import com.redhat.ceylon.compiler.typechecker.tree {
+import org.eclipse.ceylon.compiler.typechecker.tree {
     Tree
 }
-import com.redhat.ceylon.eclipse.code.correct {
+import org.eclipse.ceylon.ide.eclipse.code.correct {
     EclipseDocument
 }
-import com.redhat.ceylon.eclipse.code.outline {
+import org.eclipse.ceylon.ide.eclipse.code.outline {
     CeylonLabelProvider
 }
-import com.redhat.ceylon.eclipse.ui {
+import org.eclipse.ceylon.ide.eclipse.ui {
     CeylonResources,
     CeylonPlugin
 }
-import com.redhat.ceylon.eclipse.util {
+import org.eclipse.ceylon.ide.eclipse.util {
     Highlights
 }
-import com.redhat.ceylon.ide.common.completion {
+import org.eclipse.ceylon.ide.common.completion {
     FunctionCompletionProposal
 }
-import com.redhat.ceylon.model.typechecker.model {
+import org.eclipse.ceylon.model.typechecker.model {
     Declaration
 }
 

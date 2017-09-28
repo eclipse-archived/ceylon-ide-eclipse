@@ -1,11 +1,11 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 public class FoldingMessages {
-    private static final String BUNDLE_NAME= "com.redhat.ceylon.eclipse.code.editor.FoldingMessages"; //$NON-NLS-1$
+    private static final String BUNDLE_NAME= "org.eclipse.ceylon.ide.eclipse.code.editor.FoldingMessages"; //$NON-NLS-1$
 
     private static final ResourceBundle RESOURCE_BUNDLE= ResourceBundle.getBundle(BUNDLE_NAME);
 

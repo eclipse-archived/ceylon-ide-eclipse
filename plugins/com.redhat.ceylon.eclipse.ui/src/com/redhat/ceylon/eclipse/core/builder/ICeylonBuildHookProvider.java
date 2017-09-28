@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.core.builder;
+package org.eclipse.ceylon.ide.eclipse.core.builder;
 
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CeylonBuildHook;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.CeylonBuildHook;
 
 public interface ICeylonBuildHookProvider {
     CeylonBuildHook getHook();

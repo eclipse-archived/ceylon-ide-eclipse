@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.ui.test.buildlifecycle;
+package org.eclipse.ceylon.ide.eclipse.ui.test.buildlifecycle;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
@@ -31,9 +31,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.redhat.ceylon.eclipse.ui.test.AbstractMultiProjectTest;
-import com.redhat.ceylon.eclipse.ui.test.Utils;
-import com.redhat.ceylon.eclipse.ui.test.Utils.CeylonBuildSummary;
+import org.eclipse.ceylon.ide.eclipse.ui.test.AbstractMultiProjectTest;
+import org.eclipse.ceylon.ide.eclipse.ui.test.Utils;
+import org.eclipse.ceylon.ide.eclipse.ui.test.Utils.CeylonBuildSummary;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class BuildLifecycleTestFirstStart extends AbstractMultiProjectTest {

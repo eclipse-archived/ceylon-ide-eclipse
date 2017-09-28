@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.core.launch;
+package org.eclipse.ceylon.ide.eclipse.core.launch;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.EDITOR_ID;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.EDITOR_ID;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getEditorInput;
 import static java.lang.Integer.parseInt;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
@@ -31,9 +31,9 @@ import org.eclipse.ui.console.PatternMatchEvent;
 import org.eclipse.ui.console.TextConsole;
 import org.eclipse.ui.part.FileEditorInput;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
+import org.eclipse.ceylon.ide.eclipse.core.external.CeylonArchiveFileStore;
 
 public class CeylonPatternMatchListenerDelegate 
         implements IPatternMatchListenerDelegate {

@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.explorer;
+package org.eclipse.ceylon.ide.eclipse.code.explorer;
 
 import org.eclipse.jdt.internal.ui.packageview.ClassPathContainer;
 import org.eclipse.jdt.internal.ui.packageview.PackagesMessages;

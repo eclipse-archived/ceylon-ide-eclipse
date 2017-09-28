@@ -2,11 +2,11 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         id="com.redhat.ceylon.eclipse.android.plugin.androidCeylonBuildHook"
+         id="org.eclipse.ceylon.ide.eclipse.android.plugin.androidCeylonBuildHook"
          name="Ceylon Build Hook for Android"
-         point="com.redhat.ceylon.eclipse.ui.ceylonBuildHook">
+         point="org.eclipse.ceylon.ide.eclipse.ui.ceylonBuildHook">
       <hookProvider
-            class="com.redhat.ceylon.eclipse.android.plugin.AndroidBuildHookProvider">
+            class="org.eclipse.ceylon.ide.eclipse.android.plugin.AndroidBuildHookProvider">
       </hookProvider>
    </extension>
 </plugin>

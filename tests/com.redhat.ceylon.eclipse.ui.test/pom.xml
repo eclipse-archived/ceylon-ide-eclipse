@@ -3,11 +3,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.redhat.ceylon.eclipse</groupId>
+		<groupId>org.eclipse.ceylon.ide.eclipse</groupId>
 		<artifactId>tests</artifactId>
 		<version>1.3.4-SNAPSHOT</version>
 	</parent>
-	<artifactId>com.redhat.ceylon.eclipse.ui.test</artifactId> 
+	<artifactId>org.eclipse.ceylon.ide.eclipse.ui.test</artifactId> 
 	
 	<packaging>eclipse-test-plugin</packaging>
     
@@ -28,7 +28,7 @@
                       <useUIHarness>true</useUIHarness>
                       <useUIThread>true</useUIThread>                      
                       <includes>
-                          <include>com/redhat/ceylon/eclipse/ui/test/CeylonIdeExampleTest.class</include>
+                          <include>org/eclipse/ceylon/ide/eclipse/ui/test/CeylonIdeExampleTest.class</include>
                       </includes>
                     </configuration>
                 </execution>
@@ -43,7 +43,7 @@
                       <useUIHarness>true</useUIHarness>
                       <useUIThread>false</useUIThread>
                       <includes>
-                          <include>com/redhat/ceylon/eclipse/ui/test/swtbot/*Tests.class</include>
+                          <include>org/eclipse/ceylon/ide/eclipse/ui/test/swtbot/*Tests.class</include>
                       </includes>
                     </configuration>
                 </execution>
@@ -59,7 +59,7 @@
 		              <useUIThread>false</useUIThread>
 		              
 		              <includes>
-                          <include>com/redhat/ceylon/eclipse/ui/test/headless/*Tests.class</include>
+                          <include>org/eclipse/ceylon/ide/eclipse/ui/test/headless/*Tests.class</include>
 		              </includes>
 		            </configuration>
 		        </execution>
@@ -75,7 +75,7 @@
                       <useUIThread>false</useUIThread>
 	                  <argLine>${tycho.testArgLine} ${platformSystemProperties} -Dceylon.loadBinariesFirst=false</argLine>
                       <includes>
-                          <include>com/redhat/ceylon/eclipse/ui/test/headless/ModelAndPhasedUnitsTests.class</include>
+                          <include>org/eclipse/ceylon/ide/eclipse/ui/test/headless/ModelAndPhasedUnitsTests.class</include>
                       </includes>
                       <reportsDirectory>${project.build.directory}/surefire-reports-loadFomrSources</reportsDirectory>
                     </configuration>
@@ -91,7 +91,7 @@
                       <useUIHarness>true</useUIHarness>
                       <useUIThread>false</useUIThread>
                       <includes>
-                          <include>com/redhat/ceylon/eclipse/ui/test/buildlifecycle/BuildLifecycleTestFirstStart.class</include>
+                          <include>org/eclipse/ceylon/ide/eclipse/ui/test/buildlifecycle/BuildLifecycleTestFirstStart.class</include>
                       </includes>
                     </configuration>
                 </execution>
@@ -107,7 +107,7 @@
                       <useUIThread>false</useUIThread>
                       <deleteOsgiDataDirectory>false</deleteOsgiDataDirectory>                      
                       <includes>
-                          <include>com/redhat/ceylon/eclipse/ui/test/buildlifecycle/BuildLifecycleTestSecondStart.class</include>
+                          <include>org/eclipse/ceylon/ide/eclipse/ui/test/buildlifecycle/BuildLifecycleTestSecondStart.class</include>
                       </includes>
                     </configuration>
                 </execution>

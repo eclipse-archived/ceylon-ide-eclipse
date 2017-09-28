@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
 
-import static com.redhat.ceylon.eclipse.code.editor.StreamUtils.readStreamContents;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.StreamUtils.readStreamContents;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +21,7 @@ import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.texteditor.ResourceMarkerAnnotationModel;
 
-import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
+import org.eclipse.ceylon.ide.eclipse.core.external.ExternalSourceArchiveManager;
 
 public class SourceArchiveDocumentProvider extends FileDocumentProvider {
 

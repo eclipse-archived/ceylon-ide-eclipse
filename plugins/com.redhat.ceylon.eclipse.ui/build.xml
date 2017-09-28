@@ -38,7 +38,7 @@
     </taskdef>
 
     <typedef
-        resource="com/redhat/ceylon/ant/antlib.xml"
+        resource="org/eclipse/ceylon/ant/antlib.xml"
         classpathref="ant-tasks" />
 
     <target name="clean">
@@ -52,7 +52,7 @@
     	<repo url="${modules.dir}"/>
     	<repo url="flat:${basedir}/lib"/>
         <repo url="flat:${eclipseBinariesRepo}/plugins"/>
-        <repo url="flat:${basedir}/../com.redhat.ceylon.eclipse.ui.jdt.debug.fragment/target/ceylonRepo"/>
+        <repo url="flat:${basedir}/../org.eclipse.ceylon.ide.eclipse.ui.jdt.debug.fragment/target/ceylonRepo"/>
         <repo url="${basedir}/../../../ceylon/dist/osgi/embeddedRepository/repo"/>
     	<repo url="${basedir}/../../../ceylon.tool.converter.java2ceylon/repo/"/>
         <repo url="${basedir}/../../../ceylon-ide-common/repo/"/>
@@ -68,7 +68,7 @@
             encoding="UTF-8" pack200="true"
         	mavenoverrides="${basedir}/generated-source/overrides.xml">
             <moduleset>
-                <module name="com.redhat.ceylon.eclipseDependencies" />
+                <module name="org.eclipse.ceylon.ide.eclipseDependencies" />
             </moduleset>
         	<reposet refid="repos"/>
         </ceylon-compile>
@@ -80,7 +80,7 @@
             encoding="UTF-8" pack200="true"
             mavenoverrides="${basedir}/generated-source/overrides.xml">
             <moduleset>
-                <module name="com.redhat.ceylon.eclipse" />
+                <module name="org.eclipse.ceylon.ide.eclipse" />
             </moduleset>
             <reposet refid="repos"/>
         </ceylon-compile>
@@ -95,7 +95,7 @@
             mavenoverrides="${basedir}/generated-source/overrides.xml">
 
             <moduleset>
-                <module name="test.com.redhat.ceylon.eclipse" />
+                <module name="test.org.eclipse.ceylon.ide.eclipse" />
             </moduleset>
             <reposet refid="repos"/>
         </ceylon-compile>
@@ -108,15 +108,15 @@
             mavenoverrides="${basedir}/generated-source/overrides.xml">
 
             <moduleset>
-                <module name="com.redhat.ceylon.eclipse" />
-                <module name="test.com.redhat.ceylon.eclipse" />
+                <module name="org.eclipse.ceylon.ide.eclipse" />
+                <module name="test.org.eclipse.ceylon.ide.eclipse" />
             </moduleset>
             <reposet refid="repos"/>
         </ceylon-test>
         -->
     </target>
 
-    <property name="moduleFileFolder" value="${basedir}/generated-source/com/redhat/ceylon/eclipseDependencies/"/>
+    <property name="moduleFileFolder" value="${basedir}/generated-source/org/eclipse/ceylon/ide/eclipseDependencies/"/>
 
 	<target name="addModuleImport">
         <loadproperties>
@@ -461,7 +461,7 @@
 
 	<target name="update-eclipse-dependencies-inside-eclipse">
         <antcall target="generate-eclipseDependenciesModule"/>
-        <eclipse.refreshLocal resource="/com.redhat.ceylon.eclipse.ui/generated-source" depth="infinite"/>
+        <eclipse.refreshLocal resource="/org.eclipse.ceylon.ide.eclipse.ui/generated-source" depth="infinite"/>
 	</target>
 
 	<target name="update-eclipse-dependencies-as-necessary">
@@ -489,7 +489,7 @@ The Ceylon repository for Eclipse dependencies is not up-to-date :
             </not>
             <then>
                 <antcall target="generate-eclipseDependenciesModule"/>
-                <eclipse.refreshLocal resource="/com.redhat.ceylon.eclipse.ui/generated-source" depth="infinite"/>
+                <eclipse.refreshLocal resource="/org.eclipse.ceylon.ide.eclipse.ui/generated-source" depth="infinite"/>
             </then>
         </if>
 	</target>

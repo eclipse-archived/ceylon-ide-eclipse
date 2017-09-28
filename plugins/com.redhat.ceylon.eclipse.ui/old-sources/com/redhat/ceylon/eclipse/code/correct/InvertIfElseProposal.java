@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 
 import java.util.Collection;
 import java.util.List;
@@ -14,26 +14,26 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Block;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.BooleanCondition;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ComparisonOp;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.EqualOp;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.EqualityOp;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.IfClause;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.IfExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.IfStatement;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.LargeAsOp;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.LargerOp;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.NotOp;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SmallAsOp;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SmallerOp;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Block;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.BooleanCondition;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.ComparisonOp;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Condition;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.EqualOp;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.EqualityOp;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Expression;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.IfClause;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.IfExpression;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.IfStatement;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.LargeAsOp;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.LargerOp;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.NotOp;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.SmallAsOp;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.SmallerOp;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Statement;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Term;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
 
 class InvertIfElseProposal extends CorrectionProposal {
     

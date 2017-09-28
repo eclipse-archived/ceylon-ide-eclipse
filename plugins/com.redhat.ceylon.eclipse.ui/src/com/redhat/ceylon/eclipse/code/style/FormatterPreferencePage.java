@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.style;
+package org.eclipse.ceylon.ide.eclipse.code.style;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
@@ -7,7 +7,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 /*
  * The page to configure the Ceylon code formatter profiles.

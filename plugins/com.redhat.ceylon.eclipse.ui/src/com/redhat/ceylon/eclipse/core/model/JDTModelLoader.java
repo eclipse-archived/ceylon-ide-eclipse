@@ -18,9 +18,9 @@
 // * MA  02110-1301, USA.
 // */
 //
-//package com.redhat.ceylon.eclipse.core.model;
+//package org.eclipse.ceylon.ide.eclipse.core.model;
 //
-//import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+//import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 //
 //import java.lang.ref.WeakReference;
 //import java.util.LinkedList;
@@ -65,32 +65,32 @@
 //import org.eclipse.jdt.internal.core.ClassFile;
 //import org.eclipse.jdt.internal.core.JavaProject;
 //
-//import com.redhat.ceylon.compiler.java.codegen.Naming;
-//import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
-//import com.redhat.ceylon.compiler.java.util.Util;
-//import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-//import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
-//import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
-//import com.redhat.ceylon.eclipse.core.model.mirror.JDTClass;
-//import com.redhat.ceylon.eclipse.core.model.mirror.JDTMethod;
-//import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-//import com.redhat.ceylon.ide.common.model.BaseIdeModuleManager;
-//import com.redhat.ceylon.ide.common.model.CeylonProject;
-//import com.redhat.ceylon.ide.common.model.IdeModelLoader;
-//import com.redhat.ceylon.ide.common.model.IdeModuleManager;
-//import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
-//import com.redhat.ceylon.ide.common.util.toCeylonString_;
-//import com.redhat.ceylon.model.cmr.ArtifactResult;
-//import com.redhat.ceylon.model.loader.ModelResolutionException;
-//import com.redhat.ceylon.model.loader.mirror.AnnotatedMirror;
-//import com.redhat.ceylon.model.loader.mirror.ClassMirror;
-//import com.redhat.ceylon.model.loader.mirror.MethodMirror;
-//import com.redhat.ceylon.model.loader.model.LazyPackage;
-//import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
-//import com.redhat.ceylon.model.typechecker.model.Declaration;
-//import com.redhat.ceylon.model.typechecker.model.Module;
-//import com.redhat.ceylon.model.typechecker.model.Modules;
-//import com.redhat.ceylon.model.typechecker.model.Unit;
+//import org.eclipse.ceylon.compiler.java.codegen.Naming;
+//import org.eclipse.ceylon.compiler.java.runtime.model.TypeDescriptor;
+//import org.eclipse.ceylon.compiler.java.util.Util;
+//import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+//import org.eclipse.ceylon.ide.eclipse.core.classpath.CeylonClasspathUtil;
+//import org.eclipse.ceylon.ide.eclipse.core.classpath.CeylonProjectModulesContainer;
+//import org.eclipse.ceylon.ide.eclipse.core.model.mirror.JDTClass;
+//import org.eclipse.ceylon.ide.eclipse.core.model.mirror.JDTMethod;
+//import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
+//import org.eclipse.ceylon.ide.common.model.BaseIdeModuleManager;
+//import org.eclipse.ceylon.ide.common.model.CeylonProject;
+//import org.eclipse.ceylon.ide.common.model.IdeModelLoader;
+//import org.eclipse.ceylon.ide.common.model.IdeModuleManager;
+//import org.eclipse.ceylon.ide.common.model.IdeModuleSourceMapper;
+//import org.eclipse.ceylon.ide.common.util.toCeylonString_;
+//import org.eclipse.ceylon.model.cmr.ArtifactResult;
+//import org.eclipse.ceylon.model.loader.ModelResolutionException;
+//import org.eclipse.ceylon.model.loader.mirror.AnnotatedMirror;
+//import org.eclipse.ceylon.model.loader.mirror.ClassMirror;
+//import org.eclipse.ceylon.model.loader.mirror.MethodMirror;
+//import org.eclipse.ceylon.model.loader.model.LazyPackage;
+//import org.eclipse.ceylon.model.typechecker.model.ClassOrInterface;
+//import org.eclipse.ceylon.model.typechecker.model.Declaration;
+//import org.eclipse.ceylon.model.typechecker.model.Module;
+//import org.eclipse.ceylon.model.typechecker.model.Modules;
+//import org.eclipse.ceylon.model.typechecker.model.Unit;
 //
 //import ceylon.language.Iterable;
 //

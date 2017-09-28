@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
 import java.util.Collection;
 

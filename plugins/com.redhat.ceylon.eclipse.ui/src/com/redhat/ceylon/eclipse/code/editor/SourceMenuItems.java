@@ -1,16 +1,16 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
 
-import static com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem.collapseMenuItems;
-import static com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem.isContextMenu;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DELETE;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DELETE_IMPORT;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REVEAL;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.QUICK_ASSIST;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.TERMINATE_STATEMENT;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.DynamicMenuItem.collapseMenuItems;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.DynamicMenuItem.isContextMenu;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.imageRegistry;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_DELETE;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_DELETE_IMPORT;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_REVEAL;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.QUICK_ASSIST;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.TERMINATE_STATEMENT;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getCurrentEditor;
 
 import java.util.Arrays;
 
@@ -22,9 +22,9 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 
-import com.redhat.ceylon.eclipse.code.imports.CleanImportsHandler;
-import com.redhat.ceylon.eclipse.code.refactor.DeleteRefactoring;
-import com.redhat.ceylon.eclipse.code.refactor.RevealInferredTypeHandler;
+import org.eclipse.ceylon.ide.eclipse.code.imports.CleanImportsHandler;
+import org.eclipse.ceylon.ide.eclipse.code.refactor.DeleteRefactoring;
+import org.eclipse.ceylon.ide.eclipse.code.refactor.RevealInferredTypeHandler;
 
 public class SourceMenuItems extends CompoundContributionItem {
     

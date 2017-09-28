@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.java2ceylon;
+package org.eclipse.ceylon.ide.eclipse.java2ceylon;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -6,11 +6,11 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.ide.common.platform.VfsServices;
-import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
-import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
-import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
+import org.eclipse.ceylon.compiler.typechecker.io.VirtualFile;
+import org.eclipse.ceylon.ide.common.platform.VfsServices;
+import org.eclipse.ceylon.ide.common.vfs.FileVirtualFile;
+import org.eclipse.ceylon.ide.common.vfs.FolderVirtualFile;
+import org.eclipse.ceylon.ide.common.vfs.ResourceVirtualFile;
 
 public interface VfsJ2C {
 

@@ -1,17 +1,17 @@
-package com.redhat.ceylon.eclipse.core.launch;
+package org.eclipse.ceylon.ide.eclipse.core.launch;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getInterpolatedCeylonSystemRepo;
-import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_LAUNCH_VERBOSE;
-import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME;
-import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME;
-import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.DEFAULT_RUN_MARKER;
-import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVASCRIPT_MODULE;
-import static com.redhat.ceylon.eclipse.core.launch.LaunchHelper.getStartLocation;
-import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringList;
-import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getInterpolatedCeylonSystemRepo;
+import static org.eclipse.ceylon.ide.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_LAUNCH_VERBOSE;
+import static org.eclipse.ceylon.ide.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME;
+import static org.eclipse.ceylon.ide.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME;
+import static org.eclipse.ceylon.ide.eclipse.core.launch.ICeylonLaunchConfigurationConstants.DEFAULT_RUN_MARKER;
+import static org.eclipse.ceylon.ide.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ID_CEYLON_JAVASCRIPT_MODULE;
+import static org.eclipse.ceylon.ide.eclipse.core.launch.LaunchHelper.getStartLocation;
+import static org.eclipse.ceylon.ide.eclipse.util.CeylonHelper.toJavaStringList;
+import static org.eclipse.ceylon.ide.eclipse.util.InteropUtils.toJavaString;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -50,19 +50,19 @@ import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
 
-import com.redhat.ceylon.common.Constants;
-import com.redhat.ceylon.common.Versions;
-import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
+import org.eclipse.ceylon.common.Constants;
+import org.eclipse.ceylon.common.Versions;
+import org.eclipse.ceylon.ide.eclipse.core.debug.model.CeylonJDIDebugTarget;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.common.model.CeylonIdeConfig;
+import org.eclipse.ceylon.ide.common.model.CeylonProject;
 import com.sun.jdi.VirtualMachine;
 
 public class ModuleLaunchDelegate extends JavaLaunchDelegate {
 
     @Override
     public String verifyMainTypeName(ILaunchConfiguration configuration) throws CoreException {
-        return "com.redhat.ceylon.launcher.Launcher";
+        return "org.eclipse.ceylon.launcher.Launcher";
     }
     
     @Override

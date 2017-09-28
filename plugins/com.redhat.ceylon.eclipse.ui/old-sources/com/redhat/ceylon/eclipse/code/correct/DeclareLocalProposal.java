@@ -1,14 +1,14 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.Change;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.ide.common.correct.QuickFixData;
-import com.redhat.ceylon.ide.common.correct.declareLocalQuickFix_;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Term;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.common.correct.QuickFixData;
+import org.eclipse.ceylon.ide.common.correct.declareLocalQuickFix_;
 
 final class DeclareLocalProposal extends CorrectionProposal {
     

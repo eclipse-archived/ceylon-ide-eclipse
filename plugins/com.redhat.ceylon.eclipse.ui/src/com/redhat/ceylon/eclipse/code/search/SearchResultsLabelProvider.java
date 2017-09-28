@@ -1,16 +1,16 @@
-package com.redhat.ceylon.eclipse.code.search;
+package org.eclipse.ceylon.ide.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
-import static com.redhat.ceylon.eclipse.util.Highlights.ARROW_STYLER;
-import static com.redhat.ceylon.eclipse.util.Highlights.ID_STYLER;
-import static com.redhat.ceylon.eclipse.util.Highlights.KW_STYLER;
-import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGE_STYLER;
-import static com.redhat.ceylon.eclipse.util.Highlights.TYPE_ID_STYLER;
-import static com.redhat.ceylon.eclipse.util.Highlights.styleJavaType;
-import static com.redhat.ceylon.eclipse.util.InteropUtils.toCeylonString;
-import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.ARROW_STYLER;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.ID_STYLER;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.KW_STYLER;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.PACKAGE_STYLER;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.TYPE_ID_STYLER;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.styleJavaType;
+import static org.eclipse.ceylon.ide.eclipse.util.InteropUtils.toCeylonString;
+import static org.eclipse.ceylon.ide.eclipse.util.InteropUtils.toJavaString;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
 import static org.eclipse.jdt.core.IJavaElement.TYPE;
@@ -36,17 +36,17 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
-import com.redhat.ceylon.ide.common.model.IJavaModelAware;
-import com.redhat.ceylon.ide.common.model.IdeUnit;
-import com.redhat.ceylon.ide.common.model.JavaClassFile;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.ide.common.model.CeylonBinaryUnit;
+import org.eclipse.ceylon.ide.common.model.IJavaModelAware;
+import org.eclipse.ceylon.ide.common.model.IdeUnit;
+import org.eclipse.ceylon.ide.common.model.JavaClassFile;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Package;
 
 public class SearchResultsLabelProvider extends CeylonLabelProvider {
     

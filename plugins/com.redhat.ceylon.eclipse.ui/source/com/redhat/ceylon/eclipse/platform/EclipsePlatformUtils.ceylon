@@ -1,7 +1,7 @@
-import com.redhat.ceylon.eclipse.ui {
+import org.eclipse.ceylon.ide.eclipse.ui {
     CeylonPlugin
 }
-import com.redhat.ceylon.ide.common.platform {
+import org.eclipse.ceylon.ide.common.platform {
     IdeUtils,
     Status
 }

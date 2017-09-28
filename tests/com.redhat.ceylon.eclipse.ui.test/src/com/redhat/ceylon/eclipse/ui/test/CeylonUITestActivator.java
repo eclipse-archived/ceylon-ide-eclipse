@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.ui.test;
+package org.eclipse.ceylon.ide.eclipse.ui.test;
 
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;

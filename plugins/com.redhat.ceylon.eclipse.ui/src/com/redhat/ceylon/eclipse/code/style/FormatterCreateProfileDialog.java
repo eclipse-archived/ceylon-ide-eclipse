@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.style;
+package org.eclipse.ceylon.ide.eclipse.code.style;
 
 import java.util.List;
 
@@ -23,8 +23,8 @@ import org.eclipse.swt.widgets.Text;
 
 import ceylon.formatter.options.FormattingOptions;
 
-import com.redhat.ceylon.eclipse.code.style.FormatterProfileManager.Profile;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.code.style.FormatterProfileManager.Profile;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 /**
  * The dialog to create a new profile.

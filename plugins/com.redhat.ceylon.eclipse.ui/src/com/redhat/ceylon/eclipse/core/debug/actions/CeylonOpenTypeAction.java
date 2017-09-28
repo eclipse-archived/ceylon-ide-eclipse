@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.core.debug.actions;
+package org.eclipse.ceylon.ide.eclipse.core.debug.actions;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
-import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.isCeylonDeclaration;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.gotoDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.HierarchyView.showHierarchyView;
+import static org.eclipse.ceylon.ide.eclipse.util.JavaSearch.isCeylonDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.util.JavaSearch.toCeylonDeclaration;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -12,7 +12,7 @@ import org.eclipse.jdt.internal.debug.ui.actions.ActionMessages;
 import org.eclipse.jdt.internal.debug.ui.actions.OpenTypeAction;
 import org.eclipse.ui.PartInitException;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
 
 public abstract class CeylonOpenTypeAction extends OpenTypeAction {
     

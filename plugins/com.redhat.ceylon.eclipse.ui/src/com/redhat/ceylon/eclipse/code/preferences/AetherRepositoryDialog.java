@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.preferences;
+package org.eclipse.ceylon.ide.eclipse.code.preferences;
 
-import static com.redhat.ceylon.cmr.maven.MavenUtils.getDefaultMavenSettings;
+import static org.eclipse.ceylon.cmr.maven.MavenUtils.getDefaultMavenSettings;
 import static org.eclipse.jface.layout.GridDataFactory.swtDefaults;
 
 import java.io.File;
@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
 
 class AetherRepositoryDialog extends Dialog {
 

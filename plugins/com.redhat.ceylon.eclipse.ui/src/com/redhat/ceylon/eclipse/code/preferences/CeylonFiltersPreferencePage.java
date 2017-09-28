@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.preferences;
+package org.eclipse.ceylon.ide.eclipse.code.preferences;
 
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FILTERS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.INACTIVE_FILTERS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.MATCH_HIGHLIGHTING;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.FILTERS;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.INACTIVE_FILTERS;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.MATCH_HIGHLIGHTING;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import org.eclipse.jface.layout.GridDataFactory;
@@ -17,8 +17,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
-import com.redhat.ceylon.eclipse.core.debug.preferences.CeylonStepFilterPreferencePage;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.core.debug.preferences.CeylonStepFilterPreferencePage;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 public class CeylonFiltersPreferencePage 
         extends FiltersPreferencePage 

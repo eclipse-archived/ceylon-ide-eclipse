@@ -1,10 +1,10 @@
-import com.redhat.ceylon.eclipse.code.editor {
+import org.eclipse.ceylon.ide.eclipse.code.editor {
     CeylonEditor
 }
-import com.redhat.ceylon.eclipse.code.refactor {
+import org.eclipse.ceylon.ide.eclipse.code.refactor {
     AbstractLinkedMode
 }
-import com.redhat.ceylon.eclipse.platform {
+import org.eclipse.ceylon.ide.eclipse.platform {
     EclipseLinkedMode
 }
 

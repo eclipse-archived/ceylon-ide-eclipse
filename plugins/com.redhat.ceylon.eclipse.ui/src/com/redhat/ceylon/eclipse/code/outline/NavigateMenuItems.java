@@ -1,12 +1,12 @@
-package com.redhat.ceylon.eclipse.code.outline;
+package org.eclipse.ceylon.ide.eclipse.code.outline;
 
 
-import static com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem.collapseMenuItems;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.LAST_EDIT;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.NEXT_ANN;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.PREV_ANN;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.DynamicMenuItem.collapseMenuItems;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.imageRegistry;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.LAST_EDIT;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.NEXT_ANN;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.PREV_ANN;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getCurrentEditor;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_FORWARD;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
@@ -22,10 +22,10 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.internal.texteditor.TextEditorPlugin;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem;
-import com.redhat.ceylon.eclipse.code.open.SelectedDeclarationMenuItems;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.editor.DynamicMenuItem;
+import org.eclipse.ceylon.ide.eclipse.code.open.SelectedDeclarationMenuItems;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 public class NavigateMenuItems extends CompoundContributionItem {
     

@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.search;
+package org.eclipse.ceylon.ide.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelectionText;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getCurrentEditor;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getSelectionText;
 import static org.eclipse.search.ui.ISearchPageContainer.SELECTED_PROJECTS_SCOPE;
 import static org.eclipse.search.ui.ISearchPageContainer.SELECTION_SCOPE;
 import static org.eclipse.search.ui.ISearchPageContainer.WORKING_SET_SCOPE;
@@ -41,9 +41,9 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.editors.text.TextEditor;
 
-import com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonOutlinesPreferencePage;
-import com.redhat.ceylon.eclipse.util.SearchVisitor;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonFiltersPreferencePage;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonOutlinesPreferencePage;
+import org.eclipse.ceylon.ide.eclipse.util.SearchVisitor;
 
 public class CeylonSearchDialogPage extends DialogPage 
         implements ISearchPage {

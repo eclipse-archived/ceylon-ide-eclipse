@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
 import static org.eclipse.core.commands.operations.OperationHistoryFactory.getOperationHistory;
 
@@ -28,10 +28,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.eclipse.code.editor.AbstractLinkedModeListener;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.FocusEditingSupport;
-import com.redhat.ceylon.eclipse.util.LinkedMode;
+import org.eclipse.ceylon.ide.eclipse.code.editor.AbstractLinkedModeListener;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.editor.FocusEditingSupport;
+import org.eclipse.ceylon.ide.eclipse.util.LinkedMode;
 
 public abstract class AbstractLinkedMode {
 

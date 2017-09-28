@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 /*******************************************************************************
  * Copyright (c) 2000, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
@@ -10,10 +10,10 @@ package com.redhat.ceylon.eclipse.code.correct;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
-import static com.redhat.ceylon.eclipse.util.Highlights.styleProposal;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.MINOR_CHANGE;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getCurrentEditor;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.performChange;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.styleProposal;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;

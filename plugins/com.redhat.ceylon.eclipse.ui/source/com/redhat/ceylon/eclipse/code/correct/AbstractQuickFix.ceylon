@@ -1,16 +1,16 @@
-import com.redhat.ceylon.eclipse.code.refactor {
+import org.eclipse.ceylon.ide.eclipse.code.refactor {
     AbstractLinkedMode
 }
-import com.redhat.ceylon.eclipse.ui {
+import org.eclipse.ceylon.ide.eclipse.ui {
     CeylonResources
 }
-import com.redhat.ceylon.eclipse.util {
+import org.eclipse.ceylon.ide.eclipse.util {
     Highlights
 }
-import com.redhat.ceylon.ide.common.correct {
+import org.eclipse.ceylon.ide.common.correct {
     AbstractLocalProposal
 }
-import com.redhat.ceylon.model.typechecker.model {
+import org.eclipse.ceylon.model.typechecker.model {
     Type
 }
 
@@ -31,7 +31,7 @@ import org.eclipse.jface.viewers {
 import org.eclipse.swt.graphics {
     Point
 }
-import com.redhat.ceylon.eclipse.platform {
+import org.eclipse.ceylon.ide.eclipse.platform {
     EclipseLinkedMode
 }
 

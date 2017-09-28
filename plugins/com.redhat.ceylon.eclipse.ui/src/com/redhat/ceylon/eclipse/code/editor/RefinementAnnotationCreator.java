@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonTaskUtil.addTaskAnnotation;
-import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.CeylonTaskUtil.addTaskAnnotation;
+import static org.eclipse.ceylon.ide.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getIdentifyingNode;
 
 import java.util.Iterator;
 import java.util.List;
@@ -15,15 +15,15 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.ui.IEditorInput;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
-import com.redhat.ceylon.ide.common.util.types_;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.eclipse.code.parse.TreeLifecycleListener;
+import org.eclipse.ceylon.ide.common.util.types_;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 /**
  * Responsible for adding refinement annotations to the 

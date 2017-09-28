@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.preferences;
+package org.eclipse.ceylon.ide.eclipse.code.preferences;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.compileToJava;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.compileToJs;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,18 +13,18 @@ import java.util.TreeSet;
 
 import org.eclipse.core.resources.IProject;
 
-import com.redhat.ceylon.cmr.api.ModuleSearchResult;
-import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
-import com.redhat.ceylon.common.Backend;
-import com.redhat.ceylon.common.Backends;
-import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchManager;
-import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewContentProvider;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.ide.common.modulesearch.ModuleNode;
-import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
-import com.redhat.ceylon.model.cmr.JDKUtils;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.ModuleImport;
+import org.eclipse.ceylon.cmr.api.ModuleSearchResult;
+import org.eclipse.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
+import org.eclipse.ceylon.common.Backend;
+import org.eclipse.ceylon.common.Backends;
+import org.eclipse.ceylon.ide.eclipse.code.modulesearch.ModuleSearchManager;
+import org.eclipse.ceylon.ide.eclipse.code.modulesearch.ModuleSearchViewContentProvider;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleNode;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleVersionNode;
+import org.eclipse.ceylon.model.cmr.JDKUtils;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.ModuleImport;
 
 public abstract class ModuleImportContentProvider extends ModuleSearchViewContentProvider {
     

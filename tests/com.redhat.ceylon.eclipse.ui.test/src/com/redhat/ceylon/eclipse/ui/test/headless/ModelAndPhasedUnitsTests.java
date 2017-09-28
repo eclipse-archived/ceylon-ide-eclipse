@@ -8,7 +8,7 @@
  * Contributors:
  *     JBoss by Red Hat - Initial implementation.
  ************************************************************************************/
-package com.redhat.ceylon.eclipse.ui.test.headless;
+package org.eclipse.ceylon.ide.eclipse.ui.test.headless;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,29 +32,29 @@ import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.ui.test.AbstractMultiProjectTest;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
-import com.redhat.ceylon.ide.common.model.CeylonUnit;
-import com.redhat.ceylon.ide.common.model.CrossProjectBinaryUnit;
-import com.redhat.ceylon.ide.common.model.CrossProjectSourceFile;
-import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
-import com.redhat.ceylon.ide.common.model.ICrossProjectReference;
-import com.redhat.ceylon.ide.common.model.ICrossProjectCeylonReference;
-import com.redhat.ceylon.ide.common.model.JavaClassFile;
-import com.redhat.ceylon.ide.common.model.JavaCompilationUnit;
-import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
-import com.redhat.ceylon.ide.common.typechecker.CrossProjectPhasedUnit;
-import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
-import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.model.cmr.JDKUtils;
-import com.redhat.ceylon.model.loader.AbstractModelLoader;
-import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.eclipse.ui.test.AbstractMultiProjectTest;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.ide.common.model.CeylonBinaryUnit;
+import org.eclipse.ceylon.ide.common.model.CeylonUnit;
+import org.eclipse.ceylon.ide.common.model.CrossProjectBinaryUnit;
+import org.eclipse.ceylon.ide.common.model.CrossProjectSourceFile;
+import org.eclipse.ceylon.ide.common.model.ExternalSourceFile;
+import org.eclipse.ceylon.ide.common.model.ICrossProjectReference;
+import org.eclipse.ceylon.ide.common.model.ICrossProjectCeylonReference;
+import org.eclipse.ceylon.ide.common.model.JavaClassFile;
+import org.eclipse.ceylon.ide.common.model.JavaCompilationUnit;
+import org.eclipse.ceylon.ide.common.model.ProjectSourceFile;
+import org.eclipse.ceylon.ide.common.typechecker.CrossProjectPhasedUnit;
+import org.eclipse.ceylon.ide.common.typechecker.ExternalPhasedUnit;
+import org.eclipse.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import org.eclipse.ceylon.model.cmr.JDKUtils;
+import org.eclipse.ceylon.model.loader.AbstractModelLoader;
+import org.eclipse.ceylon.model.loader.ModelLoader.DeclarationType;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 @SuppressWarnings("restriction")
 public class ModelAndPhasedUnitsTests extends AbstractMultiProjectTest {

@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.core.model;
+package org.eclipse.ceylon.ide.eclipse.core.model;
 
-import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.ModifiablePhasedUnit;
+import org.eclipse.ceylon.ide.eclipse.core.typechecker.IdePhasedUnit;
+import org.eclipse.ceylon.ide.eclipse.core.typechecker.ModifiablePhasedUnit;
 
 public abstract class ModifiableSourceFile extends SourceFile implements IResourceAware {
 

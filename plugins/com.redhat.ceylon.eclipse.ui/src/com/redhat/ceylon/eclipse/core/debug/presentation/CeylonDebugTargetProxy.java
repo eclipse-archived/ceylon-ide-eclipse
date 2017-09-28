@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.debug.presentation;
+package org.eclipse.ceylon.ide.eclipse.core.debug.presentation;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IDebugTarget;
@@ -9,7 +9,7 @@ import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.internal.debug.ui.threadgroups.JavaDebugTargetProxy;
 
-import com.redhat.ceylon.ide.common.debug.agent.CeylonDebugEvaluationThread;
+import org.eclipse.ceylon.ide.common.debug.agent.CeylonDebugEvaluationThread;
 
 public class CeylonDebugTargetProxy extends JavaDebugTargetProxy {
     public CeylonDebugTargetProxy(IDebugTarget target) {

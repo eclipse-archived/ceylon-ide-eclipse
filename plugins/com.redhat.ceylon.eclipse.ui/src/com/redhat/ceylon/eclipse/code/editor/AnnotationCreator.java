@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
 /*******************************************************************************
 * Copyright (c) 2007 IBM Corporation.
@@ -11,11 +11,11 @@ package com.redhat.ceylon.eclipse.code.editor;
 *    Robert Fuhrer (rfuhrer@watson.ibm.com) - initial API and implementation
 *******************************************************************************/
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation.PARSE_ANNOTATION_TYPE;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation.PARSE_ANNOTATION_TYPE_ERROR;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation.PARSE_ANNOTATION_TYPE_INFO;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation.PARSE_ANNOTATION_TYPE_WARNING;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation.isParseAnnotation;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.CeylonAnnotation.PARSE_ANNOTATION_TYPE;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.CeylonAnnotation.PARSE_ANNOTATION_TYPE_ERROR;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.CeylonAnnotation.PARSE_ANNOTATION_TYPE_INFO;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.CeylonAnnotation.PARSE_ANNOTATION_TYPE_WARNING;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.CeylonAnnotation.isParseAnnotation;
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_INFO;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
@@ -33,11 +33,11 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
-import com.redhat.ceylon.compiler.typechecker.tree.Message;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
-import com.redhat.ceylon.eclipse.util.ErrorVisitor;
+import org.eclipse.ceylon.compiler.typechecker.parser.RecognitionError;
+import org.eclipse.ceylon.compiler.typechecker.tree.Message;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.eclipse.code.parse.TreeLifecycleListener;
+import org.eclipse.ceylon.ide.eclipse.util.ErrorVisitor;
 
 /**
  * An implementation of the IMessageHandler interface that creates editor annotations

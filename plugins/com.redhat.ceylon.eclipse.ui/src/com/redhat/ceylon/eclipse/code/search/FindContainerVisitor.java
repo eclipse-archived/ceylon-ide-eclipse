@@ -1,12 +1,12 @@
-package com.redhat.ceylon.eclipse.code.search;
+package org.eclipse.ceylon.ide.eclipse.code.search;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
 
 @Deprecated
 /**
- * @deprecated use com.redhat.ceylon.ide.common.search.FindContainerVisitor instead
+ * @deprecated use org.eclipse.ceylon.ide.common.search.FindContainerVisitor instead
  */
 public class FindContainerVisitor extends Visitor {
     

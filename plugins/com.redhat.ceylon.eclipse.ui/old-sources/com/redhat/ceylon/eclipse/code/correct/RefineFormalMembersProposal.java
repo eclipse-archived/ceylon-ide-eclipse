@@ -1,12 +1,12 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
-import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.overloads;
-import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.FORMAL_REFINEMENT;
-import static com.redhat.ceylon.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CompletionUtil.overloads;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.RefinementCompletionProposal.FORMAL_REFINEMENT;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
+import static org.eclipse.ceylon.ide.eclipse.code.correct.ImportProposals.importProposals;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getCurrentEditor;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.Collection;
@@ -32,19 +32,19 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ClassDefinition;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.ide.common.util.FindBodyContainerVisitor;
-import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
-import com.redhat.ceylon.model.typechecker.model.Reference;
-import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.ClassDefinition;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
+import org.eclipse.ceylon.ide.common.util.FindBodyContainerVisitor;
+import org.eclipse.ceylon.model.typechecker.model.ClassOrInterface;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.DeclarationWithProximity;
+import org.eclipse.ceylon.model.typechecker.model.Reference;
+import org.eclipse.ceylon.model.typechecker.model.Scope;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 class RefineFormalMembersProposal
         implements ICompletionProposal,
@@ -81,7 +81,7 @@ class RefineFormalMembersProposal
     public StyledString getStyledDisplayString() {
         String hint =
                 CorrectionUtil.shortcut(
-                        "com.redhat.ceylon.eclipse.ui.action.refineFormalMembers");
+                        "org.eclipse.ceylon.ide.eclipse.ui.action.refineFormalMembers");
         return Highlights.styleProposal(getDisplayString(), false)
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }

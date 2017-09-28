@@ -1,4 +1,4 @@
-package com.redhat.ceylon.test.eclipse.plugin.model;
+package org.eclipse.ceylon.test.eclipse.plugin.model;
 
 public enum TestEventType {
 

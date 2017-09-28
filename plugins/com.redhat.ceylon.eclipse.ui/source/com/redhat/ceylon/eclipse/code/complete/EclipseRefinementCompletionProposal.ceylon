@@ -1,24 +1,24 @@
-import com.redhat.ceylon.eclipse.code.outline {
+import org.eclipse.ceylon.ide.eclipse.code.outline {
     CeylonLabelProvider
 }
-import com.redhat.ceylon.eclipse.platform {
+import org.eclipse.ceylon.ide.eclipse.platform {
     EclipseProposalsHolder
 }
-import com.redhat.ceylon.eclipse.ui {
+import org.eclipse.ceylon.ide.eclipse.ui {
     CeylonPlugin,
     CeylonResources
 }
-import com.redhat.ceylon.eclipse.util {
+import org.eclipse.ceylon.ide.eclipse.util {
     Highlights
 }
-import com.redhat.ceylon.ide.common.completion {
+import org.eclipse.ceylon.ide.common.completion {
     RefinementCompletionProposal,
     getProposedName,
     appendPositionalArgs,
     ProposalsHolder,
     CompletionContext
 }
-import com.redhat.ceylon.model.typechecker.model {
+import org.eclipse.ceylon.model.typechecker.model {
     Declaration,
     Scope,
     Reference,

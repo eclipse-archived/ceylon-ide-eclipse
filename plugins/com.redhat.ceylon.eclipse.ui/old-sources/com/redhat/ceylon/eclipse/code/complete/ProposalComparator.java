@@ -1,15 +1,15 @@
-package com.redhat.ceylon.eclipse.code.complete;
+package org.eclipse.ceylon.ide.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.util.Types.getResultType;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
+import static org.eclipse.ceylon.ide.eclipse.util.Types.getResultType;
+import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 import static java.lang.Character.isUpperCase;
 
 import java.util.Comparator;
 
-import com.redhat.ceylon.eclipse.util.Types;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
-import com.redhat.ceylon.model.typechecker.model.Type;
+import org.eclipse.ceylon.ide.eclipse.util.Types;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.DeclarationWithProximity;
+import org.eclipse.ceylon.model.typechecker.model.Type;
 
 final class ProposalComparator 
         implements Comparator<DeclarationWithProximity> {

@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.style;
+package org.eclipse.ceylon.ide.eclipse.code.style;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.BufferedTokenStream;
@@ -36,14 +36,14 @@ import ceylon.formatter.options.SparseFormattingOptions;
 import ceylon.formatter.options.combinedOptions_;
 import ceylon.language.Singleton;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonInterpolatingLexer;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
-import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.StringBuilderWriter;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonInterpolatingLexer;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonParser;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonSourceViewer;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonSourceViewerConfiguration;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.StringBuilderWriter;
 
 public class CeylonPreview {
 

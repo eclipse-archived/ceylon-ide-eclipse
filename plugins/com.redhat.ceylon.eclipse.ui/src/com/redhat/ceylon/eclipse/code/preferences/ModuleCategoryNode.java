@@ -1,13 +1,13 @@
-package com.redhat.ceylon.eclipse.code.preferences;
+package org.eclipse.ceylon.ide.eclipse.code.preferences;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.compileToJava;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 
-import com.redhat.ceylon.ide.common.modulesearch.ModuleNode;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleNode;
 
 public class ModuleCategoryNode {
     private String name;

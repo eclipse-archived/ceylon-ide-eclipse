@@ -18,9 +18,9 @@
 // * MA  02110-1301, USA.
 // */
 //
-//package com.redhat.ceylon.eclipse.core.model;
+//package org.eclipse.ceylon.ide.eclipse.core.model;
 //
-//import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+//import static org.eclipse.ceylon.ide.eclipse.core.model.modelJ2C.ceylonModel;
 //
 //import java.io.File;
 //import java.util.ArrayList;
@@ -36,32 +36,32 @@
 //import org.eclipse.core.runtime.Status;
 //import org.eclipse.jdt.core.IJavaProject;
 //
-//import com.redhat.ceylon.cmr.api.ArtifactContext;
-//import com.redhat.ceylon.cmr.api.RepositoryManager;
-//import com.redhat.ceylon.compiler.java.loader.model.LazyModuleSourceMapper;
-//import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-//import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleHelper;
-//import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
-//import com.redhat.ceylon.compiler.typechecker.context.Context;
-//import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-//import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
-//import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-//import com.redhat.ceylon.compiler.typechecker.io.impl.ZipFileVirtualFile;
-//import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-//import com.redhat.ceylon.compiler.typechecker.util.ModuleManagerFactory;
-//import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-//import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
-//import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
-//import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-//import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
-//import com.redhat.ceylon.ide.common.model.CeylonProject;
-//import com.redhat.ceylon.ide.common.model.IdeModuleManager;
-//import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
-//import com.redhat.ceylon.model.cmr.ArtifactResult;
-//import com.redhat.ceylon.model.typechecker.model.Module;
-//import com.redhat.ceylon.model.typechecker.model.ModuleImport;
-//import com.redhat.ceylon.model.typechecker.model.Package;
-//import com.redhat.ceylon.model.typechecker.util.ModuleManager;
+//import org.eclipse.ceylon.cmr.api.ArtifactContext;
+//import org.eclipse.ceylon.cmr.api.RepositoryManager;
+//import org.eclipse.ceylon.compiler.java.loader.model.LazyModuleSourceMapper;
+//import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+//import org.eclipse.ceylon.compiler.typechecker.analyzer.ModuleHelper;
+//import org.eclipse.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
+//import org.eclipse.ceylon.compiler.typechecker.context.Context;
+//import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+//import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnits;
+//import org.eclipse.ceylon.compiler.typechecker.io.VirtualFile;
+//import org.eclipse.ceylon.compiler.typechecker.io.impl.ZipFileVirtualFile;
+//import org.eclipse.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+//import org.eclipse.ceylon.compiler.typechecker.util.ModuleManagerFactory;
+//import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+//import org.eclipse.ceylon.ide.eclipse.core.typechecker.CrossProjectPhasedUnit;
+//import org.eclipse.ceylon.ide.eclipse.core.typechecker.ExternalPhasedUnit;
+//import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+//import org.eclipse.ceylon.ide.eclipse.util.CeylonSourceParser;
+//import org.eclipse.ceylon.ide.common.model.CeylonProject;
+//import org.eclipse.ceylon.ide.common.model.IdeModuleManager;
+//import org.eclipse.ceylon.ide.common.model.IdeModuleSourceMapper;
+//import org.eclipse.ceylon.model.cmr.ArtifactResult;
+//import org.eclipse.ceylon.model.typechecker.model.Module;
+//import org.eclipse.ceylon.model.typechecker.model.ModuleImport;
+//import org.eclipse.ceylon.model.typechecker.model.Package;
+//import org.eclipse.ceylon.model.typechecker.util.ModuleManager;
 //
 ///**
 // * @author david

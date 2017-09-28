@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.util;
+package org.eclipse.ceylon.ide.eclipse.util;
 
 import org.eclipse.jface.text.IDocument;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
-import com.redhat.ceylon.eclipse.platform.platformJ2C;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.ide.eclipse.code.correct.correctJ2C;
+import org.eclipse.ceylon.ide.eclipse.platform.platformJ2C;
 
 public class Indents {
     public static final Indents INSTANCE = new Indents();

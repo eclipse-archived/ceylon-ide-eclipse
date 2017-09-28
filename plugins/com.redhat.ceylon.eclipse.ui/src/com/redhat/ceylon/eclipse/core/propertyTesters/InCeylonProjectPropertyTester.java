@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.core.propertyTesters;
+package org.eclipse.ceylon.ide.eclipse.core.propertyTesters;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jdt.core.IJavaElement;
 
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
 
 public class InCeylonProjectPropertyTester extends PropertyTester {
 

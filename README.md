@@ -152,10 +152,10 @@ or built with Maven).
 6.  Use `File > Import... > Existing Projects into Workspace` to import the Java and 
     Ceylon Eclipse projects that are in these directories:
     - `.../ceylon-ide-common`
-    - `.../ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui.jdt.debug.fragment`
-    - `.../ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui`
-    - `.../ceylon-ide-eclipse/plugins/com.redhat.ceylon.test.eclipse.plugin`
-    - `.../ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.android.plugin`
+    - `.../ceylon-ide-eclipse/plugins/org.eclipse.ceylon.ide.eclipse.ui.jdt.debug.fragment`
+    - `.../ceylon-ide-eclipse/plugins/org.eclipse.ceylon.ide.eclipse.ui`
+    - `.../ceylon-ide-eclipse/plugins/org.eclipse.ceylon.test.eclipse.plugin`
+    - `.../ceylon-ide-eclipse/plugins/org.eclipse.ceylon.ide.eclipse.android.plugin`
 
 7.  Add the following folder as a local update site in your Eclipse _Available Software Sites_ 
     list:
@@ -219,10 +219,10 @@ or built with Maven).
         `http://download.eclipse.org/technology/swtbot/releases/latest/`
     - Use `File > Import... > Existing Projects into Workspace`
       to import the project from this root directory:
-        `.../ceylon-ide-eclipse/tests/com.redhat.ceylon.eclipse.ui.test`
+        `.../ceylon-ide-eclipse/tests/org.eclipse.ceylon.ide.eclipse.ui.test`
 
 
-10.  Select the `com.redhat.ceylon.eclipse.ui` project and run it using
+10.  Select the `org.eclipse.ceylon.ide.eclipse.ui` project and run it using
     `Run > Run As > Eclipse Application`. Now go to the new instance of
     Eclipse.
 

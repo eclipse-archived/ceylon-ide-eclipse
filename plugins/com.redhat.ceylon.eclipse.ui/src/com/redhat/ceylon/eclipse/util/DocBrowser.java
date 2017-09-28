@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.util;
+package org.eclipse.ceylon.ide.eclipse.util;
 
 import static org.eclipse.jface.text.TextPresentation.applyTextPresentation;
 
@@ -28,8 +28,8 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 
-import com.redhat.ceylon.eclipse.code.html.HTMLTextPresenter;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.code.html.HTMLTextPresenter;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 public class DocBrowser {
     

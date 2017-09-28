@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.style;
+package org.eclipse.ceylon.ide.eclipse.code.style;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +25,9 @@ import org.eclipse.swt.widgets.TabItem;
 
 import ceylon.formatter.options.FormattingOptions;
 
-import com.redhat.ceylon.eclipse.code.style.FormatterProfileManager.Profile;
-import com.redhat.ceylon.eclipse.code.style.FormatterTabPage.ModificationListener;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.code.style.FormatterProfileManager.Profile;
+import org.eclipse.ceylon.ide.eclipse.code.style.FormatterTabPage.ModificationListener;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 public class FormatterModifyProfileDialog extends StatusDialog implements
         ModificationListener {

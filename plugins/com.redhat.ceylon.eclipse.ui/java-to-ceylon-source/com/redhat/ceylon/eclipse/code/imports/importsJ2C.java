@@ -1,11 +1,11 @@
-package com.redhat.ceylon.eclipse.code.imports;
+package org.eclipse.ceylon.ide.eclipse.code.imports;
 
 import org.eclipse.jface.text.IDocument;
 
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.java2ceylon.ImportsJ2C;
-import com.redhat.ceylon.ide.common.imports.AbstractImportsCleaner;
-import com.redhat.ceylon.ide.common.imports.moduleImportUtil_;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.eclipse.java2ceylon.ImportsJ2C;
+import org.eclipse.ceylon.ide.common.imports.AbstractImportsCleaner;
+import org.eclipse.ceylon.ide.common.imports.moduleImportUtil_;
 
 public class importsJ2C implements ImportsJ2C {
 

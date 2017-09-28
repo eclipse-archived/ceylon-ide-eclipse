@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
 /*******************************************************************************
  * Copyright (c) 2000, 2013 IBM Corporation and others.

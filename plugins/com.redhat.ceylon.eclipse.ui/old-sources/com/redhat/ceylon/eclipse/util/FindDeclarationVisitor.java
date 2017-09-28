@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.util;
+package org.eclipse.ceylon.ide.eclipse.util;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
 
 @Deprecated
 public class FindDeclarationVisitor 

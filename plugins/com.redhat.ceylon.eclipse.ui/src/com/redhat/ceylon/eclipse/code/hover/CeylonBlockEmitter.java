@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.hover;
+package org.eclipse.ceylon.ide.eclipse.code.hover;
 
 import java.util.List;
 
 import com.github.rjeschke.txtmark.BlockEmitter;
-import com.redhat.ceylon.eclipse.code.html.HTML;
+import org.eclipse.ceylon.ide.eclipse.code.html.HTML;
 
 public final class CeylonBlockEmitter implements BlockEmitter {
     

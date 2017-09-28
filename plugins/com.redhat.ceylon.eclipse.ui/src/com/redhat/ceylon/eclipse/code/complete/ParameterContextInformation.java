@@ -1,21 +1,21 @@
-package com.redhat.ceylon.eclipse.code.complete;
+package org.eclipse.ceylon.ide.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.appendParameterContextInfo;
-import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.getParameters;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CodeCompletions.appendParameterContextInfo;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CompletionUtil.getParameters;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 
 import java.util.List;
 
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ParameterList;
-import com.redhat.ceylon.model.typechecker.model.Reference;
-import com.redhat.ceylon.model.typechecker.model.TypedReference;
-import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.model.Value;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Parameter;
+import org.eclipse.ceylon.model.typechecker.model.ParameterList;
+import org.eclipse.ceylon.model.typechecker.model.Reference;
+import org.eclipse.ceylon.model.typechecker.model.TypedReference;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.model.typechecker.model.Value;
 
 final class ParameterContextInformation 
             implements IContextInformation {

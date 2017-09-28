@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.explorer;
+package org.eclipse.ceylon.ide.eclipse.code.explorer;
 
 import java.util.HashMap;
 import java.util.Iterator;

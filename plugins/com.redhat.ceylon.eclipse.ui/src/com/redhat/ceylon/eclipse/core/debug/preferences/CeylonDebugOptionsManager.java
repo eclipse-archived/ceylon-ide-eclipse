@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.core.debug.preferences;
+package org.eclipse.ceylon.ide.eclipse.core.debug.preferences;
 
-import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.ACTIVE_FILTERS_LIST;
-import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.INACTIVE_FILTERS_LIST;
-import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.USE_STEP_FILTERS;
-import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.FILTER_DEFAULT_ARGUMENTS_CODE;
-import static com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.DEBUG_AS_JAVACODE;
+import static org.eclipse.ceylon.ide.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.ACTIVE_FILTERS_LIST;
+import static org.eclipse.ceylon.ide.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.INACTIVE_FILTERS_LIST;
+import static org.eclipse.ceylon.ide.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.USE_STEP_FILTERS;
+import static org.eclipse.ceylon.ide.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.FILTER_DEFAULT_ARGUMENTS_CODE;
+import static org.eclipse.ceylon.ide.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer.DEBUG_AS_JAVACODE;
 import static org.eclipse.jdt.internal.debug.ui.JavaDebugOptionsManager.parseList;
 
 import java.util.Arrays;
@@ -23,8 +23,8 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.IWorkbenchPage;
 
-import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.core.debug.model.CeylonJDIDebugTarget;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 /**
  * Manages options for the Ceylon Debugger

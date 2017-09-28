@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
 /*******************************************************************************
  * Copyright (c) 2005, 2011 IBM Corporation and others.
@@ -11,7 +11,7 @@ package com.redhat.ceylon.eclipse.code.refactor;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import java.util.List;
 
@@ -22,11 +22,11 @@ import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportModule;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Identifier;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.ImportModule;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
 
 
 public class ChangeVersionLinkedMode extends RefactorLinkedMode {

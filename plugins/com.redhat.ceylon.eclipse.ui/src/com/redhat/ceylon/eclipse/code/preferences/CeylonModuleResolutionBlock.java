@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.preferences;
+package org.eclipse.ceylon.ide.eclipse.code.preferences;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.openInEditor;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.openInEditor;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static org.eclipse.jface.layout.GridDataFactory.fillDefaults;
 import static org.eclipse.jface.layout.GridDataFactory.swtDefaults;
 
@@ -40,8 +40,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
-import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
-import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
+import org.eclipse.ceylon.ide.common.model.BaseCeylonProject;
+import org.eclipse.ceylon.ide.common.model.CeylonProjectConfig;
 
 public class CeylonModuleResolutionBlock {
 

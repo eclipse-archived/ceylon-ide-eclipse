@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.getCurrentThemeColor;
 
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationPresentation;

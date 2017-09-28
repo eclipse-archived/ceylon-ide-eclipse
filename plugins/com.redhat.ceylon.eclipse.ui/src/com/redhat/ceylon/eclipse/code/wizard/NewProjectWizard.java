@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_PROJECT;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
-import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_NEW_PROJECT;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getActivePage;
+import static org.eclipse.ceylon.ide.eclipse.util.InteropUtils.toJavaString;
 import static org.eclipse.jdt.launching.JavaRuntime.JRE_CONTAINER;
 
 import java.io.File;
@@ -41,13 +41,13 @@ import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 
-import com.redhat.ceylon.compiler.typechecker.analyzer.Warning;
-import com.redhat.ceylon.eclipse.code.explorer.PackageExplorerPart;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonRepoConfigBlock;
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
-import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
+import org.eclipse.ceylon.compiler.typechecker.analyzer.Warning;
+import org.eclipse.ceylon.ide.eclipse.code.explorer.PackageExplorerPart;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonRepoConfigBlock;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.common.model.CeylonProject;
+import org.eclipse.ceylon.ide.common.model.CeylonProjectConfig;
 
 public class NewProjectWizard extends NewElementWizard 
         implements IExecutableExtension {

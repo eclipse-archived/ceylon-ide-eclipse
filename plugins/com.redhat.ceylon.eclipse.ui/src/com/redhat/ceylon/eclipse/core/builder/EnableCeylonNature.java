@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.core.builder;
+package org.eclipse.ceylon.ide.eclipse.core.builder;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,8 +14,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
-import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
-import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
+import org.eclipse.ceylon.ide.common.model.BaseCeylonProject;
+import org.eclipse.ceylon.ide.common.model.CeylonProjectConfig;
 
 import ceylon.interop.java.CeylonStringIterable;
 

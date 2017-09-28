@@ -4,17 +4,17 @@ import ceylon.collection {
     MutableList
 }
 
-import com.redhat.ceylon.eclipse.core.classpath {
+import org.eclipse.ceylon.ide.eclipse.core.classpath {
     CeylonLanguageModuleContainer,
     CeylonProjectModulesContainer
 }
-import com.redhat.ceylon.ide.common.model {
+import org.eclipse.ceylon.ide.common.model {
     IdeModule
 }
-import com.redhat.ceylon.ide.common.util {
+import org.eclipse.ceylon.ide.common.util {
     ...
 }
-import com.redhat.ceylon.model.cmr {
+import org.eclipse.ceylon.model.cmr {
     JDKUtils
 }
 

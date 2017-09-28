@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.hover;
+package org.eclipse.ceylon.ide.eclipse.code.hover;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_ANN;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_ANN_DIS;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CONFIG_ANN;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CONFIG_ANN_DIS;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 import static org.eclipse.ui.editors.text.EditorsUI.getAnnotationPreferenceLookup;
@@ -35,9 +35,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 /**
  * Hover for error and warning annotations.

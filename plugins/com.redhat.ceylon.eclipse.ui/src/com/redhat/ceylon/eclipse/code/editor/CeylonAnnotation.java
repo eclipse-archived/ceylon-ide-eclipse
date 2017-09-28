@@ -1,13 +1,13 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
 
 import org.eclipse.core.runtime.AssertionFailedException;
 import org.eclipse.jface.text.quickassist.IQuickFixableAnnotation;
 import org.eclipse.jface.text.source.Annotation;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Message;
+import org.eclipse.ceylon.compiler.typechecker.tree.Message;
 
 public class CeylonAnnotation extends Annotation 
         implements IQuickFixableAnnotation {

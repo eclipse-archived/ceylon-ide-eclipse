@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.ui;
+package org.eclipse.ceylon.ide.eclipse.ui;
 
-import static com.redhat.ceylon.eclipse.core.debug.CeylonDebugElementAdapterFactory.installCeylonDebugElementAdapters;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
+import static org.eclipse.ceylon.ide.eclipse.core.debug.CeylonDebugElementAdapterFactory.installCeylonDebugElementAdapters;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getCurrentEditor;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getFile;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import org.eclipse.core.commands.ExecutionEvent;
@@ -28,7 +28,7 @@ import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 
-import com.redhat.ceylon.eclipse.code.editor.RecentFilesPopup;
+import org.eclipse.ceylon.ide.eclipse.code.editor.RecentFilesPopup;
 
 public class CeylonStartup implements IStartup {
 
@@ -183,7 +183,7 @@ public class CeylonStartup implements IStartup {
             }
         });
         
-        com.redhat.ceylon.eclipse.core.launch.setDefaultLaunchDelegateToNonCeylonAware_.setDefaultLaunchDelegateToNonCeylonAware();
+        org.eclipse.ceylon.ide.eclipse.core.launch.setDefaultLaunchDelegateToNonCeylonAware_.setDefaultLaunchDelegateToNonCeylonAware();
     }
 
 }

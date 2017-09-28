@@ -1,1 +1,1 @@
-shared package com.redhat.ceylon.eclipse.util;
+shared package org.eclipse.ceylon.ide.eclipse.util;

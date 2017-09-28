@@ -1,12 +1,12 @@
-package com.redhat.ceylon.eclipse.code.hover;
+package org.eclipse.ceylon.ide.eclipse.code.hover;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
-import static com.redhat.ceylon.eclipse.code.hover.DocumentationHover.getModel;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getPreferences;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.gotoDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.code.hover.DocumentationHover.getModel;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.getPreferences;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.GOTO;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getCurrentEditor;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.findNode;
 import static java.lang.Integer.parseInt;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK;
 import static org.eclipse.ui.ISharedImages.IMG_TOOL_BACK_DISABLED;
@@ -36,20 +36,20 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.part.ViewPart;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.browser.BrowserInput;
-import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.html.HTML;
-import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.DocBrowser;
-import com.redhat.ceylon.ide.common.correct.specifyTypeQuickFix_;
-import com.redhat.ceylon.ide.common.doc.DocGenerator;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.code.browser.BrowserInput;
+import org.eclipse.ceylon.ide.eclipse.code.correct.correctJ2C;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.html.HTML;
+import org.eclipse.ceylon.ide.eclipse.code.html.HTMLPrinter;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.eclipse.util.DocBrowser;
+import org.eclipse.ceylon.ide.common.correct.specifyTypeQuickFix_;
+import org.eclipse.ceylon.ide.common.doc.DocGenerator;
+import org.eclipse.ceylon.model.typechecker.model.Referenceable;
 
 public class DocumentationView extends ViewPart {
     

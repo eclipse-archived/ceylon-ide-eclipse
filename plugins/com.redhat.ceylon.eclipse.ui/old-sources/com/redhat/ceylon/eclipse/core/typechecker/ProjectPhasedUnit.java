@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.typechecker;
+package org.eclipse.ceylon.ide.eclipse.core.typechecker;
 
 import java.util.Iterator;
 import java.util.List;
@@ -10,23 +10,23 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper.ModuleDependencyAnalysisError;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
-import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Message;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.core.model.JDTModule;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
-import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
-import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.util.ModuleManager;
+import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+import org.eclipse.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
+import org.eclipse.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper.ModuleDependencyAnalysisError;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnits;
+import org.eclipse.ceylon.compiler.typechecker.context.TypecheckerUnit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Message;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.ide.eclipse.core.model.JDTModule;
+import org.eclipse.ceylon.ide.eclipse.core.model.ProjectSourceFile;
+import org.eclipse.ceylon.ide.eclipse.core.vfs.vfsJ2C;
+import org.eclipse.ceylon.ide.common.vfs.ResourceVirtualFile;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.model.typechecker.util.ModuleManager;
 
 public class ProjectPhasedUnit extends ModifiablePhasedUnit {
     private IFolder sourceFolderResource;

@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.navigator;
+package org.eclipse.ceylon.ide.eclipse.code.navigator;
 
-import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
-import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
+import static org.eclipse.ceylon.ide.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
+import static org.eclipse.ceylon.ide.eclipse.util.InteropUtils.toJavaString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,9 +11,9 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.eclipse.core.external.CeylonArchiveFileStore;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
 
 public class ExternalModuleNode implements ModuleNode {
     private RepositoryNode repositoryNode;

@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.search;
+package org.eclipse.ceylon.ide.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SEARCH_RESULTS;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_SEARCH_RESULTS;
 import static java.util.Arrays.asList;
 import static org.eclipse.jdt.core.IJavaElement.CLASS_FILE;
 
@@ -25,10 +25,10 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.eclipse.code.editor.SourceArchiveEditorInput;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
+import org.eclipse.ceylon.compiler.typechecker.io.VirtualFile;
+import org.eclipse.ceylon.ide.eclipse.code.editor.SourceArchiveEditorInput;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.EditorUtil;
 
 public class CeylonSearchResult 
         extends AbstractTextSearchResult

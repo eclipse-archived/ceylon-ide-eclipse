@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.code.hover;
+package org.eclipse.ceylon.ide.eclipse.code.hover;
 
 import java.util.Comparator;
 
 import org.eclipse.jface.text.source.Annotation;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonAnnotation;
 
 public final class AnnotationComparator implements
         Comparator<Annotation> {

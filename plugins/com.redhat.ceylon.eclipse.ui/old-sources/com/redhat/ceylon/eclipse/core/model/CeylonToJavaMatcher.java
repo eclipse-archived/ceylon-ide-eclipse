@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.model;
+package org.eclipse.ceylon.ide.eclipse.core.model;
 
 import java.lang.ref.SoftReference;
 import java.util.LinkedList;
@@ -19,17 +19,17 @@ import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 
-import com.redhat.ceylon.eclipse.core.model.mirror.IBindingProvider;
-import com.redhat.ceylon.eclipse.core.model.mirror.JDTMethod;
-import com.redhat.ceylon.model.loader.model.FieldValue;
-import com.redhat.ceylon.model.loader.model.JavaBeanValue;
-import com.redhat.ceylon.model.loader.model.JavaMethod;
-import com.redhat.ceylon.model.loader.model.LazyClass;
-import com.redhat.ceylon.model.loader.model.LazyFunction;
-import com.redhat.ceylon.model.loader.model.LazyInterface;
-import com.redhat.ceylon.model.loader.model.LazyValue;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Scope;
+import org.eclipse.ceylon.ide.eclipse.core.model.mirror.IBindingProvider;
+import org.eclipse.ceylon.ide.eclipse.core.model.mirror.JDTMethod;
+import org.eclipse.ceylon.model.loader.model.FieldValue;
+import org.eclipse.ceylon.model.loader.model.JavaBeanValue;
+import org.eclipse.ceylon.model.loader.model.JavaMethod;
+import org.eclipse.ceylon.model.loader.model.LazyClass;
+import org.eclipse.ceylon.model.loader.model.LazyFunction;
+import org.eclipse.ceylon.model.loader.model.LazyInterface;
+import org.eclipse.ceylon.model.loader.model.LazyValue;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Scope;
 
 public class CeylonToJavaMatcher {
     private static class ResolvedElements {

@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
 import java.net.URI;
 
@@ -7,7 +7,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.ui.part.FileEditorInput;
 
-import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
+import org.eclipse.ceylon.ide.eclipse.core.external.ExternalSourceArchiveManager;
 
 public class SourceArchiveEditorInput extends FileEditorInput {
     public SourceArchiveEditorInput(IFile file) {

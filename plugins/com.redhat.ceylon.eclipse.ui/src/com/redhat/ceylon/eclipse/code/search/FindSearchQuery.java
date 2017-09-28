@@ -1,14 +1,14 @@
-package com.redhat.ceylon.eclipse.code.search;
+package org.eclipse.ceylon.ide.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnit;
-import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.createSearchPattern;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectsToSearch;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.runSearch;
-import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getUnit;
+import static org.eclipse.ceylon.ide.eclipse.util.DocLinks.nameRegion;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getActivePage;
+import static org.eclipse.ceylon.ide.eclipse.util.JavaSearch.createSearchPattern;
+import static org.eclipse.ceylon.ide.eclipse.util.JavaSearch.getProjectsToSearch;
+import static org.eclipse.ceylon.ide.eclipse.util.JavaSearch.runSearch;
+import static org.eclipse.ceylon.ide.eclipse.util.InteropUtils.toJavaString;
 import static java.util.Arrays.asList;
 
 import java.util.HashSet;
@@ -35,25 +35,25 @@ import org.eclipse.search.ui.text.AbstractTextSearchResult;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.util.Filters;
-import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
-import com.redhat.ceylon.ide.common.model.IJavaModelAware;
-import com.redhat.ceylon.ide.common.model.IdeModule;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Modules;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.compiler.typechecker.io.VirtualFile;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
+import org.eclipse.ceylon.ide.eclipse.util.Filters;
+import org.eclipse.ceylon.ide.common.model.CeylonBinaryUnit;
+import org.eclipse.ceylon.ide.common.model.CeylonProject;
+import org.eclipse.ceylon.ide.common.model.IJavaModelAware;
+import org.eclipse.ceylon.ide.common.model.IdeModule;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Modules;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.model.typechecker.model.Referenceable;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 abstract class FindSearchQuery implements ISearchQuery {
     

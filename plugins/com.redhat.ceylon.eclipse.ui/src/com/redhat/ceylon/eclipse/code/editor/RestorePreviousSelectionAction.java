@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.RESTORE_PREVIOUS;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.EditorActionIds.RESTORE_PREVIOUS;
 
 import java.util.ArrayList;
 import java.util.List;

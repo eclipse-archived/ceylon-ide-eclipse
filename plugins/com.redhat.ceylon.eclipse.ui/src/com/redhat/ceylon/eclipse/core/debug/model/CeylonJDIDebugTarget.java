@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.debug.model;
+package org.eclipse.ceylon.ide.eclipse.core.debug.model;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
@@ -38,8 +38,8 @@ import org.eclipse.jdt.internal.debug.core.model.JDINullValue;
 import org.eclipse.jdt.internal.debug.core.model.JDIObjectValue;
 import org.eclipse.jdt.internal.debug.core.model.JDIThread;
 
-import com.redhat.ceylon.eclipse.core.launch.LaunchHelper;
-import com.redhat.ceylon.ide.common.debug.agent.CeylonDebugEvaluationThread;
+import org.eclipse.ceylon.ide.eclipse.core.launch.LaunchHelper;
+import org.eclipse.ceylon.ide.common.debug.agent.CeylonDebugEvaluationThread;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;

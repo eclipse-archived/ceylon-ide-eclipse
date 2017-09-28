@@ -2,22 +2,22 @@ import ceylon.interop.java {
     JavaList
 }
 
-import com.redhat.ceylon.eclipse.code.correct {
+import org.eclipse.ceylon.ide.eclipse.code.correct {
     EclipseDocument
 }
-import com.redhat.ceylon.eclipse.code.editor {
+import org.eclipse.ceylon.ide.eclipse.code.editor {
     CeylonEditor
 }
-import com.redhat.ceylon.eclipse.code.parse {
+import org.eclipse.ceylon.ide.eclipse.code.parse {
     CeylonParseController
 }
-import com.redhat.ceylon.eclipse.util {
+import org.eclipse.ceylon.ide.eclipse.util {
     EditorUtil
 }
-import com.redhat.ceylon.ide.common.imports {
+import org.eclipse.ceylon.ide.common.imports {
     AbstractImportsCleaner
 }
-import com.redhat.ceylon.model.typechecker.model {
+import org.eclipse.ceylon.model.typechecker.model {
     Declaration
 }
 

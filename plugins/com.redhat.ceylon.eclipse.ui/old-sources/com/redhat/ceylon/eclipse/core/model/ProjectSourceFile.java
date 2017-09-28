@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.model;
+package org.eclipse.ceylon.ide.eclipse.core.model;
 
 import org.antlr.runtime.CommonTokenStream;
 import org.eclipse.core.resources.IFile;
@@ -6,26 +6,26 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 
-import com.redhat.ceylon.compiler.java.loader.UnknownTypeCollector;
-import com.redhat.ceylon.compiler.java.runtime.metamodel.ModelError;
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.model.typechecker.util.ModuleManager;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnitUtils;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.eclipse.core.vfs.vfsJ2C;
-import com.redhat.ceylon.ide.common.model.ModifiableSourceFile;
-import com.redhat.ceylon.ide.common.model.delta.CompilationUnitDelta;
-import com.redhat.ceylon.ide.common.model.delta.DeltaBuilderFactory;
-import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
-import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
-import com.redhat.ceylon.eclipse.util.CeylonSourceParser;
-import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
+import org.eclipse.ceylon.compiler.java.loader.UnknownTypeCollector;
+import org.eclipse.ceylon.compiler.java.runtime.metamodel.ModelError;
+import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+import org.eclipse.ceylon.model.typechecker.util.ModuleManager;
+import org.eclipse.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnits;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import org.eclipse.ceylon.ide.eclipse.core.typechecker.IdePhasedUnitUtils;
+import org.eclipse.ceylon.ide.eclipse.core.typechecker.ProjectPhasedUnit;
+import org.eclipse.ceylon.ide.eclipse.core.vfs.vfsJ2C;
+import org.eclipse.ceylon.ide.common.model.ModifiableSourceFile;
+import org.eclipse.ceylon.ide.common.model.delta.CompilationUnitDelta;
+import org.eclipse.ceylon.ide.common.model.delta.DeltaBuilderFactory;
+import org.eclipse.ceylon.ide.common.vfs.FileVirtualFile;
+import org.eclipse.ceylon.ide.common.vfs.FolderVirtualFile;
+import org.eclipse.ceylon.ide.eclipse.util.CeylonSourceParser;
+import org.eclipse.ceylon.ide.eclipse.util.SingleSourceUnitPackage;
 
 public class ProjectSourceFile extends ModifiableSourceFile {
     static private DeltaBuilderFactory deltaBuilderFactory = 

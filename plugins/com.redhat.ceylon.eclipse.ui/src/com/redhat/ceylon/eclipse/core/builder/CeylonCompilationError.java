@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.core.builder;
+package org.eclipse.ceylon.ide.eclipse.core.builder;
 
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getIdentifyingNode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,19 +11,19 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
 
-import com.redhat.ceylon.javax.lang.model.element.Modifier;
-import com.redhat.ceylon.javax.lang.model.element.NestingKind;
-import com.redhat.ceylon.javax.tools.Diagnostic;
-import com.redhat.ceylon.javax.tools.JavaFileObject;
+import org.eclipse.ceylon.javax.lang.model.element.Modifier;
+import org.eclipse.ceylon.javax.lang.model.element.NestingKind;
+import org.eclipse.ceylon.javax.tools.Diagnostic;
+import org.eclipse.ceylon.javax.tools.JavaFileObject;
 
 import org.antlr.runtime.Token;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 
-import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisError;
-import com.redhat.ceylon.compiler.typechecker.tree.AnalysisMessage;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
+import org.eclipse.ceylon.compiler.typechecker.analyzer.AnalysisError;
+import org.eclipse.ceylon.compiler.typechecker.tree.AnalysisMessage;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.UnexpectedError;
 
 //This is bullshit. The IDE should have a nice way of converting
 //compilation units into objects that can be shown in the problems
@@ -118,7 +118,7 @@ public class CeylonCompilationError implements Diagnostic<JavaFileObject> {
     }
 
     @Override
-    public com.redhat.ceylon.javax.tools.Diagnostic.Kind getKind() {
+    public org.eclipse.ceylon.javax.tools.Diagnostic.Kind getKind() {
         return (err instanceof AnalysisError ||
                     err instanceof UnexpectedError) ? Diagnostic.Kind.ERROR : Diagnostic.Kind.WARNING;
     }

@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.core.launch;
+package org.eclipse.ceylon.ide.eclipse.core.launch;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 

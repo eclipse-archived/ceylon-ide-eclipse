@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.core.debug.preferences;
+package org.eclipse.ceylon.ide.eclipse.core.debug.preferences;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 public class CeylonDebugPreferenceInitializer extends AbstractPreferenceInitializer {
 
@@ -21,7 +21,7 @@ public class CeylonDebugPreferenceInitializer extends AbstractPreferenceInitiali
         store.setDefault(ACTIVE_FILTERS_LIST,
                 "org.jboss.modules.*,ceylon.modules.*");
         store.setDefault(INACTIVE_FILTERS_LIST,
-                "ceylon.language.*,com.redhat.ceylon.*,java.lang.*");
+                "ceylon.language.*,org.eclipse.ceylon.*,java.lang.*");
         store.setDefault(USE_STEP_FILTERS, true);
         store.setDefault(FILTER_DEFAULT_ARGUMENTS_CODE, false);
         store.setDefault(DEBUG_AS_JAVACODE, false);

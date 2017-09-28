@@ -8,9 +8,9 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package com.redhat.ceylon.eclipse.code.hover;
+package org.eclipse.ceylon.ide.eclipse.code.hover;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,9 +22,9 @@ import org.eclipse.jface.text.ITextHoverExtension;
 import org.eclipse.jface.text.ITextHoverExtension2;
 import org.eclipse.jface.text.ITextViewer;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.core.debug.hover.CeylonDebugHover;
-import com.redhat.ceylon.ide.common.doc.DocGenerator;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.core.debug.hover.CeylonDebugHover;
+import org.eclipse.ceylon.ide.common.doc.DocGenerator;
 
 /**
  * Caution: this implementation is a layer breaker and 

@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getEnterBinding;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getEnterBinding;
 
 /*******************************************************************************
  * Copyright (c) 2007, 2011 IBM Corporation and others.
@@ -78,8 +78,8 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.progress.UIJob;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonRefactoringPreferencePage;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonRefactoringPreferencePage;
 
 public class RefactorInformationPopup 
         implements IWidgetTokenKeeper, IWidgetTokenKeeperExtension {

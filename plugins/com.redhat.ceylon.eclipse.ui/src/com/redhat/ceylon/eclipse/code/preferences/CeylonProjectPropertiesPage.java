@@ -1,14 +1,14 @@
-package com.redhat.ceylon.eclipse.code.preferences;
+package org.eclipse.ceylon.ide.eclipse.code.preferences;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.areAstAwareIncrementalBuildsEnabled;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonSystemRepo;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getVerbose;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
-import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaBoolean;
-import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.areAstAwareIncrementalBuildsEnabled;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.compileToJava;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.compileToJs;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getCeylonSystemRepo;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getVerbose;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.util.InteropUtils.toJavaBoolean;
+import static org.eclipse.ceylon.ide.eclipse.util.InteropUtils.toJavaString;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jface.layout.GridDataFactory.swtDefaults;
 
@@ -37,10 +37,10 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.common.model.CeylonProjectConfig;
 
 public class CeylonProjectPropertiesPage extends PropertyPage {
     

@@ -1,4 +1,4 @@
-package com.redhat.ceylon.test.eclipse.plugin;
+package org.eclipse.ceylon.test.eclipse.plugin;
 
 import java.text.MessageFormat;
 
@@ -6,7 +6,7 @@ import org.eclipse.osgi.util.NLS;
 
 public class CeylonTestMessages extends NLS {
 
-    private static final String BUNDLE_NAME = "com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages";
+    private static final String BUNDLE_NAME = "org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages";
     
     public static String configTabName;
     public static String configTabTestGroupLabel;

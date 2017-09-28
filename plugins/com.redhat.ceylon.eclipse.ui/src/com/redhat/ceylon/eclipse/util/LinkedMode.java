@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.util;
+package org.eclipse.ceylon.ide.eclipse.util;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -13,10 +13,10 @@ import org.eclipse.jface.text.link.ProposalPosition;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.ui.texteditor.link.EditorLinkedModeUI;
 
-import com.redhat.ceylon.eclipse.code.editor.AbstractLinkedModeListener;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
-import com.redhat.ceylon.eclipse.code.editor.FocusEditingSupport;
+import org.eclipse.ceylon.ide.eclipse.code.editor.AbstractLinkedModeListener;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonSourceViewer;
+import org.eclipse.ceylon.ide.eclipse.code.editor.FocusEditingSupport;
 
 public class LinkedMode {
     

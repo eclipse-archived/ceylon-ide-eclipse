@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
@@ -14,8 +14,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.ide.common.refactoring.ExtractValueRefactoring;
-import com.redhat.ceylon.ide.common.util.escaping_;
+import org.eclipse.ceylon.ide.common.refactoring.ExtractValueRefactoring;
+import org.eclipse.ceylon.ide.common.util.escaping_;
 
 public class ExtractValueInputPage extends UserInputWizardPage {
     public ExtractValueInputPage(String name) {

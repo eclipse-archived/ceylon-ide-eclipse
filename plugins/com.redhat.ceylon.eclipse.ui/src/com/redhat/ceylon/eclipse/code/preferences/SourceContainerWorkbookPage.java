@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-package com.redhat.ceylon.eclipse.code.preferences;
+package org.eclipse.ceylon.ide.eclipse.code.preferences;
 
 import static org.eclipse.jdt.internal.ui.JavaPluginImages.DESC_WIZBAN_NEWSRCFOLDR;
 
@@ -56,8 +56,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.INewWizard;
 
-import com.redhat.ceylon.eclipse.code.wizard.AddResourceFolderWizard;
-import com.redhat.ceylon.eclipse.code.wizard.CreateMultipleResourceFoldersDialog;
+import org.eclipse.ceylon.ide.eclipse.code.wizard.AddResourceFolderWizard;
+import org.eclipse.ceylon.ide.eclipse.code.wizard.CreateMultipleResourceFoldersDialog;
 
 
 public class SourceContainerWorkbookPage extends BuildPathBasePage {

@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.external;
+package org.eclipse.ceylon.ide.eclipse.core.external;
 
 import java.io.IOException;
 import java.io.InputStream;

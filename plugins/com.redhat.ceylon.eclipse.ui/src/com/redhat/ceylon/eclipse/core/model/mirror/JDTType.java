@@ -18,10 +18,10 @@
  * MA  02110-1301, USA.
  */
 
-package com.redhat.ceylon.eclipse.core.model.mirror;
+package org.eclipse.ceylon.ide.eclipse.core.model.mirror;
 
-import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.toType;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.core.model.LookupEnvironmentUtilities.toType;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,16 +54,16 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 import org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 
-import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities;
-import com.redhat.ceylon.eclipse.core.model.ModelLoaderNameEnvironment;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.ide.common.model.UnknownTypeMirror;
-import com.redhat.ceylon.model.loader.AbstractModelLoader;
-import com.redhat.ceylon.model.loader.mirror.ClassMirror;
-import com.redhat.ceylon.model.loader.mirror.FunctionalInterfaceType;
-import com.redhat.ceylon.model.loader.mirror.TypeKind;
-import com.redhat.ceylon.model.loader.mirror.TypeMirror;
-import com.redhat.ceylon.model.loader.mirror.TypeParameterMirror;
+import org.eclipse.ceylon.ide.eclipse.core.model.LookupEnvironmentUtilities;
+import org.eclipse.ceylon.ide.eclipse.core.model.ModelLoaderNameEnvironment;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.common.model.UnknownTypeMirror;
+import org.eclipse.ceylon.model.loader.AbstractModelLoader;
+import org.eclipse.ceylon.model.loader.mirror.ClassMirror;
+import org.eclipse.ceylon.model.loader.mirror.FunctionalInterfaceType;
+import org.eclipse.ceylon.model.loader.mirror.TypeKind;
+import org.eclipse.ceylon.model.loader.mirror.TypeMirror;
+import org.eclipse.ceylon.model.loader.mirror.TypeParameterMirror;
 
 public class JDTType implements TypeMirror {
     public static final TypeMirror UNKNOWN_TYPE = new UnknownTypeMirror();

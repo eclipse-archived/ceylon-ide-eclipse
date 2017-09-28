@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.debug.presentation;
+package org.eclipse.ceylon.ide.eclipse.core.debug.presentation;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.debug.core.DebugException;
@@ -17,9 +17,9 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 
-import com.redhat.ceylon.compiler.java.metadata.Ceylon;
-import com.redhat.ceylon.eclipse.core.debug.DebugUtils;
-import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
+import org.eclipse.ceylon.compiler.java.metadata.Ceylon;
+import org.eclipse.ceylon.ide.eclipse.core.debug.DebugUtils;
+import org.eclipse.ceylon.ide.eclipse.core.debug.model.CeylonJDIDebugTarget;
 
 class CeylonPresentationContext implements IPresentationContext {
     private IPresentationContext delegate;

@@ -1,15 +1,15 @@
-package com.redhat.ceylon.eclipse.code.navigator;
+package org.eclipse.ceylon.ide.eclipse.code.navigator;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 
-import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-import com.redhat.ceylon.model.cmr.Repository;
+import org.eclipse.ceylon.ide.common.model.BaseCeylonProject;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.model.cmr.Repository;
 
 public class RepositoryNode {
     private String displayString;

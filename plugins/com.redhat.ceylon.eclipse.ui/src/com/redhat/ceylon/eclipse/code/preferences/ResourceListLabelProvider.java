@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.preferences;
+package org.eclipse.ceylon.ide.eclipse.code.preferences;
 
 /*******************************************************************************
  * Copyright (c) 2000, 2012 IBM Corporation and others.
@@ -41,7 +41,7 @@ import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
 
 public class ResourceListLabelProvider extends LabelProvider {
 

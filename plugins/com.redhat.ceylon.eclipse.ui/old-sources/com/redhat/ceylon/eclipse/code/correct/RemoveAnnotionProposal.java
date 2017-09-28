@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isConstructor;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getReferencedDeclaration;
+import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 
 import java.util.Collection;
 
@@ -16,17 +16,17 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.ide.common.model.ModifiableSourceFile;
-import com.redhat.ceylon.ide.common.typechecker.ModifiablePhasedUnit;
-import com.redhat.ceylon.ide.common.util.FindDeclarationNodeVisitor;
-import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.common.model.ModifiableSourceFile;
+import org.eclipse.ceylon.ide.common.typechecker.ModifiablePhasedUnit;
+import org.eclipse.ceylon.ide.common.util.FindDeclarationNodeVisitor;
+import org.eclipse.ceylon.model.typechecker.model.ClassOrInterface;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Referenceable;
+import org.eclipse.ceylon.model.typechecker.model.Scope;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 class RemoveAnnotionProposal extends CorrectionProposal {
     

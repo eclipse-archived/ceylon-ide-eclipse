@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_MODULE;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_NEW_MODULE;
 import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
 import static org.eclipse.swt.layout.GridData.VERTICAL_ALIGN_BEGINNING;
 
@@ -25,11 +25,11 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
-import com.redhat.ceylon.common.Versions;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
-import com.redhat.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.common.Versions;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleVersionNode;
+import org.eclipse.ceylon.model.typechecker.model.Module;
 
 public abstract class ImportModulesWizardPage extends WizardPage {
     

@@ -1,12 +1,12 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.Nodes.getDefaultArgSpecifier;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.text;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getDocument;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getDefaultArgSpecifier;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getIdentifyingNode;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getReferencedExplicitDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getReferencedNode;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,20 +29,20 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.Constructor;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.FunctionOrValue;
-import com.redhat.ceylon.model.typechecker.model.Functional;
-import com.redhat.ceylon.model.typechecker.model.Parameter;
-import com.redhat.ceylon.model.typechecker.model.ParameterList;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.MemberOrTypeExpression;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.PositionalArgument;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.model.typechecker.model.Class;
+import org.eclipse.ceylon.model.typechecker.model.Constructor;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.FunctionOrValue;
+import org.eclipse.ceylon.model.typechecker.model.Functional;
+import org.eclipse.ceylon.model.typechecker.model.Parameter;
+import org.eclipse.ceylon.model.typechecker.model.ParameterList;
+import org.eclipse.ceylon.model.typechecker.model.Referenceable;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 public class ChangeParametersRefactoring extends AbstractRefactoring {
 

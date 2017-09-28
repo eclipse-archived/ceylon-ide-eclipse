@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.explorer;
+package org.eclipse.ceylon.ide.eclipse.code.explorer;
 
 /*******************************************************************************
  * Copyright (c) 2000, 2010 IBM Corporation and others.
@@ -12,8 +12,8 @@ package com.redhat.ceylon.eclipse.code.explorer;
  *     Matt Chapman, mpchapman@gmail.com - 89977 Make JDT .java agnostic
  *******************************************************************************/
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageKeyForFile;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_MODULE;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getImageKeyForFile;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_MODULE;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -43,8 +43,8 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 /**
  * Default strategy of the Java plugin for the construction of Java element icons.

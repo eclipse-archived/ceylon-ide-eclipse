@@ -1,15 +1,15 @@
-package com.redhat.ceylon.eclipse.core.adapters;
+package org.eclipse.ceylon.ide.eclipse.core.adapters;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdapterFactory;
 
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-import com.redhat.ceylon.ide.common.model.IResourceAware;
-import com.redhat.ceylon.ide.common.model.IUnit;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.ide.common.model.IResourceAware;
+import org.eclipse.ceylon.ide.common.model.IUnit;
 
 
 public class ResourceAdapterFactory implements IAdapterFactory {

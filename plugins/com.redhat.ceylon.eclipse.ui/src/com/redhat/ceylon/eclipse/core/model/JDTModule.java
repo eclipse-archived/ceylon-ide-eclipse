@@ -18,9 +18,9 @@
 // * MA  02110-1301, USA.
 // */
 //
-//package com.redhat.ceylon.eclipse.core.model;
+//package org.eclipse.ceylon.ide.eclipse.core.model;
 //
-//import static com.redhat.ceylon.eclipse.core.model.modelJ2C.ceylonModel;
+//import static org.eclipse.ceylon.ide.eclipse.core.model.modelJ2C.ceylonModel;
 //
 //import java.io.File;
 //import java.io.IOException;
@@ -64,48 +64,48 @@
 //import org.eclipse.jdt.internal.core.JavaModelManager;
 //import org.eclipse.jdt.internal.core.PackageFragment;
 //
-//import com.redhat.ceylon.cmr.api.ArtifactContext;
-//import com.redhat.ceylon.cmr.api.RepositoryManager;
-//import com.redhat.ceylon.common.Backend;
-//import com.redhat.ceylon.common.Backends;
-//import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-//import com.redhat.ceylon.compiler.typechecker.context.PhasedUnitMap;
-//import com.redhat.ceylon.compiler.typechecker.io.ClosableVirtualFile;
-//import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-//import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-//import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
-//import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-//import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
-//import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-//import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
-//import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
-//import com.redhat.ceylon.eclipse.core.model.JDTModuleSourceMapper.ExternalModulePhasedUnits;
-//import com.redhat.ceylon.ide.common.model.ModuleDependencies.TraversalAction;
-//import com.redhat.ceylon.eclipse.core.typechecker.CrossProjectPhasedUnit;
-//import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
-//import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
-//import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-//import com.redhat.ceylon.eclipse.util.CarUtils;
-//import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
-//import com.redhat.ceylon.ide.common.model.CeylonProject;
-//import com.redhat.ceylon.ide.common.model.ModuleDependencies;
-//import com.redhat.ceylon.model.cmr.ArtifactResult;
-//import com.redhat.ceylon.model.cmr.ArtifactResultType;
-//import com.redhat.ceylon.model.cmr.ImportType;
-//import com.redhat.ceylon.model.cmr.JDKUtils;
-//import com.redhat.ceylon.model.cmr.PathFilter;
-//import com.redhat.ceylon.model.cmr.Repository;
-//import com.redhat.ceylon.model.cmr.RepositoryException;
-//import com.redhat.ceylon.model.cmr.VisibilityType;
-//import com.redhat.ceylon.model.loader.model.LazyModule;
-//import com.redhat.ceylon.model.typechecker.model.Declaration;
-//import com.redhat.ceylon.model.typechecker.model.Module;
-//import com.redhat.ceylon.model.typechecker.model.ModuleImport;
-//import com.redhat.ceylon.model.typechecker.model.Modules;
-//import com.redhat.ceylon.model.typechecker.model.Package;
-//import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-//import com.redhat.ceylon.model.typechecker.model.Unit;
-//import com.redhat.ceylon.model.typechecker.model.ModelUtil;
+//import org.eclipse.ceylon.cmr.api.ArtifactContext;
+//import org.eclipse.ceylon.cmr.api.RepositoryManager;
+//import org.eclipse.ceylon.common.Backend;
+//import org.eclipse.ceylon.common.Backends;
+//import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+//import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnitMap;
+//import org.eclipse.ceylon.compiler.typechecker.io.ClosableVirtualFile;
+//import org.eclipse.ceylon.compiler.typechecker.io.VirtualFile;
+//import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+//import org.eclipse.ceylon.compiler.typechecker.parser.CeylonParser;
+//import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+//import org.eclipse.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
+//import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+//import org.eclipse.ceylon.ide.eclipse.core.classpath.CeylonLanguageModuleContainer;
+//import org.eclipse.ceylon.ide.eclipse.core.classpath.CeylonProjectModulesContainer;
+//import org.eclipse.ceylon.ide.eclipse.core.model.JDTModuleSourceMapper.ExternalModulePhasedUnits;
+//import org.eclipse.ceylon.ide.common.model.ModuleDependencies.TraversalAction;
+//import org.eclipse.ceylon.ide.eclipse.core.typechecker.CrossProjectPhasedUnit;
+//import org.eclipse.ceylon.ide.eclipse.core.typechecker.ExternalPhasedUnit;
+//import org.eclipse.ceylon.ide.eclipse.core.typechecker.IdePhasedUnit;
+//import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+//import org.eclipse.ceylon.ide.eclipse.util.CarUtils;
+//import org.eclipse.ceylon.ide.eclipse.util.SingleSourceUnitPackage;
+//import org.eclipse.ceylon.ide.common.model.CeylonProject;
+//import org.eclipse.ceylon.ide.common.model.ModuleDependencies;
+//import org.eclipse.ceylon.model.cmr.ArtifactResult;
+//import org.eclipse.ceylon.model.cmr.ArtifactResultType;
+//import org.eclipse.ceylon.model.cmr.ImportType;
+//import org.eclipse.ceylon.model.cmr.JDKUtils;
+//import org.eclipse.ceylon.model.cmr.PathFilter;
+//import org.eclipse.ceylon.model.cmr.Repository;
+//import org.eclipse.ceylon.model.cmr.RepositoryException;
+//import org.eclipse.ceylon.model.cmr.VisibilityType;
+//import org.eclipse.ceylon.model.loader.model.LazyModule;
+//import org.eclipse.ceylon.model.typechecker.model.Declaration;
+//import org.eclipse.ceylon.model.typechecker.model.Module;
+//import org.eclipse.ceylon.model.typechecker.model.ModuleImport;
+//import org.eclipse.ceylon.model.typechecker.model.Modules;
+//import org.eclipse.ceylon.model.typechecker.model.Package;
+//import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
+//import org.eclipse.ceylon.model.typechecker.model.Unit;
+//import org.eclipse.ceylon.model.typechecker.model.ModelUtil;
 //
 //public class JDTModule extends LazyModule {
 //    private JDTModuleManager moduleManager;
@@ -352,8 +352,8 @@
 //    private Properties getClassesToSources() {
 //        if (classesToSources.isEmpty() && getNameAsString().equals("java.base")) {
 //            for (Map.Entry<Object, Object> entry : ((JDTModule)getLanguageModule()).getClassesToSources().entrySet()) {
-//                if (entry.getKey().toString().startsWith("com/redhat/ceylon/compiler/java/language/")) {
-//                    classesToSources.put(entry.getKey().toString().replace("com/redhat/ceylon/compiler/java/language/", "java/lang/"), 
+//                if (entry.getKey().toString().startsWith("org/eclipse/ceylon/compiler/java/language/")) {
+//                    classesToSources.put(entry.getKey().toString().replace("org/eclipse/ceylon/compiler/java/language/", "java/lang/"), 
 //                                            entry.getValue().toString());
 //                }
 //            }

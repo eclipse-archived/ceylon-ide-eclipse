@@ -11,13 +11,13 @@
 			</arguments>
 		</buildCommand>
 		<buildCommand>
-			<name>com.redhat.ceylon.eclipse.ui.ceylonBuilder</name>
+			<name>org.eclipse.ceylon.ide.eclipse.ui.ceylonBuilder</name>
 			<arguments>
 			</arguments>
 		</buildCommand>
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
-		<nature>com.redhat.ceylon.eclipse.ui.ceylonNature</nature>
+		<nature>org.eclipse.ceylon.ide.eclipse.ui.ceylonNature</nature>
 	</natures>
 </projectDescription>

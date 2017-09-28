@@ -1,11 +1,11 @@
-package com.redhat.ceylon.eclipse.code.complete;
+package org.eclipse.ceylon.ide.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecorationAttributes;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_FUN;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LOCAL_FUN;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CodeCompletions.getDescriptionFor;
+import static org.eclipse.ceylon.ide.eclipse.code.correct.ImportProposals.importProposals;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getDecorationAttributes;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_FUN;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_LOCAL_FUN;
 
 import java.util.HashSet;
 import java.util.List;
@@ -17,14 +17,14 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Functional;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.EditorUtil;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Functional;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 @Deprecated
 final class FunctionCompletionProposal extends

@@ -1,28 +1,28 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SELECT_ENCLOSING;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.EditorActionIds.SELECT_ENCLOSING;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ArgumentList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Body;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Condition;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ConditionList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ControlClause;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ParameterList;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.SpecifierOrInitializerExpression;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.StatementOrArgument;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Term;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Type;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.ArgumentList;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Body;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Condition;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.ConditionList;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.ControlClause;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Expression;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Identifier;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.ParameterList;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.SpecifierOrInitializerExpression;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.StatementOrArgument;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Term;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Type;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
 
 class SelectEnclosingAction extends Action {
     private CeylonEditor editor;

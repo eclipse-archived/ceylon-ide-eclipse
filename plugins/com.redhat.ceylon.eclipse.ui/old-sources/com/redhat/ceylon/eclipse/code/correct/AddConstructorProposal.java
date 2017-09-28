@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.collectUninitializedMembers;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
-import static com.redhat.ceylon.eclipse.util.Nodes.findDeclarationWithBody;
+import static org.eclipse.ceylon.ide.eclipse.code.correct.CorrectionUtil.collectUninitializedMembers;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getDocument;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.findDeclarationWithBody;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -18,13 +18,13 @@ import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.model.typechecker.model.Reference;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
+import org.eclipse.ceylon.model.typechecker.model.Reference;
+import org.eclipse.ceylon.model.typechecker.model.Type;
+import org.eclipse.ceylon.model.typechecker.model.TypedDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 public class AddConstructorProposal extends CorrectionProposal {
 
@@ -197,7 +197,7 @@ public class AddConstructorProposal extends CorrectionProposal {
     public StyledString getStyledDisplayString() {
         String hint =
                 CorrectionUtil.shortcut(
-                        "com.redhat.ceylon.eclipse.ui.action.addConstructor");
+                        "org.eclipse.ceylon.ide.eclipse.ui.action.addConstructor");
         return Highlights.styleProposal(getDisplayString(), false)
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }

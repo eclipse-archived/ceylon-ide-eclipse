@@ -1,12 +1,12 @@
-package com.redhat.ceylon.eclipse.code.resolve;
+package org.eclipse.ceylon.ide.eclipse.code.resolve;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.getJavaElement;
-import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
-import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeDeclaration;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getNativeHeader;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.getJavaElement;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.findNode;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getIdentifyingNode;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getReferencedModel;
+import static org.eclipse.ceylon.ide.eclipse.util.InteropUtils.toJavaString;
+import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.getNativeDeclaration;
+import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.getNativeHeader;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.openInEditor;
 import static org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.revealInEditor;
 
@@ -23,18 +23,18 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 
-import com.redhat.ceylon.common.Backend;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
-import com.redhat.ceylon.ide.common.model.EditedSourceFile;
-import com.redhat.ceylon.ide.common.model.ExternalSourceFile;
-import com.redhat.ceylon.ide.common.model.IJavaModelAware;
-import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.common.Backend;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.common.model.CeylonBinaryUnit;
+import org.eclipse.ceylon.ide.common.model.EditedSourceFile;
+import org.eclipse.ceylon.ide.common.model.ExternalSourceFile;
+import org.eclipse.ceylon.ide.common.model.IJavaModelAware;
+import org.eclipse.ceylon.ide.common.model.ProjectSourceFile;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Referenceable;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 public class JavaHyperlinkDetector implements IHyperlinkDetector {
 

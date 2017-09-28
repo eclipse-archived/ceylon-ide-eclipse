@@ -1,12 +1,12 @@
-package com.redhat.ceylon.eclipse.code.complete;
+package org.eclipse.ceylon.ide.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
 
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.swt.graphics.Image;
 
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
 
 public interface EclipseCompletionProcessor extends IContentAssistProcessor {
     void sessionStarted(boolean isAutoActivated);

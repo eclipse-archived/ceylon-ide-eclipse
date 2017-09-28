@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getInstance;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.getInstance;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.PreferenceConverter;

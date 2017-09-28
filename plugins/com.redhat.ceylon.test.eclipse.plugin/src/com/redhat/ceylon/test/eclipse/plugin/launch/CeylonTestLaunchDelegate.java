@@ -1,13 +1,13 @@
-package com.redhat.ceylon.test.eclipse.plugin.launch;
+package org.eclipse.ceylon.test.eclipse.plugin.launch;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
-import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringList;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_PORT;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
+import static org.eclipse.ceylon.ide.eclipse.util.CeylonHelper.toJavaStringList;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_PORT;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -26,13 +26,13 @@ import org.eclipse.jdt.launching.SocketUtil;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 
-import com.redhat.ceylon.eclipse.core.launch.ModuleLaunchDelegate;
-import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
-import com.redhat.ceylon.test.eclipse.plugin.ui.TestRunViewPart;
-import com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil;
+import org.eclipse.ceylon.ide.eclipse.core.launch.ModuleLaunchDelegate;
+import org.eclipse.ceylon.ide.common.model.CeylonProjectConfig;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import org.eclipse.ceylon.test.eclipse.plugin.ui.TestRunViewPart;
+import org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil;
 
 public class CeylonTestLaunchDelegate extends ModuleLaunchDelegate {
 

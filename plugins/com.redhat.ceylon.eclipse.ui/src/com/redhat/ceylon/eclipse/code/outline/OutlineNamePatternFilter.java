@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.outline;
+package org.eclipse.ceylon.ide.eclipse.code.outline;
 
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
-import static com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog.isMatchingGlob;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.DEFAULT_CATEGORY;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode.IMPORT_LIST_CATEGORY;
+import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
+import static org.eclipse.ceylon.ide.eclipse.code.open.OpenDeclarationDialog.isMatchingGlob;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonOutlineNode.DEFAULT_CATEGORY;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonOutlineNode.IMPORT_LIST_CATEGORY;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -11,7 +11,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
 
 /**
  * The NamePatternFilter selects the elements which

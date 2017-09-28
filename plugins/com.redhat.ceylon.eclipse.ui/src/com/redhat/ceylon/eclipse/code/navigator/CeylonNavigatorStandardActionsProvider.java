@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.navigator;
+package org.eclipse.ceylon.ide.eclipse.code.navigator;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.ui.IActionBars;

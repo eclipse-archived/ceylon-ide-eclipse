@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *     David Festal - copy for use with the Ceylon CNF extension
  *******************************************************************************/
-package com.redhat.ceylon.eclipse.code.navigator;
+package org.eclipse.ceylon.ide.eclipse.code.navigator;
 
 
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -26,7 +26,7 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.navigator.IExtensionStateConstants;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 /**
  *

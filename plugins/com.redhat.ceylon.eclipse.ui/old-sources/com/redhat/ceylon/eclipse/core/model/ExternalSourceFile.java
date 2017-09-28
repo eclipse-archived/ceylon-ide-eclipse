@@ -1,13 +1,13 @@
-package com.redhat.ceylon.eclipse.core.model;
+package org.eclipse.ceylon.ide.eclipse.core.model;
 
 import java.util.Stack;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.Value;
-import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
-import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.model.typechecker.model.Scope;
+import org.eclipse.ceylon.model.typechecker.model.Value;
+import org.eclipse.ceylon.ide.eclipse.core.typechecker.ExternalPhasedUnit;
+import org.eclipse.ceylon.ide.eclipse.util.SingleSourceUnitPackage;
 
 /*
  * Used when the external declarations come from a source archive that doesn't have any binary version,

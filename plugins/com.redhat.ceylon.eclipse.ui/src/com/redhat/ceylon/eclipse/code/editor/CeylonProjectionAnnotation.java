@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 

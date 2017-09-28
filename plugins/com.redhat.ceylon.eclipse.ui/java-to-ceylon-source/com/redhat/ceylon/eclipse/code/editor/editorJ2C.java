@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
 import org.eclipse.jface.action.Action;
 
-import com.redhat.ceylon.eclipse.java2ceylon.EditorJ2C;
-import com.redhat.ceylon.ide.common.editor.formatAction_;
+import org.eclipse.ceylon.ide.eclipse.java2ceylon.EditorJ2C;
+import org.eclipse.ceylon.ide.common.editor.formatAction_;
 
 public class editorJ2C implements EditorJ2C {
     @Override

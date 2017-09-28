@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_PACKAGE;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_NEW_PACKAGE;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;

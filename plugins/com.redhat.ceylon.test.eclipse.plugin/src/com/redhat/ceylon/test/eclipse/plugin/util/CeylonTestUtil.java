@@ -1,22 +1,22 @@
-package com.redhat.ceylon.test.eclipse.plugin.util;
+package org.eclipse.ceylon.test.eclipse.plugin.util;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_ERROR;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_FAILED;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SKIPPED;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_RUNNING;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SUCCESS;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_ERROR;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_FAILED;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_SKIPPED;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_RUNNING;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_SUCCESS;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.CEYLON_TEST_MODULE_NAME;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_ERROR;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_FAILED;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SKIPPED;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_RUNNING;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SUCCESS;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_ERROR;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_FAILED;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_SKIPPED;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_RUNNING;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_SUCCESS;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin.CEYLON_TEST_MODULE_NAME;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
 
 import java.text.NumberFormat;
@@ -37,21 +37,21 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 
-import com.redhat.ceylon.common.Backend;
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.model.typechecker.model.Annotation;
-import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Function;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.ModuleImport;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Value;
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
+import org.eclipse.ceylon.common.Backend;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
+import org.eclipse.ceylon.model.typechecker.model.Annotation;
+import org.eclipse.ceylon.model.typechecker.model.Class;
+import org.eclipse.ceylon.model.typechecker.model.ClassOrInterface;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Function;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.ModuleImport;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.model.typechecker.model.Type;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.Value;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import org.eclipse.ceylon.test.eclipse.plugin.model.TestElement;
 
 public class CeylonTestUtil {
     

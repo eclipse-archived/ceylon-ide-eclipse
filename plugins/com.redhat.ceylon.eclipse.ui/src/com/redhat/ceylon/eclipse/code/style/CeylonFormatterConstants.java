@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.style;
+package org.eclipse.ceylon.ide.eclipse.code.style;
 
 public class CeylonFormatterConstants {
 

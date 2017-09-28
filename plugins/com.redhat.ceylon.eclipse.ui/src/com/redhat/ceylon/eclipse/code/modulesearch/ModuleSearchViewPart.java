@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.code.modulesearch;
+package org.eclipse.ceylon.ide.eclipse.code.modulesearch;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjects;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.importsJ2C;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_ADD;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjects;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.importsJ2C;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_ADD;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,25 +76,25 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Processor;
-import com.redhat.ceylon.common.config.Repositories;
-import com.redhat.ceylon.common.config.Repositories.Repository;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.hover.CeylonBlockEmitter;
-import com.redhat.ceylon.eclipse.code.hover.DocumentationHover;
-import com.redhat.ceylon.eclipse.code.html.HTML;
-import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
-import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.DocBrowser;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.UnlinkedSpanEmitter;
-import com.redhat.ceylon.ide.common.modulesearch.ModuleNode;
-import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.ModuleImport;
+import org.eclipse.ceylon.common.config.Repositories;
+import org.eclipse.ceylon.common.config.Repositories.Repository;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.hover.CeylonBlockEmitter;
+import org.eclipse.ceylon.ide.eclipse.code.hover.DocumentationHover;
+import org.eclipse.ceylon.ide.eclipse.code.html.HTML;
+import org.eclipse.ceylon.ide.eclipse.code.html.HTMLPrinter;
+import org.eclipse.ceylon.ide.eclipse.code.navigator.SourceModuleNode;
+import org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.eclipse.util.DocBrowser;
+import org.eclipse.ceylon.ide.eclipse.util.EditorUtil;
+import org.eclipse.ceylon.ide.eclipse.util.UnlinkedSpanEmitter;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleNode;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleVersionNode;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.ModuleImport;
 
 public class ModuleSearchViewPart extends ViewPart implements IShowInTarget {
     

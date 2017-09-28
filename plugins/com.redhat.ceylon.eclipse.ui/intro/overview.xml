@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <introContent>
 
-   <page id="com.redhat.ceylon.ui.intro" 
+   <page id="org.eclipse.ceylon.ui.intro" 
           style="$theme$/html/overview.css" 
          style-id="page">
      <title style-id="intro-header">Welcome to Ceylon IDE</title>
@@ -18,20 +18,20 @@
             style-id="content-group">
     <link style-id="content-link" 
          label="New Ceylon Project" 
-         url="http://org.eclipse.ui.intro/runAction?class=com.redhat.ceylon.eclipse.code.wizard.NewProjectAction&amp;pluginId=com.redhat.ceylon.eclipse.ui&amp;standby=true" 
+         url="http://org.eclipse.ui.intro/runAction?class=org.eclipse.ceylon.ide.eclipse.code.wizard.NewProjectAction&amp;pluginId=org.eclipse.ceylon.ide.eclipse.ui&amp;standby=true" 
          id="newproject">
            <text>Create a new Ceylon project and switch to the Ceylon perspective</text>
     </link>
     <link style-id="content-link" 
          label="Hello World with Ceylon" 
          id="hellocheat"
-         url="http://org.eclipse.ui.intro/showStandby?partId=org.eclipse.platform.cheatsheet&amp;input=com.redhat.ceylon.eclipse.ui.cheatsheet.hello">
+         url="http://org.eclipse.ui.intro/showStandby?partId=org.eclipse.platform.cheatsheet&amp;input=org.eclipse.ceylon.ide.eclipse.ui.cheatsheet.hello">
            <text>Write and run a Hello World program in Ceylon</text>
     </link>
     <link style-id="content-link" 
          label="Introduction to Ceylon Modules" 
          id="modulecheat"
-         url="http://org.eclipse.ui.intro/showStandby?partId=org.eclipse.platform.cheatsheet&amp;input=com.redhat.ceylon.eclipse.ui.cheatsheet.module">
+         url="http://org.eclipse.ui.intro/showStandby?partId=org.eclipse.platform.cheatsheet&amp;input=org.eclipse.ceylon.ide.eclipse.ui.cheatsheet.module">
            <text>Create a Ceylon module and export it to a module repository</text>
     </link>
     <link style-id="content-link" 
@@ -54,7 +54,7 @@
    </page>
    
    <extensionContent 
-       id="com.redhat.ceylon.ui.overview" 
+       id="org.eclipse.ceylon.ui.overview" 
        name="Ceylon IDE" 
        style="overview.css"
        path="overview/@">
@@ -62,7 +62,7 @@
           id="ceylonide">
    <link style-id="content-link" 
          label="Ceylon IDE" 
-         url="http://org.eclipse.ui.intro/showPage?id=com.redhat.ceylon.ui.intro" 
+         url="http://org.eclipse.ui.intro/showPage?id=org.eclipse.ceylon.ui.intro" 
          id="ceylon">
        <text>Get started writing Ceylon code using Ceylon IDE</text>
    </link>
@@ -70,7 +70,7 @@
    </extensionContent>
    
    <extensionContent 
-       id="com.redhat.ceylon.ui.tutorials" 
+       id="org.eclipse.ceylon.ui.tutorials" 
        name="Ceylon IDE" 
        style="overview.css"
        path="tutorials/@">
@@ -80,13 +80,13 @@
     <link style-id="content-link" 
          label="Hello World with Ceylon" 
          id="hellocheat"
-         url="http://org.eclipse.ui.intro/showStandby?partId=org.eclipse.platform.cheatsheet&amp;input=com.redhat.ceylon.eclipse.ui.cheatsheet.hello">
+         url="http://org.eclipse.ui.intro/showStandby?partId=org.eclipse.platform.cheatsheet&amp;input=org.eclipse.ceylon.ide.eclipse.ui.cheatsheet.hello">
            <text>Write and run a Hello World program in Ceylon</text>
     </link>
     <link style-id="content-link" 
          label="Introduction to Ceylon Modules" 
          id="modulecheat"
-         url="http://org.eclipse.ui.intro/showStandby?partId=org.eclipse.platform.cheatsheet&amp;input=com.redhat.ceylon.eclipse.ui.cheatsheet.module">
+         url="http://org.eclipse.ui.intro/showStandby?partId=org.eclipse.platform.cheatsheet&amp;input=org.eclipse.ceylon.ide.eclipse.ui.cheatsheet.module">
            <text>Create a Ceylon module and export it to a module repository</text>
     </link>
    </group>

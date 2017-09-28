@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.platform;
+package org.eclipse.ceylon.ide.eclipse.platform;
 
 import org.eclipse.ltk.core.refactoring.Change;
 
-import com.redhat.ceylon.eclipse.java2ceylon.PlatformJ2C;
-import com.redhat.ceylon.ide.common.platform.PlatformServices;
-import com.redhat.ceylon.ide.common.platform.TextChange;
+import org.eclipse.ceylon.ide.eclipse.java2ceylon.PlatformJ2C;
+import org.eclipse.ceylon.ide.common.platform.PlatformServices;
+import org.eclipse.ceylon.ide.common.platform.TextChange;
 
 public class platformJ2C implements PlatformJ2C {
 

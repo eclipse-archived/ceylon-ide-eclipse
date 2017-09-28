@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.ui.test.headless;
+package org.eclipse.ceylon.ide.eclipse.ui.test.headless;
 
 import static org.junit.Assert.assertEquals;
-import static com.redhat.ceylon.eclipse.code.correct.ImportProposals.importProposals;
+import static org.eclipse.ceylon.ide.eclipse.code.correct.ImportProposals.importProposals;
 
 import ceylon.collection.HashSet;
 import java.util.List;
@@ -9,11 +9,11 @@ import java.util.List;
 import org.antlr.runtime.CommonToken;
 import org.junit.Test;
 
-import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.compiler.java.runtime.model.TypeDescriptor;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Identifier;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrType;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.ImportMemberOrTypeList;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
 
 public class ImportProposalTests {
     @Test

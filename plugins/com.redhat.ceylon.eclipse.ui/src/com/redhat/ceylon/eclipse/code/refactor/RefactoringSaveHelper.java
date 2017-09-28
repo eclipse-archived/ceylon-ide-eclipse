@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -34,7 +34,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.GlobalBuildAction;
 import org.eclipse.ui.dialogs.ListDialog;
 
-import com.redhat.ceylon.eclipse.util.EditorUtil;
+import org.eclipse.ceylon.ide.eclipse.util.EditorUtil;
 
 
 /**

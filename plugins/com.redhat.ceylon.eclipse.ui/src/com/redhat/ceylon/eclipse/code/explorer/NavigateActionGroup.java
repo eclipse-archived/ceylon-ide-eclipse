@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package com.redhat.ceylon.eclipse.code.explorer;
+package org.eclipse.ceylon.ide.eclipse.code.explorer;
 
 import org.eclipse.jdt.ui.actions.OpenViewActionGroup;
 import org.eclipse.jface.action.IAction;
@@ -18,7 +18,7 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.actions.ActionContext;
 import org.eclipse.ui.actions.ActionGroup;
 
-import com.redhat.ceylon.eclipse.code.navigator.OpenEditorActionGroup;
+import org.eclipse.ceylon.ide.eclipse.code.navigator.OpenEditorActionGroup;
 
 /**
  * Action group that adds the open and show actions to a context menu and

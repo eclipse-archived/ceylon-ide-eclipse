@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
-import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
-import static com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
-import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.getSelectedJavaElement;
+import static org.eclipse.ceylon.cmr.ceylon.CeylonUtils.repoManager;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
+import static org.eclipse.ceylon.ide.eclipse.code.wizard.WizardUtil.getSelectedJavaElement;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import java.io.File;
@@ -28,17 +28,17 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 
-import com.redhat.ceylon.cmr.api.ModuleQuery;
-import com.redhat.ceylon.cmr.api.ModuleSearchResult;
-import com.redhat.ceylon.cmr.impl.ShaSigner;
-import com.redhat.ceylon.common.Versions;
-import com.redhat.ceylon.common.log.Logger;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.eclipse.code.preferences.ModuleImportContentProvider;
-import com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EclipseLogger;
-import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
+import org.eclipse.ceylon.cmr.api.ModuleQuery;
+import org.eclipse.ceylon.cmr.api.ModuleSearchResult;
+import org.eclipse.ceylon.cmr.impl.ShaSigner;
+import org.eclipse.ceylon.common.Versions;
+import org.eclipse.ceylon.common.log.Logger;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.ModuleImportContentProvider;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.ModuleImportSelectionDialog;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.EclipseLogger;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleVersionNode;
 
 public class ExportJarWizard extends Wizard implements IExportWizard {
 

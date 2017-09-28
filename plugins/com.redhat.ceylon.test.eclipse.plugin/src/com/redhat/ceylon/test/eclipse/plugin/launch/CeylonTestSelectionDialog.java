@@ -1,11 +1,11 @@
-package com.redhat.ceylon.test.eclipse.plugin.launch;
+package org.eclipse.ceylon.test.eclipse.plugin.launch;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_COMPLETE_DESCRIPTION;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getAllMethods;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getProjects;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getWorkspaceRoot;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestable;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_SHOW_COMPLETE_DESCRIPTION;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getAllMethods;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getProjects;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getWorkspaceRoot;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isTestable;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -42,15 +42,15 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 
-import com.redhat.ceylon.eclipse.code.complete.CodeCompletions;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
-import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
-import com.redhat.ceylon.test.eclipse.plugin.util.MethodWithContainer;
+import org.eclipse.ceylon.ide.eclipse.code.complete.CodeCompletions;
+import org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider;
+import org.eclipse.ceylon.model.typechecker.model.ClassOrInterface;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import org.eclipse.ceylon.test.eclipse.plugin.util.MethodWithContainer;
 
 @SuppressWarnings("restriction")
 public class CeylonTestSelectionDialog extends FilteredElementTreeSelectionDialog {

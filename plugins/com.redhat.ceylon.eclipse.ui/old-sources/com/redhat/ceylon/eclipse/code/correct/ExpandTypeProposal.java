@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
 import java.util.Collection;
 
@@ -12,12 +12,12 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.model.typechecker.util.TypePrinter;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.model.typechecker.model.Type;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.model.typechecker.util.TypePrinter;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
 
 public class ExpandTypeProposal extends CorrectionProposal {
 

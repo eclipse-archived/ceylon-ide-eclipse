@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.core.typechecker;
+package org.eclipse.ceylon.ide.eclipse.core.typechecker;
 
-import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
-import com.redhat.ceylon.eclipse.core.model.ProjectSourceFile;
-import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.ide.eclipse.core.model.CeylonUnit;
+import org.eclipse.ceylon.ide.eclipse.core.model.ProjectSourceFile;
+import org.eclipse.ceylon.ide.eclipse.util.SingleSourceUnitPackage;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 public class IdePhasedUnitUtils {
 

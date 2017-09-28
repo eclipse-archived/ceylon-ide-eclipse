@@ -1,13 +1,13 @@
-package com.redhat.ceylon.eclipse.code.navigator;
+package org.eclipse.ceylon.ide.eclipse.code.navigator;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputFolder;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
 
 public class OutputRepositoryFolderFilter extends ViewerFilter {
 

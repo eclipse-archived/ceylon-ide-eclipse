@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.MINOR_CHANGE;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getIdentifyingNode;
+import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -16,17 +16,17 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.ide.common.util.RequiredType;
-import com.redhat.ceylon.ide.common.util.types_;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Value;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
+import org.eclipse.ceylon.ide.common.util.RequiredType;
+import org.eclipse.ceylon.ide.common.util.types_;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.DeclarationWithProximity;
+import org.eclipse.ceylon.model.typechecker.model.Type;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.TypedDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.Value;
 
 @Deprecated
 class AppendMemberReferenceProposal extends CorrectionProposal  {

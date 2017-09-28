@@ -1,15 +1,15 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
-import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_FOLD_COMMENTS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_FOLD_IMPORTS;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.WS;
+import static org.eclipse.ceylon.ide.eclipse.code.parse.TreeLifecycleListener.Stage.SYNTACTIC_ANALYSIS;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_FOLD_COMMENTS;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.AUTO_FOLD_IMPORTS;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,13 +28,13 @@ import org.eclipse.jface.text.source.projection.IProjectionListener;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.eclipse.code.parse.TreeLifecycleListener;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 public class ProjectionAnnotationManager 
         implements TreeLifecycleListener, 

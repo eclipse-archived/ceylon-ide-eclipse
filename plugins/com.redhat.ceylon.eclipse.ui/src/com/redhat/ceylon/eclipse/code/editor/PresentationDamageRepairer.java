@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.util.Highlights.getColoring;
-import static com.redhat.ceylon.eclipse.util.Highlights.getInterpolationColoring;
-import static com.redhat.ceylon.eclipse.util.Highlights.getMemberColoring;
-import static com.redhat.ceylon.eclipse.util.Nodes.getTokenIndexAtCharacter;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.getColoring;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.getInterpolationColoring;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.getMemberColoring;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getTokenIndexAtCharacter;
 
 import java.util.Iterator;
 import java.util.List;
@@ -31,10 +31,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonInterpolatingLexer;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
-import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonInterpolatingLexer;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonParser;
+import org.eclipse.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
 
 class PresentationDamageRepairer implements IPresentationDamager, 
         IPresentationRepairer {

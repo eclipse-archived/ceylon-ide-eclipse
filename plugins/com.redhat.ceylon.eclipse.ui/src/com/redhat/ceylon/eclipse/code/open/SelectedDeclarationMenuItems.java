@@ -1,22 +1,22 @@
-package com.redhat.ceylon.eclipse.code.open;
+package org.eclipse.ceylon.ide.eclipse.code.open;
 
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DEFAULT_REFINEMENT;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIERARCHY;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_OUTLINE;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REFS;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SOURCE;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.GOTO;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.imageRegistry;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_DEFAULT_REFINEMENT;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_HIERARCHY;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_OUTLINE;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_REFS;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_SOURCE;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.GOTO;
 
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
-import com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.eclipse.code.editor.DynamicMenuItem;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
 
 public class SelectedDeclarationMenuItems extends CompoundContributionItem {
     

@@ -1,4 +1,4 @@
-package com.redhat.ceylon.test.eclipse.plugin;
+package org.eclipse.ceylon.test.eclipse.plugin;
 
 import java.net.URL;
 

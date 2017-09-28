@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.search;
+package org.eclipse.ceylon.ide.eclipse.code.search;
 
 class ArchiveMatches {
     private ArchiveMatches() {}

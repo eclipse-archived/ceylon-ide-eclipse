@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.ui.test.swtbot;
+package org.eclipse.ceylon.ide.eclipse.ui.test.swtbot;
 
 import java.util.regex.Pattern;
 
@@ -13,8 +13,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.redhat.ceylon.eclipse.ui.test.AbstractMultiProjectTest;
-import com.redhat.ceylon.eclipse.ui.test.Utils;
+import org.eclipse.ceylon.ide.eclipse.ui.test.AbstractMultiProjectTest;
+import org.eclipse.ceylon.ide.eclipse.ui.test.Utils;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class MainUITests extends AbstractMultiProjectTest {

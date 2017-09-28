@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.navigator;
+package org.eclipse.ceylon.ide.eclipse.code.navigator;
 
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.internal.resources.Resource;
@@ -12,9 +12,9 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.ide.ResourceUtil;
 
-import com.redhat.ceylon.eclipse.code.editor.SourceArchiveEditorInput;
-import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
+import org.eclipse.ceylon.ide.eclipse.code.editor.SourceArchiveEditorInput;
+import org.eclipse.ceylon.ide.eclipse.core.external.CeylonArchiveFileStore;
+import org.eclipse.ceylon.ide.eclipse.util.EditorUtil;
 
 public class CeylonFileLinkHelper extends JavaFileLinkHelper {
 

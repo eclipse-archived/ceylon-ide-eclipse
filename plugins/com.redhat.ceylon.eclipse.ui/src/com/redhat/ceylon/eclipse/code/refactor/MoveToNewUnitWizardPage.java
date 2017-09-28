@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.getSelectedJavaElement;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.code.wizard.WizardUtil.getSelectedJavaElement;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT_ROOT;
 import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.getSourceContainer;
@@ -47,9 +47,9 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
-import com.redhat.ceylon.eclipse.code.select.PackageSelectionDialog;
-import com.redhat.ceylon.eclipse.code.wizard.EditDialog;
-import com.redhat.ceylon.eclipse.code.wizard.NewPackageWizard;
+import org.eclipse.ceylon.ide.eclipse.code.select.PackageSelectionDialog;
+import org.eclipse.ceylon.ide.eclipse.code.wizard.EditDialog;
+import org.eclipse.ceylon.ide.eclipse.code.wizard.NewPackageWizard;
 
 /*
  * TODO: this class is a huge copy/paste job of NewUnitWizardPage

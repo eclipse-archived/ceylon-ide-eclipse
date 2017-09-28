@@ -1,17 +1,17 @@
-package com.redhat.ceylon.eclipse.code.outline;
+package org.eclipse.ceylon.ide.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
-import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
-import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUBTYPES;
-import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.SUPERTYPES;
-import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_HIER;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUB;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SUP;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.triggersBinding;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.gotoDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.HierarchyMode.HIERARCHY;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.HierarchyMode.SUBTYPES;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.HierarchyMode.SUPERTYPES;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.HierarchyView.showHierarchyView;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.imageRegistry;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_HIER;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_SUB;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_SUP;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.triggersBinding;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getReferencedDeclaration;
 
 import java.util.StringTokenizer;
 
@@ -43,18 +43,18 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonOutlinesPreferencePage;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.eclipse.util.ModelProxy;
-import com.redhat.ceylon.ide.common.search.FindContainerVisitor;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonFiltersPreferencePage;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonOutlinesPreferencePage;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.eclipse.util.EditorUtil;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
+import org.eclipse.ceylon.ide.eclipse.util.ModelProxy;
+import org.eclipse.ceylon.ide.common.search.FindContainerVisitor;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Referenceable;
 
 public class HierarchyPopup extends TreeViewPopup {
     
@@ -338,8 +338,8 @@ public class HierarchyPopup extends TreeViewPopup {
                     new FindContainerVisitor(selectedNode);
             fcv.visit(getEditor().getParseController().getLastCompilationUnit());
             Node node = fcv.getStatementOrArgument();
-            if (node instanceof com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) {
-                declaration = ((com.redhat.ceylon.compiler.typechecker.tree.Tree.Declaration) node).getDeclarationModel();
+            if (node instanceof org.eclipse.ceylon.compiler.typechecker.tree.Tree.Declaration) {
+                declaration = ((org.eclipse.ceylon.compiler.typechecker.tree.Tree.Declaration) node).getDeclarationModel();
             }
         }
         if (declaration instanceof Declaration) {

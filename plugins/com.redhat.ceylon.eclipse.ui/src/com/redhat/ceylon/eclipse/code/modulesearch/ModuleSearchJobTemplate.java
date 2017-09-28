@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.modulesearch;
+package org.eclipse.ceylon.ide.eclipse.code.modulesearch;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -6,7 +6,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 public abstract class ModuleSearchJobTemplate extends Job {
 

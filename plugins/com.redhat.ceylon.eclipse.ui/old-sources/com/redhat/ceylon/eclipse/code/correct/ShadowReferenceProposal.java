@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.nameProposals;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.findStatement;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getIdentifyingNode;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.nameProposals;
 
 import java.util.Collection;
 
@@ -15,13 +15,13 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
-import com.redhat.ceylon.eclipse.util.Nodes;
-import com.redhat.ceylon.ide.common.util.FindReferencesVisitor;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Value;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.BaseMemberExpression;
+import org.eclipse.ceylon.ide.eclipse.util.Nodes;
+import org.eclipse.ceylon.ide.common.util.FindReferencesVisitor;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Value;
 
 class ShadowReferenceProposal extends CorrectionProposal {
     

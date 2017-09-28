@@ -15,7 +15,7 @@
  *  limitations under the License.
  *
  */
-package com.redhat.ceylon.eclipse.core.classpath;
+package org.eclipse.ceylon.ide.eclipse.core.classpath;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;

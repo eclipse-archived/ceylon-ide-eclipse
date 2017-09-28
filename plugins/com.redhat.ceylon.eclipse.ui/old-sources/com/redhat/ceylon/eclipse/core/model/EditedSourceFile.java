@@ -1,11 +1,11 @@
-package com.redhat.ceylon.eclipse.core.model;
+package org.eclipse.ceylon.ide.eclipse.core.model;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 
-import com.redhat.ceylon.eclipse.core.typechecker.EditedPhasedUnit;
-import com.redhat.ceylon.eclipse.core.typechecker.ProjectPhasedUnit;
+import org.eclipse.ceylon.ide.eclipse.core.typechecker.EditedPhasedUnit;
+import org.eclipse.ceylon.ide.eclipse.core.typechecker.ProjectPhasedUnit;
 
 public class EditedSourceFile extends ModifiableSourceFile {
     public EditedSourceFile(EditedPhasedUnit phasedUnit) {

@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
-import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.runOperation;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.gotoLocation;
+import static org.eclipse.ceylon.ide.eclipse.code.wizard.WizardUtil.runOperation;
 import static java.lang.Character.isUpperCase;
 
 import org.eclipse.core.resources.IFile;
@@ -11,8 +11,8 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
-import com.redhat.ceylon.eclipse.code.editor.RecentFilesPopup;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.code.editor.RecentFilesPopup;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 public class NewUnitWizard extends Wizard implements INewWizard {
     

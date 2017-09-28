@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.util;
+package org.eclipse.ceylon.ide.eclipse.util;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -7,15 +7,15 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.PlatformUI;
 
-import com.redhat.ceylon.cmr.api.ModuleQuery;
-import com.redhat.ceylon.cmr.api.ModuleSearchResult;
-import com.redhat.ceylon.cmr.api.ModuleVersionQuery;
-import com.redhat.ceylon.common.Backend;
-import com.redhat.ceylon.common.Backends;
-import com.redhat.ceylon.common.Versions;
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.cmr.api.ModuleQuery;
+import org.eclipse.ceylon.cmr.api.ModuleSearchResult;
+import org.eclipse.ceylon.cmr.api.ModuleVersionQuery;
+import org.eclipse.ceylon.common.Backend;
+import org.eclipse.ceylon.common.Backends;
+import org.eclipse.ceylon.common.Versions;
+import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.model.typechecker.model.Module;
 
 public class ModuleQueries {
 

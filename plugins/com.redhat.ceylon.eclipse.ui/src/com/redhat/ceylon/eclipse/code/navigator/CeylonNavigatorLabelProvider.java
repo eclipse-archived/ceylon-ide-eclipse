@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.navigator;
+package org.eclipse.ceylon.ide.eclipse.code.navigator;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static org.eclipse.jface.viewers.StyledString.QUALIFIER_STYLER;
 
 import java.util.Set;
@@ -27,20 +27,20 @@ import org.eclipse.ui.navigator.ICommonContentExtensionSite;
 import org.eclipse.ui.navigator.ICommonLabelProvider;
 import org.eclipse.ui.navigator.INavigatorContentExtension;
 
-import com.redhat.ceylon.cmr.api.ArtifactContext;
-import com.redhat.ceylon.cmr.impl.JDKRepository;
-import com.redhat.ceylon.cmr.impl.NodeUtils;
-import com.redhat.ceylon.common.Constants;
-import com.redhat.ceylon.common.config.Repositories;
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.external.CeylonArchiveFileStore;
-import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
-import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-import com.redhat.ceylon.model.cmr.Repository;
+import org.eclipse.ceylon.cmr.api.ArtifactContext;
+import org.eclipse.ceylon.cmr.impl.JDKRepository;
+import org.eclipse.ceylon.cmr.impl.NodeUtils;
+import org.eclipse.ceylon.common.Constants;
+import org.eclipse.ceylon.common.config.Repositories;
+import org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
+import org.eclipse.ceylon.ide.eclipse.core.external.CeylonArchiveFileStore;
+import org.eclipse.ceylon.ide.eclipse.core.external.ExternalSourceArchiveManager;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
+import org.eclipse.ceylon.ide.common.model.BaseCeylonProject;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.model.cmr.Repository;
 
 public class CeylonNavigatorLabelProvider extends
         CeylonLabelProvider implements ICommonLabelProvider {

@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.outline;
+package org.eclipse.ceylon.ide.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.DECORATIONS;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecorationAttributes;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.DECORATIONS;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getDecorationAttributes;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.imageRegistry;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IDecoration;

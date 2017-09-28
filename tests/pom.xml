@@ -2,7 +2,7 @@
 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.redhat.ceylon.eclipse</groupId>
+		<groupId>org.eclipse.ceylon.ide.eclipse</groupId>
 		<artifactId>ceylon-ide-eclipse.all</artifactId>
 		<version>1.3.4-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>		
@@ -12,7 +12,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 	
 	<packaging>pom</packaging>
 	<modules>
-		<module>com.redhat.ceylon.eclipse.ui.test</module>
+		<module>org.eclipse.ceylon.ide.eclipse.ui.test</module>
 	</modules>
 	<properties>
 		<!-- THE FOLLOWING LINE MUST NOT BE BROKEN BY AUTOFORMATTING -->
@@ -54,7 +54,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 				     </dependency>
                      <dependency>
                        <type>p2-installable-unit</type>
-                       <artifactId>com.redhat.ceylon.dist.repo</artifactId>
+                       <artifactId>org.eclipse.ceylon.dist.repo</artifactId>
                        <version>0.0.0</version>
                      </dependency>
 				     <!-- http://www.jmock.org/maven.html -->

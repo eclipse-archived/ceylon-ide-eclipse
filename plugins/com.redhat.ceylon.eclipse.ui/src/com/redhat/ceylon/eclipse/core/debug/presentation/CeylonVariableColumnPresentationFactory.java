@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.debug.presentation;
+package org.eclipse.ceylon.ide.eclipse.core.debug.presentation;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IColumnPresentation;
@@ -7,7 +7,7 @@ import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.internal.debug.ui.variables.JavaVariableColumnPresentationFactory;
 
-import com.redhat.ceylon.eclipse.core.debug.DebugUtils;
+import org.eclipse.ceylon.ide.eclipse.core.debug.DebugUtils;
 
 public class CeylonVariableColumnPresentationFactory extends
         JavaVariableColumnPresentationFactory {

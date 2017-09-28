@@ -1,17 +1,17 @@
-import com.redhat.ceylon.compiler.typechecker.context {
+import org.eclipse.ceylon.compiler.typechecker.context {
     PhasedUnit
 }
-import com.redhat.ceylon.eclipse.code.correct {
+import org.eclipse.ceylon.ide.eclipse.code.correct {
     EclipseDocument
 }
-import com.redhat.ceylon.eclipse.code.editor {
+import org.eclipse.ceylon.ide.eclipse.code.editor {
     Navigation,
     CeylonEditor
 }
-import com.redhat.ceylon.eclipse.util {
+import org.eclipse.ceylon.ide.eclipse.util {
     EditorUtil
 }
-import com.redhat.ceylon.ide.common.platform {
+import org.eclipse.ceylon.ide.common.platform {
     PlatformServices,
     ModelServices,
     VfsServices,
@@ -24,13 +24,13 @@ import com.redhat.ceylon.ide.common.platform {
     NoopLinkedMode,
     JavaModelServices
 }
-import com.redhat.ceylon.ide.common.typechecker {
+import org.eclipse.ceylon.ide.common.typechecker {
     ModifiablePhasedUnit
 }
-import com.redhat.ceylon.ide.common.util {
+import org.eclipse.ceylon.ide.common.util {
     unsafeCast
 }
-import com.redhat.ceylon.model.typechecker.model {
+import org.eclipse.ceylon.model.typechecker.model {
     Unit
 }
 

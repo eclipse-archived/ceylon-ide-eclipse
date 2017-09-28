@@ -1,12 +1,12 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getSelection;
+import static org.eclipse.ceylon.ide.eclipse.code.refactor.MoveUtil.getSelection;
 
 import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ui.PlatformUI;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
 
 public class MoveToNewUnitWizard extends RefactoringWizard {
     

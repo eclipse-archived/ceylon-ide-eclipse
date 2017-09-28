@@ -1,14 +1,14 @@
-package com.redhat.ceylon.eclipse.util;
+package org.eclipse.ceylon.ide.eclipse.util;
 
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.EOF;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_END;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
-import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringArray;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.EOF;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_END;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
+import static org.eclipse.ceylon.ide.eclipse.util.CeylonHelper.toJavaStringArray;
 
 import java.util.Iterator;
 import java.util.List;
@@ -18,15 +18,15 @@ import org.antlr.runtime.CommonToken;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
-import com.redhat.ceylon.ide.common.refactoring.DefaultRegion;
-import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
-import com.redhat.ceylon.ide.common.util.nodes_;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Statement;
+import org.eclipse.ceylon.ide.common.refactoring.DefaultRegion;
+import org.eclipse.ceylon.ide.common.util.OccurrenceLocation;
+import org.eclipse.ceylon.ide.common.util.nodes_;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Referenceable;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 public class Nodes {
 

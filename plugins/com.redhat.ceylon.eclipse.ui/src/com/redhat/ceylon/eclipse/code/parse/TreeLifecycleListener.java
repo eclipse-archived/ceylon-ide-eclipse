@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.parse;
+package org.eclipse.ceylon.ide.eclipse.code.parse;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 

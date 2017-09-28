@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.code.imports;
+package org.eclipse.ceylon.ide.eclipse.code.imports;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.performChange;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
-import static com.redhat.ceylon.eclipse.util.Nodes.getImportedName;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.gotoLocation;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getDocument;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.performChange;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getImportedName;
 import static java.lang.Character.isWhitespace;
 import static java.util.Collections.singletonMap;
 
@@ -23,15 +23,15 @@ import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.common.Backend;
-import com.redhat.ceylon.common.Backends;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
-import com.redhat.ceylon.ide.common.modulesearch.ModuleNode;
-import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
-import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.common.Backend;
+import org.eclipse.ceylon.common.Backends;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.common.model.ProjectSourceFile;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleNode;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleVersionNode;
+import org.eclipse.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 @Deprecated
 public class ModuleImportUtil {

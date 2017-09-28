@@ -18,7 +18,7 @@
  * MA  02110-1301, USA.
  */
 
-package com.redhat.ceylon.eclipse.core.model.mirror;
+package org.eclipse.ceylon.ide.eclipse.core.model.mirror;
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -49,26 +49,26 @@ import org.eclipse.jdt.internal.compiler.lookup.Scope;
 import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 
-import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.*;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.core.model.LookupEnvironmentUtilities.*;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
-import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities;
-import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.ActionOnClassBinding;
-import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.ActionOnResolvedType;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.ide.common.model.unknownClassMirror_;
-import com.redhat.ceylon.ide.common.model.mirror.IdeClassMirror;
-import com.redhat.ceylon.model.loader.AbstractModelLoader;
-import com.redhat.ceylon.model.loader.ModelResolutionException;
-import com.redhat.ceylon.model.loader.NamingBase;
-import com.redhat.ceylon.model.loader.mirror.AnnotationMirror;
-import com.redhat.ceylon.model.loader.mirror.ClassMirror;
-import com.redhat.ceylon.model.loader.mirror.FieldMirror;
-import com.redhat.ceylon.model.loader.mirror.MethodMirror;
-import com.redhat.ceylon.model.loader.mirror.PackageMirror;
-import com.redhat.ceylon.model.loader.mirror.TypeMirror;
-import com.redhat.ceylon.model.loader.mirror.TypeParameterMirror;
-import com.redhat.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.ide.eclipse.core.model.LookupEnvironmentUtilities;
+import org.eclipse.ceylon.ide.eclipse.core.model.LookupEnvironmentUtilities.ActionOnClassBinding;
+import org.eclipse.ceylon.ide.eclipse.core.model.LookupEnvironmentUtilities.ActionOnResolvedType;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.common.model.unknownClassMirror_;
+import org.eclipse.ceylon.ide.common.model.mirror.IdeClassMirror;
+import org.eclipse.ceylon.model.loader.AbstractModelLoader;
+import org.eclipse.ceylon.model.loader.ModelResolutionException;
+import org.eclipse.ceylon.model.loader.NamingBase;
+import org.eclipse.ceylon.model.loader.mirror.AnnotationMirror;
+import org.eclipse.ceylon.model.loader.mirror.ClassMirror;
+import org.eclipse.ceylon.model.loader.mirror.FieldMirror;
+import org.eclipse.ceylon.model.loader.mirror.MethodMirror;
+import org.eclipse.ceylon.model.loader.mirror.PackageMirror;
+import org.eclipse.ceylon.model.loader.mirror.TypeMirror;
+import org.eclipse.ceylon.model.loader.mirror.TypeParameterMirror;
+import org.eclipse.ceylon.model.typechecker.model.Module;
 
 public class JDTClass implements IdeClassMirror, IBindingProvider {
     public static final ClassMirror UNKNOWN_CLASS = unknownClassMirror_.get_();
@@ -206,7 +206,7 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
                     Map<String, AnnotationMirror> annots = JDTUtils.getAnnotations(klass.getAnnotations());
                     if (sourceFileName != null
                             && qualifiedName.startsWith("ceylon.language") 
-                            && annots.containsKey(com.redhat.ceylon.compiler.java.metadata.Ceylon.class.getName())
+                            && annots.containsKey(org.eclipse.ceylon.compiler.java.metadata.Ceylon.class.getName())
                             && sourceFileName.endsWith(".java")) {
                         HashMap<String, Object> values = new HashMap<>();
                         values.put("backend", "jvm");
@@ -372,22 +372,22 @@ public class JDTClass implements IdeClassMirror, IBindingProvider {
     
     @Override
     public boolean isCeylonToplevelAttribute() {
-        return !isInnerClass() && isAnnotationPresent(com.redhat.ceylon.compiler.java.metadata.Attribute.class);
+        return !isInnerClass() && isAnnotationPresent(org.eclipse.ceylon.compiler.java.metadata.Attribute.class);
     }
 
     @Override
     public boolean isCeylonToplevelObject() {
-        return !isInnerClass() && isAnnotationPresent(com.redhat.ceylon.compiler.java.metadata.Object.class);
+        return !isInnerClass() && isAnnotationPresent(org.eclipse.ceylon.compiler.java.metadata.Object.class);
     }
 
     @Override
     public boolean isCeylonToplevelMethod() {
-        return !isInnerClass() && isAnnotationPresent(com.redhat.ceylon.compiler.java.metadata.Method.class);
+        return !isInnerClass() && isAnnotationPresent(org.eclipse.ceylon.compiler.java.metadata.Method.class);
     }
 
     @Override
     public boolean getIsCeylon() {
-        return isAnnotationPresent(com.redhat.ceylon.compiler.java.metadata.Ceylon.class);
+        return isAnnotationPresent(org.eclipse.ceylon.compiler.java.metadata.Ceylon.class);
     }
 
     @Override

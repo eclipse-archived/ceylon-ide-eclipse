@@ -1,18 +1,18 @@
-import com.redhat.ceylon.eclipse.code.correct {
+import org.eclipse.ceylon.ide.eclipse.code.correct {
     LinkedModeCompletionProposal {
         NullProposal
     }
 }
-import com.redhat.ceylon.eclipse.code.outline {
+import org.eclipse.ceylon.ide.eclipse.code.outline {
     CeylonLabelProvider
 }
-import com.redhat.ceylon.eclipse.ui {
+import org.eclipse.ceylon.ide.eclipse.ui {
     CeylonResources
 }
-import com.redhat.ceylon.ide.common.correct {
+import org.eclipse.ceylon.ide.common.correct {
     AssignToLocalProposal
 }
-import com.redhat.ceylon.model.typechecker.model {
+import org.eclipse.ceylon.model.typechecker.model {
     Unit,
     Type
 }
@@ -27,10 +27,10 @@ import org.eclipse.jface.text.contentassist {
 import org.eclipse.jface.viewers {
     StyledString
 }
-import com.redhat.ceylon.ide.common.completion {
+import org.eclipse.ceylon.ide.common.completion {
     ProposalsHolder
 }
-import com.redhat.ceylon.eclipse.platform {
+import org.eclipse.ceylon.ide.eclipse.platform {
     EclipseProposalsHolder
 }
 
@@ -63,7 +63,7 @@ class EclipseAssignToLocalProposal(EclipseQuickFixData data, String desc)
     }
     
     styledDisplayString => 
-        let(hint = CorrectionUtil.shortcut("com.redhat.ceylon.eclipse.ui.action.assignToLocal"))
+        let(hint = CorrectionUtil.shortcut("org.eclipse.ceylon.ide.eclipse.ui.action.assignToLocal"))
         StyledString(displayString).append(hint, StyledString.\iQUALIFIER_STYLER);
     
 }

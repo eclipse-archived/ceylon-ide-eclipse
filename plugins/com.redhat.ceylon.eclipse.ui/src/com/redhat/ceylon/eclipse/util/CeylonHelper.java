@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.util;
+package org.eclipse.ceylon.ide.eclipse.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,9 +8,9 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 
-import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
-import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
+import org.eclipse.ceylon.compiler.java.runtime.model.TypeDescriptor;
+import org.eclipse.ceylon.ide.common.model.CeylonProject;
+import org.eclipse.ceylon.ide.common.vfs.ResourceVirtualFile;
 
 import ceylon.language.Iterator;
 import ceylon.language.Sequence;

@@ -1,13 +1,13 @@
-package com.redhat.ceylon.eclipse.code.complete;
+package org.eclipse.ceylon.ide.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.isModuleDescriptor;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_LITERAL;
-import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.CASE;
-import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.CATCH;
-import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.EXPRESSION;
-import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.EXTENDS;
-import static com.redhat.ceylon.ide.common.util.OccurrenceLocation.META;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CompletionUtil.isModuleDescriptor;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getDecoratedImage;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_LITERAL;
+import static org.eclipse.ceylon.ide.common.util.OccurrenceLocation.CASE;
+import static org.eclipse.ceylon.ide.common.util.OccurrenceLocation.CATCH;
+import static org.eclipse.ceylon.ide.common.util.OccurrenceLocation.EXPRESSION;
+import static org.eclipse.ceylon.ide.common.util.OccurrenceLocation.EXTENDS;
+import static org.eclipse.ceylon.ide.common.util.OccurrenceLocation.META;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -20,14 +20,14 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.eclipse.util.Highlights.FontStyler;
-import com.redhat.ceylon.ide.common.util.OccurrenceLocation;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights.FontStyler;
+import org.eclipse.ceylon.ide.common.util.OccurrenceLocation;
 
 public class KeywordCompletionProposal extends CompletionProposal {
     

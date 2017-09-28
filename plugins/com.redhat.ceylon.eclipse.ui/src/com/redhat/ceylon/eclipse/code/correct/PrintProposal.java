@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
-import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.MINOR_CHANGE;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.findStatement;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,14 +17,14 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Annotation;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Identifier;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Primary;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.TypedDeclaration;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Annotation;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Identifier;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Primary;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.TypedDeclaration;
+import org.eclipse.ceylon.ide.eclipse.util.EditorUtil;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
 
 class PrintProposal implements ICompletionProposal, ICompletionProposalExtension6 {
     
@@ -164,7 +164,7 @@ class PrintProposal implements ICompletionProposal, ICompletionProposalExtension
     public StyledString getStyledDisplayString() {
         String hint = 
                 CorrectionUtil.shortcut(
-                        "com.redhat.ceylon.eclipse.ui.action.print");
+                        "org.eclipse.ceylon.ide.eclipse.ui.action.print");
         return new StyledString(getDisplayString())
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }

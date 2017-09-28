@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.util;
+package org.eclipse.ceylon.ide.eclipse.util;
 
-import com.redhat.ceylon.common.log.Logger;
+import org.eclipse.ceylon.common.log.Logger;
 
 
 public class EclipseLogger implements Logger {

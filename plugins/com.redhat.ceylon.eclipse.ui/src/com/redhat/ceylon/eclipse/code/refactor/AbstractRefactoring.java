@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnits;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
-import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getUnits;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getSelection;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.findNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,23 +24,23 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Expression;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.ide.common.model.CrossProjectBinaryUnit;
-import com.redhat.ceylon.ide.common.model.CrossProjectSourceFile;
-import com.redhat.ceylon.ide.common.model.EditedSourceFile;
-import com.redhat.ceylon.ide.common.model.IResourceAware;
-import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
-import com.redhat.ceylon.ide.common.typechecker.ModifiablePhasedUnit;
-import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Expression;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.eclipse.util.EditorUtil;
+import org.eclipse.ceylon.ide.common.model.CrossProjectBinaryUnit;
+import org.eclipse.ceylon.ide.common.model.CrossProjectSourceFile;
+import org.eclipse.ceylon.ide.common.model.EditedSourceFile;
+import org.eclipse.ceylon.ide.common.model.IResourceAware;
+import org.eclipse.ceylon.ide.common.model.ProjectSourceFile;
+import org.eclipse.ceylon.ide.common.typechecker.ModifiablePhasedUnit;
+import org.eclipse.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 abstract class AbstractRefactoring extends Refactoring {
     

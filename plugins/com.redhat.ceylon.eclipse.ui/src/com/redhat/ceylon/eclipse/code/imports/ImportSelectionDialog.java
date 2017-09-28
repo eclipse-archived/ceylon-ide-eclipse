@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.imports;
+package org.eclipse.ceylon.ide.eclipse.code.imports;
 
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
 
 import java.util.Comparator;
 import java.util.List;
@@ -26,10 +26,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.Highlights;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
 
 final class ImportSelectionDialog extends
         FilteredItemsSelectionDialog {

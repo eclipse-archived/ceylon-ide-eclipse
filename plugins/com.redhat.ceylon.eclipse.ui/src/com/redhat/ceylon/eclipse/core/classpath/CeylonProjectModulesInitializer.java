@@ -15,9 +15,9 @@
  *  limitations under the License.
  *
  */
-package com.redhat.ceylon.eclipse.core.classpath;
+package org.eclipse.ceylon.ide.eclipse.core.classpath;
 
-import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathEntry;
+import static org.eclipse.ceylon.ide.eclipse.core.classpath.CeylonClasspathUtil.getCeylonClasspathEntry;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.JavaCore.getClasspathContainer;
 import static org.eclipse.jdt.core.JavaCore.setClasspathContainer;
@@ -36,7 +36,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.ui.InitializeAfterLoadJob;
 import org.eclipse.jdt.ui.JavaUI;
 
-import com.redhat.ceylon.eclipse.core.classpath.InitDependenciesJob;
+import org.eclipse.ceylon.ide.eclipse.core.classpath.InitDependenciesJob;
 
 /**
  * Initializes the Ceylon class path container. It will create 

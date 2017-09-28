@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.builder;
+package org.eclipse.ceylon.ide.eclipse.core.builder;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -10,11 +10,11 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.URI;
 
-import com.redhat.ceylon.javax.lang.model.element.Modifier;
-import com.redhat.ceylon.javax.lang.model.element.NestingKind;
-import com.redhat.ceylon.javax.tools.JavaFileObject;
+import org.eclipse.ceylon.javax.lang.model.element.Modifier;
+import org.eclipse.ceylon.javax.lang.model.element.NestingKind;
+import org.eclipse.ceylon.javax.tools.JavaFileObject;
 
-import com.redhat.ceylon.langtools.tools.javac.file.RelativePath.RelativeFile;
+import org.eclipse.ceylon.langtools.tools.javac.file.RelativePath.RelativeFile;
 
 final class ExplodingJavaFileObject implements
         JavaFileObject {

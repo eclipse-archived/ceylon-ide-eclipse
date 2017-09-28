@@ -1,28 +1,28 @@
-import com.redhat.ceylon.compiler.typechecker.tree {
+import org.eclipse.ceylon.compiler.typechecker.tree {
     Tree
 }
-import com.redhat.ceylon.eclipse.code.editor {
+import org.eclipse.ceylon.ide.eclipse.code.editor {
     CeylonEditor
 }
-import com.redhat.ceylon.eclipse.code.html {
+import org.eclipse.ceylon.ide.eclipse.code.html {
     HTML,
     HTMLPrinter
 }
-import com.redhat.ceylon.eclipse.util {
+import org.eclipse.ceylon.ide.eclipse.util {
     Highlights
 }
-import com.redhat.ceylon.ide.common.doc {
+import org.eclipse.ceylon.ide.common.doc {
     DocGenerator,
     Icons,
     Colors
 }
-import com.redhat.ceylon.ide.common.typechecker {
+import org.eclipse.ceylon.ide.common.typechecker {
     LocalAnalysisResult
 }
-import com.redhat.ceylon.ide.common.util {
+import org.eclipse.ceylon.ide.common.util {
     nodes
 }
-import com.redhat.ceylon.model.typechecker.model {
+import org.eclipse.ceylon.model.typechecker.model {
     Declaration,
     Unit,
     Referenceable,

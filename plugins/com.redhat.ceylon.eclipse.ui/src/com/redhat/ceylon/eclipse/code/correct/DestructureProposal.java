@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.LinkedModeCompletionProposal.getNameProposals;
-import static com.redhat.ceylon.eclipse.util.Nodes.addNameProposals;
+import static org.eclipse.ceylon.ide.eclipse.code.correct.LinkedModeCompletionProposal.getNameProposals;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.addNameProposals;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,15 +19,15 @@ import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.LinkedMode;
-import com.redhat.ceylon.ide.common.util.escaping_;
-import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.util.LinkedMode;
+import org.eclipse.ceylon.ide.common.util.escaping_;
+import org.eclipse.ceylon.model.typechecker.model.Class;
+import org.eclipse.ceylon.model.typechecker.model.Type;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 class DestructureProposal extends LocalProposal {
     
@@ -155,7 +155,7 @@ class DestructureProposal extends LocalProposal {
     public StyledString getStyledDisplayString() {
         String hint = 
                 CorrectionUtil.shortcut(
-                        "com.redhat.ceylon.eclipse.ui.action.destructure");
+                        "org.eclipse.ceylon.ide.eclipse.ui.action.destructure");
         return new StyledString(getDisplayString())
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }

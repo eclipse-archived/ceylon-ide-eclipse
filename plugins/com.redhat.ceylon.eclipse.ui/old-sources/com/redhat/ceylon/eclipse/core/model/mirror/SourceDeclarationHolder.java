@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.core.model.mirror;
+package org.eclipse.ceylon.ide.eclipse.core.model.mirror;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
 
 @Deprecated
 public class SourceDeclarationHolder {

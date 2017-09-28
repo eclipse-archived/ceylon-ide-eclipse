@@ -1,20 +1,20 @@
-package com.redhat.ceylon.test.eclipse.plugin.util;
+package org.eclipse.ceylon.test.eclipse.plugin.util;
 
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.CEYLON_TEST_MODULE_DEFAULT_VERSION;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.CEYLON_TEST_MODULE_NAME;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin.CEYLON_TEST_MODULE_DEFAULT_VERSION;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin.CEYLON_TEST_MODULE_NAME;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 
-import com.redhat.ceylon.cmr.api.ModuleQuery.Type;
-import com.redhat.ceylon.cmr.api.ModuleVersionQuery;
-import com.redhat.ceylon.cmr.api.ModuleVersionResult;
-import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
-import com.redhat.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.cmr.api.ModuleQuery.Type;
+import org.eclipse.ceylon.cmr.api.ModuleVersionQuery;
+import org.eclipse.ceylon.cmr.api.ModuleVersionResult;
+import org.eclipse.ceylon.cmr.api.RepositoryManager;
+import org.eclipse.ceylon.ide.eclipse.code.imports.ModuleImportUtil;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.common.model.BaseCeylonProject;
+import org.eclipse.ceylon.model.typechecker.model.Module;
 
 public class AddCeylonTestImport {
 

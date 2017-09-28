@@ -1,7 +1,7 @@
-import com.redhat.ceylon.eclipse.core.builder {
+import org.eclipse.ceylon.ide.eclipse.core.builder {
   CeylonNature
 }
-import com.redhat.ceylon.eclipse.core.launch {
+import org.eclipse.ceylon.ide.eclipse.core.launch {
   ICeylonLaunchConfigurationConstants {
     ...
   },
@@ -12,13 +12,13 @@ import com.redhat.ceylon.eclipse.core.launch {
     ...
   }
 }
-import com.redhat.ceylon.eclipse.ui {
+import org.eclipse.ceylon.ide.eclipse.ui {
   CeylonPlugin {
     pluginId
   },
   CeylonResources
 }
-import com.redhat.ceylon.model.typechecker.model {
+import org.eclipse.ceylon.model.typechecker.model {
   Module
 }
 

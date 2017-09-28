@@ -1,11 +1,11 @@
-package com.redhat.ceylon.test.eclipse.plugin.ui;
+package org.eclipse.ceylon.test.eclipse.plugin.ui;
 
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.ERROR_OVR;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.FAILED_OVR;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.counterErrors;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.counterFailures;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.counterRuns;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.ERROR_OVR;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.FAILED_OVR;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.counterErrors;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.counterFailures;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.counterRuns;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
@@ -14,7 +14,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
+import org.eclipse.ceylon.test.eclipse.plugin.model.TestRun;
 
 public class CounterPanel extends Composite {
 

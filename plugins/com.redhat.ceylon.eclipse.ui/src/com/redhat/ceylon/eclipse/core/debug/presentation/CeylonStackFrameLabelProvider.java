@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.core.debug.presentation;
+package org.eclipse.ceylon.ide.eclipse.core.debug.presentation;
 
-import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.getSourceDeclaration;
-import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.isInternalCeylonMethod;
-import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonDebugLabelUpdaterManager.getUpdater;
-import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonPresentationContext.isCeylonContext;
+import static org.eclipse.ceylon.ide.eclipse.core.debug.DebugUtils.getSourceDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.core.debug.DebugUtils.isInternalCeylonMethod;
+import static org.eclipse.ceylon.ide.eclipse.core.debug.presentation.CeylonDebugLabelUpdaterManager.getUpdater;
+import static org.eclipse.ceylon.ide.eclipse.core.debug.presentation.CeylonPresentationContext.isCeylonContext;
 
 import java.util.regex.Matcher;
 
@@ -16,8 +16,8 @@ import org.eclipse.jdt.internal.debug.ui.variables.JavaStackFrameLabelProvider;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.swt.graphics.RGB;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIThread;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.ide.eclipse.core.debug.model.CeylonJDIThread;
 
 public class CeylonStackFrameLabelProvider extends JavaStackFrameLabelProvider {
 

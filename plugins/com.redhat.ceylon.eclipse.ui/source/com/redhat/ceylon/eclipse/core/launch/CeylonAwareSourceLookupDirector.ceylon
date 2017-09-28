@@ -1,4 +1,4 @@
-import com.redhat.ceylon.eclipse.util {
+import org.eclipse.ceylon.ide.eclipse.util {
     EditorUtil {
         getEditorInput,
         adjustEditorInput

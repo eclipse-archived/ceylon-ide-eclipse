@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.refactor.ExtractLinkedMode.useLinkedMode;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.refactorJ2C;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CHANGE;
+import static org.eclipse.ceylon.ide.eclipse.code.refactor.ExtractLinkedMode.useLinkedMode;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.refactorJ2C;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CHANGE;
 
 import java.util.Collection;
 
@@ -14,12 +14,12 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.refactor.ExtractParameterLinkedMode;
-import com.redhat.ceylon.eclipse.code.refactor.ExtractParameterRefactoringAction;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.refactor.ExtractParameterLinkedMode;
+import org.eclipse.ceylon.ide.eclipse.code.refactor.ExtractParameterRefactoringAction;
 
 public class ExtractParameterProposal 
         implements ICompletionProposal, 
@@ -86,7 +86,7 @@ public class ExtractParameterProposal
     public StyledString getStyledDisplayString() {
         String hint = 
                 CorrectionUtil.shortcut(
-                        "com.redhat.ceylon.eclipse.ui.action.extractParameter");
+                        "org.eclipse.ceylon.ide.eclipse.ui.action.extractParameter");
         return new StyledString(getDisplayString())
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }

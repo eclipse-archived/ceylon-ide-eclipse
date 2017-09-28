@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.model;
+package org.eclipse.ceylon.ide.eclipse.core.model;
 
 import org.eclipse.core.resources.IProject;
 

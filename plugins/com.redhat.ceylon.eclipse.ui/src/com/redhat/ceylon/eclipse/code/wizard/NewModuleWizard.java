@@ -1,12 +1,12 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
-import static com.redhat.ceylon.eclipse.code.imports.ModuleImportUtil.appendImportStatement;
-import static com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
-import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.escapePackageName;
-import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.runOperation;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleSearchResults;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.gotoLocation;
+import static org.eclipse.ceylon.ide.eclipse.code.imports.ModuleImportUtil.appendImportStatement;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.ModuleImportSelectionDialog.selectModules;
+import static org.eclipse.ceylon.ide.eclipse.code.refactor.MoveUtil.escapePackageName;
+import static org.eclipse.ceylon.ide.eclipse.code.wizard.WizardUtil.runOperation;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static org.eclipse.ceylon.ide.eclipse.util.ModuleQueries.getModuleSearchResults;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,12 +30,12 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
-import com.redhat.ceylon.cmr.api.ModuleSearchResult;
-import com.redhat.ceylon.eclipse.code.preferences.ModuleImportContentProvider;
-import com.redhat.ceylon.eclipse.code.preferences.ModuleImportSelectionDialog;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
+import org.eclipse.ceylon.cmr.api.ModuleSearchResult;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.ModuleImportContentProvider;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.ModuleImportSelectionDialog;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleVersionNode;
 
 public class NewModuleWizard extends Wizard implements INewWizard {
     

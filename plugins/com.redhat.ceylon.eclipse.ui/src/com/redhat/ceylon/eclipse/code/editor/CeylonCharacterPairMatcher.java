@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.util.Nodes.getTokenIndexAtCharacter;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getTokenIndexAtCharacter;
 
 import java.util.List;
 
@@ -13,10 +13,10 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.source.ICharacterPairMatcherExtension;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonInterpolatingLexer;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
-import com.redhat.ceylon.eclipse.util.Nodes;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonInterpolatingLexer;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+import org.eclipse.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
+import org.eclipse.ceylon.ide.eclipse.util.Nodes;
 
 public class CeylonCharacterPairMatcher 
         implements ICharacterPairMatcher, 

@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.util;
+package org.eclipse.ceylon.ide.eclipse.util;
 
-import static com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction.ASSIGNMENT_ANNOTATION;
-import static com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction.DECLARATION_ANNOTATION;
-import static com.redhat.ceylon.eclipse.code.editor.MarkOccurrencesAction.OCCURRENCE_ANNOTATION;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
-import static com.redhat.ceylon.eclipse.core.builder.MarkerCreator.ERROR_CODE_KEY;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.MarkOccurrencesAction.ASSIGNMENT_ANNOTATION;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.MarkOccurrencesAction.DECLARATION_ANNOTATION;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.MarkOccurrencesAction.OCCURRENCE_ANNOTATION;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.MarkerCreator.ERROR_CODE_KEY;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +26,7 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonAnnotation;
 
 public class AnnotationUtils {
     

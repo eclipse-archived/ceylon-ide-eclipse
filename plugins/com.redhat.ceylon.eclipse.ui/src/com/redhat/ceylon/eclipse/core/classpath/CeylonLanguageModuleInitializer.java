@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.classpath;
+package org.eclipse.ceylon.ide.eclipse.core.classpath;
 
 
 import org.eclipse.core.runtime.CoreException;

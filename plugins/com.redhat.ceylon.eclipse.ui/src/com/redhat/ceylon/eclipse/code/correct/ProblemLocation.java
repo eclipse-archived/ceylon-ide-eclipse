@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 
-import com.redhat.ceylon.eclipse.core.builder.MarkerCreator;
+import org.eclipse.ceylon.ide.eclipse.core.builder.MarkerCreator;
 
 public class ProblemLocation implements Comparable<ProblemLocation> {
     

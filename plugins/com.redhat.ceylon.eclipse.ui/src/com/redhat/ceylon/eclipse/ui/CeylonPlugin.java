@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.ui;
+package org.eclipse.ceylon.ide.eclipse.ui;
 
-import static com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.platformJ2C;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
+import static org.eclipse.ceylon.ide.eclipse.core.external.ExternalSourceArchiveManager.getExternalSourceArchiveManager;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.platformJ2C;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getCurrentTheme;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.JavaCore.CORE_JAVA_BUILD_RESOURCE_COPY_FILTER;
 
@@ -55,15 +55,15 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.prefs.BackingStoreException;
 
-import com.redhat.ceylon.common.FileUtil;
-import com.redhat.ceylon.common.Versions;
-import com.redhat.ceylon.dist.osgi.Activator;
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.builder.ProjectChangeListener;
-import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
-import com.redhat.ceylon.eclipse.core.debug.CeylonDebugElementAdapterFactory;
-import com.redhat.ceylon.eclipse.core.debug.preferences.CeylonDebugOptionsManager;
-import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
+import org.eclipse.ceylon.common.FileUtil;
+import org.eclipse.ceylon.common.Versions;
+import org.eclipse.ceylon.dist.osgi.Activator;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
+import org.eclipse.ceylon.ide.eclipse.core.builder.ProjectChangeListener;
+import org.eclipse.ceylon.ide.eclipse.core.classpath.CeylonClasspathUtil;
+import org.eclipse.ceylon.ide.eclipse.core.debug.CeylonDebugElementAdapterFactory;
+import org.eclipse.ceylon.ide.eclipse.core.debug.preferences.CeylonDebugOptionsManager;
+import org.eclipse.ceylon.ide.eclipse.core.external.ExternalSourceArchiveManager;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
@@ -71,9 +71,9 @@ import net.lingala.zip4j.model.ZipParameters;
 
 public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
 
-    public static final String PLUGIN_ID = "com.redhat.ceylon.eclipse.ui";
-    public static final String DIST_PLUGIN_ID = "com.redhat.ceylon.dist";
-    public static final String EMBEDDED_REPO_PLUGIN_ID = "com.redhat.ceylon.dist.repo";
+    public static final String PLUGIN_ID = "org.eclipse.ceylon.ide.eclipse.ui";
+    public static final String DIST_PLUGIN_ID = "org.eclipse.ceylon.dist";
+    public static final String EMBEDDED_REPO_PLUGIN_ID = "org.eclipse.ceylon.dist.repo";
     public static final String LANGUAGE_ID = "ceylon";
     public static final String EDITOR_ID = PLUGIN_ID + ".editor";
     private static final String[] MODULE_LAUNCHER_LIBRARIES = new String[] { 
@@ -81,15 +81,15 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     };
     private static final String[] RUNTIME_LIBRARIES = new String[] {
         "ceylon.bootstrap-"+Versions.CEYLON_VERSION_NUMBER+".car",
-        "com.redhat.ceylon.module-resolver-"+Versions.CEYLON_VERSION_NUMBER+".jar",
-        "com.redhat.ceylon.common-"+Versions.CEYLON_VERSION_NUMBER+".jar",
-        "com.redhat.ceylon.model-"+Versions.CEYLON_VERSION_NUMBER+".jar",
+        "org.eclipse.ceylon.module-resolver-"+Versions.CEYLON_VERSION_NUMBER+".jar",
+        "org.eclipse.ceylon.common-"+Versions.CEYLON_VERSION_NUMBER+".jar",
+        "org.eclipse.ceylon.model-"+Versions.CEYLON_VERSION_NUMBER+".jar",
         "org.jboss.modules-"+Versions.DEPENDENCY_JBOSS_MODULES_VERSION+".jar",
     };
     private static final String[] COMPILETIME_LIBRARIES = new String[] {
-        "com.redhat.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
-        "com.redhat.ceylon.model-"+Versions.CEYLON_VERSION_NUMBER+".jar",
-        "com.redhat.ceylon.common-"+Versions.CEYLON_VERSION_NUMBER+".jar",
+        "org.eclipse.ceylon.typechecker-"+Versions.CEYLON_VERSION_NUMBER+".jar",
+        "org.eclipse.ceylon.model-"+Versions.CEYLON_VERSION_NUMBER+".jar",
+        "org.eclipse.ceylon.common-"+Versions.CEYLON_VERSION_NUMBER+".jar",
     };
     
     public static final String EDITOR_FONT_PREFERENCE = 
@@ -224,7 +224,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         
         CeylonDebugOptionsManager.getDefault().startup();
 
-        com.redhat.ceylon.eclipse.code.complete.setupCompletionExecutors_.setupCompletionExecutors();
+        org.eclipse.ceylon.ide.eclipse.code.complete.setupCompletionExecutors_.setupCompletionExecutors();
     }
     
     @Override
@@ -235,7 +235,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
         CeylonDebugElementAdapterFactory.restoreJDTDebugElementAdapters();
         CeylonDebugOptionsManager.getDefault().shutdown();
         FileUtil.deleteQuietly(getJavaSourceArchiveCacheDirectory());
-        com.redhat.ceylon.eclipse.code.complete.shutdownCompletionExecutors_.shutdownCompletionExecutors();
+        org.eclipse.ceylon.ide.eclipse.code.complete.shutdownCompletionExecutors_.shutdownCompletionExecutors();
         
     }
 
@@ -303,7 +303,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
     
     public File getDebugAgentJar() {
         try {
-            Bundle bundle = Platform.getBundle("com.redhat.ceylon.ide.common");
+            Bundle bundle = Platform.getBundle("org.eclipse.ceylon.ide.common");
             if (bundle != null) {
                 File debugAgentBundleFile = FileLocator.getBundleFile(bundle);
                 if (debugAgentBundleFile != null) {
@@ -311,7 +311,7 @@ public class CeylonPlugin extends AbstractUIPlugin implements CeylonResources {
                         File[] found = debugAgentBundleFile.listFiles(new FilenameFilter() {
                             @Override
                             public boolean accept(File dir, String name) {
-                                return name.startsWith("com.redhat.ceylon.ide.common"+ "-") &&
+                                return name.startsWith("org.eclipse.ceylon.ide.common"+ "-") &&
                                         name.endsWith(".car");
                             }
                         });

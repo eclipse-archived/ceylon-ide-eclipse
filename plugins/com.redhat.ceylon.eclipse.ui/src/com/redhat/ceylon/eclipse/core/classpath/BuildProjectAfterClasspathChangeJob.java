@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.core.classpath;
+package org.eclipse.ceylon.ide.eclipse.core.classpath;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isModelTypeChecked;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.isModelTypeChecked;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.AUTO_BUILD;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.INCREMENTAL_BUILD;
 

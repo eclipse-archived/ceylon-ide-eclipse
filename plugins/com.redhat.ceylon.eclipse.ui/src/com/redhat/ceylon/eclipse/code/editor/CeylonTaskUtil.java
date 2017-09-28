@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.RefinementAnnotationCreator.TODO_ANNOTATION_TYPE;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.RefinementAnnotationCreator.TODO_ANNOTATION_TYPE;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,8 +14,8 @@ import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
 
 public class CeylonTaskUtil {
 

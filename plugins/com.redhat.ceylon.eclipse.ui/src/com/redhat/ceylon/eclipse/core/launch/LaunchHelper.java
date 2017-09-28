@@ -1,21 +1,21 @@
-package com.redhat.ceylon.eclipse.core.launch;
+package org.eclipse.ceylon.ide.eclipse.core.launch;
 
-import static com.redhat.ceylon.model.typechecker.model.Module.DEFAULT_MODULE_NAME;
-import static com.redhat.ceylon.model.typechecker.model.Module.LANGUAGE_MODULE_NAME;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModules;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME;
-import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME;
-import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVASCIPT_MODULE;
-import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVA_MODULE;
-import static com.redhat.ceylon.eclipse.core.launch.ICeylonLaunchConfigurationConstants.DEFAULT_RUN_MARKER;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getShell;
+import static org.eclipse.ceylon.model.typechecker.model.Module.DEFAULT_MODULE_NAME;
+import static org.eclipse.ceylon.model.typechecker.model.Module.LANGUAGE_MODULE_NAME;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getPackage;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectModules;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static org.eclipse.ceylon.ide.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_MODULE_NAME;
+import static org.eclipse.ceylon.ide.eclipse.core.launch.ICeylonLaunchConfigurationConstants.ATTR_TOPLEVEL_NAME;
+import static org.eclipse.ceylon.ide.eclipse.core.launch.ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVASCIPT_MODULE;
+import static org.eclipse.ceylon.ide.eclipse.core.launch.ICeylonLaunchConfigurationConstants.CAN_LAUNCH_AS_CEYLON_JAVA_MODULE;
+import static org.eclipse.ceylon.ide.eclipse.core.launch.ICeylonLaunchConfigurationConstants.DEFAULT_RUN_MARKER;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getShell;
 import static java.lang.Character.charCount;
 import static java.lang.Character.isUpperCase;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 
 import java.util.Arrays;
@@ -41,20 +41,20 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
-import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
-import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Function;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Modules;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.eclipse.code.open.OpenDeclarationDialog;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
+import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.ide.common.model.CeylonProject;
+import org.eclipse.ceylon.ide.common.vfs.FileVirtualFile;
+import org.eclipse.ceylon.model.typechecker.model.Class;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Function;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Modules;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.ide.eclipse.code.open.OpenDeclarationDialog;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.EditorUtil;
 
 /**
  * This class is a stateless helper that groups together static utility methods

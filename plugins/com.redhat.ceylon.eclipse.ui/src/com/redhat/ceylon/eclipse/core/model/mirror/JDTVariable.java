@@ -18,14 +18,14 @@
  * MA  02110-1301, USA.
  */
 
-package com.redhat.ceylon.eclipse.core.model.mirror;
+package org.eclipse.ceylon.ide.eclipse.core.model.mirror;
 
 import java.util.Map;
 import java.util.Set;
 
-import com.redhat.ceylon.model.loader.mirror.AnnotationMirror;
-import com.redhat.ceylon.model.loader.mirror.TypeMirror;
-import com.redhat.ceylon.model.loader.mirror.VariableMirror;
+import org.eclipse.ceylon.model.loader.mirror.AnnotationMirror;
+import org.eclipse.ceylon.model.loader.mirror.TypeMirror;
+import org.eclipse.ceylon.model.loader.mirror.VariableMirror;
 
 public class JDTVariable implements VariableMirror {
 

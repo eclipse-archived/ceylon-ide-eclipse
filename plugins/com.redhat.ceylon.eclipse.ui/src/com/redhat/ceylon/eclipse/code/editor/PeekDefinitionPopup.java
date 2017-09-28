@@ -1,13 +1,13 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.getNodePath;
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SOURCE;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
-import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.getNodePath;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.gotoNode;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_SOURCE;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getEditorInput;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.findNode;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getReferencedNode;
 
 import java.util.StringTokenizer;
 
@@ -51,13 +51,13 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.EditorUtil;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
 
 final class PeekDefinitionPopup extends PopupDialog 
         implements IInformationControl, IInformationControlExtension2,

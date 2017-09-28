@@ -1,11 +1,11 @@
-package com.redhat.ceylon.eclipse.util;
+package org.eclipse.ceylon.ide.eclipse.util;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import com.redhat.ceylon.eclipse.java2ceylon.UtilJ2C;
-import com.redhat.ceylon.ide.common.util.Path;
-import com.redhat.ceylon.ide.common.util.ProgressMonitor;
+import org.eclipse.ceylon.ide.eclipse.java2ceylon.UtilJ2C;
+import org.eclipse.ceylon.ide.common.util.Path;
+import org.eclipse.ceylon.ide.common.util.ProgressMonitor;
 
 public class utilJ2C implements UtilJ2C {
     

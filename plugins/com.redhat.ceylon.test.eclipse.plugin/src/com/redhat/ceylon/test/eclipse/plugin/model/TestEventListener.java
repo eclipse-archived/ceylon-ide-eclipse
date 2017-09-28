@@ -1,11 +1,11 @@
-package com.redhat.ceylon.test.eclipse.plugin.model;
+package org.eclipse.ceylon.test.eclipse.plugin.model;
 
-import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.ERROR;
-import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.FAILURE;
-import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.SKIPPED_OR_ABORTED;
-import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.RUNNING;
-import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.SUCCESS;
-import static com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State.UNDEFINED;
+import static org.eclipse.ceylon.test.eclipse.plugin.model.TestElement.State.ERROR;
+import static org.eclipse.ceylon.test.eclipse.plugin.model.TestElement.State.FAILURE;
+import static org.eclipse.ceylon.test.eclipse.plugin.model.TestElement.State.SKIPPED_OR_ABORTED;
+import static org.eclipse.ceylon.test.eclipse.plugin.model.TestElement.State.RUNNING;
+import static org.eclipse.ceylon.test.eclipse.plugin.model.TestElement.State.SUCCESS;
+import static org.eclipse.ceylon.test.eclipse.plugin.model.TestElement.State.UNDEFINED;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -18,7 +18,7 @@ import java.util.List;
 
 import org.eclipse.debug.core.ILaunch;
 
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;

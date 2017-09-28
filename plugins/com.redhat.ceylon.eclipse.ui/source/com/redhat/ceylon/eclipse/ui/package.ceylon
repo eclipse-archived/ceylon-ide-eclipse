@@ -1,1 +1,1 @@
-shared package com.redhat.ceylon.eclipse.ui;
+shared package org.eclipse.ceylon.ide.eclipse.ui;

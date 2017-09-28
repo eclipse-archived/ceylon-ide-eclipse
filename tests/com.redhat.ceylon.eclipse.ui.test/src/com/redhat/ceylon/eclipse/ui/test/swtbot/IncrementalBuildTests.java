@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.ui.test.swtbot;
+package org.eclipse.ceylon.ide.eclipse.ui.test.swtbot;
 
 
-import static com.redhat.ceylon.eclipse.ui.test.Utils.openInEditor;
+import static org.eclipse.ceylon.ide.eclipse.ui.test.Utils.openInEditor;
 import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.Assert.assertThat;
 
@@ -23,8 +23,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.redhat.ceylon.eclipse.ui.test.AbstractMultiProjectTest;
-import com.redhat.ceylon.eclipse.ui.test.Utils;
+import org.eclipse.ceylon.ide.eclipse.ui.test.AbstractMultiProjectTest;
+import org.eclipse.ceylon.ide.eclipse.ui.test.Utils;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class IncrementalBuildTests extends AbstractMultiProjectTest {

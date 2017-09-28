@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.importsJ2C;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.IMPORT;
-import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
+import static org.eclipse.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.importsJ2C;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.IMPORT;
+import static org.eclipse.ceylon.ide.eclipse.util.ModuleQueries.getModuleQuery;
 
 import java.util.Collection;
 import java.util.List;
@@ -18,17 +18,17 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.cmr.api.ModuleQuery;
-import com.redhat.ceylon.cmr.api.ModuleSearchResult;
-import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
-import com.redhat.ceylon.common.Versions;
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.model.cmr.JDKUtils;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.cmr.api.ModuleQuery;
+import org.eclipse.ceylon.cmr.api.ModuleSearchResult;
+import org.eclipse.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
+import org.eclipse.ceylon.common.Versions;
+import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
+import org.eclipse.ceylon.model.cmr.JDKUtils;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 @Deprecated
 class AddModuleImportProposal 

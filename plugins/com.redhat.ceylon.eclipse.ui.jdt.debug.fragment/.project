@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>com.redhat.ceylon.eclipse.ui.jdt.debug.fragment</name>
+	<name>org.eclipse.ceylon.ide.eclipse.ui.jdt.debug.fragment</name>
 	<comment></comment>
 	<projects>
 	</projects>

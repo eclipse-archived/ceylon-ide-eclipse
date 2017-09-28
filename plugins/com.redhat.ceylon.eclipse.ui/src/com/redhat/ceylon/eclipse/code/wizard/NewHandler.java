@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 

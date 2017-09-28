@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.select;
+package org.eclipse.ceylon.ide.eclipse.code.select;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.PACKAGE;
 
 import java.util.ArrayList;
 import java.util.List;

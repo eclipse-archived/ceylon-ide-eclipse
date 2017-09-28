@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_END;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_MID;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_START;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_END;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_MID;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_START;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,10 +17,10 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.model.typechecker.model.Type;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.model.typechecker.model.Type;
 
 class ConvertToConcatenationProposal extends CorrectionProposal {
 

@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.refactor.RenameLinkedMode.useLinkedMode;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.RENAME;
+import static org.eclipse.ceylon.ide.eclipse.code.refactor.RenameLinkedMode.useLinkedMode;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.RENAME;
 
 import java.util.Collection;
 
@@ -13,12 +13,12 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.refactor.EnterAliasLinkedMode;
-import com.redhat.ceylon.eclipse.code.refactor.EnterAliasRefactoringAction;
-import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.refactor.EnterAliasLinkedMode;
+import org.eclipse.ceylon.ide.eclipse.code.refactor.EnterAliasRefactoringAction;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
 
 class RenameAliasProposal implements ICompletionProposal, 
         ICompletionProposalExtension6 {
@@ -60,7 +60,7 @@ class RenameAliasProposal implements ICompletionProposal,
     public StyledString getStyledDisplayString() {
         String hint = 
                 CorrectionUtil.shortcut(
-                        "com.redhat.ceylon.eclipse.ui.action.enterAlias");
+                        "org.eclipse.ceylon.ide.eclipse.ui.action.enterAlias");
         return Highlights.styleProposal(getDisplayString(), false)
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }

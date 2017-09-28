@@ -1,14 +1,14 @@
-package com.redhat.ceylon.eclipse.core.model;
+package org.eclipse.ceylon.ide.eclipse.core.model;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IJavaElement;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.eclipse.core.typechecker.ExternalPhasedUnit;
-import com.redhat.ceylon.ide.common.model.CeylonUnit;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.ide.eclipse.core.typechecker.ExternalPhasedUnit;
+import org.eclipse.ceylon.ide.common.model.CeylonUnit;
 
 /*
  * Created inside the JDTModelLoader.getCompiledUnit() function if the unit is a ceylon one
@@ -33,7 +33,7 @@ public class CeylonBinaryUnit extends CeylonUnit implements IJavaModelAware {
      * Might be null if no source is linked to this ModelLoader-originating unit
      * 
      * (non-Javadoc)
-     * @see com.redhat.ceylon.eclipse.core.model.CeylonUnit#getPhasedUnit()
+     * @see org.eclipse.ceylon.ide.eclipse.core.model.CeylonUnit#getPhasedUnit()
      */
     
     @Override

@@ -1,4 +1,4 @@
-package com.redhat.ceylon.test.eclipse.plugin;
+package org.eclipse.ceylon.test.eclipse.plugin;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IStartup;

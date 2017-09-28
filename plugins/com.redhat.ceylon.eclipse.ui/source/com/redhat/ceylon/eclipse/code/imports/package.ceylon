@@ -1,1 +1,1 @@
-shared package com.redhat.ceylon.eclipse.code.imports;
+shared package org.eclipse.ceylon.ide.eclipse.code.imports;

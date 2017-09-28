@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.hover;
+package org.eclipse.ceylon.ide.eclipse.code.hover;
 
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
@@ -7,7 +7,7 @@ import org.eclipse.jface.text.information.IInformationProvider;
 import org.eclipse.jface.text.information.IInformationProviderExtension;
 import org.eclipse.jface.text.information.IInformationProviderExtension2;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
 
 
 public class CeylonInformationProvider 

@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.core.model;
+package org.eclipse.ceylon.ide.eclipse.core.model;
 
-import com.redhat.ceylon.model.typechecker.util.ModuleManager;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
-import com.redhat.ceylon.eclipse.util.SingleSourceUnitPackage;
+import org.eclipse.ceylon.model.typechecker.util.ModuleManager;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.ide.eclipse.core.typechecker.IdePhasedUnit;
+import org.eclipse.ceylon.ide.eclipse.util.SingleSourceUnitPackage;
 
 public abstract class SourceFile extends CeylonUnit {
     

@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.select;
+package org.eclipse.ceylon.ide.eclipse.code.select;
 
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
@@ -21,7 +21,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 
-import com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider;
+import org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider;
 
 public class SourceFileSelectionDialog extends ElementTreeSelectionDialog {
 

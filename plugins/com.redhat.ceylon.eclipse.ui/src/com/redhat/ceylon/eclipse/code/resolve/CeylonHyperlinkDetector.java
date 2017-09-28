@@ -1,11 +1,11 @@
-package com.redhat.ceylon.eclipse.code.resolve;
+package org.eclipse.ceylon.ide.eclipse.code.resolve;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoNode;
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.resolveNative;
-import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.gotoNode;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.resolveNative;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.findNode;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getIdentifyingNode;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getReferencedModel;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getReferencedNode;
 
 import java.util.List;
 
@@ -15,15 +15,15 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
-import com.redhat.ceylon.common.Backends;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.correct.CorrectionUtil;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
+import org.eclipse.ceylon.common.Backends;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.code.correct.CorrectionUtil;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Referenceable;
+import org.eclipse.ceylon.model.typechecker.model.TypedDeclaration;
 
 public class CeylonHyperlinkDetector implements IHyperlinkDetector {
     private CeylonEditor editor;
@@ -58,7 +58,7 @@ public class CeylonHyperlinkDetector implements IHyperlinkDetector {
         public String getHyperlinkText() {
             Backends supportedBackends = supportedBackends();
             String hint = CorrectionUtil.shortcut(
-                    "com.redhat.ceylon.eclipse.ui.action.openSelectedDeclaration");
+                    "org.eclipse.ceylon.ide.eclipse.ui.action.openSelectedDeclaration");
             return "Declaration" +
                     (supportedBackends.none() ?
                             hint :

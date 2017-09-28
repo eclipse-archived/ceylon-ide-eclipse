@@ -1,14 +1,14 @@
-package com.redhat.ceylon.eclipse.core.builder;
+package org.eclipse.ceylon.ide.eclipse.core.builder;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.MODULE_DEPENDENCY_PROBLEM_MARKER_ID;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.MODULE_DEPENDENCY_PROBLEM_MARKER_ID;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
-import com.redhat.ceylon.compiler.typechecker.tree.Message;
-import com.redhat.ceylon.eclipse.util.ErrorVisitor;
+import org.eclipse.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
+import org.eclipse.ceylon.compiler.typechecker.tree.Message;
+import org.eclipse.ceylon.ide.eclipse.util.ErrorVisitor;
 
 /**
  * This class provides a message handler that creates markers in

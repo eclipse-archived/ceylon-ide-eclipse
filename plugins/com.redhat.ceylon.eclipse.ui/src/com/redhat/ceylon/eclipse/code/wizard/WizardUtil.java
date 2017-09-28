@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
@@ -26,7 +26,7 @@ import org.eclipse.ui.IWorkbenchWizard;
 import org.eclipse.ui.operations.IWorkbenchOperationSupport;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
-import com.redhat.ceylon.eclipse.code.navigator.SourceModuleNode;
+import org.eclipse.ceylon.ide.eclipse.code.navigator.SourceModuleNode;
 
 public class WizardUtil {
 

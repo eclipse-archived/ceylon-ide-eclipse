@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.vfs;
+package org.eclipse.ceylon.ide.eclipse.core.vfs;
 
 import static java.util.Collections.unmodifiableList;
 
@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IPath;
 
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import org.eclipse.ceylon.compiler.typechecker.io.VirtualFile;
 
 
 public class SourceCodeVirtualFile implements VirtualFile {

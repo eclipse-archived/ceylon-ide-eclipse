@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.ui;
+package org.eclipse.ceylon.ide.eclipse.ui;
 
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;

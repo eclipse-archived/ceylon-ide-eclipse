@@ -2,37 +2,37 @@ import ceylon.collection {
     ArrayList
 }
 
-import com.redhat.ceylon.compiler.typechecker.tree {
+import org.eclipse.ceylon.compiler.typechecker.tree {
     Visitor,
     Tree
 }
-import com.redhat.ceylon.eclipse.code.editor {
+import org.eclipse.ceylon.ide.eclipse.code.editor {
     CeylonEditor,
     CeylonContentAssistant
 }
-import com.redhat.ceylon.eclipse.code.parse {
+import org.eclipse.ceylon.ide.eclipse.code.parse {
     CeylonParseController
 }
-import com.redhat.ceylon.eclipse.code.preferences {
+import org.eclipse.ceylon.ide.eclipse.code.preferences {
     CeylonPreferenceInitializer {
         autoActivationChars
     }
 }
-import com.redhat.ceylon.eclipse.core.builder {
+import org.eclipse.ceylon.ide.eclipse.core.builder {
     CeylonBuilder
 }
-import com.redhat.ceylon.eclipse.ui {
+import org.eclipse.ceylon.ide.eclipse.ui {
     CeylonPlugin {
         preferences
     }
 }
-import com.redhat.ceylon.eclipse.util {
+import org.eclipse.ceylon.ide.eclipse.util {
     wrapProgressMonitor
 }
-import com.redhat.ceylon.ide.common.completion {
+import org.eclipse.ceylon.ide.common.completion {
     completionManager
 }
-import com.redhat.ceylon.model.typechecker.model {
+import org.eclipse.ceylon.model.typechecker.model {
     Declaration,
     Functional,
     Unit,

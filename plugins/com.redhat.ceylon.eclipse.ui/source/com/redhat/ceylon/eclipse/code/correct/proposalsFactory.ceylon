@@ -1,23 +1,23 @@
-import com.redhat.ceylon.eclipse.code.correct {
+import org.eclipse.ceylon.ide.eclipse.code.correct {
     CorrectionUtil {
         shortcut
     }
 }
-import com.redhat.ceylon.eclipse.platform {
+import org.eclipse.ceylon.ide.eclipse.platform {
     EclipseTextChange
 }
-import com.redhat.ceylon.eclipse.util {
+import org.eclipse.ceylon.ide.eclipse.util {
     Highlights {
         styleProposal
     }
 }
-import com.redhat.ceylon.ide.common.correct {
+import org.eclipse.ceylon.ide.common.correct {
     QuickFixKind
 }
-import com.redhat.ceylon.ide.common.platform {
+import org.eclipse.ceylon.ide.common.platform {
     CommonTextChange=TextChange
 }
-import com.redhat.ceylon.ide.common.refactoring {
+import org.eclipse.ceylon.ide.common.refactoring {
     DefaultRegion
 }
 
@@ -110,7 +110,7 @@ object proposalsFactory {
     (String description,TextChange chg, Region? region, Image? img, Boolean qualifiedNameIsPath) 
             => object extends CorrectionProposal(description, chg, region, img, qualifiedNameIsPath) {
         styledDisplayString
-                => let (hint = shortcut("com.redhat.ceylon.eclipse.ui.action." + name))
+                => let (hint = shortcut("org.eclipse.ceylon.ide.eclipse.ui.action." + name))
                 styleProposal(displayString, false).append(hint, qualifierStyler);
     };
     

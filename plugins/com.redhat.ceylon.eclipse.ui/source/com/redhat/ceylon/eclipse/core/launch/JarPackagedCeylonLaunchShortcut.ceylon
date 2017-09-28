@@ -1,10 +1,10 @@
-import com.redhat.ceylon.eclipse.code.navigator {
+import org.eclipse.ceylon.ide.eclipse.code.navigator {
     SourceModuleNode
 }
-import com.redhat.ceylon.eclipse.core.builder {
+import org.eclipse.ceylon.ide.eclipse.core.builder {
     CeylonBuilder
 }
-import com.redhat.ceylon.eclipse.core.launch {
+import org.eclipse.ceylon.ide.eclipse.core.launch {
     ICeylonLaunchConfigurationConstants {
         ...
     },
@@ -12,16 +12,16 @@ import com.redhat.ceylon.eclipse.core.launch {
         ...
     }
 }
-import com.redhat.ceylon.eclipse.ui {
+import org.eclipse.ceylon.ide.eclipse.ui {
     CeylonPlugin
 }
-import com.redhat.ceylon.eclipse.util {
+import org.eclipse.ceylon.ide.eclipse.util {
     EditorUtil
 }
-import com.redhat.ceylon.ide.common.model {
+import org.eclipse.ceylon.ide.common.model {
     AnyIdeModule
 }
-import com.redhat.ceylon.model.typechecker.model {
+import org.eclipse.ceylon.model.typechecker.model {
     Module,
   Function
 }
@@ -73,13 +73,13 @@ import org.eclipse.ui {
 import org.eclipse.ui.dialogs {
     ElementListSelectionDialog
 }
-import com.redhat.ceylon.eclipse.code.editor {
+import org.eclipse.ceylon.ide.eclipse.code.editor {
   CeylonEditor
 }
-import com.redhat.ceylon.ide.common.util {
+import org.eclipse.ceylon.ide.common.util {
   nodes
 }
-import com.redhat.ceylon.compiler.typechecker.tree {
+import org.eclipse.ceylon.compiler.typechecker.tree {
   Tree
 }
 

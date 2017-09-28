@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.util;
+package org.eclipse.ceylon.ide.eclipse.util;
 
 public class InteropUtils {
     public static String toJavaString(ceylon.language.String string) {

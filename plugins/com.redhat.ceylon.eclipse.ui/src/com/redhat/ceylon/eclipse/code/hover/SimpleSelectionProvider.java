@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.hover;
+package org.eclipse.ceylon.ide.eclipse.code.hover;
 
 /*******************************************************************************
  * Copyright (c) 2008 IBM Corporation and others.

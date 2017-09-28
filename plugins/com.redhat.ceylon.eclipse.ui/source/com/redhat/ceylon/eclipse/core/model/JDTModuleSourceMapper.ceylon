@@ -1,7 +1,7 @@
-import com.redhat.ceylon.compiler.typechecker.context {
+import org.eclipse.ceylon.compiler.typechecker.context {
     Context
 }
-import com.redhat.ceylon.ide.common.model {
+import org.eclipse.ceylon.ide.common.model {
     IdeModuleManager,
     IdeModuleSourceMapper,
     BaseIdeModule
@@ -13,7 +13,7 @@ import org.eclipse.core.resources {
     IFolder,
     IFile
 }
-import com.redhat.ceylon.ide.common.platform {
+import org.eclipse.ceylon.ide.common.platform {
     platformUtils,
     Status
 }

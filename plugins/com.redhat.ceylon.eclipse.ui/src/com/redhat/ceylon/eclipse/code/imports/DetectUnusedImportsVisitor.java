@@ -1,14 +1,14 @@
-package com.redhat.ceylon.eclipse.code.imports;
+package org.eclipse.ceylon.ide.eclipse.code.imports;
 
-import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getAbstraction;
 
 import java.util.Iterator;
 import java.util.List;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
 
 @Deprecated
 class DetectUnusedImportsVisitor extends Visitor {

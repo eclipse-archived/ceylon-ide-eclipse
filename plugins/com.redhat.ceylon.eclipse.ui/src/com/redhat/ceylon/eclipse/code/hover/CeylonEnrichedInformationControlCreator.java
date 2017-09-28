@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.hover;
+package org.eclipse.ceylon.ide.eclipse.code.hover;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.gotoDeclaration;
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
@@ -13,12 +13,12 @@ import org.eclipse.jface.text.IInputChangedListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 
-import com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.hover.DocumentationHover.BackAction;
-import com.redhat.ceylon.eclipse.code.hover.DocumentationHover.ForwardAction;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.eclipse.code.browser.BrowserInformationControl;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.hover.DocumentationHover.BackAction;
+import org.eclipse.ceylon.ide.eclipse.code.hover.DocumentationHover.ForwardAction;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
 
 final class CeylonEnrichedInformationControlCreator 
         extends AbstractReusableInformationControlCreator {

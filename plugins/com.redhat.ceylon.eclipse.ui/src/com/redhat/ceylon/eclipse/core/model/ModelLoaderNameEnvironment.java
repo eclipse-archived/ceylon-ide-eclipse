@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.core.model;
+package org.eclipse.ceylon.ide.eclipse.core.model;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.isInCeylonClassesOutputFolder;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -37,7 +37,7 @@ import org.eclipse.jdt.internal.core.SearchableEnvironment;
 import org.eclipse.jdt.internal.core.SourceType;
 import org.eclipse.jdt.internal.core.SourceTypeElementInfo;
 
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
 
 public class ModelLoaderNameEnvironment extends SearchableEnvironment {
     public ModelLoaderNameEnvironment(IJavaProject javaProject) throws JavaModelException {

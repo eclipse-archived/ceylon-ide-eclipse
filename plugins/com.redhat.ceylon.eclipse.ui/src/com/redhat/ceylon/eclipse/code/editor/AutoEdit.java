@@ -1,30 +1,30 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.CHAR_LITERAL;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_END;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_MID;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_START;
-import static com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_ANGLES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_BACKTICKS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_BRACES;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_BRACKETS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_PARENS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_QUOTES;
-import static com.redhat.ceylon.eclipse.util.Nodes.getTokenIndexAtCharacter;
-import static com.redhat.ceylon.eclipse.util.Nodes.getTokenIterator;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.ASTRING_LITERAL;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.AVERBATIM_STRING;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.CHAR_LITERAL;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.LINE_COMMENT;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.MULTI_COMMENT;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_END;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_LITERAL;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_MID;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.STRING_START;
+import static org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer.VERBATIM_STRING;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_ANGLES;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_BACKTICKS;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_BRACES;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_BRACKETS;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_PARENS;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.CLOSE_QUOTES;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getTokenIndexAtCharacter;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getTokenIterator;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isLetter;
 import static java.lang.Character.isUpperCase;
 import static java.lang.Character.isWhitespace;
 import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 
 import java.util.Iterator;
 import java.util.List;
@@ -37,9 +37,9 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.Nodes;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.Nodes;
 
 class AutoEdit {
     

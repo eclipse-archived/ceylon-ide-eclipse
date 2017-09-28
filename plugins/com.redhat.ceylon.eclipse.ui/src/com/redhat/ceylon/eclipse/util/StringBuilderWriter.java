@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.util;
+package org.eclipse.ceylon.ide.eclipse.util;
 
 import ceylon.file.Writer;
 import ceylon.file.Writer$impl;

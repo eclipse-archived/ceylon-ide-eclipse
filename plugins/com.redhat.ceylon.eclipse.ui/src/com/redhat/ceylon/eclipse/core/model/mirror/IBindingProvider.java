@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.model.mirror;
+package org.eclipse.ceylon.ide.eclipse.core.model.mirror;
 
 public interface IBindingProvider {
 

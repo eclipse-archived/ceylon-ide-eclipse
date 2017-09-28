@@ -1,26 +1,26 @@
-package com.redhat.ceylon.eclipse.util;
+package org.eclipse.ceylon.ide.eclipse.util;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.redhat.ceylon.eclipse.core.model.CeylonUnit;
-import com.redhat.ceylon.model.typechecker.model.Annotation;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
-import com.redhat.ceylon.model.typechecker.model.Import;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.ide.eclipse.core.model.CeylonUnit;
+import org.eclipse.ceylon.model.typechecker.model.Annotation;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.DeclarationWithProximity;
+import org.eclipse.ceylon.model.typechecker.model.Import;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Type;
+import org.eclipse.ceylon.model.typechecker.model.Scope;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
-public class SingleSourceUnitPackage extends com.redhat.ceylon.model.typechecker.model.Package {
+public class SingleSourceUnitPackage extends org.eclipse.ceylon.model.typechecker.model.Package {
 
-    private com.redhat.ceylon.model.typechecker.model.Package modelPackage;
+    private org.eclipse.ceylon.model.typechecker.model.Package modelPackage;
     private String fullPathOfSourceUnitToTypecheck;
 
-    public SingleSourceUnitPackage(com.redhat.ceylon.model.typechecker.model.Package delegate, 
+    public SingleSourceUnitPackage(org.eclipse.ceylon.model.typechecker.model.Package delegate, 
             String fullPathOfSourceUnitToTypecheck) {
         this.modelPackage = delegate;
         this.fullPathOfSourceUnitToTypecheck = fullPathOfSourceUnitToTypecheck;
@@ -174,7 +174,7 @@ public class SingleSourceUnitPackage extends com.redhat.ceylon.model.typechecker
         return modelPackage.isShared();
     }
     
-    public com.redhat.ceylon.model.typechecker.model.Package getModelPackage() {
+    public org.eclipse.ceylon.model.typechecker.model.Package getModelPackage() {
         return modelPackage;
     }
 }

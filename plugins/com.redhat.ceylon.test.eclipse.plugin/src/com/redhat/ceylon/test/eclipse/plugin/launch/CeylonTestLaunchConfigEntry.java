@@ -1,11 +1,11 @@
-package com.redhat.ceylon.test.eclipse.plugin.launch;
+package org.eclipse.ceylon.test.eclipse.plugin.launch;
 
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.msg;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_ENTRIES_KEY;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.extractAnonymousClassIfRequired;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getModule;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getPackage;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getProject;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.msg;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_ENTRIES_KEY;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.extractAnonymousClassIfRequired;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getModule;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getPackage;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getProject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,14 +15,14 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.viewers.TreePath;
 
-import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Function;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
-import com.redhat.ceylon.test.eclipse.plugin.util.MethodWithContainer;
+import org.eclipse.ceylon.model.typechecker.model.Class;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Function;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.model.typechecker.model.Scope;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages;
+import org.eclipse.ceylon.test.eclipse.plugin.util.MethodWithContainer;
 
 public class CeylonTestLaunchConfigEntry {
 

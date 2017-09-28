@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.preferences;
+package org.eclipse.ceylon.ide.eclipse.code.preferences;
 
-import static com.redhat.ceylon.eclipse.code.preferences.ModuleCategoryNode.getCategoryNodes;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.ModuleCategoryNode.getCategoryNodes;
 import static java.util.Collections.emptyMap;
 
 import java.util.HashMap;
@@ -10,9 +10,9 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
 
-import com.redhat.ceylon.eclipse.code.modulesearch.ModuleSearchViewPart;
-import com.redhat.ceylon.ide.common.modulesearch.ModuleNode;
-import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
+import org.eclipse.ceylon.ide.eclipse.code.modulesearch.ModuleSearchViewPart;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleNode;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleVersionNode;
 
 public final class ModuleImportSelectionDialog extends FilteredElementTreeSelectionDialog {
     

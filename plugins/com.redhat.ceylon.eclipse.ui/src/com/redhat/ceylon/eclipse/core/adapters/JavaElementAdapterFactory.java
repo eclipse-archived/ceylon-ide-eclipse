@@ -1,14 +1,14 @@
-package com.redhat.ceylon.eclipse.core.adapters;
+package org.eclipse.ceylon.ide.eclipse.core.adapters;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-import com.redhat.ceylon.ide.common.model.IJavaModelAware;
-import com.redhat.ceylon.ide.common.model.IUnit;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.ide.common.model.IJavaModelAware;
+import org.eclipse.ceylon.ide.common.model.IUnit;
 
 
 public class JavaElementAdapterFactory implements IAdapterFactory {

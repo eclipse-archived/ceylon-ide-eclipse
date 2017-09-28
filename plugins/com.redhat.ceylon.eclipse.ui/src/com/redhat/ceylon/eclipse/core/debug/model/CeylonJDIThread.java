@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.debug.model;
+package org.eclipse.ceylon.ide.eclipse.core.debug.model;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.internal.debug.core.model.JDIStackFrame;
 import org.eclipse.jdt.internal.debug.core.model.PatchedForCeylonJDIThread;
 
-import com.redhat.ceylon.eclipse.core.debug.DebugUtils;
+import org.eclipse.ceylon.ide.eclipse.core.debug.DebugUtils;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;

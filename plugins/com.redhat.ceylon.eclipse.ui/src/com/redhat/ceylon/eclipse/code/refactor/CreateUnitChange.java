@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createErrorStatus;
 
@@ -13,7 +13,7 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.resource.DeleteResourceChange;
 import org.eclipse.ltk.core.refactoring.resource.ResourceChange;
 
-import com.redhat.ceylon.eclipse.code.wizard.CeylonSourceStream;
+import org.eclipse.ceylon.ide.eclipse.code.wizard.CeylonSourceStream;
 
 public final class CreateUnitChange extends ResourceChange {
     private final IFile file;

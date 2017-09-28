@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.complete;
+package org.eclipse.ceylon.ide.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.COMPLETION;
+import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isNameMatching;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -24,10 +24,10 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.ide.common.doc.Icons;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
+import org.eclipse.ceylon.ide.common.doc.Icons;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
 
 
 public class CompletionProposal implements ICompletionProposal, 
@@ -66,7 +66,7 @@ public class CompletionProposal implements ICompletionProposal,
         }
         @Override
         public Image getImage() {
-            return com.redhat.ceylon.eclipse.util.eclipseIcons_.get_().fromIcons(icon);
+            return org.eclipse.ceylon.ide.eclipse.util.eclipseIcons_.get_().fromIcons(icon);
         }
     }
 

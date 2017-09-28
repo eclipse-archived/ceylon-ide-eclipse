@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.util.Collection;
 import java.util.List;
@@ -14,30 +14,30 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.java2ceylon.CorrectJ2C;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.ide.common.correct.QuickFixData;
-import com.redhat.ceylon.ide.common.correct.addAnnotationQuickFix_;
-import com.redhat.ceylon.ide.common.correct.assignToLocalQuickFix_;
-import com.redhat.ceylon.ide.common.correct.ideQuickFixManager_;
-import com.redhat.ceylon.ide.common.correct.importProposals_;
-import com.redhat.ceylon.ide.common.correct.refineEqualsHashQuickFix_;
-import com.redhat.ceylon.ide.common.correct.refineFormalMembersQuickFix_;
-import com.redhat.ceylon.ide.common.imports.pasteImportsSet_;
-import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
-import com.redhat.ceylon.ide.common.platform.CommonDocument;
-import com.redhat.ceylon.ide.common.platform.DeleteEdit;
-import com.redhat.ceylon.ide.common.platform.InsertEdit;
-import com.redhat.ceylon.ide.common.platform.ReplaceEdit;
-import com.redhat.ceylon.ide.common.platform.TextEdit;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.compiler.java.runtime.model.TypeDescriptor;
+import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+import org.eclipse.ceylon.compiler.typechecker.analyzer.UsageWarning;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.java2ceylon.CorrectJ2C;
+import org.eclipse.ceylon.ide.eclipse.util.EditorUtil;
+import org.eclipse.ceylon.ide.common.correct.QuickFixData;
+import org.eclipse.ceylon.ide.common.correct.addAnnotationQuickFix_;
+import org.eclipse.ceylon.ide.common.correct.assignToLocalQuickFix_;
+import org.eclipse.ceylon.ide.common.correct.ideQuickFixManager_;
+import org.eclipse.ceylon.ide.common.correct.importProposals_;
+import org.eclipse.ceylon.ide.common.correct.refineEqualsHashQuickFix_;
+import org.eclipse.ceylon.ide.common.correct.refineFormalMembersQuickFix_;
+import org.eclipse.ceylon.ide.common.imports.pasteImportsSet_;
+import org.eclipse.ceylon.ide.common.model.BaseCeylonProject;
+import org.eclipse.ceylon.ide.common.platform.CommonDocument;
+import org.eclipse.ceylon.ide.common.platform.DeleteEdit;
+import org.eclipse.ceylon.ide.common.platform.InsertEdit;
+import org.eclipse.ceylon.ide.common.platform.ReplaceEdit;
+import org.eclipse.ceylon.ide.common.platform.TextEdit;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
 
 import ceylon.interop.java.CeylonSet;
 import ceylon.interop.java.CeylonStringIterable;
@@ -180,7 +180,7 @@ public class correctJ2C implements CorrectJ2C {
 
     @Override
     public void importEdits(Object editOrChange, CompilationUnit rootNode,
-            Set<com.redhat.ceylon.model.typechecker.model.Declaration> declarations,
+            Set<org.eclipse.ceylon.model.typechecker.model.Declaration> declarations,
             Collection<String> aliases,
             IDocument doc) {
 

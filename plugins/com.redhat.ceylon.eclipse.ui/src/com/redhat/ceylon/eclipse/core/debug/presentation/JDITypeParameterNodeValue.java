@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.debug.presentation;
+package org.eclipse.ceylon.ide.eclipse.core.debug.presentation;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -17,7 +17,7 @@ import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jdt.internal.debug.core.logicalstructures.JDIPlaceholderVariable;
 import org.eclipse.jdt.internal.debug.core.model.JDIValue;
 
-import com.redhat.ceylon.eclipse.core.debug.DebugUtils;
+import org.eclipse.ceylon.ide.eclipse.core.debug.DebugUtils;
 
 public class JDITypeParameterNodeValue implements IJavaValue {
 

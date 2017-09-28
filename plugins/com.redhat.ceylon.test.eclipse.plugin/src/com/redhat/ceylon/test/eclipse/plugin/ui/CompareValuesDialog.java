@@ -1,9 +1,9 @@
-package com.redhat.ceylon.test.eclipse.plugin.ui;
+package org.eclipse.ceylon.test.eclipse.plugin.ui;
 
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesDlgActual;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesDlgExpected;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesDlgOk;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesDlgTitle;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesDlgActual;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesDlgExpected;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesDlgOk;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesDlgTitle;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -47,12 +47,12 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import org.eclipse.ceylon.test.eclipse.plugin.model.TestElement;
 
 public class CompareValuesDialog extends TrayDialog {
 
-    public static final String PREFIX_SUFFIX_PROPERTY = "com.redhat.ceylon.test.eclipse.plugin.testview.compare.CompareResultDialog.prefixSuffix";
+    public static final String PREFIX_SUFFIX_PROPERTY = "org.eclipse.ceylon.test.eclipse.plugin.testview.compare.CompareResultDialog.prefixSuffix";
 
     // Lengths of common prefix and suffix. Note: this array is passed to the DamagerRepairer and the lengths are updated on content change.
     private final int[] prefixSuffix = new int[2];

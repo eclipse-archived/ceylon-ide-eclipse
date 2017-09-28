@@ -1,16 +1,16 @@
-package com.redhat.ceylon.eclipse.code.preferences;
+package org.eclipse.ceylon.ide.eclipse.code.preferences;
 
-import static com.redhat.ceylon.common.Constants.DEFAULT_RESOURCE_DIR;
-import static com.redhat.ceylon.common.Constants.DEFAULT_SOURCE_DIR;
+import static org.eclipse.ceylon.common.Constants.DEFAULT_RESOURCE_DIR;
+import static org.eclipse.ceylon.common.Constants.DEFAULT_SOURCE_DIR;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 public class CeylonPreferenceInitializer extends AbstractPreferenceInitializer {
 
-    private static final String COMMON_PACKAGES = "com.oracle.*,com.ibm.*,com.sun.*,com.apple.*,com.redhat.*,org.eclipse.*,org.apache.*,org.omg.*,org.w3c.*,org.xml.*,java.*,javax.*,sun.*,oracle.*,apple.*,jdk.*,javafx.*";
+    private static final String COMMON_PACKAGES = "com.oracle.*,com.ibm.*,com.sun.*,com.apple.*,org.eclipse.*,org.eclipse.*,org.apache.*,org.omg.*,org.w3c.*,org.xml.*,java.*,javax.*,sun.*,oracle.*,apple.*,jdk.*,javafx.*";
     
     public static final String AUTO_INSERT = "autoInsert";
     public static final String AUTO_INSERT_PREFIX = "autoInsertPrefix";

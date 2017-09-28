@@ -3,10 +3,10 @@ import ceylon.collection {
     ArrayList
 }
 
-import com.redhat.ceylon.eclipse.code.parse {
+import org.eclipse.ceylon.ide.eclipse.code.parse {
     CeylonParseController
 }
-import com.redhat.ceylon.eclipse.code.preferences {
+import org.eclipse.ceylon.ide.eclipse.code.preferences {
     CeylonPreferenceInitializer {
         parameterTypesInCompletions,
         inexactMatches,
@@ -16,16 +16,16 @@ import com.redhat.ceylon.eclipse.code.preferences {
         enableCompletionFilters
     }
 }
-import com.redhat.ceylon.eclipse.platform {
+import org.eclipse.ceylon.ide.eclipse.platform {
     EclipseProposalsHolder
 }
-import com.redhat.ceylon.eclipse.ui {
+import org.eclipse.ceylon.ide.eclipse.ui {
     CeylonPlugin
 }
-import com.redhat.ceylon.ide.common.completion {
+import org.eclipse.ceylon.ide.common.completion {
     CompletionContext
 }
-import com.redhat.ceylon.ide.common.settings {
+import org.eclipse.ceylon.ide.common.settings {
     CompletionOptions
 }
 

@@ -1,11 +1,11 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.openInEditor;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CEYLON_CONFIG_NOT_IN_SYNC_MARKER;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CHARSET_PROBLEM_MARKER_ID;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.openInEditor;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.CEYLON_CONFIG_NOT_IN_SYNC_MARKER;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.CHARSET_PROBLEM_MARKER_ID;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getDocument;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getEditorInput;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.*;
 
 import java.util.ArrayList;
 
@@ -26,9 +26,9 @@ import org.eclipse.ui.IMarkerResolutionGenerator2;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsPropertiesPage;
-import com.redhat.ceylon.eclipse.ui.CeylonEncodingSynchronizer;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonBuildPathsPropertiesPage;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonEncodingSynchronizer;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
 
 public class MarkerResolutionGenerator 
         implements IMarkerResolutionGenerator, IMarkerResolutionGenerator2 {

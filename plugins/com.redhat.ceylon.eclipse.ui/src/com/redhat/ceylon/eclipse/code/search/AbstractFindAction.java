@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.code.search;
+package org.eclipse.ceylon.ide.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getUnit;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getProject;
-import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedExplicitDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getUnit;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getCurrentEditor;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getProject;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.findNode;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getReferencedExplicitDeclaration;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
@@ -20,13 +20,13 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.contentoutline.ContentOutline;
 
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.outline.CeylonOutlineNode;
-import com.redhat.ceylon.ide.common.model.CeylonUnit;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import org.eclipse.ceylon.compiler.typechecker.io.VirtualFile;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.outline.CeylonOutlineNode;
+import org.eclipse.ceylon.ide.common.model.CeylonUnit;
+import org.eclipse.ceylon.model.typechecker.model.Referenceable;
 
 abstract class AbstractFindAction extends Action 
         implements IObjectActionDelegate {

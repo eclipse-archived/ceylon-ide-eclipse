@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.debug.hover;
+package org.eclipse.ceylon.ide.eclipse.core.debug.hover;
 
 import org.eclipse.debug.core.model.IVariable;
 

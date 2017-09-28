@@ -1,30 +1,30 @@
-import com.redhat.ceylon.compiler.typechecker.context {
+import org.eclipse.ceylon.compiler.typechecker.context {
     PhasedUnit
 }
-import com.redhat.ceylon.eclipse.code.editor {
+import org.eclipse.ceylon.ide.eclipse.code.editor {
     CeylonEditor
 }
-import com.redhat.ceylon.eclipse.core.builder {
+import org.eclipse.ceylon.ide.eclipse.core.builder {
     CeylonBuilder
 }
-import com.redhat.ceylon.eclipse.core.vfs {
+import org.eclipse.ceylon.ide.eclipse.core.vfs {
     IFileVirtualFile
 }
-import com.redhat.ceylon.eclipse.util {
+import org.eclipse.ceylon.ide.eclipse.util {
     EditorUtil
 }
-import com.redhat.ceylon.ide.common.model {
+import org.eclipse.ceylon.ide.common.model {
     CrossProjectSourceFile,
     CrossProjectBinaryUnit,
     IResourceAware
 }
-import com.redhat.ceylon.ide.common.refactoring {
+import org.eclipse.ceylon.ide.common.refactoring {
     AbstractRefactoring
 }
-import com.redhat.ceylon.ide.common.util {
+import org.eclipse.ceylon.ide.common.util {
     nodes
 }
-import com.redhat.ceylon.model.typechecker.model {
+import org.eclipse.ceylon.model.typechecker.model {
     Declaration
 }
 

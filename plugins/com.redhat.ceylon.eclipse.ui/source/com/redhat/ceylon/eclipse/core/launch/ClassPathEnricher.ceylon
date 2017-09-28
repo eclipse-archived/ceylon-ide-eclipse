@@ -2,27 +2,27 @@ import ceylon.collection {
     HashSet
 }
 
-import com.redhat.ceylon.cmr.ceylon {
+import org.eclipse.ceylon.cmr.ceylon {
     CeylonUtils {
         CeylonRepoManagerBuilder
     }
 }
-import com.redhat.ceylon.common {
+import org.eclipse.ceylon.common {
     Versions
 }
-import com.redhat.ceylon.eclipse.core.builder {
+import org.eclipse.ceylon.ide.eclipse.core.builder {
     CeylonBuilder
 }
-import com.redhat.ceylon.eclipse.core.model {
+import org.eclipse.ceylon.ide.eclipse.core.model {
     ceylonModel
 }
-import com.redhat.ceylon.ide.common.platform {
+import org.eclipse.ceylon.ide.common.platform {
     platformUtils
 }
-import com.redhat.ceylon.tools.classpath {
+import org.eclipse.ceylon.tools.classpath {
     CeylonClasspathTool
 }
-import com.redhat.ceylon.tools.moduleloading {
+import org.eclipse.ceylon.tools.moduleloading {
     ToolModuleLoader
 }
 
@@ -83,7 +83,7 @@ shared interface ClassPathEnricher {
                     createRepositoryManagerBuilder() => repoManagerBuilder;
                 }
                 tool.initialize(null);
-                tool.loadModule(null, "com.redhat.ceylon.java.main", Versions.ceylonVersionNumber);
+                tool.loadModule(null, "org.eclipse.ceylon.java.main", Versions.ceylonVersionNumber);
                 for (m in modules) {
                     if (m.isProjectModule && !m.defaultModule) {
                         tool.loadModule(m.namespace, m.nameAsString, m.version);

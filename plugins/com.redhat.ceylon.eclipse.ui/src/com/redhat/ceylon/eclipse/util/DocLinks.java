@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.util;
+package org.eclipse.ceylon.ide.eclipse.util;
 
 import static java.util.regex.Pattern.compile;
 
@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 import org.eclipse.jface.text.Region;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.DocLink;
 
 public class DocLinks {
     

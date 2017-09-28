@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.debug.presentation;
+package org.eclipse.ceylon.ide.eclipse.core.debug.presentation;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,10 +20,10 @@ import org.eclipse.jdt.internal.debug.ui.DebugUIMessages;
 import org.eclipse.jdt.internal.debug.ui.JDIModelPresentation;
 import org.eclipse.osgi.util.NLS;
 
-import com.redhat.ceylon.common.JVMModuleUtil;
-import com.redhat.ceylon.compiler.java.codegen.Naming;
-import com.redhat.ceylon.eclipse.core.debug.DebugUtils;
-import com.redhat.ceylon.eclipse.core.debug.presentation.CeylonPresentationContext.PresentationType;
+import org.eclipse.ceylon.common.JVMModuleUtil;
+import org.eclipse.ceylon.compiler.java.codegen.Naming;
+import org.eclipse.ceylon.ide.eclipse.core.debug.DebugUtils;
+import org.eclipse.ceylon.ide.eclipse.core.debug.presentation.CeylonPresentationContext.PresentationType;
 
 public class CeylonJDIModelPresentation extends JDIModelPresentation {
     private static final String ceylonStringTypeName = ceylon.language.String.class.getName();

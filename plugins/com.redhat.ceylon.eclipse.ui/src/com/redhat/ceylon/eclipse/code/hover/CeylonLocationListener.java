@@ -1,23 +1,23 @@
-package com.redhat.ceylon.eclipse.code.hover;
+package org.eclipse.ceylon.ide.eclipse.code.hover;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
-import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.gotoDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.hoverJ2C;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.findNode;
 import static java.lang.Integer.parseInt;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl;
-import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.ide.common.correct.specifyTypeQuickFix_;
-import com.redhat.ceylon.ide.common.doc.DocGenerator;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.code.browser.BrowserInformationControl;
+import org.eclipse.ceylon.ide.eclipse.code.correct.correctJ2C;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.common.correct.specifyTypeQuickFix_;
+import org.eclipse.ceylon.ide.common.doc.DocGenerator;
+import org.eclipse.ceylon.model.typechecker.model.Referenceable;
 
 final class CeylonLocationListener implements LocationListener {
     

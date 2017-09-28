@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.util;
+package org.eclipse.ceylon.ide.eclipse.util;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;

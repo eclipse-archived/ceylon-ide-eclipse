@@ -8,7 +8,7 @@
  * Contributors:
  *     JBoss by Red Hat - Initial implementation.
  ************************************************************************************/
-package com.redhat.ceylon.eclipse.ui.test;
+package org.eclipse.ceylon.ide.eclipse.ui.test;
 
 import static org.junit.Assert.assertEquals;
 
@@ -31,8 +31,8 @@ import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.LibraryLocation;
 import org.junit.Test;
 
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
 
 /**
  * 

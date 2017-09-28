@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.core.debug.presentation;
+package org.eclipse.ceylon.ide.eclipse.core.debug.presentation;
 
-import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonJDIModelPresentation.fixVariableName;
-import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonPresentationContext.isCeylonContext;
+import static org.eclipse.ceylon.ide.eclipse.core.debug.presentation.CeylonJDIModelPresentation.fixVariableName;
+import static org.eclipse.ceylon.ide.eclipse.core.debug.presentation.CeylonPresentationContext.isCeylonContext;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.model.IValue;

@@ -1,13 +1,13 @@
-package com.redhat.ceylon.eclipse.code.hover;
+package org.eclipse.ceylon.ide.eclipse.code.hover;
 
 import org.eclipse.core.runtime.Assert;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.eclipse.code.browser.BrowserInput;
-import com.redhat.ceylon.eclipse.code.html.HTML;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.model.typechecker.model.Referenceable;
+import org.eclipse.ceylon.ide.eclipse.code.browser.BrowserInput;
+import org.eclipse.ceylon.ide.eclipse.code.html.HTML;
 
 /**
  * Browser input for Javadoc hover.

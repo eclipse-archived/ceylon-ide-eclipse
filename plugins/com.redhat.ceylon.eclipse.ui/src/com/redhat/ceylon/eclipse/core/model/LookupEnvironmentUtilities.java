@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.model;
+package org.eclipse.ceylon.ide.eclipse.core.model;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IClassFile;
@@ -19,11 +19,11 @@ import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.core.BinaryType;
 import org.eclipse.jdt.internal.core.ClassFile;
 
-import com.redhat.ceylon.compiler.java.codegen.Naming;
-import com.redhat.ceylon.model.loader.ModelResolutionException;
-import com.redhat.ceylon.model.loader.mirror.TypeMirror;
+import org.eclipse.ceylon.compiler.java.codegen.Naming;
+import org.eclipse.ceylon.model.loader.ModelResolutionException;
+import org.eclipse.ceylon.model.loader.mirror.TypeMirror;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 public class LookupEnvironmentUtilities {
     public static ThreadLocal<Object> isSettingInterfaceCompanionClassTL = new ThreadLocal<Object>();

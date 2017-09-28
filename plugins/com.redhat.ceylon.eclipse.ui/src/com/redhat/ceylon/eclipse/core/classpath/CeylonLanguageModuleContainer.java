@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.core.classpath;
+package org.eclipse.ceylon.ide.eclipse.core.classpath;
 
 
 
-import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.ceylonSourceArchiveToJavaSourceArchive;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.core.classpath.CeylonClasspathUtil.ceylonSourceArchiveToJavaSourceArchive;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.jdt.core.JavaCore.newLibraryEntry;
 
 import java.io.File;
@@ -22,10 +22,10 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
-import com.redhat.ceylon.cmr.api.ArtifactContext;
-import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
+import org.eclipse.ceylon.cmr.api.ArtifactContext;
+import org.eclipse.ceylon.cmr.api.RepositoryManager;
+import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+import org.eclipse.ceylon.ide.common.model.BaseCeylonProject;
 
 
 /** 
@@ -58,7 +58,7 @@ public class CeylonLanguageModuleContainer implements IClasspathContainer {
 		fProject = JavaCore.create(project);
 		BaseCeylonProject ceylonProject = modelJ2C().ceylonModel().getProject(project);
 		RepositoryManager repoManager = ceylonProject != null ? ceylonProject.getRepositoryManager() : null;
-		List<String> moduleNames = Arrays.asList("ceylon.language", "com.redhat.ceylon.model", "com.redhat.ceylon.common");
+		List<String> moduleNames = Arrays.asList("ceylon.language", "org.eclipse.ceylon.model", "org.eclipse.ceylon.common");
 		String moduleVersion = TypeChecker.LANGUAGE_MODULE_VERSION;
 	
 		if (repoManager != null) {

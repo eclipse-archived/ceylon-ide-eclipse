@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getActivePage;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getDirtyEditors;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getActivePage;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getDirtyEditors;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
 
-import com.redhat.ceylon.eclipse.util.EditorUtil;
+import org.eclipse.ceylon.ide.eclipse.util.EditorUtil;
 
 public class RecentFilesPopup extends PopupDialog {
     

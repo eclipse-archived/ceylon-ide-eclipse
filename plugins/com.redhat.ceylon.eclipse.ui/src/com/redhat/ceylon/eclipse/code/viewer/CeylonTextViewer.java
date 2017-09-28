@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.viewer;
+package org.eclipse.ceylon.ide.eclipse.code.viewer;
 
-import static com.redhat.ceylon.eclipse.code.outline.CeylonStructureCreator.readString;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonStructureCreator.readString;
 
 import org.eclipse.compare.IStreamContentAccessor;
 import org.eclipse.core.runtime.CoreException;
@@ -13,8 +13,8 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonSourceViewerConfiguration;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 class CeylonTextViewer extends Viewer {
 

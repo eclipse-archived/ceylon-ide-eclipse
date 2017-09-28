@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.gotoFile;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -21,12 +21,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.eclipse.code.search.CeylonElement;
-import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch;
-import com.redhat.ceylon.eclipse.code.search.CeylonViewerComparator;
-import com.redhat.ceylon.eclipse.code.search.SearchResultsLabelProvider;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.ide.eclipse.code.search.CeylonElement;
+import org.eclipse.ceylon.ide.eclipse.code.search.CeylonSearchMatch;
+import org.eclipse.ceylon.ide.eclipse.code.search.CeylonViewerComparator;
+import org.eclipse.ceylon.ide.eclipse.code.search.SearchResultsLabelProvider;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
 
 public class DeleteInputPage extends UserInputWizardPage {
     public DeleteInputPage(String name) {

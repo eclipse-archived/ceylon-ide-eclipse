@@ -1,6 +1,6 @@
-package com.redhat.ceylon.test.eclipse.plugin.launch;
+package org.eclipse.ceylon.test.eclipse.plugin.launch;
 
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
 
 public class CeylonTestJsLaunchShortcut extends CeylonTestLaunchShortcut {
 

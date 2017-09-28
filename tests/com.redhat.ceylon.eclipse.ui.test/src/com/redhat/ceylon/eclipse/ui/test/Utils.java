@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.ui.test;
+package org.eclipse.ceylon.ide.eclipse.ui.test;
 
 import static org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable.asyncExec;
 
@@ -55,10 +55,10 @@ import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
 import org.eclipse.ui.wizards.datatransfer.ImportOperation;
 import org.junit.Assert;
 
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.eclipse.code.editor.Navigation;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CeylonBuildHook;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.ide.eclipse.code.editor.Navigation;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.CeylonBuildHook;
 
 public class Utils {
 

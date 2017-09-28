@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.debug.presentation;
+package org.eclipse.ceylon.ide.eclipse.core.debug.presentation;
 
 import org.eclipse.jdt.internal.debug.ui.variables.JavaVariableEditor;
 

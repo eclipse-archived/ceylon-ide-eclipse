@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
 import static org.eclipse.swt.layout.GridData.HORIZONTAL_ALIGN_FILL;
 
@@ -12,7 +12,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import com.redhat.ceylon.eclipse.code.preferences.CeylonRepoConfigBlock;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonRepoConfigBlock;
 
 public class NewCeylonProjectWizardPageThree extends WizardPage {
 

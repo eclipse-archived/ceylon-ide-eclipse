@@ -18,11 +18,11 @@
  * MA  02110-1301, USA.
  */
 
-package com.redhat.ceylon.eclipse.core.model.mirror;
+package org.eclipse.ceylon.ide.eclipse.core.model.mirror;
 
 import org.eclipse.jdt.internal.compiler.lookup.PackageBinding;
 
-import com.redhat.ceylon.model.loader.mirror.PackageMirror;
+import org.eclipse.ceylon.model.loader.mirror.PackageMirror;
 
 public class JDTPackage implements PackageMirror {
 

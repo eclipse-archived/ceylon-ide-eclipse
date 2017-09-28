@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.navigator;
+package org.eclipse.ceylon.ide.eclipse.code.navigator;
 
 import org.eclipse.jdt.internal.ui.navigator.OpenAndExpand;
 import org.eclipse.jdt.ui.actions.OpenAction;

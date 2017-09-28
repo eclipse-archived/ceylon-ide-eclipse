@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.core.builder;
+package org.eclipse.ceylon.ide.eclipse.core.builder;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.core.resources.IResource.DEPTH_ZERO;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 import static org.eclipse.jdt.core.IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER;
@@ -20,11 +20,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 
-import com.redhat.ceylon.compiler.java.launcher.Main.ExitState;
-import com.redhat.ceylon.compiler.java.launcher.Main.ExitState.CeylonState;
-import com.redhat.ceylon.javax.tools.Diagnostic;
-import com.redhat.ceylon.javax.tools.DiagnosticListener;
-import com.redhat.ceylon.javax.tools.JavaFileObject;
+import org.eclipse.ceylon.compiler.java.launcher.Main.ExitState;
+import org.eclipse.ceylon.compiler.java.launcher.Main.ExitState.CeylonState;
+import org.eclipse.ceylon.javax.tools.Diagnostic;
+import org.eclipse.ceylon.javax.tools.DiagnosticListener;
+import org.eclipse.ceylon.javax.tools.JavaFileObject;
 
 final class CompileErrorReporter implements
         DiagnosticListener<JavaFileObject> {
@@ -52,8 +52,8 @@ final class CompileErrorReporter implements
                         || exitState.ceylonState.equals(CeylonState.SYS))) {
             diagnostic = new Diagnostic<JavaFileObject>() {
                 @Override
-                public com.redhat.ceylon.javax.tools.Diagnostic.Kind getKind() {
-                    return com.redhat.ceylon.javax.tools.Diagnostic.Kind.ERROR;
+                public org.eclipse.ceylon.javax.tools.Diagnostic.Kind getKind() {
+                    return org.eclipse.ceylon.javax.tools.Diagnostic.Kind.ERROR;
                 }
                 @Override
                 public JavaFileObject getSource() {

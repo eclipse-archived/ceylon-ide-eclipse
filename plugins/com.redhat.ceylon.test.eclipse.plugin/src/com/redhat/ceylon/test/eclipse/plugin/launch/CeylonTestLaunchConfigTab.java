@@ -1,6 +1,6 @@
-package com.redhat.ceylon.test.eclipse.plugin.launch;
+package org.eclipse.ceylon.test.eclipse.plugin.launch;
 
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_ENTRIES_KEY;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_ENTRIES_KEY;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
 
 import java.util.ArrayList;
@@ -36,9 +36,9 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin;
 
 public class CeylonTestLaunchConfigTab extends AbstractLaunchConfigurationTab {
 

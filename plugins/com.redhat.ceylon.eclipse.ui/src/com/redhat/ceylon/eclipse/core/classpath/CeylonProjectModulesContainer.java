@@ -15,15 +15,15 @@
  *  limitations under the License.
  *
  */
-package com.redhat.ceylon.eclipse.core.classpath;
+package org.eclipse.ceylon.ide.eclipse.core.classpath;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
-import static com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil.ceylonSourceArchiveToJavaSourceArchive;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getCeylonClassesOutputFolder;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.isExplodeModulesEnabled;
+import static org.eclipse.ceylon.ide.eclipse.core.classpath.CeylonClasspathUtil.ceylonSourceArchiveToJavaSourceArchive;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.util.InteropUtils.toJavaString;
 import static java.util.Arrays.asList;
 import static java.util.Collections.synchronizedSet;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -68,24 +68,24 @@ import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.internal.ui.packageview.PackageExplorerContentProvider;
 import org.eclipse.jdt.internal.ui.util.CoreUtility;
 
-import com.redhat.ceylon.cmr.api.ArtifactContext;
-import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.cmr.impl.MavenRepository;
-import com.redhat.ceylon.common.ModuleSpec;
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.context.Context;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
-import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
-import com.redhat.ceylon.ide.common.platform.platformUtils_;
-import com.redhat.ceylon.ide.common.util.ProgressMonitor;
-import com.redhat.ceylon.ide.common.util.ProgressMonitor$impl;
-import com.redhat.ceylon.ide.common.util.ProgressMonitorChild;
-import com.redhat.ceylon.model.cmr.ArtifactResultType;
-import com.redhat.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.cmr.api.ArtifactContext;
+import org.eclipse.ceylon.cmr.api.RepositoryManager;
+import org.eclipse.ceylon.cmr.impl.MavenRepository;
+import org.eclipse.ceylon.common.ModuleSpec;
+import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+import org.eclipse.ceylon.compiler.typechecker.context.Context;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.eclipse.core.model.LookupEnvironmentUtilities;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.ide.common.model.CeylonIdeConfig;
+import org.eclipse.ceylon.ide.common.model.CeylonProject;
+import org.eclipse.ceylon.ide.common.model.CeylonProjectConfig;
+import org.eclipse.ceylon.ide.common.platform.platformUtils_;
+import org.eclipse.ceylon.ide.common.util.ProgressMonitor;
+import org.eclipse.ceylon.ide.common.util.ProgressMonitor$impl;
+import org.eclipse.ceylon.ide.common.util.ProgressMonitorChild;
+import org.eclipse.ceylon.model.cmr.ArtifactResultType;
+import org.eclipse.ceylon.model.typechecker.model.Module;
 
 /**
  * Eclipse classpath container that will contain the Ceylon resolved entries.
@@ -520,7 +520,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
             if (e.getCause() != null && e.getCause() instanceof Exception) {
                 e = (Exception) e.getCause();
             }
-            platformUtils_.get_().log(com.redhat.ceylon.ide.common.platform.Status.getStatus$_WARNING(), "Eexception during retrieval of the artifact " + ctx + " : ", e);
+            platformUtils_.get_().log(org.eclipse.ceylon.ide.common.platform.Status.getStatus$_WARNING(), "Eexception during retrieval of the artifact " + ctx + " : ", e);
         }
         if (srcArtifact!=null) {
             if (srcArtifact.getPath().endsWith(suffix)) {
@@ -577,7 +577,7 @@ public class CeylonProjectModulesContainer implements IClasspathContainer {
             if (e.getCause() != null && e.getCause() instanceof Exception) {
                 e = (Exception) e.getCause();
             }
-            platformUtils_.get_().log(com.redhat.ceylon.ide.common.platform.Status.getStatus$_WARNING(), "Exception during retrieval of the artifact " + ctx + " : ", e);
+            platformUtils_.get_().log(org.eclipse.ceylon.ide.common.platform.Status.getStatus$_WARNING(), "Exception during retrieval of the artifact " + ctx + " : ", e);
         }
         if (moduleArtifact==null){
             // try with .jar

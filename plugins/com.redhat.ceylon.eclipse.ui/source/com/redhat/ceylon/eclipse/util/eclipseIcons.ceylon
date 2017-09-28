@@ -1,14 +1,14 @@
 import org.eclipse.swt.graphics {
     Image
 }
-import com.redhat.ceylon.ide.common.doc {
+import org.eclipse.ceylon.ide.common.doc {
     Icons
 }
-import com.redhat.ceylon.eclipse.ui {
+import org.eclipse.ceylon.ide.eclipse.ui {
     CeylonResources,
     CeylonPlugin
 }
-import com.redhat.ceylon.eclipse.code.outline {
+import org.eclipse.ceylon.ide.eclipse.code.outline {
     CeylonLabelProvider
 }
 

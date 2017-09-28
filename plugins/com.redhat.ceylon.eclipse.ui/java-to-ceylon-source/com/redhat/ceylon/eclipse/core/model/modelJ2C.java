@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.model;
+package org.eclipse.ceylon.ide.eclipse.core.model;
 
 import java.util.List;
 
@@ -12,23 +12,23 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
 
-import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.context.Context;
-import com.redhat.ceylon.eclipse.java2ceylon.ModelJ2C;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-import com.redhat.ceylon.ide.common.model.CeylonBinaryUnit;
-import com.redhat.ceylon.ide.common.model.CeylonIdeConfig;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
-import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
-import com.redhat.ceylon.ide.common.model.CeylonProjects;
-import com.redhat.ceylon.ide.common.model.CrossProjectBinaryUnit;
-import com.redhat.ceylon.ide.common.model.IdeModelLoader;
-import com.redhat.ceylon.ide.common.model.IdeModuleManager;
-import com.redhat.ceylon.ide.common.model.IdeModuleSourceMapper;
-import com.redhat.ceylon.ide.common.model.JavaClassFile;
-import com.redhat.ceylon.ide.common.model.JavaCompilationUnit;
-import com.redhat.ceylon.model.loader.model.LazyPackage;
+import org.eclipse.ceylon.compiler.java.runtime.model.TypeDescriptor;
+import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+import org.eclipse.ceylon.compiler.typechecker.context.Context;
+import org.eclipse.ceylon.ide.eclipse.java2ceylon.ModelJ2C;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.ide.common.model.CeylonBinaryUnit;
+import org.eclipse.ceylon.ide.common.model.CeylonIdeConfig;
+import org.eclipse.ceylon.ide.common.model.CeylonProject;
+import org.eclipse.ceylon.ide.common.model.CeylonProjectConfig;
+import org.eclipse.ceylon.ide.common.model.CeylonProjects;
+import org.eclipse.ceylon.ide.common.model.CrossProjectBinaryUnit;
+import org.eclipse.ceylon.ide.common.model.IdeModelLoader;
+import org.eclipse.ceylon.ide.common.model.IdeModuleManager;
+import org.eclipse.ceylon.ide.common.model.IdeModuleSourceMapper;
+import org.eclipse.ceylon.ide.common.model.JavaClassFile;
+import org.eclipse.ceylon.ide.common.model.JavaCompilationUnit;
+import org.eclipse.ceylon.model.loader.model.LazyPackage;
 
 import ceylon.interop.java.JavaList;
 

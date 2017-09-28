@@ -18,7 +18,7 @@
  * MA  02110-1301, USA.
  */
 
-package com.redhat.ceylon.eclipse.core.model.mirror;
+package org.eclipse.ceylon.ide.eclipse.core.model.mirror;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,8 +28,8 @@ import java.util.List;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 
-import com.redhat.ceylon.model.loader.mirror.TypeMirror;
-import com.redhat.ceylon.model.loader.mirror.TypeParameterMirror;
+import org.eclipse.ceylon.model.loader.mirror.TypeMirror;
+import org.eclipse.ceylon.model.loader.mirror.TypeParameterMirror;
 
 public class JDTTypeParameter implements TypeParameterMirror {
 

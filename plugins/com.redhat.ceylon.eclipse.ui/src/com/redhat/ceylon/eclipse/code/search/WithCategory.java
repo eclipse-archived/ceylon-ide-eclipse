@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.search;
+package org.eclipse.ceylon.ide.eclipse.code.search;
 
-import com.redhat.ceylon.eclipse.code.search.CeylonSearchMatch.Type;
+import org.eclipse.ceylon.ide.eclipse.code.search.CeylonSearchMatch.Type;
 
 class WithCategory {
     private Object item;

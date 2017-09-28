@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
 import java.util.List;
 
@@ -9,10 +9,10 @@ import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 
-import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonInterpolatingLexer;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonParser;
+import org.eclipse.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonInterpolatingLexer;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonParser;
 
 public class CeylonAutoEditStrategy implements IAutoEditStrategy {
 

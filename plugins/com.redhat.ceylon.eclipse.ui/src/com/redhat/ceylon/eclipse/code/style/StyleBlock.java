@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.style;
+package org.eclipse.ceylon.ide.eclipse.code.style;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.SWT;

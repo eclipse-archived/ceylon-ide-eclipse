@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.core.builder;
+package org.eclipse.ceylon.ide.eclipse.core.builder;
 
-import static com.redhat.ceylon.compiler.typechecker.io.impl.Helper.computeRelativePath;
+import static org.eclipse.ceylon.compiler.typechecker.io.impl.Helper.computeRelativePath;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -17,49 +17,49 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.util.Util;
 
-import com.redhat.ceylon.compiler.java.loader.CeylonClassReader;
-import com.redhat.ceylon.compiler.java.loader.CeylonEnter;
-import com.redhat.ceylon.compiler.java.loader.CeylonModelLoader;
-import com.redhat.ceylon.compiler.java.tools.CeylonPhasedUnit;
-import com.redhat.ceylon.compiler.java.tools.LanguageCompiler;
-import com.redhat.ceylon.compiler.java.tools.LanguageCompiler.CompilerDelegate;
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.analyzer.AnalysisError;
-import com.redhat.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.compiler.typechecker.parser.RecognitionError;
-import com.redhat.ceylon.compiler.typechecker.tree.Message;
-import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
-import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
-import com.redhat.ceylon.ide.common.model.ProjectState;
-import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.javax.tools.JavaFileManager;
-import com.redhat.ceylon.javax.tools.JavaFileObject;
-import com.redhat.ceylon.langtools.tools.javac.file.JavacFileManager;
-import com.redhat.ceylon.langtools.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.redhat.ceylon.langtools.tools.javac.util.Context;
-import com.redhat.ceylon.langtools.tools.javac.util.Names;
-import com.redhat.ceylon.langtools.tools.javac.util.Position;
-import com.redhat.ceylon.langtools.tools.javac.util.Position.LineMap;
-import com.redhat.ceylon.model.loader.AbstractModelLoader;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.ModuleImport;
-import com.redhat.ceylon.model.typechecker.model.Unit;
-import com.redhat.ceylon.model.typechecker.util.ModuleManager;
+import org.eclipse.ceylon.compiler.java.loader.CeylonClassReader;
+import org.eclipse.ceylon.compiler.java.loader.CeylonEnter;
+import org.eclipse.ceylon.compiler.java.loader.CeylonModelLoader;
+import org.eclipse.ceylon.compiler.java.tools.CeylonPhasedUnit;
+import org.eclipse.ceylon.compiler.java.tools.LanguageCompiler;
+import org.eclipse.ceylon.compiler.java.tools.LanguageCompiler.CompilerDelegate;
+import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+import org.eclipse.ceylon.compiler.typechecker.analyzer.AnalysisError;
+import org.eclipse.ceylon.compiler.typechecker.analyzer.ModuleSourceMapper;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnits;
+import org.eclipse.ceylon.compiler.typechecker.io.VirtualFile;
+import org.eclipse.ceylon.compiler.typechecker.parser.RecognitionError;
+import org.eclipse.ceylon.compiler.typechecker.tree.Message;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModelLoader;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.ide.common.model.CeylonProject;
+import org.eclipse.ceylon.ide.common.model.ProjectSourceFile;
+import org.eclipse.ceylon.ide.common.model.ProjectState;
+import org.eclipse.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import org.eclipse.ceylon.javax.tools.JavaFileManager;
+import org.eclipse.ceylon.javax.tools.JavaFileObject;
+import org.eclipse.ceylon.langtools.tools.javac.file.JavacFileManager;
+import org.eclipse.ceylon.langtools.tools.javac.tree.JCTree.JCCompilationUnit;
+import org.eclipse.ceylon.langtools.tools.javac.util.Context;
+import org.eclipse.ceylon.langtools.tools.javac.util.Names;
+import org.eclipse.ceylon.langtools.tools.javac.util.Position;
+import org.eclipse.ceylon.langtools.tools.javac.util.Position.LineMap;
+import org.eclipse.ceylon.model.loader.AbstractModelLoader;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.ModuleImport;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.model.typechecker.util.ModuleManager;
 
 final class JdtCompilerDelegate implements CompilerDelegate {
     private final CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject;
     private final TypeChecker typeChecker;
-    private final WeakReference<com.redhat.ceylon.langtools.tools.javac.util.Context> contextRef;
+    private final WeakReference<org.eclipse.ceylon.langtools.tools.javac.util.Context> contextRef;
     private final Collection<PhasedUnit> unitsTypecheckedIncrementally;
 
     JdtCompilerDelegate(BaseIdeModelLoader modelLoader,
             CeylonProject<IProject, IResource, IFolder, IFile> ceylonProject, TypeChecker typeChecker,
-            com.redhat.ceylon.langtools.tools.javac.util.Context context,
+            org.eclipse.ceylon.langtools.tools.javac.util.Context context,
             Collection<PhasedUnit> unitsTypechecked) {
         this.ceylonProject = ceylonProject;
         this.typeChecker = typeChecker;
@@ -187,7 +187,7 @@ final class JdtCompilerDelegate implements CompilerDelegate {
     @Override
     public void loadStandardModules(AbstractModelLoader modelLoader) {}
     @Override
-    public void setupSourceFileObjects(com.redhat.ceylon.langtools.tools.javac.util.List<JCCompilationUnit> trees,
+    public void setupSourceFileObjects(org.eclipse.ceylon.langtools.tools.javac.util.List<JCCompilationUnit> trees,
             AbstractModelLoader modelLoader) {
         final Context context = contextRef.get();
         if (context == null) return;

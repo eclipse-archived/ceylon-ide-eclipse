@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -26,14 +26,14 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.*;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.*;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
-import com.redhat.ceylon.ide.common.util.versionsAvailableForBoostrap_;
-import com.redhat.ceylon.ide.common.util.messages_;
-import com.redhat.ceylon.ide.common.util.messages_.bootstrap_;
-import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringList;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.common.model.CeylonProject;
+import org.eclipse.ceylon.ide.common.util.versionsAvailableForBoostrap_;
+import org.eclipse.ceylon.ide.common.util.messages_;
+import org.eclipse.ceylon.ide.common.util.messages_.bootstrap_;
+import static org.eclipse.ceylon.ide.eclipse.util.CeylonHelper.toJavaStringList;
 
 public class CreateBootstrapFilesHandler implements IWorkbenchWindowActionDelegate {
     public static bootstrap_ bootstrapMessages = messages_.get_().getBootstrap();

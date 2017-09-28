@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.FoldingMessages.getResourceBundle;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.FoldingMessages.getResourceBundle;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_FOLDING_ENABLED;
 import static org.eclipse.jface.text.source.projection.ProjectionViewer.COLLAPSE;
 import static org.eclipse.jface.text.source.projection.ProjectionViewer.COLLAPSE_ALL;
@@ -31,8 +31,8 @@ import org.eclipse.ui.texteditor.IUpdate;
 import org.eclipse.ui.texteditor.ResourceAction;
 import org.eclipse.ui.texteditor.TextOperationAction;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 public class FoldingActionGroup extends ActionGroup {
     

@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonRepositories;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_EXPORT_JAR;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getCeylonRepositories;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_EXPORT_JAR;
 
 import java.io.File;
 
@@ -25,7 +25,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 public class ExportJarWizardPage extends WizardPage implements IWizardPage {
 

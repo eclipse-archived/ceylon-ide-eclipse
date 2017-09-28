@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.hover;
+package org.eclipse.ceylon.ide.eclipse.code.hover;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
 
 import java.util.Iterator;
 
@@ -9,9 +9,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation;
-import com.redhat.ceylon.eclipse.code.editor.CeylonInitializerAnnotation;
-import com.redhat.ceylon.eclipse.code.editor.RefinementAnnotation;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonAnnotation;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonInitializerAnnotation;
+import org.eclipse.ceylon.ide.eclipse.code.editor.RefinementAnnotation;
 
 
 /**

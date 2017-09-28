@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.core.vfs;
+package org.eclipse.ceylon.ide.eclipse.core.vfs;
 
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
+import org.eclipse.ceylon.compiler.typechecker.io.VirtualFile;
 
 public class TemporaryFile implements VirtualFile {
     private String path;

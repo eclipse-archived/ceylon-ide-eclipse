@@ -8,7 +8,7 @@
  * Contributors:
  *     JBoss by Red Hat - Initial implementation.
  ************************************************************************************/
-package com.redhat.ceylon.eclipse.ui.test.headless;
+package org.eclipse.ceylon.ide.eclipse.ui.test.headless;
 
 import static org.junit.Assert.assertTrue;
 
@@ -34,18 +34,18 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.redhat.ceylon.compiler.java.test.model.ModelLoaderTests;
-import com.redhat.ceylon.compiler.java.test.model.RunnableTest;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.model.JDTModelLoader;
-import com.redhat.ceylon.eclipse.ui.test.Utils;
-import com.redhat.ceylon.eclipse.ui.test.Utils.CeylonBuildSummary;
-import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.ModelUtil;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Value;
+import org.eclipse.ceylon.compiler.java.test.model.ModelLoaderTests;
+import org.eclipse.ceylon.compiler.java.test.model.RunnableTest;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.eclipse.core.model.JDTModelLoader;
+import org.eclipse.ceylon.ide.eclipse.ui.test.Utils;
+import org.eclipse.ceylon.ide.eclipse.ui.test.Utils.CeylonBuildSummary;
+import org.eclipse.ceylon.model.loader.ModelLoader.DeclarationType;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.ModelUtil;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Value;
 
 /**
  * 

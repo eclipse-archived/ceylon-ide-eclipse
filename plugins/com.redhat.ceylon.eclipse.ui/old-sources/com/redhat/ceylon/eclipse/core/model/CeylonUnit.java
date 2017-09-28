@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.core.model;
+package org.eclipse.ceylon.ide.eclipse.core.model;
 
 import java.lang.ref.WeakReference;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.core.typechecker.IdePhasedUnit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.core.typechecker.IdePhasedUnit;
 
 public abstract class CeylonUnit extends IdeUnit {
     

@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.refactor.InvertBooleanRefactoring.invertTerm;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getDocument;
+import static org.eclipse.ceylon.ide.eclipse.code.refactor.InvertBooleanRefactoring.invertTerm;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getDocument;
 
 import java.util.Collection;
 
@@ -17,10 +17,10 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
 
 @Deprecated
 public class OperatorProposals {

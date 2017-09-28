@@ -1,16 +1,16 @@
-package com.redhat.ceylon.eclipse.code.html;
+package org.eclipse.ceylon.ide.eclipse.code.html;
 
-import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
-import static com.redhat.ceylon.eclipse.code.html.HTMLPrinter.toHex;
-import static com.redhat.ceylon.eclipse.util.Highlights.CHARS;
-import static com.redhat.ceylon.eclipse.util.Highlights.COMMENTS;
-import static com.redhat.ceylon.eclipse.util.Highlights.IDENTIFIERS;
-import static com.redhat.ceylon.eclipse.util.Highlights.KEYWORDS;
-import static com.redhat.ceylon.eclipse.util.Highlights.NUMBERS;
-import static com.redhat.ceylon.eclipse.util.Highlights.PACKAGES;
-import static com.redhat.ceylon.eclipse.util.Highlights.STRINGS;
-import static com.redhat.ceylon.eclipse.util.Highlights.TYPES;
-import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
+import static org.eclipse.ceylon.ide.eclipse.code.html.HTMLPrinter.convertToHTMLContent;
+import static org.eclipse.ceylon.ide.eclipse.code.html.HTMLPrinter.toHex;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.CHARS;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.COMMENTS;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.IDENTIFIERS;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.KEYWORDS;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.NUMBERS;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.PACKAGES;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.STRINGS;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.TYPES;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.getCurrentThemeColor;
 import static org.antlr.runtime.Token.HIDDEN_CHANNEL;
 
 import java.io.BufferedReader;
@@ -35,16 +35,16 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.osgi.framework.Bundle;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.ide.common.util.escaping_;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Scope;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+import org.eclipse.ceylon.compiler.typechecker.util.NewlineFixingStringStream;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.EditorUtil;
+import org.eclipse.ceylon.ide.common.util.escaping_;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.model.typechecker.model.Referenceable;
+import org.eclipse.ceylon.model.typechecker.model.Scope;
 
 public class HTML {
 

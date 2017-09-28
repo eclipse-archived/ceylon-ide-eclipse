@@ -1,11 +1,11 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
-import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
-import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.escapePackageName;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
-import static com.redhat.ceylon.eclipse.util.DocLinks.packageName;
-import static com.redhat.ceylon.eclipse.util.DocLinks.packageRegion;
+import static org.eclipse.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
+import static org.eclipse.ceylon.ide.eclipse.code.refactor.MoveUtil.escapePackageName;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
+import static org.eclipse.ceylon.ide.eclipse.util.DocLinks.packageName;
+import static org.eclipse.ceylon.ide.eclipse.util.DocLinks.packageRegion;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,13 +31,13 @@ import org.eclipse.ltk.core.refactoring.participants.RenameParticipant;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.DocLink;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
+import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.DocLink;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.ImportPath;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
+import org.eclipse.ceylon.ide.common.vfs.FileVirtualFile;
 
 public class RenamePackageRefactoringParticipant extends RenameParticipant {
 

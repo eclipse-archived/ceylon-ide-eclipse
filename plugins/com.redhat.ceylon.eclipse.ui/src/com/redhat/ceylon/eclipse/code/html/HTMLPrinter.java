@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.html;
+package org.eclipse.ceylon.ide.eclipse.code.html;
 
-import static com.redhat.ceylon.eclipse.util.EditorUtil.createColor;
-import static com.redhat.ceylon.eclipse.util.Highlights.DOC_BACKGROUND;
-import static com.redhat.ceylon.eclipse.util.Highlights.getCurrentThemeColor;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.createColor;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.DOC_BACKGROUND;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.getCurrentThemeColor;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND;
 import static org.eclipse.ui.texteditor.AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND_SYSTEM_DEFAULT;

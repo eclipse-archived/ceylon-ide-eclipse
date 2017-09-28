@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="com.redhat.ceylon.eclipse.ui" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.eclipse.ceylon.ide.eclipse.ui" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="com.redhat.ceylon.eclipse.ui" id="ceylonBuildHook" name="Ceylon Build Hook"/>
+         <meta.schema plugin="org.eclipse.ceylon.ide.eclipse.ui" id="ceylonBuildHook" name="Ceylon Build Hook"/>
       </appInfo>
       <documentation>
          Hook into the Ceylon Incremental Build
@@ -55,7 +55,7 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":com.redhat.ceylon.eclipse.core.builder.ICeylonBuildHookProvider"/>
+                  <meta.attribute kind="java" basedOn=":org.eclipse.ceylon.ide.eclipse.core.builder.ICeylonBuildHookProvider"/>
                </appInfo>
             </annotation>
          </attribute>

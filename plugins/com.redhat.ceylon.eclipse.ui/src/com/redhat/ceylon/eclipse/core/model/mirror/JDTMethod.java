@@ -18,10 +18,10 @@
  * MA  02110-1301, USA.
  */
 
-package com.redhat.ceylon.eclipse.core.model.mirror;
+package org.eclipse.ceylon.ide.eclipse.core.model.mirror;
 
-import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.doWithMethodBinding;
-import static com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.doWithResolvedType;
+import static org.eclipse.ceylon.ide.eclipse.core.model.LookupEnvironmentUtilities.doWithMethodBinding;
+import static org.eclipse.ceylon.ide.eclipse.core.model.LookupEnvironmentUtilities.doWithResolvedType;
 import static java.lang.Character.toLowerCase;
 
 import java.lang.ref.Reference;
@@ -50,19 +50,19 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 
-import com.redhat.ceylon.common.JVMModuleUtil;
-import com.redhat.ceylon.compiler.java.metadata.Ignore;
-import com.redhat.ceylon.compiler.java.metadata.Name;
-import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.ActionOnMethodBinding;
-import com.redhat.ceylon.eclipse.core.model.LookupEnvironmentUtilities.ActionOnResolvedType;
-import com.redhat.ceylon.model.loader.AbstractModelLoader;
-import com.redhat.ceylon.model.loader.ModelResolutionException;
-import com.redhat.ceylon.model.loader.mirror.AnnotationMirror;
-import com.redhat.ceylon.model.loader.mirror.ClassMirror;
-import com.redhat.ceylon.model.loader.mirror.MethodMirror;
-import com.redhat.ceylon.model.loader.mirror.TypeMirror;
-import com.redhat.ceylon.model.loader.mirror.TypeParameterMirror;
-import com.redhat.ceylon.model.loader.mirror.VariableMirror;
+import org.eclipse.ceylon.common.JVMModuleUtil;
+import org.eclipse.ceylon.compiler.java.metadata.Ignore;
+import org.eclipse.ceylon.compiler.java.metadata.Name;
+import org.eclipse.ceylon.ide.eclipse.core.model.LookupEnvironmentUtilities.ActionOnMethodBinding;
+import org.eclipse.ceylon.ide.eclipse.core.model.LookupEnvironmentUtilities.ActionOnResolvedType;
+import org.eclipse.ceylon.model.loader.AbstractModelLoader;
+import org.eclipse.ceylon.model.loader.ModelResolutionException;
+import org.eclipse.ceylon.model.loader.mirror.AnnotationMirror;
+import org.eclipse.ceylon.model.loader.mirror.ClassMirror;
+import org.eclipse.ceylon.model.loader.mirror.MethodMirror;
+import org.eclipse.ceylon.model.loader.mirror.TypeMirror;
+import org.eclipse.ceylon.model.loader.mirror.TypeParameterMirror;
+import org.eclipse.ceylon.model.loader.mirror.VariableMirror;
 
 public class JDTMethod implements MethodMirror, IBindingProvider {
 

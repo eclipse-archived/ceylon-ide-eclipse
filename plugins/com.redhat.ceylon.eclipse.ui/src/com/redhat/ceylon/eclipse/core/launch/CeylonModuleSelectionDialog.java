@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.core.launch;
+package org.eclipse.ceylon.ide.eclipse.core.launch;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getSourceFolders;
-import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getSourceFolders;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.STRING_STYLER;
 
 import java.util.Comparator;
 import java.util.Set;
@@ -24,14 +24,14 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 
-import com.redhat.ceylon.eclipse.code.open.FilteredItemsSelectionDialog;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
-import com.redhat.ceylon.ide.common.model.IdeModule;
-import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
-import com.redhat.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.ide.eclipse.code.open.FilteredItemsSelectionDialog;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.ide.common.model.CeylonProject;
+import org.eclipse.ceylon.ide.common.model.IdeModule;
+import org.eclipse.ceylon.ide.common.model.ProjectSourceFile;
+import org.eclipse.ceylon.model.typechecker.model.Module;
 
 public class CeylonModuleSelectionDialog extends FilteredItemsSelectionDialog {
     

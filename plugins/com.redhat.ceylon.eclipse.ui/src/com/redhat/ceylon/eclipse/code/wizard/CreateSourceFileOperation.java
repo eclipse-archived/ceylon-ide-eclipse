@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;

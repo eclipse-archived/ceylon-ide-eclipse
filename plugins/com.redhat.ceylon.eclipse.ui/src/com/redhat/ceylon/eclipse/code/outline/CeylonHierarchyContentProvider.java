@@ -1,15 +1,15 @@
-package com.redhat.ceylon.eclipse.code.outline;
+package org.eclipse.ceylon.ide.eclipse.code.outline;
 
-import static com.redhat.ceylon.eclipse.code.outline.HierarchyMode.HIERARCHY;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_HIERARCHY_FILTERS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.HIERARCHY_FILTERS;
-import static com.redhat.ceylon.eclipse.util.ModelProxy.getDeclarationInUnit;
-import static com.redhat.ceylon.model.cmr.JDKUtils.isJDKModule;
-import static com.redhat.ceylon.model.cmr.JDKUtils.isOracleJDKModule;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getInterveningRefinements;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.getSignature;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isVariadic;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.HierarchyMode.HIERARCHY;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.ENABLE_HIERARCHY_FILTERS;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.HIERARCHY_FILTERS;
+import static org.eclipse.ceylon.ide.eclipse.util.ModelProxy.getDeclarationInUnit;
+import static org.eclipse.ceylon.model.cmr.JDKUtils.isJDKModule;
+import static org.eclipse.ceylon.model.cmr.JDKUtils.isOracleJDKModule;
+import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.getInterveningRefinements;
+import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.getSignature;
+import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isAbstraction;
+import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isVariadic;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -26,21 +26,21 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.util.Filters;
-import com.redhat.ceylon.eclipse.util.ModelProxy;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.TypeParameter;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.util.Filters;
+import org.eclipse.ceylon.ide.eclipse.util.ModelProxy;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.model.typechecker.model.ClassOrInterface;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.model.typechecker.model.Scope;
+import org.eclipse.ceylon.model.typechecker.model.Type;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.TypeParameter;
+import org.eclipse.ceylon.model.typechecker.model.TypedDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 public final class CeylonHierarchyContentProvider
         implements ITreeContentProvider {

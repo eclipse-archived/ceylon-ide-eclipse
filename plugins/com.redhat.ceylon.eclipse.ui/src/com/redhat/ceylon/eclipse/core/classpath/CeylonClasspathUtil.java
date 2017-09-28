@@ -15,7 +15,7 @@
  *  limitations under the License.
  *
  */
-package com.redhat.ceylon.eclipse.core.classpath;
+package org.eclipse.ceylon.ide.eclipse.core.classpath;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,8 +42,8 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.packageview.ClassPathContainer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
-import com.redhat.ceylon.common.FileUtil;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.common.FileUtil;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 public final class CeylonClasspathUtil {
 

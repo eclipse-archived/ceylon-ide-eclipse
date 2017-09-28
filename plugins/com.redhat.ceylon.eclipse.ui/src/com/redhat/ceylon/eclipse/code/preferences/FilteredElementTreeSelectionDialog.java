@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.preferences;
+package org.eclipse.ceylon.ide.eclipse.code.preferences;
 
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -20,7 +20,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 import org.eclipse.ui.dialogs.SearchPattern;
 
-import com.redhat.ceylon.eclipse.util.DocBrowser;
+import org.eclipse.ceylon.ide.eclipse.util.DocBrowser;
 
 public abstract class FilteredElementTreeSelectionDialog extends
         ElementTreeSelectionDialog {

@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.browser;
+package org.eclipse.ceylon.ide.eclipse.code.browser;
 
 /*******************************************************************************
  * Copyright (c) 2000, 2010 IBM Corporation and others.
@@ -43,10 +43,10 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Slider;
 
-import com.redhat.ceylon.eclipse.code.hover.AbstractInformationControl;
-import com.redhat.ceylon.eclipse.code.html.HTML2TextReader;
-import com.redhat.ceylon.eclipse.code.html.HTMLPrinter;
-import com.redhat.ceylon.eclipse.util.DocBrowser;
+import org.eclipse.ceylon.ide.eclipse.code.hover.AbstractInformationControl;
+import org.eclipse.ceylon.ide.eclipse.code.html.HTML2TextReader;
+import org.eclipse.ceylon.ide.eclipse.code.html.HTMLPrinter;
+import org.eclipse.ceylon.ide.eclipse.util.DocBrowser;
 
 
 /**

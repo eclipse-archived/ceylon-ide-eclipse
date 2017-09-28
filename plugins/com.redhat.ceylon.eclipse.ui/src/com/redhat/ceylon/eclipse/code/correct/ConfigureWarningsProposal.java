@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_WARNING;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CONFIG_WARNING;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -9,8 +9,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonWarningsPropertiesPage;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonWarningsPropertiesPage;
 
 final class ConfigureWarningsProposal implements ICompletionProposal {
 

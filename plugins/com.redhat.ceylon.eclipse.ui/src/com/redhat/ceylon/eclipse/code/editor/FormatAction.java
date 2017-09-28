@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.editorJ2C;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelection;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.editorJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getSelection;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,19 +22,19 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Body;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Statement;
-import com.redhat.ceylon.eclipse.code.correct.correctJ2C;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
-import com.redhat.ceylon.eclipse.code.style.CeylonStyle;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.Nodes;
-import com.redhat.ceylon.eclipse.util.StringBuilderWriter;
-import com.redhat.ceylon.ide.common.refactoring.DefaultRegion;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Body;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Statement;
+import org.eclipse.ceylon.ide.eclipse.code.correct.correctJ2C;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.eclipse.code.parse.TreeLifecycleListener.Stage;
+import org.eclipse.ceylon.ide.eclipse.code.style.CeylonStyle;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.EditorUtil;
+import org.eclipse.ceylon.ide.eclipse.util.Nodes;
+import org.eclipse.ceylon.ide.eclipse.util.StringBuilderWriter;
+import org.eclipse.ceylon.ide.common.refactoring.DefaultRegion;
 
 import ceylon.formatter.format_;
 import ceylon.formatter.options.FormattingOptions;
@@ -104,7 +104,7 @@ final class FormatAction extends Action {
                 /* inherit = */ false,
                 /* baseDir = */ pc.getProject().getLocation().toOSString());
         
-        com.redhat.ceylon.ide.common.platform.TextChange change = editorJ2C().eclipseFormatAction().format(pc.getParsedRootNode(),
+        org.eclipse.ceylon.ide.common.platform.TextChange change = editorJ2C().eclipseFormatAction().format(pc.getParsedRootNode(),
                 pc.getTokens(), new correctJ2C().newDocument(document), document.getLength(),
                 new DefaultRegion(ts.getOffset(), ts.getLength()),
                 CeylonStyle.getEclipseWsOptions(document),

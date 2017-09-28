@@ -1,18 +1,18 @@
-package com.redhat.ceylon.test.eclipse.plugin.ui;
+package org.eclipse.ceylon.test.eclipse.plugin.ui;
 
-import static com.redhat.ceylon.eclipse.core.launch.CeylonPatternMatchListenerDelegate.gotoFileAndLine;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.COMPARE;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STACK_TRACE;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STACK_TRACE_FILTER;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STACK_TRACE_LINE;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_ERROR;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_FAILED;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesActionLabel;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.stackTraceCopyLabel;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.stackTraceFilterLabel;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.stackTraceLabel;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_STACK_TRACE_FILTER;
+import static org.eclipse.ceylon.ide.eclipse.core.launch.CeylonPatternMatchListenerDelegate.gotoFileAndLine;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.COMPARE;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STACK_TRACE;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STACK_TRACE_FILTER;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STACK_TRACE_LINE;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_ERROR;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TEST_FAILED;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.getImage;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.compareValuesActionLabel;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.stackTraceCopyLabel;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.stackTraceFilterLabel;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.stackTraceLabel;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin.PREF_STACK_TRACE_FILTER;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -46,17 +46,17 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.IConsoleDocumentPartitioner;
 import org.eclipse.ui.console.TextConsole;
 
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestElement.State;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import org.eclipse.ceylon.test.eclipse.plugin.model.TestElement;
+import org.eclipse.ceylon.test.eclipse.plugin.model.TestElement.State;
+import org.eclipse.ceylon.test.eclipse.plugin.model.TestRun;
 
 @SuppressWarnings("restriction")
 public class StackTracePanel extends Composite {
 
     private static final String[] STACK_TRACE_FILTER_PATTERNS = new String[] {
-        "com.redhat.ceylon.*",
+        "org.eclipse.ceylon.*",
         "ceylon.modules.*",
         "org.jboss.modules.*",
         "java.lang.reflect.Method.invoke",

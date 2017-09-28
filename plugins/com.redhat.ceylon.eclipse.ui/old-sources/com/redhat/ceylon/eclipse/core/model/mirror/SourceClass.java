@@ -1,23 +1,23 @@
-package com.redhat.ceylon.eclipse.core.model.mirror;
+package org.eclipse.ceylon.ide.eclipse.core.model.mirror;
 
 import java.util.List;
 
 import ceylon.language.meta.model.Interface;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.model.loader.AbstractModelLoader;
-import com.redhat.ceylon.model.loader.mirror.AnnotationMirror;
-import com.redhat.ceylon.model.loader.mirror.ClassMirror;
-import com.redhat.ceylon.model.loader.mirror.FieldMirror;
-import com.redhat.ceylon.model.loader.mirror.MethodMirror;
-import com.redhat.ceylon.model.loader.mirror.PackageMirror;
-import com.redhat.ceylon.model.loader.mirror.TypeMirror;
-import com.redhat.ceylon.model.loader.mirror.TypeParameterMirror;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Scope;
-import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.model.loader.AbstractModelLoader;
+import org.eclipse.ceylon.model.loader.mirror.AnnotationMirror;
+import org.eclipse.ceylon.model.loader.mirror.ClassMirror;
+import org.eclipse.ceylon.model.loader.mirror.FieldMirror;
+import org.eclipse.ceylon.model.loader.mirror.MethodMirror;
+import org.eclipse.ceylon.model.loader.mirror.PackageMirror;
+import org.eclipse.ceylon.model.loader.mirror.TypeMirror;
+import org.eclipse.ceylon.model.loader.mirror.TypeParameterMirror;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Scope;
+import org.eclipse.ceylon.model.typechecker.model.Class;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
 
 public class SourceClass implements ClassMirror {
 

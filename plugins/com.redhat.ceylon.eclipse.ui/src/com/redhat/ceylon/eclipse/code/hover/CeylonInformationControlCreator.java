@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.hover;
+package org.eclipse.ceylon.ide.eclipse.code.hover;
 
 import static org.eclipse.jdt.ui.PreferenceConstants.APPEARANCE_JAVADOC_FONT;
 
@@ -7,8 +7,8 @@ import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.swt.widgets.Shell;
 
-import com.redhat.ceylon.eclipse.code.browser.BrowserInformationControl;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.browser.BrowserInformationControl;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
 
 public final class CeylonInformationControlCreator 
         extends AbstractReusableInformationControlCreator {

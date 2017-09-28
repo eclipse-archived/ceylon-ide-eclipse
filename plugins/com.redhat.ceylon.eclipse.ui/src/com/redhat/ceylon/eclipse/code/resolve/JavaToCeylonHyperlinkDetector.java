@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.resolve;
+package org.eclipse.ceylon.ide.eclipse.code.resolve;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.gotoDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getCurrentEditor;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getFile;
+import static org.eclipse.ceylon.ide.eclipse.util.JavaSearch.toCeylonDeclaration;
 import static java.lang.Character.isJavaIdentifierPart;
 
 import org.eclipse.core.resources.IFile;
@@ -23,8 +23,8 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 
-import com.redhat.ceylon.eclipse.util.JavaSearch;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.ide.eclipse.util.JavaSearch;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
 
 public class JavaToCeylonHyperlinkDetector extends AbstractHyperlinkDetector {
 

@@ -1,14 +1,14 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_DEFAULT_REFINEMENT;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_FORMAL_REFINEMENT;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_DEFAULT_REFINEMENT;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_FORMAL_REFINEMENT;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.texteditor.IAnnotationImageProvider;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 public class RefinementAnnotationImageProvider implements IAnnotationImageProvider {
     

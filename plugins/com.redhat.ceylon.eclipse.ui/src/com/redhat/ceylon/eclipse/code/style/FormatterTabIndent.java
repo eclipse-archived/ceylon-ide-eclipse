@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.style;
+package org.eclipse.ceylon.ide.eclipse.code.style;
 
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.*;
+import static org.eclipse.ceylon.ide.eclipse.code.style.CeylonFormatterConstants.*;
 
 import java.util.Observable;
 import java.util.Observer;

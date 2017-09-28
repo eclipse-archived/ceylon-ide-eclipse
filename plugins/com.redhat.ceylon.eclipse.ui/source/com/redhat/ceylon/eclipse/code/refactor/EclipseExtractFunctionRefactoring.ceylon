@@ -1,29 +1,29 @@
-//import com.redhat.ceylon.compiler.typechecker.context {
+//import org.eclipse.ceylon.compiler.typechecker.context {
 //    PhasedUnit
 //}
-//import com.redhat.ceylon.compiler.typechecker.tree {
+//import org.eclipse.ceylon.compiler.typechecker.tree {
 //    Node,
 //    Tree,
 //    Visitor
 //}
-//import com.redhat.ceylon.eclipse.code.correct {
+//import org.eclipse.ceylon.ide.eclipse.code.correct {
 //    EclipseDocumentChanges
 //}
-//import com.redhat.ceylon.eclipse.code.editor {
+//import org.eclipse.ceylon.ide.eclipse.code.editor {
 //    CeylonEditor
 //}
-//import com.redhat.ceylon.eclipse.util {
+//import org.eclipse.ceylon.ide.eclipse.util {
 //    EditorUtil
 //}
-//import com.redhat.ceylon.ide.common.refactoring {
+//import org.eclipse.ceylon.ide.common.refactoring {
 //    getTargetNode,
 //    prepareExtractFunction,
 //    DeprecatedExtractFunctionRefactoring
 //}
-//import com.redhat.ceylon.ide.common.typechecker {
+//import org.eclipse.ceylon.ide.common.typechecker {
 //    ProjectPhasedUnit
 //}
-//import com.redhat.ceylon.model.typechecker.model {
+//import org.eclipse.ceylon.model.typechecker.model {
 //    Type,
 //    TypedDeclaration
 //}

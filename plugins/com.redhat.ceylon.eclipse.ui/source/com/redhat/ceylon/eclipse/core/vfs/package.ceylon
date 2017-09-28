@@ -1,1 +1,1 @@
-shared package com.redhat.ceylon.eclipse.core.vfs;
+shared package org.eclipse.ceylon.ide.eclipse.core.vfs;

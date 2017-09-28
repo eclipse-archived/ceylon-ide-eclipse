@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.debug.actions;
+package org.eclipse.ceylon.ide.eclipse.core.debug.actions;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.model.IDebugElement;

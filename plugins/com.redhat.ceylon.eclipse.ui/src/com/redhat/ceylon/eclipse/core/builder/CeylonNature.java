@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.core.builder;
+package org.eclipse.ceylon.ide.eclipse.core.builder;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BUILDER_ID;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.BUILDER_ID;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import java.util.Map;
 
@@ -11,8 +11,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
-import com.redhat.ceylon.eclipse.core.classpath.CeylonLanguageModuleContainer;
-import com.redhat.ceylon.eclipse.core.classpath.CeylonProjectModulesContainer;
+import org.eclipse.ceylon.ide.eclipse.core.classpath.CeylonLanguageModuleContainer;
+import org.eclipse.ceylon.ide.eclipse.core.classpath.CeylonProjectModulesContainer;
 
 public class CeylonNature extends ProjectNatureBase {
     

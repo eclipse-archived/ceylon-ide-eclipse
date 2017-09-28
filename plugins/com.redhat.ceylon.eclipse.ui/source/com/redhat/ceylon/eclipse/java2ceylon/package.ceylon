@@ -1,1 +1,1 @@
-shared package com.redhat.ceylon.eclipse.java2ceylon;
+shared package org.eclipse.ceylon.ide.eclipse.java2ceylon;

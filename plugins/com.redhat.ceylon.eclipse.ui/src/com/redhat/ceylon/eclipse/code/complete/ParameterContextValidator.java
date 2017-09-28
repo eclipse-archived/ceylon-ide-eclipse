@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.complete;
+package org.eclipse.ceylon.ide.eclipse.code.complete;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +17,8 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonSourceViewer;
 
 class ParameterContextValidator 
         implements IContextInformationValidator, IContextInformationPresenter {
@@ -148,8 +148,8 @@ class ParameterContextValidator
             Object linkedModeOwner = editor.getLinkedModeOwner();
             if (linkedModeOwner instanceof InvocationCompletionProposal ||
                 linkedModeOwner instanceof ParametersCompletionProposal ||
-                linkedModeOwner instanceof com.redhat.ceylon.ide.common.completion.InvocationCompletionProposal ||
-                linkedModeOwner instanceof com.redhat.ceylon.ide.common.completion.RefinementCompletionProposal) {
+                linkedModeOwner instanceof org.eclipse.ceylon.ide.common.completion.InvocationCompletionProposal ||
+                linkedModeOwner instanceof org.eclipse.ceylon.ide.common.completion.RefinementCompletionProposal) {
                 return true;
             }
         }

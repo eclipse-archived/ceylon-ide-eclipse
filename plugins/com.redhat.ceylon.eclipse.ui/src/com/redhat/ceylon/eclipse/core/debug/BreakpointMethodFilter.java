@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.debug;
+package org.eclipse.ceylon.ide.eclipse.core.debug;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
@@ -14,9 +14,9 @@ import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.internal.debug.core.model.JDIStackFrame;
 
-import com.redhat.ceylon.eclipse.code.editor.ToggleBreakpointAdapter;
-import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIThread;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.code.editor.ToggleBreakpointAdapter;
+import org.eclipse.ceylon.ide.eclipse.core.debug.model.CeylonJDIThread;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 import com.sun.jdi.Method;
 
 public class BreakpointMethodFilter implements org.eclipse.jdt.debug.core.IJavaBreakpointListener {

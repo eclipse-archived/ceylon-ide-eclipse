@@ -1,13 +1,13 @@
-package com.redhat.ceylon.eclipse.util;
+package org.eclipse.ceylon.ide.eclipse.util;
 
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
 
-import com.redhat.ceylon.compiler.typechecker.analyzer.UsageWarning;
-import com.redhat.ceylon.compiler.typechecker.tree.Message;
+import org.eclipse.ceylon.compiler.typechecker.analyzer.UsageWarning;
+import org.eclipse.ceylon.compiler.typechecker.tree.Message;
 
 public abstract class ErrorVisitor 
-    extends com.redhat.ceylon.ide.common.util.ErrorVisitor {
+    extends org.eclipse.ceylon.ide.common.util.ErrorVisitor {
     
     protected int getSeverity(Message error, boolean expected) {
         return expected || error instanceof UsageWarning ? 

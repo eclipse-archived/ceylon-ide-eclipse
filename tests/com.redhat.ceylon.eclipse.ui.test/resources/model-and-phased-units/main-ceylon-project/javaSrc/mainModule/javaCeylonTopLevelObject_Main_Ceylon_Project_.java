@@ -1,8 +1,8 @@
 package mainModule;
 
 
-import com.redhat.ceylon.compiler.java.metadata.Ceylon;
-import com.redhat.ceylon.compiler.java.metadata.Object;
+import org.eclipse.ceylon.compiler.java.metadata.Ceylon;
+import org.eclipse.ceylon.compiler.java.metadata.Object;
 
 @Ceylon(major = 8) 
 @Object

@@ -2,7 +2,7 @@ import org.eclipse.core.runtime {
     IPath,
     EclipsePath = Path
 }
-import com.redhat.ceylon.ide.common.util {
+import org.eclipse.ceylon.ide.common.util {
     Path
 }
 

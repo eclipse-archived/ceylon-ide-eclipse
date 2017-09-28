@@ -10,18 +10,18 @@
 
 *******************************************************************************/
 
-package com.redhat.ceylon.eclipse.code.outline;
+package org.eclipse.ceylon.ide.eclipse.code.outline;
 
-import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageKeyForNode;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getNodeDecorationAttributes;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getStyledLabelForNode;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJava;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.compileToJs;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.findStatement;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
+import static org.eclipse.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getImageKeyForNode;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getNodeDecorationAttributes;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getStyledLabelForNode;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.compileToJava;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.compileToJs;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getCurrentEditor;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.findNode;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.findStatement;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getIdentifyingNode;
 import static java.lang.System.identityHashCode;
 
 import java.util.ArrayList;
@@ -38,14 +38,14 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.common.Backends;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.TreeUtil;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.ide.common.model.SourceFile;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.common.Backends;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.TreeUtil;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.common.model.SourceFile;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 public class CeylonOutlineNode implements IAdaptable {
     

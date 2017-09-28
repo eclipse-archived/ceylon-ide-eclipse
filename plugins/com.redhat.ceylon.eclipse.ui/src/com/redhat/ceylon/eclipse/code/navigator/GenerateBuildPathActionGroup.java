@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.navigator;
+package org.eclipse.ceylon.ide.eclipse.code.navigator;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
-import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringList;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.util.CeylonHelper.toJavaStringList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,11 +68,11 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.part.Page;
 import org.eclipse.ui.texteditor.IUpdate;
 
-import com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsBlock;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonBuildPathsPropertiesPage;
-import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
-import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
-import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonBuildPathsBlock;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonBuildPathsPropertiesPage;
+import org.eclipse.ceylon.ide.eclipse.core.external.ExternalSourceArchiveManager;
+import org.eclipse.ceylon.ide.common.model.BaseCeylonProject;
+import org.eclipse.ceylon.ide.common.model.CeylonProjectConfig;
 
 /**
  * Copied from <code>{@link org.eclipse.jdt.internal.ui.wizards.buildpaths.newsourcepage.GenerateBuildPathActionGroup}</code>

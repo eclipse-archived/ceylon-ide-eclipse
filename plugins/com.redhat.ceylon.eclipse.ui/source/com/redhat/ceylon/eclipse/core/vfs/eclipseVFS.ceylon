@@ -1,18 +1,18 @@
-import com.redhat.ceylon.eclipse.core.external {
+import org.eclipse.ceylon.ide.eclipse.core.external {
     ExternalSourceArchiveManager
 }
-import com.redhat.ceylon.eclipse.core.model {
+import org.eclipse.ceylon.ide.eclipse.core.model {
     ceylonModel
 }
-import com.redhat.ceylon.ide.common.model {
+import org.eclipse.ceylon.ide.common.model {
     CeylonProject
 }
-import com.redhat.ceylon.ide.common.vfs {
+import org.eclipse.ceylon.ide.common.vfs {
     FolderVirtualFile,
     ResourceVirtualFile,
     FileVirtualFile
 }
-import com.redhat.ceylon.model.typechecker.model {
+import org.eclipse.ceylon.model.typechecker.model {
     Package
 }
 

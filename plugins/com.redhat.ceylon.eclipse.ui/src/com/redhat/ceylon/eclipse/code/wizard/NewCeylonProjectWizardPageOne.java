@@ -9,10 +9,10 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_PROJECT_TYPE;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_PROJECT_TYPE;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.DEFAULT_SOURCE_FOLDER;
 import static org.eclipse.jdt.core.JavaCore.newContainerEntry;
 import static org.eclipse.jdt.core.JavaCore.newSourceEntry;
 import static org.eclipse.jface.layout.GridDataFactory.swtDefaults;
@@ -100,9 +100,9 @@ import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.WorkingSetConfigurationBlock;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import static com.redhat.ceylon.eclipse.util.CeylonHelper.toJavaStringList;
-import com.redhat.ceylon.ide.common.util.versionsAvailableForBoostrap_;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import static org.eclipse.ceylon.ide.eclipse.util.CeylonHelper.toJavaStringList;
+import org.eclipse.ceylon.ide.common.util.versionsAvailableForBoostrap_;
 
 /**
  * The first page of the New Java Project wizard. This page is typically used in combination with

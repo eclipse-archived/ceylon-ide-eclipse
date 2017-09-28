@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.debug.presentation;
+package org.eclipse.ceylon.ide.eclipse.core.debug.presentation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,8 +13,8 @@ import org.eclipse.jdt.debug.core.IJavaThreadGroup;
 import org.eclipse.jdt.internal.debug.ui.monitors.JavaElementContentProvider;
 import org.eclipse.jdt.internal.debug.ui.threadgroups.JavaDebugTargetContentProvider;
 
-import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
-import com.redhat.ceylon.ide.common.debug.agent.CeylonDebugEvaluationThread;
+import org.eclipse.ceylon.ide.eclipse.core.debug.model.CeylonJDIDebugTarget;
+import org.eclipse.ceylon.ide.common.debug.agent.CeylonDebugEvaluationThread;
 
 public class CeylonDebugTargetContentProvider extends
         JavaDebugTargetContentProvider {

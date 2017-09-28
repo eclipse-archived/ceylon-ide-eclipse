@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.modulesearch;
+package org.eclipse.ceylon.ide.eclipse.code.modulesearch;
 
-import static com.redhat.ceylon.cmr.ceylon.CeylonUtils.repoManager;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
-import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleQuery;
-import static com.redhat.ceylon.eclipse.util.ModuleQueries.getModuleVersionQuery;
+import static org.eclipse.ceylon.cmr.ceylon.CeylonUtils.repoManager;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.util.ModuleQueries.getModuleQuery;
+import static org.eclipse.ceylon.ide.eclipse.util.ModuleQueries.getModuleVersionQuery;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,22 +11,22 @@ import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 
-import com.redhat.ceylon.cmr.api.ArtifactContext;
-import com.redhat.ceylon.cmr.api.ModuleQuery;
-import com.redhat.ceylon.cmr.api.ModuleSearchResult;
-import com.redhat.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
-import com.redhat.ceylon.cmr.api.ModuleVersionArtifact;
-import com.redhat.ceylon.cmr.api.ModuleVersionDetails;
-import com.redhat.ceylon.cmr.api.ModuleVersionQuery;
-import com.redhat.ceylon.cmr.api.ModuleVersionResult;
-import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.common.Backend;
-import com.redhat.ceylon.common.Backends;
-import com.redhat.ceylon.common.Versions;
-import com.redhat.ceylon.eclipse.util.EclipseLogger;
-import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
-import com.redhat.ceylon.ide.common.modulesearch.ModuleNode;
-import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
+import org.eclipse.ceylon.cmr.api.ArtifactContext;
+import org.eclipse.ceylon.cmr.api.ModuleQuery;
+import org.eclipse.ceylon.cmr.api.ModuleSearchResult;
+import org.eclipse.ceylon.cmr.api.ModuleSearchResult.ModuleDetails;
+import org.eclipse.ceylon.cmr.api.ModuleVersionArtifact;
+import org.eclipse.ceylon.cmr.api.ModuleVersionDetails;
+import org.eclipse.ceylon.cmr.api.ModuleVersionQuery;
+import org.eclipse.ceylon.cmr.api.ModuleVersionResult;
+import org.eclipse.ceylon.cmr.api.RepositoryManager;
+import org.eclipse.ceylon.common.Backend;
+import org.eclipse.ceylon.common.Backends;
+import org.eclipse.ceylon.common.Versions;
+import org.eclipse.ceylon.ide.eclipse.util.EclipseLogger;
+import org.eclipse.ceylon.ide.common.model.BaseCeylonProject;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleNode;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleVersionNode;
 
 public class ModuleSearchManager {
     

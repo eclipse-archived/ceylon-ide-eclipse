@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.java2ceylon;
+package org.eclipse.ceylon.ide.eclipse.java2ceylon;
 
 import org.eclipse.jface.text.IInformationControlCreator;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.hover.SourceInfoHover;
-import com.redhat.ceylon.ide.common.doc.DocGenerator;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.hover.SourceInfoHover;
+import org.eclipse.ceylon.ide.common.doc.DocGenerator;
 
 public interface HoverJ2C {
 

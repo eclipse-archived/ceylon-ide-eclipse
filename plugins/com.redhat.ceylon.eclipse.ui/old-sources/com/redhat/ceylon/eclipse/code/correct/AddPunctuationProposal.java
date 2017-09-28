@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getBeforeParenthesisNode;
-import static com.redhat.ceylon.eclipse.code.correct.CorrectionUtil.getDescription;
+import static org.eclipse.ceylon.ide.eclipse.code.correct.CorrectionUtil.getBeforeParenthesisNode;
+import static org.eclipse.ceylon.ide.eclipse.code.correct.CorrectionUtil.getDescription;
 
 import java.util.Collection;
 
@@ -12,9 +12,9 @@ import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
 
 @Deprecated
 class AddPunctuationProposal extends CorrectionProposal {

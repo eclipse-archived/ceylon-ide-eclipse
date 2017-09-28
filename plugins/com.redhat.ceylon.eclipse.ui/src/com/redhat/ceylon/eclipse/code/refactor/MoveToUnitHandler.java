@@ -1,12 +1,12 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.canMoveDeclaration;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
+import static org.eclipse.ceylon.ide.eclipse.code.refactor.MoveUtil.canMoveDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getCurrentEditor;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
 
 public class MoveToUnitHandler extends AbstractHandler {
     

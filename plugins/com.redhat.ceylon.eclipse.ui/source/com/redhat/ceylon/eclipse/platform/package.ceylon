@@ -1,1 +1,1 @@
-shared package com.redhat.ceylon.eclipse.platform;
+shared package org.eclipse.ceylon.ide.eclipse.platform;

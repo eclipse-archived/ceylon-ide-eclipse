@@ -2,39 +2,39 @@ import ceylon.collection {
     HashSet
 }
 
-import com.redhat.ceylon.common {
+import org.eclipse.ceylon.common {
     Constants
 }
-import com.redhat.ceylon.compiler.typechecker.context {
+import org.eclipse.ceylon.compiler.typechecker.context {
     Context
 }
-import com.redhat.ceylon.compiler.typechecker.util {
+import org.eclipse.ceylon.compiler.typechecker.util {
     ModuleManagerFactory
 }
-import com.redhat.ceylon.eclipse.core.builder {
+import org.eclipse.ceylon.ide.eclipse.core.builder {
     CeylonBuilder
 }
-import com.redhat.ceylon.eclipse.core.external {
+import org.eclipse.ceylon.ide.eclipse.core.external {
     ExternalSourceArchiveManager
 }
-import com.redhat.ceylon.eclipse.ui {
+import org.eclipse.ceylon.ide.eclipse.ui {
     CeylonEncodingSynchronizer,
     CeylonPlugin
 }
-import com.redhat.ceylon.ide.common.model {
+import org.eclipse.ceylon.ide.common.model {
     CeylonProject,
     CeylonProjectConfig,
     BuildHook
 }
-import com.redhat.ceylon.ide.common.platform {
+import org.eclipse.ceylon.ide.common.platform {
     VfsServicesConsumer
 }
-import com.redhat.ceylon.ide.common.util {
+import org.eclipse.ceylon.ide.common.util {
     unsafeCast,
     BaseProgressMonitorChild,
     ProgressMonitorChild
 }
-import com.redhat.ceylon.model.typechecker.util {
+import org.eclipse.ceylon.model.typechecker.util {
     ModuleManager
 }
 

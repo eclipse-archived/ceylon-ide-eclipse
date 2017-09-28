@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.navigator;
+package org.eclipse.ceylon.ide.eclipse.code.navigator;
 
-import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getImportText;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.code.refactor.MoveUtil.getImportText;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import java.util.HashSet;
@@ -43,10 +43,10 @@ import org.eclipse.ui.part.Page;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.eclipse.code.editor.ImportsTransfer;
-import com.redhat.ceylon.eclipse.code.editor.SourceTransfer;
-import com.redhat.ceylon.eclipse.code.wizard.NewUnitWizard;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.ide.eclipse.code.editor.ImportsTransfer;
+import org.eclipse.ceylon.ide.eclipse.code.editor.SourceTransfer;
+import org.eclipse.ceylon.ide.eclipse.code.wizard.NewUnitWizard;
 
 /**
  * Action group that adds copy, cut, paste, and delete actions to a view part's context

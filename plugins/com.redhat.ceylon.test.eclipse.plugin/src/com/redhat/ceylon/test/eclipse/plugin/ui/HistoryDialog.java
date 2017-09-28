@@ -1,33 +1,33 @@
-package com.redhat.ceylon.test.eclipse.plugin.ui;
+package org.eclipse.ceylon.test.eclipse.plugin.ui;
 
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.PIN;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_ERROR;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_FAILED;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_INTERRUPTED;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_RUNNING;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SUCCESS;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.compare;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnErrors;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnFailures;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnName;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnPlatform;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnSkipped;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnStartDate;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnSuccess;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnTotal;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyDlgCanNotCompareRunningTest;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyDlgCanNotRemoveRunningTest;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyDlgMessage;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyDlgTitle;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyPinLabel;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyPinTooltip;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyUnpinLabel;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.information;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.platformJs;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.platformJvm;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.remove;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.removeAll;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getDisplay;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.PIN;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_ERROR;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_FAILED;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_INTERRUPTED;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_RUNNING;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.TESTS_SUCCESS;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.compare;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnErrors;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnFailures;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnName;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnPlatform;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnSkipped;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnStartDate;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnSuccess;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.historyColumnTotal;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.historyDlgCanNotCompareRunningTest;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.historyDlgCanNotRemoveRunningTest;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.historyDlgMessage;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.historyDlgTitle;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.historyPinLabel;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.historyPinTooltip;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.historyUnpinLabel;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.information;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.platformJs;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.platformJvm;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.remove;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.removeAll;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getDisplay;
 
 import java.text.DateFormat;
 
@@ -53,12 +53,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestRunContainer;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestRunListener;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import org.eclipse.ceylon.test.eclipse.plugin.model.TestElement;
+import org.eclipse.ceylon.test.eclipse.plugin.model.TestRun;
+import org.eclipse.ceylon.test.eclipse.plugin.model.TestRunContainer;
+import org.eclipse.ceylon.test.eclipse.plugin.model.TestRunListener;
 
 public class HistoryDialog extends TitleAreaDialog {
 

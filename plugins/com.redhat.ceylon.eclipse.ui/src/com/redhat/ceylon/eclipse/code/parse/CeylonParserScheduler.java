@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.parse;
+package org.eclipse.ceylon.ide.eclipse.code.parse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,9 +13,9 @@ import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IDocument;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
-import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonSourceViewer;
+import org.eclipse.ceylon.ide.eclipse.code.parse.TreeLifecycleListener.Stage;
 
 public class CeylonParserScheduler extends Job {
 

@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
 import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.Change;
 
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
 
 /**
  * Add generic type constraints proposal for following code:

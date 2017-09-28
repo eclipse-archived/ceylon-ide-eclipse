@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.core.builder;
+package org.eclipse.ceylon.ide.eclipse.core.builder;
 
 import java.util.HashMap;
 import java.util.Map;

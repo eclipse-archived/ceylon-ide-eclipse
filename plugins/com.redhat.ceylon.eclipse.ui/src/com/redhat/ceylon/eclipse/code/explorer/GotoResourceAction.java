@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.explorer;
+package org.eclipse.ceylon.ide.eclipse.code.explorer;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;

@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.core.debug.presentation;
+package org.eclipse.ceylon.ide.eclipse.core.debug.presentation;
 
-import static com.redhat.ceylon.eclipse.core.debug.DebugUtils.producedTypeFromTypeDescriptor;
-import static com.redhat.ceylon.eclipse.core.debug.presentation.CeylonJDIModelPresentation.fixVariableName;
+import static org.eclipse.ceylon.ide.eclipse.core.debug.DebugUtils.producedTypeFromTypeDescriptor;
+import static org.eclipse.ceylon.ide.eclipse.core.debug.presentation.CeylonJDIModelPresentation.fixVariableName;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,9 +22,9 @@ import org.eclipse.jdt.internal.debug.core.model.JDIFieldVariable;
 import org.eclipse.jdt.internal.debug.core.model.JDILocalVariable;
 import org.eclipse.jdt.internal.debug.core.model.JDIValue;
 
-import com.redhat.ceylon.compiler.java.codegen.Naming;
-import com.redhat.ceylon.compiler.java.language.VariableBox;
-import com.redhat.ceylon.eclipse.core.debug.DebugUtils;
+import org.eclipse.ceylon.compiler.java.codegen.Naming;
+import org.eclipse.ceylon.compiler.java.language.VariableBox;
+import org.eclipse.ceylon.ide.eclipse.core.debug.DebugUtils;
 
 public class CeylonContentProviderFilter {
     public static Object[] filterVariables(Object[] variables, IPresentationContext context) throws DebugException {

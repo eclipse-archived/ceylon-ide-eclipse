@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.core.model;
+package org.eclipse.ceylon.ide.eclipse.core.model;
 
-import com.redhat.ceylon.compiler.typechecker.context.TypecheckerUnit;
+import org.eclipse.ceylon.compiler.typechecker.context.TypecheckerUnit;
 
 public abstract class IdeUnit extends TypecheckerUnit implements IUnit {
     public JDTModule getModule() {

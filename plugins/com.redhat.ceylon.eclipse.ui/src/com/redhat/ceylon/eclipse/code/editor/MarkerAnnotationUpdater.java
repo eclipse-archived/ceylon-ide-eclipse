@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.RefinementAnnotationCreator.TODO_ANNOTATION_TYPE;
-import static com.redhat.ceylon.eclipse.code.editor.CeylonAnnotation.isParseAnnotation;
-import static com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.TASK_MARKER_ID;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.RefinementAnnotationCreator.TODO_ANNOTATION_TYPE;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.CeylonAnnotation.isParseAnnotation;
+import static org.eclipse.ceylon.ide.eclipse.code.parse.TreeLifecycleListener.Stage.TYPE_ANALYSIS;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.PROBLEM_MARKER_ID;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.TASK_MARKER_ID;
 
 import java.util.Iterator;
 
@@ -16,8 +16,8 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.eclipse.code.parse.TreeLifecycleListener;
 
 class MarkerAnnotationUpdater implements TreeLifecycleListener {
     

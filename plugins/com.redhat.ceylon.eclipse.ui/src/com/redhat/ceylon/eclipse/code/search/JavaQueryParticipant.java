@@ -1,13 +1,13 @@
-package com.redhat.ceylon.eclipse.code.search;
+package org.eclipse.ceylon.ide.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.getCeylonSimpleName;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.getJavaQualifiedName;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.getProjectsToSearch;
-import static com.redhat.ceylon.eclipse.util.JavaSearch.toCeylonDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.gotoLocation;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getPackage;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectModelLoader;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static org.eclipse.ceylon.ide.eclipse.util.JavaSearch.getCeylonSimpleName;
+import static org.eclipse.ceylon.ide.eclipse.util.JavaSearch.getJavaQualifiedName;
+import static org.eclipse.ceylon.ide.eclipse.util.JavaSearch.getProjectsToSearch;
+import static org.eclipse.ceylon.ide.eclipse.util.JavaSearch.toCeylonDeclaration;
 import static org.eclipse.jdt.core.IJavaElement.PACKAGE_FRAGMENT;
 import static org.eclipse.jdt.core.IJavaElement.TYPE;
 import static org.eclipse.jdt.core.search.IJavaSearchConstants.ALL_OCCURRENCES;
@@ -51,21 +51,21 @@ import org.eclipse.search.ui.text.AbstractTextSearchViewPage;
 import org.eclipse.search.ui.text.Match;
 import org.eclipse.ui.PartInitException;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-import com.redhat.ceylon.ide.common.util.FindAssignmentsVisitor;
-import com.redhat.ceylon.ide.common.util.FindReferencesVisitor;
-import com.redhat.ceylon.ide.common.util.FindSubtypesVisitor;
-import com.redhat.ceylon.model.loader.ModelLoader;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Modules;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.ide.common.util.FindAssignmentsVisitor;
+import org.eclipse.ceylon.ide.common.util.FindReferencesVisitor;
+import org.eclipse.ceylon.ide.common.util.FindSubtypesVisitor;
+import org.eclipse.ceylon.model.loader.ModelLoader;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Modules;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
 
 public class JavaQueryParticipant 
         implements IQueryParticipant, IMatchPresentation {

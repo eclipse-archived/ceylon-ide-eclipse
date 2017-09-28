@@ -1,26 +1,26 @@
-package com.redhat.ceylon.test.eclipse.plugin.ui;
+package org.eclipse.ceylon.test.eclipse.plugin.ui;
 
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.HISTORY;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.RELAUNCH;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.RELAUNCH_FAILED;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STOP;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.historyLabel;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.msg;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.relaunchLabel;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.relaunchFailedLabel;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.relaunchFailedNamePostfix;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestPlatformJs;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestPlatformJvm;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestRunFinished;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestRunInterrupted;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestRunRunning;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages.stopLabel;
-import static com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getActivePage;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getDisplay;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getElapsedTimeInSeconds;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
-import static com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchShortcut.relaunch;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.HISTORY;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.RELAUNCH;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.RELAUNCH_FAILED;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry.STOP;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.historyLabel;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.msg;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.relaunchLabel;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.relaunchFailedLabel;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.relaunchFailedNamePostfix;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestPlatformJs;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestPlatformJvm;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestRunFinished;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestRunInterrupted;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.statusTestRunRunning;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages.stopLabel;
+import static org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin.LAUNCH_CONFIG_TYPE_JS;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getActivePage;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getDisplay;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getElapsedTimeInSeconds;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
+import static org.eclipse.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchShortcut.relaunch;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -58,17 +58,17 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.UIJob;
 
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestElement;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestRunContainer;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestRunListener;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestRunListenerAdapter;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestImageRegistry;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import org.eclipse.ceylon.test.eclipse.plugin.model.TestElement;
+import org.eclipse.ceylon.test.eclipse.plugin.model.TestRun;
+import org.eclipse.ceylon.test.eclipse.plugin.model.TestRunContainer;
+import org.eclipse.ceylon.test.eclipse.plugin.model.TestRunListener;
+import org.eclipse.ceylon.test.eclipse.plugin.model.TestRunListenerAdapter;
 
 public class TestRunViewPart extends ViewPart {
 
-    private static final String NAME = "com.redhat.ceylon.test.eclipse.plugin.testview";
+    private static final String NAME = "org.eclipse.ceylon.test.eclipse.plugin.testview";
     
     private static final int REFRESH_INTERVAL;
     static {

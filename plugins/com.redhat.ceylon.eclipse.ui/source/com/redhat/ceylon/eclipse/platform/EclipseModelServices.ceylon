@@ -1,19 +1,19 @@
-import com.redhat.ceylon.eclipse.util {
+import org.eclipse.ceylon.ide.eclipse.util {
     withJavaModel
 }
-import com.redhat.ceylon.ide.common.model {
+import org.eclipse.ceylon.ide.common.model {
     EditedSourceFile,
     ProjectSourceFile,
     CrossProjectSourceFile,
     CeylonProject
 }
-import com.redhat.ceylon.ide.common.model.parsing {
+import org.eclipse.ceylon.ide.common.model.parsing {
     RootFolderScanner
 }
-import com.redhat.ceylon.ide.common.platform {
+import org.eclipse.ceylon.ide.common.platform {
     ModelServices
 }
-import com.redhat.ceylon.ide.common.typechecker {
+import org.eclipse.ceylon.ide.common.typechecker {
     EditedPhasedUnit,
     ProjectPhasedUnit,
     CrossProjectPhasedUnit
@@ -35,7 +35,7 @@ import org.eclipse.jdt.core {
     IClasspathEntry,
     JavaCore
 }
-import com.redhat.ceylon.eclipse.core.model {
+import org.eclipse.ceylon.ide.eclipse.core.model {
     isCeylonSourceEntry
 }
 

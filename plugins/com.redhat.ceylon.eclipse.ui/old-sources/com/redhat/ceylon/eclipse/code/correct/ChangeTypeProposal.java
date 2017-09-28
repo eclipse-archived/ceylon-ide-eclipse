@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoFile;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.gotoFile;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -12,9 +12,9 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.ide.common.model.ModifiableSourceFile;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.common.model.ModifiableSourceFile;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 class ChangeTypeProposal extends CorrectionProposal {
 

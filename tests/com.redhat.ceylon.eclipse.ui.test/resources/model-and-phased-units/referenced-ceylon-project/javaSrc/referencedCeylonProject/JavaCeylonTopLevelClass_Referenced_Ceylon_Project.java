@@ -1,7 +1,7 @@
 package referencedCeylonProject;
 
-import com.redhat.ceylon.compiler.java.metadata.Ceylon;
-import com.redhat.ceylon.compiler.java.metadata.Class;
+import org.eclipse.ceylon.compiler.java.metadata.Ceylon;
+import org.eclipse.ceylon.compiler.java.metadata.Class;
 
 @Ceylon(major = 8) 
 @Class(extendsType = "ceylon.language::Basic")

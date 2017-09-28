@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.select.SourceFileSelectionDialog.selectSourceFile;
-import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.getSelectedJavaElement;
+import static org.eclipse.ceylon.ide.eclipse.code.select.SourceFileSelectionDialog.selectSourceFile;
+import static org.eclipse.ceylon.ide.eclipse.code.wizard.WizardUtil.getSelectedJavaElement;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import org.eclipse.core.resources.IFile;

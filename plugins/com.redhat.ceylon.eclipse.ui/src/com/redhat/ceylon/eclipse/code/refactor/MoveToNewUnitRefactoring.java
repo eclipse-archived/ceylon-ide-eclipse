@@ -1,14 +1,14 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.createEditorChange;
-import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getImportText;
-import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.isUnsharedUsedLocally;
-import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorDocLinks;
-import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorImports;
-import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.refactorProjectImportsAndDocLinks;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getFile;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static org.eclipse.ceylon.ide.eclipse.code.refactor.MoveUtil.createEditorChange;
+import static org.eclipse.ceylon.ide.eclipse.code.refactor.MoveUtil.getImportText;
+import static org.eclipse.ceylon.ide.eclipse.code.refactor.MoveUtil.isUnsharedUsedLocally;
+import static org.eclipse.ceylon.ide.eclipse.code.refactor.MoveUtil.refactorDocLinks;
+import static org.eclipse.ceylon.ide.eclipse.code.refactor.MoveUtil.refactorImports;
+import static org.eclipse.ceylon.ide.eclipse.code.refactor.MoveUtil.refactorProjectImportsAndDocLinks;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectTypeChecker;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getFile;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -29,13 +29,13 @@ import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.DeleteEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 
-import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Package;
 
 public class MoveToNewUnitRefactoring extends Refactoring {
     

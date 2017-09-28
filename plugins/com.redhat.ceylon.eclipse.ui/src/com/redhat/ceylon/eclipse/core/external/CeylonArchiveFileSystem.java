@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package com.redhat.ceylon.eclipse.core.external;
+package org.eclipse.ceylon.ide.eclipse.core.external;
 
 import java.net.URI;
 import java.net.URISyntaxException;

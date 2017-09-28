@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.core.external;
+package org.eclipse.ceylon.ide.eclipse.core.external;
 
-import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
+import static org.eclipse.ceylon.ide.eclipse.util.InteropUtils.toJavaString;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,11 +42,11 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.internal.core.util.Messages;
 import org.eclipse.jdt.internal.core.util.Util;
 
-import com.redhat.ceylon.cmr.api.ArtifactContext;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.cmr.api.ArtifactContext;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
 
 public class ExternalSourceArchiveManager implements IResourceChangeListener {
     private static final String EXTERNAL_PROJECT_NAME = "Ceylon Source Archives";

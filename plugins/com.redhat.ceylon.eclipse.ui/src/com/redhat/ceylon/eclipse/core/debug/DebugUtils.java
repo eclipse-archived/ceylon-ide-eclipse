@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.core.debug;
+package org.eclipse.ceylon.ide.eclipse.core.debug;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,35 +45,35 @@ import org.eclipse.jdt.internal.debug.core.model.JDINullValue;
 import org.eclipse.jdt.internal.debug.core.model.JDIObjectValue;
 import org.eclipse.jdt.internal.debug.core.model.JDIStackFrame;
 
-import com.redhat.ceylon.compiler.java.codegen.Naming;
-import com.redhat.ceylon.compiler.java.language.AbstractCallable;
-import com.redhat.ceylon.compiler.java.language.LazyIterable;
-import com.redhat.ceylon.compiler.java.runtime.metamodel.Metamodel;
-import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnit;
-import com.redhat.ceylon.compiler.typechecker.context.PhasedUnits;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.builder.CeylonNature;
-import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget;
-import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationListener;
-import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationRunner;
-import com.redhat.ceylon.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationWaiter;
-import com.redhat.ceylon.eclipse.util.JavaSearch;
-import com.redhat.ceylon.eclipse.util.JavaSearch.DefaultArgumentMethodSearch;
-import com.redhat.ceylon.ide.common.model.BaseIdeModelLoader;
-import com.redhat.ceylon.ide.common.model.BaseIdeModule;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
-import com.redhat.ceylon.ide.common.typechecker.CrossProjectPhasedUnit;
-import com.redhat.ceylon.ide.common.util.escaping_;
-import com.redhat.ceylon.model.loader.ModelLoader.DeclarationType;
-import com.redhat.ceylon.model.loader.NamingBase.Suffix;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.LazyType;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.TypeParameter;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.compiler.java.codegen.Naming;
+import org.eclipse.ceylon.compiler.java.language.AbstractCallable;
+import org.eclipse.ceylon.compiler.java.language.LazyIterable;
+import org.eclipse.ceylon.compiler.java.runtime.metamodel.Metamodel;
+import org.eclipse.ceylon.compiler.java.runtime.model.TypeDescriptor;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnit;
+import org.eclipse.ceylon.compiler.typechecker.context.PhasedUnits;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
+import org.eclipse.ceylon.ide.eclipse.core.debug.model.CeylonJDIDebugTarget;
+import org.eclipse.ceylon.ide.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationListener;
+import org.eclipse.ceylon.ide.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationRunner;
+import org.eclipse.ceylon.ide.eclipse.core.debug.model.CeylonJDIDebugTarget.EvaluationWaiter;
+import org.eclipse.ceylon.ide.eclipse.util.JavaSearch;
+import org.eclipse.ceylon.ide.eclipse.util.JavaSearch.DefaultArgumentMethodSearch;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModelLoader;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.ide.common.model.CeylonProject;
+import org.eclipse.ceylon.ide.common.typechecker.CrossProjectPhasedUnit;
+import org.eclipse.ceylon.ide.common.util.escaping_;
+import org.eclipse.ceylon.model.loader.ModelLoader.DeclarationType;
+import org.eclipse.ceylon.model.loader.NamingBase.Suffix;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.LazyType;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Type;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.TypeParameter;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassType;
@@ -124,7 +124,7 @@ public class DebugUtils {
                 String packageName = packagePath.replace('/', '.');
                 List<CeylonProject<IProject, IResource, IFolder, IFile>> ceylonProjects = modelJ2C().ceylonModel().getCeylonProjectsAsJavaList();
                 if (packageName.startsWith(Module.LANGUAGE_MODULE_NAME) ||
-                        packageName.startsWith("com.redhat.ceylon.") &&
+                        packageName.startsWith("org.eclipse.ceylon.") &&
                         ! ceylonProjects.isEmpty()) {
                     IJavaProject jp = JavaCore.create(ceylonProjects.get(0).getIdeArtifact());
                     packagePathToProjectCache.addEntry(packagePath, jp);
@@ -379,7 +379,7 @@ public class DebugUtils {
                 IJavaThread innerThread, 
                 IProgressMonitor monitor) throws DebugException {
             if (typeDescriptor instanceof IJavaObject && ! (typeDescriptor instanceof JDINullValue)) {
-                IJavaValue producedType = metamodelType.sendMessage("getProducedType", "(Lcom/redhat/ceylon/compiler/java/runtime/model/TypeDescriptor;)Lcom/redhat/ceylon/model/typechecker/model/Type;", new IJavaValue[] {typeDescriptor}, innerThread);
+                IJavaValue producedType = metamodelType.sendMessage("getProducedType", "(Lorg/eclipse/ceylon/compiler/java/runtime/model/TypeDescriptor;)Lorg/eclipse/ceylon/model/typechecker/model/Type;", new IJavaValue[] {typeDescriptor}, innerThread);
                 if (producedType instanceof IJavaObject) {
                     return (IJavaObject) producedType;
                 }
@@ -410,12 +410,12 @@ public class DebugUtils {
             }
             if (! cancelTypeDescriptorRetrieval) {
                 try {
-                    typeDescriptor = instance.sendMessage("$getType$", "()Lcom/redhat/ceylon/compiler/java/runtime/model/TypeDescriptor;", new IJavaValue[0], innerThread, null);
+                    typeDescriptor = instance.sendMessage("$getType$", "()Lorg/eclipse/ceylon/compiler/java/runtime/model/TypeDescriptor;", new IJavaValue[0], innerThread, null);
                 } catch(DebugException de) {
                     // the value surely doesn't implement ReifiedType
                     if (! isMethod) {
                         // Don't call getTypeDescriptor for objects that are in fact local Ceylon methods. It would trigger an exception 
-                        typeDescriptor = metamodelType.sendMessage("getTypeDescriptor", "(Ljava/lang/Object;)Lcom/redhat/ceylon/compiler/java/runtime/model/TypeDescriptor;", new IJavaValue[] {instance}, innerThread);
+                        typeDescriptor = metamodelType.sendMessage("getTypeDescriptor", "(Ljava/lang/Object;)Lorg/eclipse/ceylon/compiler/java/runtime/model/TypeDescriptor;", new IJavaValue[] {instance}, innerThread);
                     }
                 }
             }
@@ -500,7 +500,7 @@ public class DebugUtils {
                     final JDIDebugTarget debugTarget = objectValue.getJavaDebugTarget();
                     if (debugTarget instanceof CeylonJDIDebugTarget) {
                         CeylonJDIDebugTarget ceylonDebugTarget = (CeylonJDIDebugTarget) debugTarget;
-                        final boolean isMethod = ceylonDebugTarget.isAnnotationPresent(type, com.redhat.ceylon.compiler.java.metadata.Method.class, 5000);
+                        final boolean isMethod = ceylonDebugTarget.isAnnotationPresent(type, org.eclipse.ceylon.compiler.java.metadata.Method.class, 5000);
                         
                         IJavaValue reifiedTypeInfo = ceylonDebugTarget.getEvaluationResult(new EvaluationRunner() {
                             @Override
@@ -536,7 +536,7 @@ public class DebugUtils {
                     IJavaThread innerThread, IProgressMonitor monitor)
             throws DebugException {
                 if (producedType instanceof IJavaObject && ! (producedType instanceof JDINullValue)) {
-                    IJavaValue producedTypeName = ((IJavaObject) producedType).sendMessage("asString", "()Ljava/lang/String;", new IJavaValue[] {}, innerThread, "Lcom/redhat/ceylon/model/typechecker/model/Type;");
+                    IJavaValue producedTypeName = ((IJavaObject) producedType).sendMessage("asString", "()Ljava/lang/String;", new IJavaValue[] {}, innerThread, "Lorg/eclipse/ceylon/model/typechecker/model/Type;");
                     return producedTypeName;
                 }
                 return null;
@@ -687,7 +687,7 @@ public class DebugUtils {
             @Override
             public void run(IJavaThread innerThread, IProgressMonitor monitor,
                     EvaluationListener listener) throws DebugException {
-                IJavaValue qualifiedStringValue = jdiDeclaration.sendMessage("getQualifiedNameString", "()Ljava/lang/String;", new IJavaValue[0], innerThread, "Lcom/redhat/ceylon/model/typechecker/model/Declaration;");
+                IJavaValue qualifiedStringValue = jdiDeclaration.sendMessage("getQualifiedNameString", "()Ljava/lang/String;", new IJavaValue[0], innerThread, "Lorg/eclipse/ceylon/model/typechecker/model/Declaration;");
                 listener.finished(qualifiedStringValue);
             }
         };
@@ -723,7 +723,7 @@ public class DebugUtils {
                 public IJavaObject doOnProducedType(
                         IJavaObject producedType, IJavaThread innerThread,
                         IProgressMonitor monitor) throws DebugException {
-                    IJavaValue value = producedType.sendMessage("getDeclaration", "()Lcom/redhat/ceylon/model/typechecker/model/TypeDeclaration;", new IJavaValue[] {}, innerThread, null);
+                    IJavaValue value = producedType.sendMessage("getDeclaration", "()Lorg/eclipse/ceylon/model/typechecker/model/TypeDeclaration;", new IJavaValue[] {}, innerThread, null);
                     if (value instanceof IJavaObject) {
                         return (IJavaObject) value;
                     }

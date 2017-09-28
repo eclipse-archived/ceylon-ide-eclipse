@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.core.launch;
+package org.eclipse.ceylon.ide.eclipse.core.launch;
 
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CodeCompletions.getLabelDescriptionFor;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CodeCompletions.getStyledDescriptionFor;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getPackageLabel;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.PACKAGE;
 
 import java.util.Comparator;
 import java.util.List;
@@ -27,10 +27,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.TypedDeclaration;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 public class CeylonTopLevelSelectionDialog extends FilteredItemsSelectionDialog {
 

@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.hover;
+package org.eclipse.ceylon.ide.eclipse.code.hover;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.getNodePath;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getEditorInput;
-import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedNode;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.getNodePath;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getEditorInput;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.findNode;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getReferencedNode;
 import static org.eclipse.jdt.internal.ui.JavaPluginImages.setLocalImageDescriptors;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_SOURCE_HOVER_BACKGROUND_COLOR;
 import static org.eclipse.jdt.ui.PreferenceConstants.EDITOR_SOURCE_HOVER_BACKGROUND_COLOR_SYSTEM_DEFAULT;
@@ -69,14 +69,14 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer;
-import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration;
-import com.redhat.ceylon.eclipse.code.editor.Navigation;
-import com.redhat.ceylon.eclipse.code.editor.SourceArchiveDocumentProvider;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonSourceViewer;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonSourceViewerConfiguration;
+import org.eclipse.ceylon.ide.eclipse.code.editor.Navigation;
+import org.eclipse.ceylon.ide.eclipse.code.editor.SourceArchiveDocumentProvider;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
 
 /**
  * Source viewer based implementation of <code>IInformationControl</code>.

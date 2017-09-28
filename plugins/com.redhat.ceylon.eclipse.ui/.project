@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>com.redhat.ceylon.eclipse.ui</name>
+	<name>org.eclipse.ceylon.ide.eclipse.ui</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -31,7 +31,7 @@
 			</arguments>
 		</buildCommand>
 		<buildCommand>
-			<name>com.redhat.ceylon.eclipse.ui.ceylonBuilder</name>
+			<name>org.eclipse.ceylon.ide.eclipse.ui.ceylonBuilder</name>
 			<arguments>
 				<dictionary>
 					<key>systemRepo</key>
@@ -41,7 +41,7 @@
 		</buildCommand>
 	</buildSpec>
 	<natures>
-		<nature>com.redhat.ceylon.eclipse.ui.ceylonNature</nature>
+		<nature>org.eclipse.ceylon.ide.eclipse.ui.ceylonNature</nature>
 		<nature>org.eclipse.pde.PluginNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>

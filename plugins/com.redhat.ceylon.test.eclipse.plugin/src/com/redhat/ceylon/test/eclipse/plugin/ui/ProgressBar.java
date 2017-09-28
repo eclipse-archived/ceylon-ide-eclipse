@@ -1,4 +1,4 @@
-package com.redhat.ceylon.test.eclipse.plugin.ui;
+package org.eclipse.ceylon.test.eclipse.plugin.ui;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 
-import com.redhat.ceylon.test.eclipse.plugin.model.TestRun;
+import org.eclipse.ceylon.test.eclipse.plugin.model.TestRun;
 
 public class ProgressBar extends Canvas {
 

@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.html;
+package org.eclipse.ceylon.ide.eclipse.code.html;
 
 import java.io.IOException;
 import java.io.Reader;

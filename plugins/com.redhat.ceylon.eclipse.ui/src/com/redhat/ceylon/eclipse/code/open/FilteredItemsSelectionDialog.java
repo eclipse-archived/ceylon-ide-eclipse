@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.open;
+package org.eclipse.ceylon.ide.eclipse.code.open;
 
 /*******************************************************************************
  * Copyright (c) 2000, 2011 IBM Corporation and others.
@@ -138,9 +138,9 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.statushandlers.StatusManager;
 
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.DocBrowser;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.eclipse.util.DocBrowser;
 
 /**
  * Shows a list of items to the user with a text entry field for a string

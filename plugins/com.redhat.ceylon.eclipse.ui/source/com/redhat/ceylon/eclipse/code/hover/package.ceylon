@@ -1,1 +1,1 @@
-shared package com.redhat.ceylon.eclipse.code.hover;
+shared package org.eclipse.ceylon.ide.eclipse.code.hover;

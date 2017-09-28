@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.open;
+package org.eclipse.ceylon.ide.eclipse.code.open;
 
-import static com.redhat.ceylon.eclipse.code.outline.HierarchyView.showHierarchyView;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getSelectionText;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.HierarchyView.showHierarchyView;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getSelectionText;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
 
 import org.eclipse.jface.action.Action;
@@ -10,7 +10,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.redhat.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
 
 public class OpenDeclarationInHierarchyAction extends Action {
     

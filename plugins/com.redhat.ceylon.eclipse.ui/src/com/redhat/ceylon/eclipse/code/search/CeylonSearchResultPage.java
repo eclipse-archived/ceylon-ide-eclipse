@@ -1,23 +1,23 @@
-package com.redhat.ceylon.eclipse.code.search;
+package org.eclipse.ceylon.ide.eclipse.code.search;
 
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoLocation;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FULL_LOC_SEARCH_RESULTS;
-import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_FILE;
-import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_FOLDER;
-import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_MODULE;
-import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_PACKAGE;
-import static com.redhat.ceylon.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_PROJECT;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.getOutlineFont;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_SEARCH;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CONFIG_LABELS;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.FLAT_MODE;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.FOLDER_MODE;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE_MODE;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.PACKAGE_MODE;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.PROJECT_MODE;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.TREE_MODE;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.UNIT_MODE;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.gotoLocation;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.FULL_LOC_SEARCH_RESULTS;
+import static org.eclipse.ceylon.ide.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_FILE;
+import static org.eclipse.ceylon.ide.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_FOLDER;
+import static org.eclipse.ceylon.ide.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_MODULE;
+import static org.eclipse.ceylon.ide.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_PACKAGE;
+import static org.eclipse.ceylon.ide.eclipse.code.search.CeylonSearchResultTreeContentProvider.LEVEL_PROJECT;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.getOutlineFont;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_SEARCH;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CONFIG_LABELS;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.FLAT_MODE;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.FOLDER_MODE;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.MODULE_MODE;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.PACKAGE_MODE;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.PROJECT_MODE;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.TREE_MODE;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.UNIT_MODE;
 import static org.eclipse.jface.action.IAction.AS_CHECK_BOX;
 import static org.eclipse.search.ui.IContextMenuConstants.GROUP_VIEWER_SETUP;
 import static org.eclipse.ui.PlatformUI.getWorkbench;
@@ -54,10 +54,10 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonOutlinesPreferencePage;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonFiltersPreferencePage;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonOutlinesPreferencePage;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 public class CeylonSearchResultPage extends AbstractTextSearchViewPage {
     

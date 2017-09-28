@@ -1,12 +1,12 @@
-package com.redhat.ceylon.eclipse.code.resolve;
+package org.eclipse.ceylon.ide.eclipse.code.resolve;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewer.SHOW_HIERARCHY;
-import static com.redhat.ceylon.eclipse.code.editor.Navigation.gotoDeclaration;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getPopupStyle;
-import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getIdentifyingNode;
-import static com.redhat.ceylon.eclipse.util.Nodes.getReferencedModel;
-import static com.redhat.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.CeylonSourceViewer.SHOW_HIERARCHY;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.Navigation.gotoDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getPopupStyle;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.findNode;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getIdentifyingNode;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getReferencedModel;
+import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,20 +17,20 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.eclipse.code.correct.CorrectionUtil;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.search.ReferencesPopup;
-import com.redhat.ceylon.model.typechecker.model.Class;
-import com.redhat.ceylon.model.typechecker.model.ClassOrInterface;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
-import com.redhat.ceylon.model.typechecker.model.Functional;
-import com.redhat.ceylon.model.typechecker.model.ModelUtil;
-import com.redhat.ceylon.model.typechecker.model.Referenceable;
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.TypeDeclaration;
-import com.redhat.ceylon.model.typechecker.model.TypedDeclaration;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.ide.eclipse.code.correct.CorrectionUtil;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.eclipse.code.search.ReferencesPopup;
+import org.eclipse.ceylon.model.typechecker.model.Class;
+import org.eclipse.ceylon.model.typechecker.model.ClassOrInterface;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Functional;
+import org.eclipse.ceylon.model.typechecker.model.ModelUtil;
+import org.eclipse.ceylon.model.typechecker.model.Referenceable;
+import org.eclipse.ceylon.model.typechecker.model.Type;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.TypedDeclaration;
 
 public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
     private static final IHyperlink[] NO_HYPERLINKS = new IHyperlink[0];
@@ -73,7 +73,7 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
         public String getHyperlinkText() {
             return "References" + 
                     CorrectionUtil.shortcut(
-                            "com.redhat.ceylon.eclipse.ui.editor.findReferences");
+                            "org.eclipse.ceylon.ide.eclipse.ui.editor.findReferences");
         }
 
         @Override
@@ -112,7 +112,7 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
         public String getHyperlinkText() {
             String hint = 
                     CorrectionUtil.shortcut(
-                            "com.redhat.ceylon.eclipse.ui.editor.findReferences");
+                            "org.eclipse.ceylon.ide.eclipse.ui.editor.findReferences");
             if (!hint.isEmpty()) {
                 hint = hint + hint.substring(2);
             }
@@ -151,7 +151,7 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
         public String getHyperlinkText() {
             return "Hierarchy" + 
                     CorrectionUtil.shortcut(
-                            "com.redhat.ceylon.eclipse.ui.editor.hierarchy");
+                            "org.eclipse.ceylon.ide.eclipse.ui.editor.hierarchy");
         }
 
         @Override
@@ -215,7 +215,7 @@ public class ReferencesHyperlinkDetector implements IHyperlinkDetector {
         public String getHyperlinkText() {
             return "Refined Declaration" + 
                     CorrectionUtil.shortcut(
-                            "com.redhat.ceylon.eclipse.ui.action.openRefinedDeclaration");
+                            "org.eclipse.ceylon.ide.eclipse.ui.action.openRefinedDeclaration");
         }
 
         @Override

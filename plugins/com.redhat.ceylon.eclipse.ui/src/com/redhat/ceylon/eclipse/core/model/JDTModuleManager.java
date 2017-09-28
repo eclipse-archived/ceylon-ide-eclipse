@@ -19,7 +19,7 @@
 // */
 //
 //<<<<<<< Upstream, based on master
-//package com.redhat.ceylon.eclipse.core.model;
+//package org.eclipse.ceylon.ide.eclipse.core.model;
 //
 //import java.util.ArrayList;
 //import java.util.Arrays;
@@ -38,19 +38,19 @@
 //import org.eclipse.jdt.core.JavaModelException;
 //import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 //
-//import com.redhat.ceylon.common.Backend;
-//import com.redhat.ceylon.common.Backends;
-//import com.redhat.ceylon.compiler.java.util.Util;
-//import com.redhat.ceylon.compiler.typechecker.TypeChecker;
-//import com.redhat.ceylon.compiler.typechecker.context.Context;
-//import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-//import com.redhat.ceylon.model.cmr.JDKUtils;
-//import com.redhat.ceylon.model.loader.AbstractModelLoader;
-//import com.redhat.ceylon.model.loader.model.LazyModuleManager;
-//import com.redhat.ceylon.model.typechecker.model.Module;
-//import com.redhat.ceylon.model.typechecker.model.ModuleImport;
-//import com.redhat.ceylon.model.typechecker.model.Modules;
-//import com.redhat.ceylon.model.typechecker.model.Package;
+//import org.eclipse.ceylon.common.Backend;
+//import org.eclipse.ceylon.common.Backends;
+//import org.eclipse.ceylon.compiler.java.util.Util;
+//import org.eclipse.ceylon.compiler.typechecker.TypeChecker;
+//import org.eclipse.ceylon.compiler.typechecker.context.Context;
+//import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+//import org.eclipse.ceylon.model.cmr.JDKUtils;
+//import org.eclipse.ceylon.model.loader.AbstractModelLoader;
+//import org.eclipse.ceylon.model.loader.model.LazyModuleManager;
+//import org.eclipse.ceylon.model.typechecker.model.Module;
+//import org.eclipse.ceylon.model.typechecker.model.ModuleImport;
+//import org.eclipse.ceylon.model.typechecker.model.Modules;
+//import org.eclipse.ceylon.model.typechecker.model.Package;
 //
 ///**
 // * @author david

@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.MINOR_CHANGE;
-import static com.redhat.ceylon.eclipse.util.Highlights.styleProposal;
+import static org.eclipse.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.MINOR_CHANGE;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.styleProposal;
 
 import java.util.Collection;
 
@@ -25,7 +25,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
 
 final class MoveDirProposal 
         implements ICompletionProposal,

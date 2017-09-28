@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.preferences;
+package org.eclipse.ceylon.ide.eclipse.code.preferences;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.MODULE;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.REPO;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.VERSION;
-import static com.redhat.ceylon.eclipse.util.Highlights.STRING_STYLER;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.MODULE;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.REPO;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.VERSION;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.STRING_STYLER;
 
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -12,8 +12,8 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 
-import com.redhat.ceylon.ide.common.modulesearch.ModuleNode;
-import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleNode;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleVersionNode;
 
 final class ModuleSelectionLabelProvider
         extends StyledCellLabelProvider 

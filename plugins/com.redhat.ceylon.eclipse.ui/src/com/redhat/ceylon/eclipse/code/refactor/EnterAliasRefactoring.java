@@ -1,9 +1,9 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.util.DocLinks.hasPackage;
-import static com.redhat.ceylon.eclipse.util.DocLinks.nameRegion;
-import static com.redhat.ceylon.eclipse.util.Nodes.findImport;
-import static com.redhat.ceylon.eclipse.util.Nodes.getAbstraction;
+import static org.eclipse.ceylon.ide.eclipse.util.DocLinks.hasPackage;
+import static org.eclipse.ceylon.ide.eclipse.util.DocLinks.nameRegion;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.findImport;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getAbstraction;
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.createWarningStatus;
 
 import java.util.List;
@@ -23,11 +23,11 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.ui.IEditorPart;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree.Alias;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.Alias;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
 
 public class EnterAliasRefactoring extends AbstractRefactoring {
     

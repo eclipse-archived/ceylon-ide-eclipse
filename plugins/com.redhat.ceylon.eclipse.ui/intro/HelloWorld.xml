@@ -12,7 +12,7 @@
 	<item title="Open the Ceylon Perspective" skip="true">
 		<action pluginId="org.eclipse.ui.cheatsheets"
 			class="org.eclipse.ui.internal.cheatsheets.actions.OpenPerspective"
-			param1="com.redhat.ceylon.eclipse.ui.perspective" />
+			param1="org.eclipse.ceylon.ide.eclipse.ui.perspective" />
 		<description>
 			We need to be in the Ceylon Perspective. Select
 			<b>Window > Open Perspective > Other ... > Ceylon</b> from the 
@@ -32,7 +32,7 @@
 			<b>Finish</b>.
 		</description>
 		<command required="false"
-			serialization="org.eclipse.ui.newWizard(newWizardId=com.redhat.ceylon.eclipse.ui.newProjectWizard)" />
+			serialization="org.eclipse.ui.newWizard(newWizardId=org.eclipse.ceylon.ide.eclipse.ui.newProjectWizard)" />
 	</item>
 
 	<item title="Create a Ceylon compilation unit" dialog="true">
@@ -55,7 +55,7 @@
 			matter which.
 		</description>
 		<command required="false"
-			serialization="org.eclipse.ui.newWizard(newWizardId=com.redhat.ceylon.eclipse.ui.newUnitWizard)" />
+			serialization="org.eclipse.ui.newWizard(newWizardId=org.eclipse.ceylon.ide.eclipse.ui.newUnitWizard)" />
 	</item>
 
 	<item title="Add the code to the runnable function">

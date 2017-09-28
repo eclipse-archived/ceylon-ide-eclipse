@@ -1,4 +1,4 @@
-package com.redhat.ceylon.test.eclipse.plugin.model;
+package org.eclipse.ceylon.test.eclipse.plugin.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;

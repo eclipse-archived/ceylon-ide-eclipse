@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.viewer;
+package org.eclipse.ceylon.ide.eclipse.code.viewer;
 
 /*******************************************************************************
  * Copyright (c) 2000, 2012 IBM Corporation and others.
@@ -11,7 +11,7 @@ package com.redhat.ceylon.eclipse.code.viewer;
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -46,8 +46,8 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.ITextEditorExtension3;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonSourceViewerConfiguration;
 
 
 public class CeylonMergeViewer extends TextMergeViewer {

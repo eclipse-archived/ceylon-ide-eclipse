@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_NEW_FILE;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_NEW_FILE;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;

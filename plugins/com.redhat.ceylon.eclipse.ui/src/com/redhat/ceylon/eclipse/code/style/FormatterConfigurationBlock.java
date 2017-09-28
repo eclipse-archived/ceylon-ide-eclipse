@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.style;
+package org.eclipse.ceylon.ide.eclipse.code.style;
 
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.*;
+import static org.eclipse.ceylon.ide.eclipse.code.style.CeylonFormatterConstants.*;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -34,9 +34,9 @@ import org.eclipse.swt.widgets.Shell;
 import ceylon.formatter.options.loadProfile_;
 import ceylon.formatter.options.saveProfile_;
 
-import com.redhat.ceylon.common.Constants;
-import com.redhat.ceylon.eclipse.code.style.FormatterProfileManager.Profile;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.common.Constants;
+import org.eclipse.ceylon.ide.eclipse.code.style.FormatterProfileManager.Profile;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
 
 /**
  * The Ceylon code formatter preference page.

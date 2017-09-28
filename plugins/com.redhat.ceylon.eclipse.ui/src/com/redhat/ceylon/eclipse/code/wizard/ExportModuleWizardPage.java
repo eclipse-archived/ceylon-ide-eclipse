@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonRepositories;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_EXPORT_CAR;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getCeylonRepositories;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_EXPORT_CAR;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.io.File;
@@ -32,10 +32,10 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
-import com.redhat.ceylon.eclipse.code.select.ProjectSelectionDialog;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.ide.eclipse.code.select.ProjectSelectionDialog;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.model.typechecker.model.Module;
 
 public class ExportModuleWizardPage extends WizardPage implements IWizardPage {
 

@@ -1,13 +1,13 @@
-package com.redhat.ceylon.eclipse.code.wizard;
+package org.eclipse.ceylon.ide.eclipse.code.wizard;
 
-import static com.redhat.ceylon.cmr.api.ArtifactContext.allSuffixes;
-import static com.redhat.ceylon.eclipse.code.wizard.ExportModuleWizardPage.CLEAN_BUILD_BEFORE_EXPORT;
-import static com.redhat.ceylon.eclipse.code.wizard.ExportModuleWizardPage.RECURSIVE_EXPORT;
-import static com.redhat.ceylon.eclipse.code.wizard.WizardUtil.getSelectedJavaElement;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getInterpolatedCeylonSystemRepo;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getReferencedProjectsOutputRepositories;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.cmr.api.ArtifactContext.allSuffixes;
+import static org.eclipse.ceylon.ide.eclipse.code.wizard.ExportModuleWizardPage.CLEAN_BUILD_BEFORE_EXPORT;
+import static org.eclipse.ceylon.ide.eclipse.code.wizard.ExportModuleWizardPage.RECURSIVE_EXPORT;
+import static org.eclipse.ceylon.ide.eclipse.code.wizard.WizardUtil.getSelectedJavaElement;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getCeylonModulesOutputDirectory;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getInterpolatedCeylonSystemRepo;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getReferencedProjectsOutputRepositories;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.AUTO_BUILD;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -30,14 +30,14 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 
-import com.redhat.ceylon.cmr.api.ArtifactContext;
-import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
-import com.redhat.ceylon.cmr.ceylon.CeylonUtils.CeylonRepoManagerBuilder;
-import com.redhat.ceylon.cmr.ceylon.ModuleCopycat;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EclipseLogger;
-import com.redhat.ceylon.ide.common.model.BaseCeylonProject;
+import org.eclipse.ceylon.cmr.api.ArtifactContext;
+import org.eclipse.ceylon.cmr.api.RepositoryManager;
+import org.eclipse.ceylon.cmr.ceylon.CeylonUtils;
+import org.eclipse.ceylon.cmr.ceylon.CeylonUtils.CeylonRepoManagerBuilder;
+import org.eclipse.ceylon.cmr.ceylon.ModuleCopycat;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.EclipseLogger;
+import org.eclipse.ceylon.ide.common.model.BaseCeylonProject;
 
 public class ExportModuleWizard extends Wizard implements IExportWizard {
 

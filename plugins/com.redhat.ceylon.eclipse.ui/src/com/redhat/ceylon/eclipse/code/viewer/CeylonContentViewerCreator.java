@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.viewer;
+package org.eclipse.ceylon.ide.eclipse.code.viewer;
 
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.IViewerCreator;

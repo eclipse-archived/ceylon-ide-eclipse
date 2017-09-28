@@ -1,16 +1,16 @@
-package com.redhat.ceylon.eclipse.code.refactor;
+package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
-import static com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem.collapseMenuItems;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.imageRegistry;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_CHANGE;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_COMPOSITE_CHANGE;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_IMPORT;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_MOVE;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_RENAME;
-import static com.redhat.ceylon.eclipse.ui.CeylonResources.CEYLON_REORDER;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentEditor;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.refactorJ2C;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.DynamicMenuItem.collapseMenuItems;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.imageRegistry;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_CHANGE;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_COMPOSITE_CHANGE;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_IMPORT;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_MOVE;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_RENAME;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_REORDER;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getCurrentEditor;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.refactorJ2C;
 
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;
@@ -19,8 +19,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.editor.DynamicMenuItem;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.editor.DynamicMenuItem;
 
 public class RefactorMenuItems extends CompoundContributionItem {
     

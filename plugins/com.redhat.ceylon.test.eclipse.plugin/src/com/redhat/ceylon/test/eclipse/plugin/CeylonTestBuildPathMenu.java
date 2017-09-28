@@ -1,8 +1,8 @@
-package com.redhat.ceylon.test.eclipse.plugin;
+package org.eclipse.ceylon.test.eclipse.plugin;
 
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.containsCeylonTestImport;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getModule;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isCeylonProject;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.containsCeylonTestImport;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getModule;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.isCeylonProject;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -20,11 +20,11 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.actions.ActionGroup;
 
-import com.redhat.ceylon.eclipse.code.explorer.PackageExplorerActionGroup;
-import com.redhat.ceylon.eclipse.code.explorer.PackageExplorerPart;
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.test.eclipse.plugin.util.AddCeylonTestImport;
-import com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil;
+import org.eclipse.ceylon.ide.eclipse.code.explorer.PackageExplorerActionGroup;
+import org.eclipse.ceylon.ide.eclipse.code.explorer.PackageExplorerPart;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.test.eclipse.plugin.util.AddCeylonTestImport;
+import org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil;
 
 public class CeylonTestBuildPathMenu {
     

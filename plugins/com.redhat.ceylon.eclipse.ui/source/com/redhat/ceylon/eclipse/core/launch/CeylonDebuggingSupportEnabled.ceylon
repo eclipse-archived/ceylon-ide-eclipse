@@ -1,7 +1,7 @@
-import com.redhat.ceylon.eclipse.core.debug.model {
+import org.eclipse.ceylon.ide.eclipse.core.debug.model {
     CeylonJDIDebugTarget
 }
-import com.redhat.ceylon.eclipse.ui {
+import org.eclipse.ceylon.ide.eclipse.ui {
     CeylonPlugin {
         ceylonPluginId=pluginId,
         ceylonPlugin=instance

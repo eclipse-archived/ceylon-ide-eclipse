@@ -1,11 +1,11 @@
-package com.redhat.ceylon.test.eclipse.plugin.launch;
+package org.eclipse.ceylon.test.eclipse.plugin.launch;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.containsCeylonTestImport;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getModule;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getPackage;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getProject;
-import static com.redhat.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getProjectDeclaredSourceModules;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.containsCeylonTestImport;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getModule;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getPackage;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getProject;
+import static org.eclipse.ceylon.test.eclipse.plugin.util.CeylonTestUtil.getShell;
 import static org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME;
 
 import java.util.HashSet;
@@ -20,11 +20,11 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.IStatusHandler;
 import org.eclipse.jface.dialogs.MessageDialog;
 
-import com.redhat.ceylon.model.typechecker.model.Module;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestMessages;
-import com.redhat.ceylon.test.eclipse.plugin.CeylonTestPlugin;
-import com.redhat.ceylon.test.eclipse.plugin.util.AddCeylonTestImport;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestMessages;
+import org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPlugin;
+import org.eclipse.ceylon.test.eclipse.plugin.util.AddCeylonTestImport;
 
 public class CeylonTestDependencyStatusHandler implements IStatusHandler {
 

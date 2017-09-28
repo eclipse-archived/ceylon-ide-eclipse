@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonEditor.getFences;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor.getFences;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.action.Action;

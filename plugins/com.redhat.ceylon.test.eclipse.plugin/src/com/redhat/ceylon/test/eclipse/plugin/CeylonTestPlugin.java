@@ -1,4 +1,4 @@
-package com.redhat.ceylon.test.eclipse.plugin;
+package org.eclipse.ceylon.test.eclipse.plugin;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -6,12 +6,12 @@ import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-import com.redhat.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchesListener;
-import com.redhat.ceylon.test.eclipse.plugin.model.TestRunContainer;
+import org.eclipse.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchesListener;
+import org.eclipse.ceylon.test.eclipse.plugin.model.TestRunContainer;
 
 public class CeylonTestPlugin extends AbstractUIPlugin {
 
-    public static final String PLUGIN_ID = "com.redhat.ceylon.test.eclipse.plugin";
+    public static final String PLUGIN_ID = "org.eclipse.ceylon.test.eclipse.plugin";
     
     public static final String CEYLON_TEST_MODULE_NAME = "ceylon.test";
     public static final String CEYLON_TEST_MODULE_DEFAULT_VERSION = "1.0.0";

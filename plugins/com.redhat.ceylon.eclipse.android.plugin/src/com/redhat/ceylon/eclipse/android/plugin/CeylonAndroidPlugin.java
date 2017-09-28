@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.android.plugin;
+package org.eclipse.ceylon.ide.eclipse.android.plugin;
 
 import java.io.IOException;
 
@@ -9,7 +9,7 @@ import org.osgi.framework.BundleContext;
 
 public class CeylonAndroidPlugin extends AbstractUIPlugin {
 
-    public static final String PLUGIN_ID = "com.redhat.ceylon.eclipse.android.plugin";
+    public static final String PLUGIN_ID = "org.eclipse.ceylon.ide.eclipse.android.plugin";
         
     private static CeylonAndroidPlugin plugin;
     

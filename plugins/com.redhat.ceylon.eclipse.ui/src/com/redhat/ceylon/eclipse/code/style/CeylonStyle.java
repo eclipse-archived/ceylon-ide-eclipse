@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.style;
+package org.eclipse.ceylon.ide.eclipse.code.style;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,13 +20,13 @@ import ceylon.formatter.options.lf_;
 import ceylon.formatter.options.os_;
 import ceylon.formatter.options.saveProfile_;
 
-import com.redhat.ceylon.common.config.CeylonConfig;
-import com.redhat.ceylon.common.config.ConfigWriter;
-import com.redhat.ceylon.eclipse.code.style.FormatterProfileManager.Profile;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import org.eclipse.ceylon.common.config.CeylonConfig;
+import org.eclipse.ceylon.common.config.ConfigWriter;
+import org.eclipse.ceylon.ide.eclipse.code.style.FormatterProfileManager.Profile;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
 
-import static com.redhat.ceylon.eclipse.code.style.CeylonFormatterConstants.*;
+import static org.eclipse.ceylon.ide.eclipse.code.style.CeylonFormatterConstants.*;
 
 /**
  * Utility query and update for style options

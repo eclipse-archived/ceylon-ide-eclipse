@@ -1,1 +1,1 @@
-shared package com.redhat.ceylon.eclipse.code.correct;
+shared package org.eclipse.ceylon.ide.eclipse.code.correct;

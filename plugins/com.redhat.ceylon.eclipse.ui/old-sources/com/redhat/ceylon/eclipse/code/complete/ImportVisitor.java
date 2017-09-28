@@ -1,10 +1,10 @@
-package com.redhat.ceylon.eclipse.code.complete;
+package org.eclipse.ceylon.ide.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.fullPath;
-import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.nextTokenType;
-import static com.redhat.ceylon.eclipse.code.complete.ModuleCompletions.addModuleCompletions;
-import static com.redhat.ceylon.eclipse.code.complete.PackageCompletions.addCurrentPackageNameCompletion;
-import static com.redhat.ceylon.eclipse.code.complete.PackageCompletions.addPackageCompletions;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CompletionUtil.fullPath;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CompletionUtil.nextTokenType;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.ModuleCompletions.addModuleCompletions;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.PackageCompletions.addCurrentPackageNameCompletion;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.PackageCompletions.addPackageCompletions;
 
 import java.util.List;
 
@@ -12,11 +12,11 @@ import org.antlr.runtime.CommonToken;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 
-import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.compiler.typechecker.parser.CeylonLexer;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Visitor;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
 
 final class ImportVisitor extends Visitor {
     

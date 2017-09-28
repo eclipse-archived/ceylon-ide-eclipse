@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.browser;
+package org.eclipse.ceylon.ide.eclipse.code.browser;
 
 import org.eclipse.jface.text.DefaultInformationControl;
 

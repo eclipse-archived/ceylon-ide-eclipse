@@ -1,13 +1,13 @@
-package com.redhat.ceylon.eclipse.core.builder;
+package org.eclipse.ceylon.ide.eclipse.core.builder;
 
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getPackage;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.getRootFolder;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isInSourceFolder;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isResourceFile;
-import static com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.isSourceFile;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
-import static com.redhat.ceylon.eclipse.util.InteropUtils.toJavaString;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getPackage;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getRootFolder;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.isInSourceFolder;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.isResourceFile;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.isSourceFile;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
+import static org.eclipse.ceylon.ide.eclipse.util.InteropUtils.toJavaString;
 
 import java.io.File;
 import java.util.HashMap;
@@ -23,15 +23,15 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 
-import com.redhat.ceylon.common.FileUtil;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BooleanHolder;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
-import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
-import com.redhat.ceylon.ide.common.model.IResourceAware;
-import com.redhat.ceylon.ide.common.model.ProjectSourceFile;
-import com.redhat.ceylon.ide.common.model.delta.CompilationUnitDelta;
-import com.redhat.ceylon.model.typechecker.model.Package;
-import com.redhat.ceylon.model.typechecker.util.ModuleManager;
+import org.eclipse.ceylon.common.FileUtil;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.BooleanHolder;
+import org.eclipse.ceylon.ide.common.model.CeylonProject;
+import org.eclipse.ceylon.ide.common.model.CeylonProjectConfig;
+import org.eclipse.ceylon.ide.common.model.IResourceAware;
+import org.eclipse.ceylon.ide.common.model.ProjectSourceFile;
+import org.eclipse.ceylon.ide.common.model.delta.CompilationUnitDelta;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.model.typechecker.util.ModuleManager;
 
 final class DeltaScanner implements IResourceDeltaVisitor {
     private final BooleanHolder mustDoFullBuild;

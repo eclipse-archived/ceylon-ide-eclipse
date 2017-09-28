@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
@@ -12,7 +12,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.IUpdate;
 
-import com.redhat.ceylon.eclipse.core.external.ExternalSourceArchiveManager;
+import org.eclipse.ceylon.ide.eclipse.core.external.ExternalSourceArchiveManager;
 
 public class RulerEnableDisableBreakpointAction extends RulerBreakpointAction implements IUpdate, MouseListener {
     private IBreakpoint fBreakpoint;

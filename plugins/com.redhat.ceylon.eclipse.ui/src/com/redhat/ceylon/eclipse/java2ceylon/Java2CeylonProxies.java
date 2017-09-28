@@ -1,4 +1,4 @@
-package com.redhat.ceylon.eclipse.java2ceylon;
+package org.eclipse.ceylon.ide.eclipse.java2ceylon;
 
 public class Java2CeylonProxies {
     static CompletionJ2C completion;
@@ -13,16 +13,16 @@ public class Java2CeylonProxies {
     static PlatformJ2C platform;
 
     static {
-        completion = new com.redhat.ceylon.eclipse.code.complete.completionJ2C();
-        correct = new com.redhat.ceylon.eclipse.code.correct.correctJ2C();
-        editor = new com.redhat.ceylon.eclipse.code.editor.editorJ2C();
-        hover = new com.redhat.ceylon.eclipse.code.hover.hoverJ2C();
-        imports = new com.redhat.ceylon.eclipse.code.imports.importsJ2C();
-        refactor = new com.redhat.ceylon.eclipse.code.refactor.refactorJ2C();
-        model = new com.redhat.ceylon.eclipse.core.model.modelJ2C();
-        vfs = new com.redhat.ceylon.eclipse.core.vfs.vfsJ2C();
-        util = new com.redhat.ceylon.eclipse.util.utilJ2C();
-        platform = new com.redhat.ceylon.eclipse.platform.platformJ2C();
+        completion = new org.eclipse.ceylon.ide.eclipse.code.complete.completionJ2C();
+        correct = new org.eclipse.ceylon.ide.eclipse.code.correct.correctJ2C();
+        editor = new org.eclipse.ceylon.ide.eclipse.code.editor.editorJ2C();
+        hover = new org.eclipse.ceylon.ide.eclipse.code.hover.hoverJ2C();
+        imports = new org.eclipse.ceylon.ide.eclipse.code.imports.importsJ2C();
+        refactor = new org.eclipse.ceylon.ide.eclipse.code.refactor.refactorJ2C();
+        model = new org.eclipse.ceylon.ide.eclipse.core.model.modelJ2C();
+        vfs = new org.eclipse.ceylon.ide.eclipse.core.vfs.vfsJ2C();
+        util = new org.eclipse.ceylon.ide.eclipse.util.utilJ2C();
+        platform = new org.eclipse.ceylon.ide.eclipse.platform.platformJ2C();
     }
     
     public static CompletionJ2C completionJ2C() { return completion; }

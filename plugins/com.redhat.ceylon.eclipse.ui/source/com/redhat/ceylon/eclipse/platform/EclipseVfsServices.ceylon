@@ -2,34 +2,34 @@ import ceylon.interop.java {
     toStringArray
 }
 
-import com.redhat.ceylon.eclipse.core.model {
+import org.eclipse.ceylon.ide.eclipse.core.model {
     nativeFolderProperties
 }
-import com.redhat.ceylon.eclipse.core.vfs {
+import org.eclipse.ceylon.ide.eclipse.core.vfs {
     IFolderVirtualFile,
     IFileVirtualFile
 }
-import com.redhat.ceylon.eclipse.util {
+import org.eclipse.ceylon.ide.eclipse.util {
     toEclipsePath,
     fromEclipsePath
 }
-import com.redhat.ceylon.ide.common.model {
+import org.eclipse.ceylon.ide.common.model {
     CeylonProject
 }
-import com.redhat.ceylon.ide.common.platform {
+import org.eclipse.ceylon.ide.common.platform {
     platformUtils,
     Status,
     VfsServices
 }
-import com.redhat.ceylon.ide.common.util {
+import org.eclipse.ceylon.ide.common.util {
     unsafeCast,
     Path
 }
-import com.redhat.ceylon.ide.common.vfs {
+import org.eclipse.ceylon.ide.common.vfs {
     FolderVirtualFile,
     FileVirtualFile
 }
-import com.redhat.ceylon.model.typechecker.model {
+import org.eclipse.ceylon.model.typechecker.model {
     Package
 }
 

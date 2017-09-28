@@ -1,8 +1,8 @@
-package com.redhat.ceylon.eclipse.core.vfs;
+package org.eclipse.ceylon.ide.eclipse.core.vfs;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.platformJ2C;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
-import static com.redhat.ceylon.eclipse.util.CeylonHelper.td;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.platformJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static org.eclipse.ceylon.ide.eclipse.util.CeylonHelper.td;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -10,12 +10,12 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 
-import com.redhat.ceylon.compiler.typechecker.io.VirtualFile;
-import com.redhat.ceylon.eclipse.java2ceylon.VfsJ2C;
-import com.redhat.ceylon.ide.common.platform.VfsServices;
-import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
-import com.redhat.ceylon.ide.common.vfs.FolderVirtualFile;
-import com.redhat.ceylon.ide.common.vfs.ResourceVirtualFile;
+import org.eclipse.ceylon.compiler.typechecker.io.VirtualFile;
+import org.eclipse.ceylon.ide.eclipse.java2ceylon.VfsJ2C;
+import org.eclipse.ceylon.ide.common.platform.VfsServices;
+import org.eclipse.ceylon.ide.common.vfs.FileVirtualFile;
+import org.eclipse.ceylon.ide.common.vfs.FolderVirtualFile;
+import org.eclipse.ceylon.ide.common.vfs.ResourceVirtualFile;
 
 public class vfsJ2C implements VfsJ2C {
     @Override

@@ -4,7 +4,7 @@
 	<classpathentry kind="src" path="javaSrc"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/referenced-ceylon-project"/>
-	<classpathentry kind="con" path="com.redhat.ceylon.eclipse.ui.cpcontainer.RUNTIME_CONTAINER/default"/>
-	<classpathentry kind="con" path="com.redhat.ceylon.eclipse.ui.cpcontainer.CEYLON_CONTAINER/default"/>
+	<classpathentry kind="con" path="org.eclipse.ceylon.ide.eclipse.ui.cpcontainer.RUNTIME_CONTAINER/default"/>
+	<classpathentry kind="con" path="org.eclipse.ceylon.ide.eclipse.ui.cpcontainer.CEYLON_CONTAINER/default"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

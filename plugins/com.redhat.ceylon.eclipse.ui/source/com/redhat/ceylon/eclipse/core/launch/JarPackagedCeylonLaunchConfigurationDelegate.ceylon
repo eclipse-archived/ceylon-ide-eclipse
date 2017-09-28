@@ -1,9 +1,9 @@
-import com.redhat.ceylon.eclipse.core.launch {
+import org.eclipse.ceylon.ide.eclipse.core.launch {
     ICeylonLaunchConfigurationConstants {
         ...
     }
 }
-import com.redhat.ceylon.eclipse.ui {
+import org.eclipse.ceylon.ide.eclipse.ui {
     CeylonPlugin
 }
 

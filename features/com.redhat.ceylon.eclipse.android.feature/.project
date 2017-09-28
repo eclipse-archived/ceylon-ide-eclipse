@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>com.redhat.ceylon.eclipse.android.feature</name>
+	<name>org.eclipse.ceylon.ide.eclipse.android.feature</name>
 	<comment></comment>
 	<projects>
 	</projects>

@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.complete;
+package org.eclipse.ceylon.ide.eclipse.code.complete;
 
-import static com.redhat.ceylon.eclipse.code.complete.CeylonCompletionProcessor.LARGE_CORRECTION_IMAGE;
-import static com.redhat.ceylon.eclipse.code.complete.CompletionUtil.anonFunctionHeader;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CeylonCompletionProcessor.LARGE_CORRECTION_IMAGE;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CompletionUtil.anonFunctionHeader;
 
 import java.util.List;
 
@@ -9,8 +9,8 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.model.typechecker.model.Type;
-import com.redhat.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.model.typechecker.model.Type;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
 
 @Deprecated
 class AnonFunctionProposal {

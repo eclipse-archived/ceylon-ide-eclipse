@@ -1,6 +1,6 @@
-package com.redhat.ceylon.eclipse.android.plugin;
+package org.eclipse.ceylon.ide.eclipse.android.plugin;
 
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
 
 import java.io.File;
 import java.io.FileReader;
@@ -34,25 +34,25 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.util.CoreUtility;
 
-import com.redhat.ceylon.cmr.api.ArtifactContext;
-import com.redhat.ceylon.cmr.api.RepositoryManager;
-import com.redhat.ceylon.cmr.ceylon.CeylonUtils.CeylonRepoManagerBuilder;
-import com.redhat.ceylon.cmr.ceylon.LegacyImporter;
-import com.redhat.ceylon.common.FileUtil;
-import com.redhat.ceylon.common.Versions;
-import com.redhat.ceylon.compiler.java.runtime.model.TypeDescriptor;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.BooleanHolder;
-import com.redhat.ceylon.eclipse.core.builder.CeylonBuilder.CeylonBuildHook;
-import com.redhat.ceylon.eclipse.core.builder.ICeylonBuildHookProvider;
-import com.redhat.ceylon.eclipse.core.classpath.CeylonClasspathUtil;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
-import com.redhat.ceylon.ide.common.model.CeylonProjectConfig;
-import com.redhat.ceylon.ide.common.model.IdeModule;
-import com.redhat.ceylon.model.cmr.ArtifactResult;
-import com.redhat.ceylon.model.loader.JvmBackendUtil;
-import com.redhat.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.cmr.api.ArtifactContext;
+import org.eclipse.ceylon.cmr.api.RepositoryManager;
+import org.eclipse.ceylon.cmr.ceylon.CeylonUtils.CeylonRepoManagerBuilder;
+import org.eclipse.ceylon.cmr.ceylon.LegacyImporter;
+import org.eclipse.ceylon.common.FileUtil;
+import org.eclipse.ceylon.common.Versions;
+import org.eclipse.ceylon.compiler.java.runtime.model.TypeDescriptor;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.BooleanHolder;
+import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.CeylonBuildHook;
+import org.eclipse.ceylon.ide.eclipse.core.builder.ICeylonBuildHookProvider;
+import org.eclipse.ceylon.ide.eclipse.core.classpath.CeylonClasspathUtil;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.common.model.CeylonProject;
+import org.eclipse.ceylon.ide.common.model.CeylonProjectConfig;
+import org.eclipse.ceylon.ide.common.model.IdeModule;
+import org.eclipse.ceylon.model.cmr.ArtifactResult;
+import org.eclipse.ceylon.model.loader.JvmBackendUtil;
+import org.eclipse.ceylon.model.typechecker.model.Module;
 
 import ceylon.interop.java.CeylonIterable;
 import ceylon.interop.java.JavaIterable;
@@ -63,10 +63,10 @@ public class AndroidBuildHookProvider implements ICeylonBuildHookProvider {
         public static final String CEYLON_RENAMED_CARS_FOLDER = ".renamed-cars-for-android";
         public static final String CEYLON_RENAMED_CARS_CPC_NAME = CeylonAndroidPlugin.PLUGIN_ID + ".RENAMED_CARS";
         private static final String[] NECESSARY_CEYLON_RUNTIME_LIBRARIES = new String[] {
-                "com.redhat.ceylon.module-resolver-"+Versions.CEYLON_VERSION_NUMBER+".jar",
-                "com.redhat.ceylon.common-"+Versions.CEYLON_VERSION_NUMBER+".jar",
-                "com.redhat.ceylon.model-"+Versions.CEYLON_VERSION_NUMBER+".jar",
-                "com.redhat.ceylon.langtools.classfile-"+Versions.CEYLON_VERSION_NUMBER+".jar",
+                "org.eclipse.ceylon.module-resolver-"+Versions.CEYLON_VERSION_NUMBER+".jar",
+                "org.eclipse.ceylon.common-"+Versions.CEYLON_VERSION_NUMBER+".jar",
+                "org.eclipse.ceylon.model-"+Versions.CEYLON_VERSION_NUMBER+".jar",
+                "org.eclipse.ceylon.langtools.classfile-"+Versions.CEYLON_VERSION_NUMBER+".jar",
             };
         private static Path CPC_PATH = new Path(CEYLON_RENAMED_CARS_CPC_NAME + "/default");
 

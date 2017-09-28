@@ -1,14 +1,14 @@
-package com.redhat.ceylon.eclipse.code.complete;
+package org.eclipse.ceylon.ide.eclipse.code.complete;
 
 import java.util.Map;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.compiler.typechecker.tree.Tree;
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.java2ceylon.CompletionJ2C;
-import com.redhat.ceylon.ide.common.completion.completionManager_;
-import com.redhat.ceylon.model.typechecker.model.DeclarationWithProximity;
-import com.redhat.ceylon.model.typechecker.model.Scope;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.java2ceylon.CompletionJ2C;
+import org.eclipse.ceylon.ide.common.completion.completionManager_;
+import org.eclipse.ceylon.model.typechecker.model.DeclarationWithProximity;
+import org.eclipse.ceylon.model.typechecker.model.Scope;
 
 public class completionJ2C implements CompletionJ2C {
 
@@ -18,7 +18,7 @@ public class completionJ2C implements CompletionJ2C {
     }
 
     /* (non-Javadoc)
-     * @see com.redhat.ceylon.eclipse.code.complete.CompletionJ2C#newCompletionProcessor(com.redhat.ceylon.eclipse.code.editor.CeylonEditor)
+     * @see org.eclipse.ceylon.ide.eclipse.code.complete.CompletionJ2C#newCompletionProcessor(org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor)
      */
     @Override
     public EclipseCompletionProcessor newCompletionProcessor(CeylonEditor editor) {
@@ -26,7 +26,7 @@ public class completionJ2C implements CompletionJ2C {
     }
     
     /* (non-Javadoc)
-     * @see com.redhat.ceylon.eclipse.code.complete.CompletionJ2C#getProposals(com.redhat.ceylon.compiler.typechecker.tree.Node, com.redhat.ceylon.model.typechecker.model.Scope, com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit)
+     * @see org.eclipse.ceylon.ide.eclipse.code.complete.CompletionJ2C#getProposals(org.eclipse.ceylon.compiler.typechecker.tree.Node, org.eclipse.ceylon.model.typechecker.model.Scope, org.eclipse.ceylon.compiler.typechecker.tree.Tree.CompilationUnit)
      */
     @Override
     public Map<String,DeclarationWithProximity> getProposals(Node node, Scope scope, Tree.CompilationUnit rootNode) {

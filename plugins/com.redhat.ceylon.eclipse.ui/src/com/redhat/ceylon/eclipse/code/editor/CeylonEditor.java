@@ -9,34 +9,34 @@
 *    Robert Fuhrer (rfuhrer@watson.ibm.com) - initial API and implementation
 *******************************************************************************/
 
-package com.redhat.ceylon.eclipse.code.editor;
+package org.eclipse.ceylon.ide.eclipse.code.editor;
 
-import static com.redhat.ceylon.eclipse.code.editor.CeylonSourceViewerConfiguration.configCompletionPopup;
-import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.ADD_BLOCK_COMMENT;
-import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.CORRECT_INDENTATION;
-import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.GOTO_MATCHING_FENCE;
-import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.REMOVE_BLOCK_COMMENT;
-import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.RESTORE_PREVIOUS;
-import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SELECT_ENCLOSING;
-import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.SHOW_OUTLINE;
-import static com.redhat.ceylon.eclipse.code.editor.EditorActionIds.TOGGLE_COMMENT;
-import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getFile;
-import static com.redhat.ceylon.eclipse.code.editor.EditorInputUtils.getPath;
-import static com.redhat.ceylon.eclipse.code.editor.SourceArchiveDocumentProvider.isSrcArchive;
-import static com.redhat.ceylon.eclipse.code.outline.CeylonLabelProvider.getImageForFile;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.CLEAN_IMPORTS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.FORMAT;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.NORMALIZE_NL;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.NORMALIZE_WS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.STRIP_TRAILING_WS;
-import static com.redhat.ceylon.eclipse.code.preferences.CeylonPreferenceInitializer.SUB_WORD_NAVIGATION;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.editorJ2C;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.importsJ2C;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
-import static com.redhat.ceylon.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
-import static com.redhat.ceylon.eclipse.ui.CeylonPlugin.PLUGIN_ID;
-import static com.redhat.ceylon.eclipse.util.EditorUtil.getCurrentTheme;
-import static com.redhat.ceylon.eclipse.util.Nodes.findNode;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.CeylonSourceViewerConfiguration.configCompletionPopup;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.EditorActionIds.ADD_BLOCK_COMMENT;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.EditorActionIds.CORRECT_INDENTATION;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.EditorActionIds.GOTO_MATCHING_FENCE;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.EditorActionIds.REMOVE_BLOCK_COMMENT;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.EditorActionIds.RESTORE_PREVIOUS;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.EditorActionIds.SELECT_ENCLOSING;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.EditorActionIds.SHOW_OUTLINE;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.EditorActionIds.TOGGLE_COMMENT;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.EditorInputUtils.getFile;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.EditorInputUtils.getPath;
+import static org.eclipse.ceylon.ide.eclipse.code.editor.SourceArchiveDocumentProvider.isSrcArchive;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getImageForFile;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.CLEAN_IMPORTS;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.FORMAT;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.NORMALIZE_NL;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.NORMALIZE_WS;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.STRIP_TRAILING_WS;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.SUB_WORD_NAVIGATION;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.editorJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.importsJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.modelJ2C;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin.PLUGIN_ID;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getCurrentTheme;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.findNode;
 import static java.util.ResourceBundle.getBundle;
 import static org.eclipse.core.resources.IncrementalProjectBuilder.CLEAN_BUILD;
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
@@ -145,30 +145,30 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
-import com.redhat.ceylon.compiler.typechecker.tree.Node;
-import com.redhat.ceylon.eclipse.code.outline.CeylonOutlinePage;
-import com.redhat.ceylon.eclipse.code.outline.NavigateMenuItems;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParseController;
-import com.redhat.ceylon.eclipse.code.parse.CeylonParserScheduler;
-import com.redhat.ceylon.eclipse.code.parse.TreeLifecycleListener;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonCompletionPreferencePage;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonEditorPreferencePage;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonFiltersPreferencePage;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonOutlinesPreferencePage;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonRefactoringPreferencePage;
-import com.redhat.ceylon.eclipse.code.preferences.CeylonSaveActionsPreferencePage;
-import com.redhat.ceylon.eclipse.code.refactor.RefactorMenuItems;
-import com.redhat.ceylon.eclipse.code.search.FindMenuItems;
-import com.redhat.ceylon.eclipse.ui.CeylonPlugin;
-import com.redhat.ceylon.eclipse.util.EditorUtil;
-import com.redhat.ceylon.eclipse.util.Highlights;
-import com.redhat.ceylon.ide.common.model.CeylonProject;
-import com.redhat.ceylon.ide.common.model.CeylonProjectBuild;
-import com.redhat.ceylon.ide.common.model.ModelListener;
-import com.redhat.ceylon.ide.common.typechecker.ExternalPhasedUnit;
-import com.redhat.ceylon.ide.common.typechecker.ProjectPhasedUnit;
-import com.redhat.ceylon.ide.common.vfs.FileVirtualFile;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.ide.eclipse.code.outline.CeylonOutlinePage;
+import org.eclipse.ceylon.ide.eclipse.code.outline.NavigateMenuItems;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParseController;
+import org.eclipse.ceylon.ide.eclipse.code.parse.CeylonParserScheduler;
+import org.eclipse.ceylon.ide.eclipse.code.parse.TreeLifecycleListener;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonCompletionPreferencePage;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonEditorPreferencePage;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonFiltersPreferencePage;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonOpenDialogsPreferencePage;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonOutlinesPreferencePage;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonRefactoringPreferencePage;
+import org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonSaveActionsPreferencePage;
+import org.eclipse.ceylon.ide.eclipse.code.refactor.RefactorMenuItems;
+import org.eclipse.ceylon.ide.eclipse.code.search.FindMenuItems;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.EditorUtil;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
+import org.eclipse.ceylon.ide.common.model.CeylonProject;
+import org.eclipse.ceylon.ide.common.model.CeylonProjectBuild;
+import org.eclipse.ceylon.ide.common.model.ModelListener;
+import org.eclipse.ceylon.ide.common.typechecker.ExternalPhasedUnit;
+import org.eclipse.ceylon.ide.common.typechecker.ProjectPhasedUnit;
+import org.eclipse.ceylon.ide.common.vfs.FileVirtualFile;
 
 import ceylon.language.Iterable;
 
@@ -185,7 +185,7 @@ public class CeylonEditor extends TextEditor implements ModelListener<IProject, 
             Pattern.compile("[ \\t]+$", Pattern.MULTILINE);
 
     public static final String MESSAGE_BUNDLE = 
-            "com.redhat.ceylon.eclipse.code.editor.EditorActionMessages";
+            "org.eclipse.ceylon.ide.eclipse.code.editor.EditorActionMessages";
 
     private static final int REPARSE_SCHEDULE_DELAY = 200;
 

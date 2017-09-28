@@ -1,16 +1,16 @@
-import com.redhat.ceylon.compiler.typechecker.tree {
+import org.eclipse.ceylon.compiler.typechecker.tree {
     Tree
 }
-import com.redhat.ceylon.eclipse.code.correct {
+import org.eclipse.ceylon.ide.eclipse.code.correct {
     EclipseDocument
 }
-import com.redhat.ceylon.eclipse.code.parse {
+import org.eclipse.ceylon.ide.eclipse.code.parse {
     CeylonParseController
 }
-import com.redhat.ceylon.eclipse.util {
+import org.eclipse.ceylon.ide.eclipse.util {
     EditorUtil
 }
-import com.redhat.ceylon.ide.common.editor {
+import org.eclipse.ceylon.ide.common.editor {
     AbstractTerminateStatementAction
 }
 

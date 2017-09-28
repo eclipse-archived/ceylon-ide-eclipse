@@ -1,12 +1,12 @@
-package com.redhat.ceylon.eclipse.code.modulesearch;
+package org.eclipse.ceylon.ide.eclipse.code.modulesearch;
 
 import java.util.List;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
-import com.redhat.ceylon.ide.common.modulesearch.ModuleNode;
-import com.redhat.ceylon.ide.common.modulesearch.ModuleVersionNode;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleNode;
+import org.eclipse.ceylon.ide.common.modulesearch.ModuleVersionNode;
 
 public class ModuleSearchViewContentProvider implements ITreeContentProvider {
 

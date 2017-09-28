@@ -1,7 +1,7 @@
-package com.redhat.ceylon.eclipse.code.correct;
+package org.eclipse.ceylon.ide.eclipse.code.correct;
 
-import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.canMoveDeclaration;
-import static com.redhat.ceylon.eclipse.code.refactor.MoveUtil.getDeclarationName;
+import static org.eclipse.ceylon.ide.eclipse.code.refactor.MoveUtil.canMoveDeclaration;
+import static org.eclipse.ceylon.ide.eclipse.code.refactor.MoveUtil.getDeclarationName;
 
 import java.util.Collection;
 
@@ -13,10 +13,10 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
-import com.redhat.ceylon.eclipse.code.editor.CeylonEditor;
-import com.redhat.ceylon.eclipse.code.refactor.MoveToNewUnitRefactoringAction;
-import com.redhat.ceylon.eclipse.ui.CeylonResources;
-import com.redhat.ceylon.eclipse.util.Highlights;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.code.refactor.MoveToNewUnitRefactoringAction;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
 
 class MoveToNewUnitProposal implements ICompletionProposal, ICompletionProposalExtension6 {
 
@@ -47,7 +47,7 @@ class MoveToNewUnitProposal implements ICompletionProposal, ICompletionProposalE
     public StyledString getStyledDisplayString() {
         String hint = 
                 CorrectionUtil.shortcut(
-                        "com.redhat.ceylon.eclipse.ui.action.moveDeclarationToNewUnit");
+                        "org.eclipse.ceylon.ide.eclipse.ui.action.moveDeclarationToNewUnit");
         return Highlights.styleProposal(getDisplayString(), false)
                 .append(hint, StyledString.QUALIFIER_STYLER);
     }

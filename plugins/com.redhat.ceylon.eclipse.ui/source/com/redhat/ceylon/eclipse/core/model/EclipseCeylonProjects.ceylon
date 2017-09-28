@@ -1,4 +1,4 @@
-import com.redhat.ceylon.ide.common.model {
+import org.eclipse.ceylon.ide.common.model {
     CeylonProjects,
     CeylonProject
 }
