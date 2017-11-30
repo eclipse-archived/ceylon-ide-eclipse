@@ -1,14 +1,3 @@
-/********************************************************************************
- * Copyright (c) 2011-2017 Red Hat Inc. and/or its affiliates and others
- *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0.
- *
- * SPDX-License-Identifier: EPL-1.0
- ********************************************************************************/
-package org.eclipse.ceylon.ide.eclipse.code.hover;
-
 /*******************************************************************************
  * Copyright (c) 2000, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
@@ -20,6 +9,7 @@ package org.eclipse.ceylon.ide.eclipse.code.hover;
  *     IBM Corporation - initial API and implementation
  *     Genady Beryozkin <eclipse@genady.org> - [hovering] tooltip for constant string does not show constant value - https://bugs.eclipse.org/bugs/show_bug.cgi?id=85382
  *******************************************************************************/
+package org.eclipse.ceylon.ide.eclipse.code.hover;
 
 import static org.eclipse.ceylon.ide.eclipse.code.complete.CodeCompletions.getDocDescriptionFor;
 import static org.eclipse.ceylon.ide.eclipse.code.complete.CodeCompletions.isVariable;

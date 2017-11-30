@@ -1,14 +1,3 @@
-/********************************************************************************
- * Copyright (c) 2011-2017 Red Hat Inc. and/or its affiliates and others
- *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0.
- *
- * SPDX-License-Identifier: EPL-1.0
- ********************************************************************************/
-package org.eclipse.ceylon.ide.eclipse.code.explorer;
-
 /*******************************************************************************
  * Copyright (c) 2000, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
@@ -20,6 +9,7 @@ package org.eclipse.ceylon.ide.eclipse.code.explorer;
  *     IBM Corporation - initial API and implementation
  *     Matt Chapman, mpchapman@gmail.com - 89977 Make JDT .java agnostic
  *******************************************************************************/
+package org.eclipse.ceylon.ide.eclipse.code.explorer;
 
 import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getImageKeyForFile;
 import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_MODULE;

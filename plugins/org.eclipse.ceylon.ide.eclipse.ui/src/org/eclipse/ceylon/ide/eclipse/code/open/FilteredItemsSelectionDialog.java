@@ -1,14 +1,3 @@
-/********************************************************************************
- * Copyright (c) 2011-2017 Red Hat Inc. and/or its affiliates and others
- *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0.
- *
- * SPDX-License-Identifier: EPL-1.0
- ********************************************************************************/
-package org.eclipse.ceylon.ide.eclipse.code.open;
-
 /*******************************************************************************
  * Copyright (c) 2000, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
@@ -24,6 +13,7 @@ package org.eclipse.ceylon.ide.eclipse.code.open;
  *     - Fix for bug 208602 - [Dialogs] Open Type dialog needs accessible labels
  *  Simon Muschel <smuschel@gmx.de> - bug 258493
  *******************************************************************************/
+package org.eclipse.ceylon.ide.eclipse.code.open;
 
 import java.io.IOException;
 import java.io.StringReader;

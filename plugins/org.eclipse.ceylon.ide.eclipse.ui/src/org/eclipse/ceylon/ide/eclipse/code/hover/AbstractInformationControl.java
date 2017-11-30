@@ -1,14 +1,3 @@
-/********************************************************************************
- * Copyright (c) 2011-2017 Red Hat Inc. and/or its affiliates and others
- *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0.
- *
- * SPDX-License-Identifier: EPL-1.0
- ********************************************************************************/
-package org.eclipse.ceylon.ide.eclipse.code.hover;
-
 /*******************************************************************************
  * Copyright (c) 2008, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
@@ -19,6 +8,7 @@ package org.eclipse.ceylon.ide.eclipse.code.hover;
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
+package org.eclipse.ceylon.ide.eclipse.code.hover;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.ListenerList;
