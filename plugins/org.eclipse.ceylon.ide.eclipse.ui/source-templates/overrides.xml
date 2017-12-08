@@ -1,0 +1,118 @@
+<overrides xmlns="http://www.ceylon-lang.org/xsd/overrides">
+<!-- ADD GENERATED SET VERSION LINES HERE  -->
+    <remove module="org.eclipse.core.filesystem.java7"/>
+    <remove module="org.eclipse.equinox.bidi"/>
+    <remove module="org.eclipse.ant.core"/>
+    <remove module="org.eclipse.core.runtime.compatibility.auth"/>
+    <remove module="javax.annotation"/>
+    <remove module="javax.inject"/>
+    <remove module="org.eclipse.equinox.app"/>
+    <remove module="org.eclipse.team.core"/>
+    <remove module="com.ibm.icu"/>
+    <remove module="org.eclipse.core.variables"/>
+    <remove module="org.eclipse.compare.core"/>
+    <remove module="org.eclipse.core.databinding.observable"/>
+    <remove module="org.eclipse.core.databinding.property"/>
+    <remove module="org.eclipse.core.filebuffers"/>
+    <remove module="org.eclipse.e4.core.contexts"/>
+    <remove module="org.eclipse.e4.core.di"/>
+    <remove module="org.eclipse.e4.core.services"/>
+    <remove module="org.eclipse.e4.ui.bindings"/>
+    <remove module="org.eclipse.e4.ui.css.core"/>
+    <remove module="org.eclipse.e4.ui.css.swt"/>
+    <remove module="org.eclipse.e4.ui.css.swt.theme"/>
+    <remove module="org.eclipse.e4.ui.di"/>
+	<remove module="org.eclipse.e4.ui.model.workbench"/>
+    <remove module="org.eclipse.e4.ui.workbench"/>
+    <remove module="org.eclipse.e4.ui.workbench.addons.swt"/>
+    <remove module="org.eclipse.e4.ui.workbench.swt"/>
+    <remove module="org.eclipse.e4.ui.workbench3"/>
+    <remove module="org.eclipse.e4.ui.services"/>
+    <remove module="org.eclipse.emf.ecore"/>
+    <remove module="org.eclipse.equinox.p2.engine"/>
+    <remove module="org.eclipse.equinox.p2.metadata"/>
+    <remove module="org.eclipse.help.base"/>
+    <remove module="org.eclipse.help.ui"/>
+    <remove module="org.eclipse.jface.databinding"/>
+    <remove module="org.eclipse.team.ui"/>
+    <remove module="org.eclipse.ui.forms"/>
+    <remove module="org.eclipse.jdt.junit.runtime"/>
+    <remove module="org.eclipse.equinox.frameworkadmin"/>
+    <remove module="org.eclipse.equinox.simpleconfigurator.manipulator"/>
+    <remove module="org.eclipse.pde.core"/>
+    <remove module="org.eclipse.pde.build"/>
+    <remove module="org.eclipse.e4.core.di.extensions"/>
+    <remove module="org.eclipse.emf.ecore.xmi"/>
+    <remove module="org.eclipse.osgi.services"/>
+    <remove module="org.eclipse.e4.core.commands"/>
+
+    <module module="org.eclipse.ui">
+        <add module="org.eclipse.ui.ide" version="${org.eclipse.ui.ide.version.override}" shared="true"/>
+        <add module="org.eclipse.ui.workbench" version="${org.eclipse.ui.workbench.version.override}" shared="true"/>
+        <add module="org.eclipse.ui.editors" version="${org.eclipse.ui.editors.version.override}" shared="true"/>
+    </module>
+    <module module="org.eclipse.ui.workbench">
+        <add module="org.eclipse.osgi" version="${org.eclipse.osgi.version.override}"/>
+        <add module="org.eclipse.ui.ide" version="${org.eclipse.ui.ide.version.override}"/>
+        <add module="org.eclipse.core.commands" version="${org.eclipse.core.commands.version.override}"/>
+        <add module="org.eclipse.jface" version="${org.eclipse.jface.version.override}" shared="true"/>
+    </module>
+    <module module="org.eclipse.ui.ide">
+        <share module="org.eclipse.ui.workbench"/>
+    </module>
+    <module module="org.eclipse.ui.editors">
+        <add module="org.eclipse.jface" version="${org.eclipse.jface.version.override}" shared="true"/>
+        <add module="org.eclipse.ui.workbench.texteditor" version="${org.eclipse.ui.workbench.texteditor.version.override}" shared="true"/>
+    </module>
+    <module module="org.eclipse.text">
+        <add module="org.eclipse.jface.text" version="${org.eclipse.jface.text.version.override}" shared="true"/>
+    </module>
+
+    <module module="org.eclipse.ltk.core.refactoring">
+        <share module="org.eclipse.text"/>
+    </module>
+    <module module="org.eclipse.core.resources">
+        <share module="org.eclipse.core.runtime"/>
+    </module>
+    <module module="org.eclipse.core.jobs">
+        <add module="org.eclipse.core.runtime" version="${org.eclipse.core.runtime.version.override}"/>
+    </module>
+    <module module="org.eclipse.jdt.core">
+        <add module="org.eclipse.core.contenttype" version="${org.eclipse.core.contenttype.version.override}"/>
+    </module>
+    <module module="org.eclipse.jdt.launching">
+        <add module="org.eclipse.equinox.preferences" version="${org.eclipse.equinox.preferences.version.override}"/>
+    </module>
+    <module module="org.eclipse.jdt.debug">
+        <add module="org.eclipse.equinox.preferences" version="${org.eclipse.equinox.preferences.version.override}"/>
+    </module>
+    <module module="org.eclipse.jdt.debug.ui">
+        <add module="org.eclipse.swt.gtk.linux.x86_64" version="${org.eclipse.swt.gtk.linux.x86_64.version.override}"/>
+        <add module="org.eclipse.ui.workbench" version="${org.eclipse.ui.workbench.version.override}"/>
+        <add module="org.eclipse.osgi" version="${org.eclipse.osgi.version.override}"/>
+    </module>
+    <module module="org.eclipse.debug.ui">
+        <add module="org.eclipse.jface" version="${org.eclipse.jface.version.override}"/>
+        <add module="org.eclipse.ui.workbench" version="${org.eclipse.ui.workbench.version.override}"/>
+        <add module="org.eclipse.swt.gtk.linux.x86_64" version="${org.eclipse.swt.gtk.linux.x86_64.version.override}"/>
+    </module>
+    <module module="org.eclipse.ui.console">
+        <add module="org.eclipse.ui.workbench" version="${org.eclipse.ui.workbench.version.override}"/>
+    </module>
+    <module module="org.eclipse.swt">
+        <add module="org.eclipse.swt.gtk.linux.x86_64" version="${org.eclipse.swt.gtk.linux.x86_64.version.override}" shared="true"/>
+    </module>
+    <module module="org.eclipse.jface.text">
+        <share module="org.eclipse.jface"/>
+    </module>
+    <module module="org.eclipse.jface">
+        <add module="org.eclipse.core.runtime" version="${org.eclipse.core.runtime.version.override}" shared="true"/>
+    </module>
+    <module module="org.eclipse.jdt.ui">
+        <share module="org.eclipse.jdt.core.manipulation"/>
+    </module>
+    <module module="org.eclipse.ceylon.ide.eclipse.ui.jdt.debug.fragment">
+        <add module="org.eclipse.debug.core" version="${org.eclipse.debug.core.version.override}"/>
+        <add module="org.eclipse.jdt.debug" version="${org.eclipse.jdt.debug.version.override}"/>
+    </module>
+</overrides>

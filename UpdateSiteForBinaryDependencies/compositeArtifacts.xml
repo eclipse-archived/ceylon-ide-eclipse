@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<?compositeArtifactRepository version='1.0.0'?>
+<repository name='Ceylon IDE Required Binary Dependencies - available from locally built sibling projects' type='org.eclipse.equinox.internal.p2.artifact.repository.CompositeArtifactRepository' version='1.0.0'>
+<properties size='2'>
+<property name='p2.compressed' value='false'/>
+<property name='p2.timestamp' value='1320783117000'/>
+</properties>
+<children size="5">
+   <child location="../../ceylon/dist/osgi/build/dist"/>
+   <child location="../../ceylon-sdk/osgi/dist"/>
+   <child location="../../ceylon.formatter/osgi/dist"/>
+   <child location="../../ceylon.tool.converter.java2ceylon/osgi/dist"/>
+   <child location="../../ceylon-ide-common/osgi/dist"/>
+ </children>
+</repository>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<introContent>
+
+   <page id="org.eclipse.ceylon.ui.intro" 
+          style="$theme$/html/overview.css" 
+         style-id="page">
+     <title style-id="intro-header">Welcome to Ceylon IDE</title>
+     <include path="overview/navigation-links"/>
+     <group id="page-content">
+           <group id="content-header" label="Welcome to Ceylon">
+           </group>
+           <!--text style-id="page-title" id="page-title">TUTORIALS</text-->
+           <text style-id="page-description" id="page-description">
+               The Ceylon IDE for Eclipse is the best way to get started 
+               with Ceylon
+           </text>
+           <group id="content-group" 
+            style-id="content-group">
+    <link style-id="content-link" 
+         label="New Ceylon Project" 
+         url="http://org.eclipse.ui.intro/runAction?class=org.eclipse.ceylon.ide.eclipse.code.wizard.NewProjectAction&amp;pluginId=org.eclipse.ceylon.ide.eclipse.ui&amp;standby=true" 
+         id="newproject">
+           <text>Create a new Ceylon project and switch to the Ceylon perspective</text>
+    </link>
+    <link style-id="content-link" 
+         label="Hello World with Ceylon" 
+         id="hellocheat"
+         url="http://org.eclipse.ui.intro/showStandby?partId=org.eclipse.platform.cheatsheet&amp;input=org.eclipse.ceylon.ide.eclipse.ui.cheatsheet.hello">
+           <text>Write and run a Hello World program in Ceylon</text>
+    </link>
+    <link style-id="content-link" 
+         label="Introduction to Ceylon Modules" 
+         id="modulecheat"
+         url="http://org.eclipse.ui.intro/showStandby?partId=org.eclipse.platform.cheatsheet&amp;input=org.eclipse.ceylon.ide.eclipse.ui.cheatsheet.module">
+           <text>Create a Ceylon module and export it to a module repository</text>
+    </link>
+    <link style-id="content-link" 
+         label="Ceylon Documentation" 
+         url="http://ceylon-lang.org/documentation"
+         id="documentation">
+           <text>Learn more about Ceylon</text>
+    </link>
+    <!--link style-id="content-link" 
+         label="Specification" 
+         url="http://ceylon-lang.org/documentation/spec/pdf/ceylon-language-specification.pdf"
+         id="spec">
+           <text>Read the language specification</text>
+    </link-->
+           </group>
+     </group>
+     <group id="page-content">
+           <img src="../icons/ceylon_logo_450px.png"/>
+     </group>
+   </page>
+   
+   <extensionContent 
+       id="org.eclipse.ceylon.ui.overview" 
+       name="Ceylon IDE" 
+       style="overview.css"
+       path="overview/@">
+   <group style-id="content-group"
+          id="ceylonide">
+   <link style-id="content-link" 
+         label="Ceylon IDE" 
+         url="http://org.eclipse.ui.intro/showPage?id=org.eclipse.ceylon.ui.intro" 
+         id="ceylon">
+       <text>Get started writing Ceylon code using Ceylon IDE</text>
+   </link>
+   </group>
+   </extensionContent>
+   
+   <extensionContent 
+       id="org.eclipse.ceylon.ui.tutorials" 
+       name="Ceylon IDE" 
+       style="overview.css"
+       path="tutorials/@">
+   <group style-id="content-group"
+          id="ceylonide"
+          label="Ceylon IDE">
+    <link style-id="content-link" 
+         label="Hello World with Ceylon" 
+         id="hellocheat"
+         url="http://org.eclipse.ui.intro/showStandby?partId=org.eclipse.platform.cheatsheet&amp;input=org.eclipse.ceylon.ide.eclipse.ui.cheatsheet.hello">
+           <text>Write and run a Hello World program in Ceylon</text>
+    </link>
+    <link style-id="content-link" 
+         label="Introduction to Ceylon Modules" 
+         id="modulecheat"
+         url="http://org.eclipse.ui.intro/showStandby?partId=org.eclipse.platform.cheatsheet&amp;input=org.eclipse.ceylon.ide.eclipse.ui.cheatsheet.module">
+           <text>Create a Ceylon module and export it to a module repository</text>
+    </link>
+   </group>
+   </extensionContent>
+   
+</introContent>

@@ -1,0 +1,24 @@
+<project name="RequiredProject" default="publish-for-ide">
+    <target name="publish-for-ide">
+        <ant dir="../../../ceylon/dist" antfile="build.xml">
+            <target name="publish-all"/>
+            <target name="ide-quick"/>
+        </ant>
+        <ant dir="../../../ceylon-sdk" antfile="build.xml">
+            <target name="publish"/>
+            <target name="ide-quick"/>
+        </ant>
+        <ant dir="../../../ceylon.formatter" antfile="build.xml">
+            <target name="publish"/>
+            <target name="ide-quick"/>
+        </ant>
+        <ant dir="../../../ceylon.tool.converter.java2ceylon" antfile="build.xml">
+    	      <target name="publish"/>
+    	      <target name="ide-quick"/>
+    	  </ant>
+        <ant dir="../../../ceylon-ide-common" antfile="build.xml">
+            <target name="publish"/>
+            <target name="ide-quick"/>
+        </ant>
+    </target>
+</project>

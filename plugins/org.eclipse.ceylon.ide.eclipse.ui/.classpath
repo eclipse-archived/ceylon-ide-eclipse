@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.ceylon.ide.eclipse.ui.cpcontainer.RUNTIME_CONTAINER/default"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.ceylon.ide.eclipse.ui.cpcontainer.CEYLON_CONTAINER/default"/>
+	<classpathentry kind="src" path="generated-source"/>
+	<classpathentry kind="src" path="source"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="java-to-ceylon-source"/>
+	<classpathentry kind="lib" path="lib/zip4j-1.3.2.jar"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>

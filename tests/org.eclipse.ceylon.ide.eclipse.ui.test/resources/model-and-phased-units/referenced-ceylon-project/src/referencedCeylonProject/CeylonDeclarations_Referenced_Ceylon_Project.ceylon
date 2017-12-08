@@ -1,0 +1,31 @@
+/********************************************************************************
+ * Copyright (c) 2011-2017 Red Hat Inc. and/or its affiliates and others
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 1.0 which is available at
+ * http://www.eclipse.org/legal/epl-v10.html.
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+shared class CeylonTopLevelClass_Referenced_Ceylon_Project() {
+    shared void method(String argument) {}
+    shared String attribute => string;
+    shared class InnerClass(Object o) {}
+    shared object obj {}
+}
+
+shared interface CeylonTopLevelInterface_Referenced_Ceylon_Project {
+    shared void interfaceMethod(String argument) {}
+    shared String interfaceAttribute => string;
+    shared class InterfaceClass(Object o) {}
+}
+
+shared class CeylonTopLevelInterfaceImplementation_Referenced_Ceylon_Project() 
+    satisfies CeylonTopLevelInterface_Referenced_Ceylon_Project {
+}
+
+shared void ceylonTopLevelMethod_Referenced_Ceylon_Project() {
+}
+
+shared object ceylonTopLevelObject_Referenced_Ceylon_Project {
+}

@@ -1,0 +1,1473 @@
+/********************************************************************************
+ * Copyright (c) 2011-2017 Red Hat Inc. and/or its affiliates and others
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 1.0 which is available at
+ * http://www.eclipse.org/legal/epl-v10.html.
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+package org.eclipse.ceylon.ide.eclipse.code.outline;
+
+import static org.eclipse.ceylon.compiler.typechecker.tree.TreeUtil.formatPath;
+import static org.eclipse.ceylon.compiler.typechecker.tree.TreeUtil.hasAnnotation;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getModule;
+import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.getPackage;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.ARROW_STYLER;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.ID_STYLER;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.KW_STYLER;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.PACKAGE_STYLER;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.STRING_STYLER;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.TYPE_ID_STYLER;
+import static org.eclipse.ceylon.ide.eclipse.util.Highlights.TYPE_STYLER;
+import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isConstructor;
+import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
+import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
+import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
+import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
+import static org.eclipse.core.resources.IResource.DEPTH_ONE;
+import static org.eclipse.jface.viewers.IDecoration.BOTTOM_LEFT;
+import static org.eclipse.jface.viewers.IDecoration.BOTTOM_RIGHT;
+import static org.eclipse.jface.viewers.IDecoration.TOP_LEFT;
+import static org.eclipse.jface.viewers.IDecoration.TOP_RIGHT;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.jdt.core.IImportDeclaration;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
+import org.eclipse.jface.viewers.IDecoration;
+import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
+import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.jface.viewers.StyledString.Styler;
+import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
+
+import org.eclipse.ceylon.compiler.typechecker.analyzer.UsageWarning;
+import org.eclipse.ceylon.compiler.typechecker.tree.Message;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonResources;
+import org.eclipse.ceylon.ide.eclipse.util.ErrorCollectionVisitor;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
+import org.eclipse.ceylon.ide.common.model.BaseIdeModule;
+import org.eclipse.ceylon.ide.common.util.types_;
+import org.eclipse.ceylon.model.typechecker.model.Class;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Function;
+import org.eclipse.ceylon.model.typechecker.model.Interface;
+import org.eclipse.ceylon.model.typechecker.model.IntersectionType;
+import org.eclipse.ceylon.model.typechecker.model.ModelUtil;
+import org.eclipse.ceylon.model.typechecker.model.Module;
+import org.eclipse.ceylon.model.typechecker.model.NothingType;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.model.typechecker.model.Parameter;
+import org.eclipse.ceylon.model.typechecker.model.Type;
+import org.eclipse.ceylon.model.typechecker.model.TypeAlias;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.TypeParameter;
+import org.eclipse.ceylon.model.typechecker.model.UnionType;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
+import org.eclipse.ceylon.model.typechecker.model.Value;
+
+/**
+ * Styled Label Provider which can be used to provide labels for Ceylon elements.
+ * 
+ * Extends StyledCellLabelProvider to provide custom styling by doing its own painting 
+ * - here the {@link #update(ViewerCell)} method is the entry point
+ * Implements DelegatingStyledCellLabelProvider.IStyledLabelProvider too, but this 
+ * probably is not required.
+ * 
+ * @author max
+ *
+ */
+public class CeylonLabelProvider extends StyledCellLabelProvider 
+        implements DelegatingStyledCellLabelProvider.IStyledLabelProvider, 
+                   ILabelProvider, CeylonResources {
+    
+    private Set<ILabelProviderListener> fListeners = 
+            new HashSet<ILabelProviderListener>();
+    
+    private final boolean smallSize;
+
+    public final static int WARNING = 1 << 2;
+    public final static int ERROR = 1 << 3;
+    private final static int REFINES = 1 << 4;
+    private final static int IMPLEMENTS = 1 << 5;
+    private final static int FORMAL = 1 << 6;
+    private final static int DEFAULT = 1 << 7;
+    private final static int ABSTRACT = 1 << 8;
+    private final static int FINAL = 1 << 9;
+    private final static int SEALED = 1 << 10;
+    private final static int VARIABLE = 1 << 11;
+    private final static int ANNOTATION = 1 << 12;
+    private final static int ENUM = 1 << 13;
+    private final static int ALIAS = 1 << 14;
+    private final static int DEPRECATED = 1 << 15;
+    private final static int NATIVE = 1 << 16;
+    private final static int FOCUS = 1 << 17;
+    private final static int RUN = 1 << 18;
+    
+    static final DecorationDescriptor[] DECORATIONS = 
+            new DecorationDescriptor[] {
+        new DecorationDescriptor(WARNING, WARNING_IMAGE, BOTTOM_LEFT),
+        new DecorationDescriptor(ERROR, ERROR_IMAGE, BOTTOM_LEFT),
+        
+        new DecorationDescriptor(REFINES, REFINES_IMAGE, BOTTOM_RIGHT),
+        new DecorationDescriptor(IMPLEMENTS, IMPLEMENTS_IMAGE, BOTTOM_RIGHT),
+        new DecorationDescriptor(RUN, RUN_IMAGE, BOTTOM_RIGHT),
+        
+        new DecorationDescriptor(FORMAL, FORMAL_IMAGE, TOP_RIGHT),
+        new DecorationDescriptor(DEFAULT, DEFAULT_IMAGE, TOP_RIGHT),
+        new DecorationDescriptor(ABSTRACT, ABSTRACT_IMAGE, TOP_RIGHT),
+        new DecorationDescriptor(FINAL, FINAL_IMAGE, TOP_RIGHT),
+        new DecorationDescriptor(SEALED, SEALED_IMAGE, TOP_RIGHT),
+        new DecorationDescriptor(NATIVE, NATIVE_IMAGE, TOP_RIGHT),
+        
+        new DecorationDescriptor(VARIABLE, VARIABLE_IMAGE, TOP_LEFT),
+        new DecorationDescriptor(ANNOTATION, ANNOTATION_IMAGE, TOP_LEFT),
+        new DecorationDescriptor(ENUM, ENUM_IMAGE, TOP_LEFT),
+        new DecorationDescriptor(ALIAS, ALIAS_IMAGE, TOP_LEFT),
+        
+        new DecorationDescriptor(DEPRECATED, DEPRECATED_IMAGE, IDecoration.UNDERLAY),
+        new DecorationDescriptor(FOCUS, FOCUS_IMAGE, IDecoration.TOP_LEFT)
+    };
+
+    public CeylonLabelProvider() {
+        this(false);
+    }
+
+    public CeylonLabelProvider(boolean smallSize) {
+        this.smallSize = smallSize;
+    }
+    
+    private static Image getDecoratedImage(Object element, 
+            String key, boolean smallSize, boolean focus) {
+        if (key==null) return null;
+        int attributes = getDecorationAttributes(element);
+        if (focus) attributes |= FOCUS;
+        return getDecoratedImage(key, attributes, smallSize);
+    }
+
+    public static Image getDecoratedImage(String key, 
+            int decorationAttributes, boolean smallSize) {
+        if (imageRegistry.getDescriptor(key)==null) {
+            return null;
+        }
+        String decoratedKey = 
+                decoratedKey(key, 
+                        decorationAttributes, smallSize);
+        Image image = imageRegistry.get(decoratedKey);
+        if (image==null) {
+            initDecoratedImage(key, 
+                    decoratedKey, decorationAttributes, 
+                    smallSize);
+            image = imageRegistry.get(decoratedKey);
+        }
+        return image;
+    }
+
+    private static String decoratedKey(String key, 
+            int decorationAttributes, boolean smallSize) {
+        return key+'#'+decorationAttributes + 
+            (smallSize ? "#small" : "");
+    }
+
+    private static void initDecoratedImage(String key, 
+            String decoratedKey, int decorationAttributes,
+            boolean smallSize) {
+        ImageDescriptor baseDescriptor = 
+                imageRegistry.getDescriptor(key);
+        imageRegistry.put(decoratedKey, 
+                new DecoratedImageDescriptor(
+                        baseDescriptor, 
+                        decorationAttributes, 
+                        smallSize));
+    }
+
+    @Override
+    public Image getImage(Object element) {
+        return getDecoratedImage(element, 
+                getImageKey(element), 
+                smallSize, false);
+    }
+    
+    protected String getImageKey(Object element) {
+        if (element instanceof IFile) {
+            IFile file = (IFile) element;
+            return getImageKeyForFile(file);
+        }
+        else if (element instanceof IPath) {
+            IPath path = (IPath) element;
+            return getImageKeyForPath(path);
+        }
+        if (element instanceof IFolder) {
+            IFolder folder = (IFolder) element;
+            return getImageKeyForFolder(folder);
+        }
+        else if (element instanceof IPackageFragmentRoot) {
+            return getImageKeyForPackageRoot(element);
+        }
+        if (element instanceof IProject ||
+            element instanceof IJavaProject) {
+            return CEYLON_PROJECT;
+        }
+        if (element instanceof IPackageFragment) {
+            return isModule((IPackageFragment) element) ? 
+                    CEYLON_MODULE : CEYLON_PACKAGE;
+        }
+        if (element instanceof Package ||
+            element instanceof IPackageFragment) {
+            return CEYLON_PACKAGE;
+        }
+        if (element instanceof IImportDeclaration) {
+            return CEYLON_IMPORT;
+        }
+        if (element instanceof Module) {
+            return CEYLON_MODULE;
+        }
+        if (element instanceof Unit) {
+            return CEYLON_FILE;
+        }
+        if (element instanceof Node) {
+            Node treeNode = (Node) element;
+            return getImageKeyForNode(treeNode);
+        }
+        return null;
+    }
+
+    private String getImageKeyForPackageRoot(Object element) {
+        IPackageFragmentRoot pfr = 
+                (IPackageFragmentRoot) element;
+        return pfr.getPath().getFileExtension()!=null ? 
+                CEYLON_MODULE : CEYLON_SOURCE_FOLDER;
+    }
+
+    private String getImageKeyForFolder(IFolder folder) {
+        if (folder.getAdapter(IPackageFragmentRoot.class)!=null) {
+            return CEYLON_SOURCE_FOLDER;
+        }
+        else if (folder.getAdapter(IPackageFragment.class)!=null) {
+            return CEYLON_PACKAGE;
+        }
+        else {
+            return CEYLON_FOLDER;
+        }
+    }
+
+    private String getImageKeyForPath(IPath path) {
+        String name = path.lastSegment();
+        if (name.equals("module.ceylon")) {
+            return CEYLON_MODULE_DESC;
+        }
+        else if (name.equals("package.ceylon")) {
+            return CEYLON_PACKAGE_DESC;
+        }
+        else {
+            return CEYLON_FILE;
+        }
+    }
+
+    private static boolean isModule(IPackageFragment element) {
+        IFolder folder = (IFolder) element.getResource();
+        if (folder!=null &&
+                folder.getFile("module.ceylon").exists()) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    public static String getImageKeyForFile(IFile element) {
+        String name = element.getName();
+        if (name.equals("module.ceylon")) {
+            return CEYLON_MODULE_DESC;
+        }
+        else if (name.equals("package.ceylon")) {
+            return CEYLON_PACKAGE_DESC;
+        }
+        else if (element.getFileExtension()
+                    .equalsIgnoreCase("ceylon")) {
+            return CEYLON_FILE;
+        }
+        else if (element.getFileExtension()
+                    .equalsIgnoreCase("java")) {
+            return JAVA_FILE;
+        }
+        else {
+            return GENERIC_FILE;
+        }
+    }
+    
+    public static String getImageKeyForNode(Node n) {
+        if (n instanceof PackageNode) {
+            return CEYLON_PACKAGE;
+        }
+        else if (n instanceof ModuleNode) {
+            return CEYLON_MODULE;
+        }
+        else if (n instanceof Tree.PackageDescriptor) {
+            return CEYLON_PACKAGE;
+        }
+        else if (n instanceof Tree.ModuleDescriptor) {
+            return CEYLON_MODULE;
+        }
+        else if (n instanceof Tree.CompilationUnit) {
+            String filename = n.getUnit().getFilename();
+            if (filename.equals("package.ceylon")) {
+                return CEYLON_PACKAGE_DESC;
+            }
+            else if (filename.equals("module.ceylon")) {
+                return CEYLON_MODULE_DESC;
+            }
+            else {
+                return CEYLON_FILE;
+            }
+        }
+        else if (n instanceof Tree.ImportList) {
+            return CEYLON_IMPORT_LIST;
+        }
+        else if (n instanceof Tree.Import || 
+                n instanceof Tree.ImportModule) {
+            return CEYLON_IMPORT;
+        }
+        else if (n instanceof Tree.Declaration) {
+            Tree.Declaration dec = (Tree.Declaration) n;
+            return getImageKeyForDeclarationNode(dec);
+        }
+        else if (n instanceof Tree.SpecifierStatement) {
+            Tree.SpecifierStatement ss = 
+                    (Tree.SpecifierStatement) n;
+            Tree.Term bme = ss.getBaseMemberExpression();
+            if (bme instanceof Tree.BaseMemberExpression) { 
+                return CEYLON_LOCAL_ATTRIBUTE;
+            }
+            else if (bme instanceof Tree.ParameterizedExpression) {
+                return CEYLON_LOCAL_METHOD;
+            }
+            else {
+                throw new RuntimeException("unexpected node type");
+            }
+        }
+        else {
+            return null;
+        }
+    }
+    
+    private static String getImageKeyForDeclarationNode(
+            Tree.Declaration n) {
+        boolean shared = 
+                hasAnnotation(n.getAnnotationList(), 
+                        "shared", n.getUnit());
+        if (n instanceof Tree.AnyClass) {
+            return shared ? CEYLON_CLASS : CEYLON_LOCAL_CLASS;
+        }
+        else if (n instanceof Tree.AnyInterface) {
+            return shared ? CEYLON_INTERFACE : CEYLON_LOCAL_INTERFACE;
+        }
+        else if (n instanceof Tree.Constructor) {
+            return shared ? CEYLON_CONSTRUCTOR : CEYLON_CONSTRUCTOR; //TODO!
+        }
+        else if (n instanceof Tree.Enumerated) {
+            return shared ? CEYLON_CONSTRUCTOR : CEYLON_CONSTRUCTOR;
+        }
+        else if (n instanceof Tree.AnyMethod) {
+            return shared ? CEYLON_METHOD : CEYLON_LOCAL_METHOD;
+        }
+        else if (n instanceof Tree.TypeAliasDeclaration) {
+            return CEYLON_ALIAS;
+        }
+        else if (n instanceof Tree.ObjectDefinition) {
+            return shared ? CEYLON_OBJECT : CEYLON_LOCAL_OBJECT;
+        }
+        else {
+            return shared ? CEYLON_ATTRIBUTE : CEYLON_LOCAL_ATTRIBUTE;
+        }
+    }
+    
+    public static Image getImageForRunnableDeclaration(
+            Declaration element) {
+        String key = getImageKeyForDeclaration(element);
+        if (key==null) return null;
+        int attributes = getDecorationAttributes(element) | RUN;
+        return getDecoratedImage(key, attributes, false);
+    }
+    
+    public static Image getImageForDeclaration(
+            Declaration element) {
+        return getDecoratedImage(element, 
+                getImageKeyForDeclaration(element), 
+                false, false);
+    }
+    
+    public static Image getImageForDeclaration(
+            Declaration element, boolean focus) {
+        return getDecoratedImage(element, 
+                getImageKeyForDeclaration(element), 
+                false, focus);
+    }
+    
+    public static Image getImageForFile(IFile file) {
+        return getDecoratedImage(file, 
+                getImageKeyForFile(file), 
+                true, false);
+    }
+    
+    static String getImageKeyForDeclaration(Declaration d) {
+        if (d==null) return null;
+        boolean shared = d.isShared();
+        if (d instanceof Class) {
+            if (d.isAnonymous()) {
+                return shared ? CEYLON_OBJECT : CEYLON_LOCAL_OBJECT;
+            }
+            return shared ? CEYLON_CLASS : CEYLON_LOCAL_CLASS;
+        }
+        else if (d instanceof Interface) {
+            return shared ? CEYLON_INTERFACE : CEYLON_LOCAL_INTERFACE;
+        }
+        if (isConstructor(d)) {
+            return shared ? CEYLON_CONSTRUCTOR : CEYLON_CONSTRUCTOR;
+        }
+        else if (d instanceof TypeParameter) {
+            return CEYLON_TYPE_PARAMETER;
+        }
+        else if (d.isParameter()) {
+            if (d instanceof Function) {
+                return CEYLON_PARAMETER_METHOD;
+            }
+            else {
+                return CEYLON_PARAMETER;
+            }
+        }
+        else if (d instanceof Function) {
+            if (shared) {
+                return CEYLON_METHOD;
+            }
+            else {
+                return CEYLON_LOCAL_METHOD;
+            }
+        }
+        else if (d instanceof TypeAlias ||
+                d instanceof NothingType) {
+            return CEYLON_ALIAS;
+        }
+        else if (d instanceof UnionType || 
+                d instanceof IntersectionType) {
+            return CEYLON_ALIAS; //not quite right!
+        }
+        else {
+            if (d instanceof Value) {
+                Value value = (Value) d;
+                if (ModelUtil.isObject(value)) {
+                    return shared ? CEYLON_OBJECT : CEYLON_LOCAL_OBJECT;
+                }
+            }
+            return shared ? CEYLON_ATTRIBUTE : CEYLON_LOCAL_ATTRIBUTE;
+        }
+    }
+    
+    @Override
+    public StyledString getStyledText(Object element) {
+        if (element instanceof IFile) {
+            IFile file = (IFile) element;
+            return new StyledString(file.getName());
+        }
+        else if (element instanceof IPath) {
+            IPath path = (IPath) element;
+            return new StyledString(path.lastSegment());
+        }
+        else if (element instanceof IFolder) {
+            IFolder folder = (IFolder) element;
+            return new StyledString(folder.getName());
+        }
+        else if (element instanceof IProject) {
+            IProject project = (IProject) element;
+            return new StyledString(project.getName());
+        }
+        else if (element instanceof IJavaProject) {
+            IJavaProject project = (IJavaProject) element;
+            return new StyledString(project.getElementName());
+        }
+        else if (element instanceof IPackageFragment) {
+            IPackageFragment pf = 
+                    (IPackageFragment) element;
+            String packageName = pf.getElementName();
+            if (packageName.isEmpty()) {
+                packageName = "(default package)";
+            }
+            return new StyledString(packageName, PACKAGE_STYLER);
+        }
+        else if (element instanceof IPackageFragmentRoot) {
+            IPackageFragmentRoot pfr = 
+                    (IPackageFragmentRoot) element;
+            boolean isCar = 
+                    pfr.getPath().getFileExtension()!=null;
+            IJavaElement je = (IJavaElement) element;
+            String name = je.getElementName();
+            int loc = name.lastIndexOf('.');
+            if (loc>=0) name = name.substring(0, loc);
+            loc = name.indexOf('-');
+            if (loc>=0) name = name.substring(0, loc);
+            if (isCar) {
+                return new StyledString(name, PACKAGE_STYLER);
+            }
+            else {
+                return new StyledString(name);
+            }
+        }
+        else if (element instanceof IImportDeclaration) {
+            IImportDeclaration id = 
+                    (IImportDeclaration) element;
+            StyledString label = 
+                    new StyledString("import ", KW_STYLER);
+            label.append(id.getElementName(), PACKAGE_STYLER);
+            return label;
+        }
+        else if (element instanceof Package) {
+            Package pack = (Package) element;
+            return new StyledString(getPackageLabel(pack), 
+            		PACKAGE_STYLER);
+        }
+        else if (element instanceof Module) {
+            Module mod = (Module) element;
+            return new StyledString(getModuleLabel(mod), 
+            		PACKAGE_STYLER);
+        }
+        else if (element instanceof Unit) {
+            Unit unit = (Unit) element;
+            return new StyledString(unit.getFilename());
+        }
+        else if (element instanceof Node) {
+            Node treeNode = (Node) element;
+            return getStyledLabelForNode(treeNode,
+                    getPrefix(), getFont());
+        }
+        else {
+            return new StyledString("");
+        }
+    }
+    
+    public String getPrefix() {
+        return null;
+    }
+    
+    public Font getFont() {
+        return null;
+    }
+
+    @Override
+    public String getText(Object element) {
+        return getStyledText(element).toString();
+    }
+    
+    private static void appendPostfixType(
+            Tree.TypedDeclaration td, StyledString label) {
+        if (CeylonPlugin.getPreferences()
+                .getBoolean(RETURN_TYPES_IN_OUTLINES)) {
+            Tree.Type type = td.getType();
+            if (type!=null && 
+                    !(type instanceof Tree.DynamicModifier) &&
+                    !(type instanceof Tree.VoidModifier)) {
+                Type tm = type.getTypeModel();
+                if (!isTypeUnknown(tm)) {
+                    label.append(" ∊ ");
+                    appendTypeName(label, tm, td.getUnit(), 
+                            ARROW_STYLER);
+                }
+            }
+        }
+    }
+
+    public static StyledString getStyledLabelForNode(Node node) {
+        return getStyledLabelForNode(node, null, null);
+    }
+
+    static void appendName(StyledString result, String name, Styler styler,
+            String prefix, Font font) {
+        if (prefix==null) {
+            result.append(name, styler);
+        }
+        else {
+            Highlights.styleIdentifier(result, prefix, name, styler, font);
+        }
+    }
+
+    public static StyledString getStyledLabelForNode(Node node,
+            String prefix, Font font) {
+        //TODO: it would be much better to render types
+        //      from the tree nodes instead of from the
+        //      model nodes
+
+        if (node instanceof Tree.TypeParameterDeclaration) {
+            Tree.TypeParameterDeclaration ac = 
+                    (Tree.TypeParameterDeclaration) node;
+            String name = name(ac.getIdentifier());
+            StyledString label = new StyledString();
+            appendName(label, name, ID_STYLER, prefix, font);
+            return label;
+        }
+        else if (node instanceof Tree.AnyClass) {
+            Tree.AnyClass ac = (Tree.AnyClass) node;
+            StyledString label = 
+                    new StyledString("class ", KW_STYLER);
+            String name = name(ac.getIdentifier());
+            appendName(label, name, TYPE_ID_STYLER, prefix, font);
+            parameters(ac.getTypeParameterList(), label);
+            parameters(ac.getParameterList(), label);
+            return label;
+        }
+        else if (node instanceof Tree.AnyInterface) {
+            Tree.AnyInterface ai = (Tree.AnyInterface) node;
+            StyledString label = 
+                    new StyledString("interface ", KW_STYLER);
+            String name = name(ai.getIdentifier());
+            appendName(label, name, TYPE_ID_STYLER, prefix, font);
+            parameters(ai.getTypeParameterList(), label);
+            return label;
+        }
+        else if (node instanceof Tree.Constructor) {
+            Tree.Constructor ac = (Tree.Constructor) node;
+            StyledString label = 
+                    new StyledString("new ", KW_STYLER);
+            if (ac.getIdentifier()!=null) {
+                String name = name(ac.getIdentifier());
+                appendName(label, name, ID_STYLER, prefix, font);
+            }
+            parameters(ac.getParameterList(), label);
+            return label;
+        }
+        else if (node instanceof Tree.Enumerated) {
+            Tree.Enumerated ac = (Tree.Enumerated) node;
+            StyledString label = 
+                    new StyledString("new ", KW_STYLER);
+            String name = name(ac.getIdentifier());
+            appendName(label, name, ID_STYLER, prefix, font);
+            return label;
+        }
+        else if (node instanceof Tree.TypeAliasDeclaration) {
+            Tree.TypeAliasDeclaration ac = 
+                    (Tree.TypeAliasDeclaration) node;
+            StyledString label = 
+                    new StyledString("alias ", KW_STYLER);
+            String name = name(ac.getIdentifier());
+            appendName(label, name, TYPE_ID_STYLER, prefix, font);
+            parameters(ac.getTypeParameterList(), label);
+            return label;
+        }
+        else if (node instanceof Tree.ObjectDefinition) {
+            Tree.ObjectDefinition ai = 
+                    (Tree.ObjectDefinition) node;
+            String name = name(ai.getIdentifier());
+            StyledString label = 
+                    new StyledString("object ", KW_STYLER);
+            appendName(label, name, ID_STYLER, prefix, font);
+            return label;
+        }
+        else if (node instanceof Tree.AttributeSetterDefinition) {
+            Tree.AttributeSetterDefinition ai = 
+                    (Tree.AttributeSetterDefinition) node;
+            String name = name(ai.getIdentifier());
+            StyledString label = 
+                    new StyledString("assign ", KW_STYLER);
+            appendName(label, name, ID_STYLER, prefix, font);
+            return label;
+        }
+        else if (node instanceof Tree.AnyMethod) {
+            Tree.TypedDeclaration td = 
+                    (Tree.TypedDeclaration) node;
+            String kind;
+            Tree.Type type = td.getType();
+            if (type instanceof Tree.DynamicModifier) {
+                kind = "dynamic";
+            }
+            else if (type instanceof Tree.VoidModifier) {
+                kind = "void";
+            }
+            else {
+                kind = "function";
+            }
+            String name = name(td.getIdentifier());
+            StyledString label = 
+                    new StyledString(kind, KW_STYLER)
+                        .append(" ");
+            appendName(label, name, ID_STYLER, prefix, font);
+            Tree.AnyMethod am = (Tree.AnyMethod) node;
+            parameters(am.getTypeParameterList(), label);
+            for (Tree.ParameterList pl: am.getParameterLists()) { 
+                parameters(pl, label);
+            }
+            appendPostfixType(td, label);
+            return label;
+        }
+        else if (node instanceof Tree.TypedDeclaration) {
+            Tree.TypedDeclaration td = 
+                    (Tree.TypedDeclaration) node;
+            String kind;
+            Tree.Type type = td.getType();
+            if (type instanceof Tree.DynamicModifier) {
+                kind = "dynamic";
+            }
+            else {
+                kind = "value";
+            }
+            String name = name(td.getIdentifier());
+            StyledString label = 
+                    new StyledString(kind, KW_STYLER)
+                        .append(" ");
+            appendName(label, name, ID_STYLER, prefix, font);
+            appendPostfixType(td, label);
+            return label;
+        }
+//        else if (n instanceof Tree.TypedDeclaration) {
+//            Tree.TypedDeclaration td = (Tree.TypedDeclaration) n;
+//            Tree.Type tt = td.getType();
+//            StyledString label = new StyledString();
+//            label.append(type(tt, td))
+//                .append(" ")
+//                .append(name(td.getIdentifier()), ID_STYLER);
+//            if (n instanceof Tree.AnyMethod) {
+//                Tree.AnyMethod am = (Tree.AnyMethod) n;
+//                parameters(am.getTypeParameterList(), label);
+//                for (Tree.ParameterList pl: am.getParameterLists()) { 
+//                    parameters(pl, label);
+//                }
+//            }
+//            return label;
+//        }
+        else if (node instanceof Tree.CompilationUnit) {
+            Tree.CompilationUnit ai = 
+                    (Tree.CompilationUnit) node;
+            Unit unit = ai.getUnit();
+            return unit==null ? 
+                    new StyledString("unknown") : 
+                    new StyledString(unit.getFilename());
+        }
+        else if (node instanceof Tree.ModuleDescriptor) {
+            Tree.ModuleDescriptor i = 
+                    (Tree.ModuleDescriptor) node;
+            Tree.ImportPath p = i.getImportPath();
+            if (isNonempty(p)) {
+                StyledString styledString = 
+                        new StyledString("module ", KW_STYLER)
+                            .append(toPath(p), PACKAGE_STYLER);
+                Tree.ModuleDescriptor md = 
+                        (Tree.ModuleDescriptor) node;
+                Tree.QuotedLiteral version = md.getVersion();
+                if (version!=null) {
+                    styledString.append(" ")
+                        .append(version.getText(), STRING_STYLER);
+                }
+                return styledString;
+            }
+        }
+        else if (node instanceof Tree.PackageDescriptor) {
+            Tree.PackageDescriptor i = 
+                    (Tree.PackageDescriptor) node;
+            Tree.ImportPath p = i.getImportPath();
+            if (isNonempty(p)) {
+                return new StyledString("package ", KW_STYLER)
+                        .append(toPath(p), PACKAGE_STYLER);
+            }
+        }
+        else if (node instanceof Tree.ImportList) {
+            return new StyledString("imports");
+        }
+        else if (node instanceof Tree.ImportPath) {
+            Tree.ImportPath p = (Tree.ImportPath) node;
+            if (isNonempty(p)) {
+                return new StyledString(toPath(p), PACKAGE_STYLER);
+            }
+        }
+        else if (node instanceof Tree.Import) {
+            Tree.Import i = (Tree.Import) node;
+            Tree.ImportPath p = i.getImportPath();
+            if (isNonempty(p)) {
+                return new StyledString("import ", KW_STYLER)
+                        .append(toPath(p), PACKAGE_STYLER);
+            }
+        }
+        else if (node instanceof Tree.ImportModule) {
+            Tree.ImportModule i = (Tree.ImportModule) node;
+            StyledString styledString = 
+                    new StyledString("import ", KW_STYLER);
+            Tree.ImportPath p = i.getImportPath();
+            if (isNonempty(p)) {
+                styledString.append(toPath(p), PACKAGE_STYLER);
+            }
+            Tree.QuotedLiteral ql = i.getQuotedLiteral();
+            if (ql!=null) {
+                styledString.append(ql.getText(), STRING_STYLER);
+            }
+            Tree.QuotedLiteral version = i.getVersion();
+            if (version!=null) {
+                styledString.append(" ")
+                    .append(version.getText(), STRING_STYLER);
+            }
+            return styledString;
+        }
+        else if (node instanceof PackageNode) {
+            PackageNode packageNode = (PackageNode) node;
+            String name = packageNode.getPackageName();
+            if (name.isEmpty()) {
+                return new StyledString("(default package)");
+            }
+            else {
+                return new StyledString(name/*, PACKAGE_STYLER*/);
+            }
+        }
+        else if (node instanceof ModuleNode) {
+            ModuleNode moduleNode = (ModuleNode) node;
+            String name = moduleNode.getModuleName();
+            if (name.isEmpty() || "default".equals(name)) {
+                return new StyledString("(default module)");
+            }
+            else {
+                return new StyledString(name/*, PACKAGE_STYLER*/)
+                    .append(" \"", STRING_STYLER)
+                    .append(moduleNode.getVersion(), STRING_STYLER)
+                    .append("\"", STRING_STYLER);
+            }
+        }
+        else if (node instanceof Tree.SpecifierStatement) {
+            Tree.SpecifierStatement ss = 
+                    (Tree.SpecifierStatement) node;
+            Tree.Term bme = ss.getBaseMemberExpression();
+            Tree.Identifier id;
+            String kw;
+            List<Tree.ParameterList> pls;
+            if (bme instanceof Tree.BaseMemberExpression) {
+                Tree.BaseMemberExpression be = 
+                        (Tree.BaseMemberExpression) bme;
+                id = be.getIdentifier();
+                pls = null;
+                kw = "value";
+            }
+            else if (bme instanceof Tree.ParameterizedExpression) {
+                Tree.ParameterizedExpression pe = 
+                        (Tree.ParameterizedExpression) bme;
+                Tree.Primary primary = pe.getPrimary();
+                Tree.BaseMemberExpression bp = 
+                        (Tree.BaseMemberExpression) primary;
+                id = bp.getIdentifier();
+                kw = "function";
+                pls = pe.getParameterLists();
+            }
+            else {
+                 throw new RuntimeException("unexpected node type");
+            }
+            StyledString label = 
+                    new StyledString(kw, KW_STYLER)
+                        .append(" ");
+            String name = name(id);
+            appendName(label, name, ID_STYLER, prefix, font);
+            if (pls!=null) {
+                for (Tree.ParameterList pl: pls) { 
+                    parameters(pl, label);
+                }
+            }
+            return label;
+        }
+        
+        return new StyledString("");
+    }
+
+    private static boolean isNonempty(Tree.ImportPath p) {
+        return p!=null && !p.getIdentifiers().isEmpty();
+    }
+
+    private static String toPath(Tree.ImportPath p) {
+        return formatPath(p.getIdentifiers());
+    }
+    
+    private static StyledString type(Tree.Type type, 
+            Tree.TypedDeclaration node) {
+        StyledString result = new StyledString();
+        if (type!=null) {
+            if (type instanceof Tree.VoidModifier) {
+                return result.append("void", KW_STYLER);
+            }
+            if (type instanceof Tree.DynamicModifier) {
+                return result.append("dynamic", KW_STYLER);
+            }
+            Type tm = type.getTypeModel();
+            if (tm!=null && !isTypeUnknown(tm)) {
+                Unit unit = node.getUnit();
+                if (type instanceof Tree.SequencedType) {
+                    Tree.SequencedType st = 
+                            (Tree.SequencedType) type;
+                    Type itm = 
+                            type.getUnit()
+                                .getIteratedType(tm);
+                    if (itm!=null) {
+                        appendTypeName(result, itm, unit);
+                        result.append(st.getAtLeastOne()?"+":"*");
+                        return result;
+                    }
+                }
+                appendTypeName(result, tm, unit);
+                return result;
+            }
+        }
+        String keyword;
+        if (node instanceof Tree.AnyMethod) {
+            keyword = "function";
+        }
+        else {
+            keyword = "value";
+        }
+        return result.append(keyword, KW_STYLER);
+    }
+    
+    private static String name(Tree.Identifier id) {
+        if (id==null || 
+                id.getText().startsWith("<missing")) {
+            return "<unknown>";
+        }
+        else {
+            return id.getText();
+        }
+    }
+    
+    private static void parameters(Tree.ParameterList pl, 
+            StyledString label) {
+        IPreferenceStore prefs = CeylonPlugin.getPreferences();
+        boolean names = 
+                prefs.getBoolean(PARAMS_IN_OUTLINES);
+        boolean types = 
+                prefs.getBoolean(PARAM_TYPES_IN_OUTLINES);
+        if (names || types) {
+            if (pl==null) {
+                //constructors
+            }
+            else if (pl.getParameters().isEmpty()) {
+                label.append("()");
+            }
+            else {
+                label.append("(");
+                int len = pl.getParameters().size(), i=0;
+                for (Tree.Parameter p: pl.getParameters()) {
+                    if (p!=null) {
+                        if (p instanceof Tree.ParameterDeclaration) {
+                            Tree.ParameterDeclaration pd = 
+                                    (Tree.ParameterDeclaration) p;
+                            Tree.TypedDeclaration td = 
+                                    pd.getTypedDeclaration();
+                            if (types) {
+                                label.append(type(td.getType(), td));
+                            }
+                            if (names && types) label.append(' ');
+                            if (names) {
+                                String name = name(td.getIdentifier());
+                                label.append(name, ID_STYLER);
+                            }
+                            if (p instanceof Tree.FunctionalParameterDeclaration) {
+                                Tree.MethodDeclaration md = 
+                                        (Tree.MethodDeclaration) td;
+                                List<Tree.ParameterList> pls = 
+                                        md.getParameterLists();
+                                if (!names) {
+                                    pls = new ArrayList<Tree.ParameterList>(pls);
+                                    Collections.reverse(pls);
+                                }
+                                for (Tree.ParameterList ipl: pls) {
+                                    parameters(ipl, label);
+                                }
+                            }
+                        }
+                        else if (p instanceof Tree.InitializerParameter) {
+                            Tree.InitializerParameter ip = 
+                                    (Tree.InitializerParameter) p;
+                            Parameter model = 
+                                    p.getParameterModel();
+                            if (model!=null &&
+                                    model.getType()!=null) {
+                                if (types) {
+                                    appendTypeName(label, 
+                                            model.getType(),
+                                            pl.getUnit());
+                                }
+                                if (types && names) {
+                                    label.append(' ');
+                                }
+                            }
+                            if (names) {
+                                String name = name(ip.getIdentifier());
+                                label.append(name, ID_STYLER);
+                            }
+                        }
+                    }
+                    if (++i<len) label.append(", ");
+                }
+                label.append(")");
+            }
+        }
+    }
+    
+    private static void parameters(Tree.TypeParameterList tpl, 
+            StyledString label) {
+        if (CeylonPlugin.getPreferences()
+                .getBoolean(TYPE_PARAMS_IN_OUTLINES)) {
+            if (tpl!=null &&
+                    !tpl.getTypeParameterDeclarations()
+                        .isEmpty()) {
+                label.append("<");
+                int len = tpl.getTypeParameterDeclarations().size();
+                int i=0;
+                for (Tree.TypeParameterDeclaration p: 
+                        tpl.getTypeParameterDeclarations()) {
+                    Tree.TypeVariance var = p.getTypeVariance();
+                    if (var!=null) {
+                        label.append(var.getText(), KW_STYLER)
+                            .append(" "); 
+                    }
+                    String name = name(p.getIdentifier());
+                    label.append(name, TYPE_STYLER);
+                    if (++i<len) label.append(", ");
+                }
+                label.append(">");
+            }
+        }
+    }
+    
+    @Override
+    public void addListener(ILabelProviderListener listener) {
+        fListeners.add(listener);
+    }
+    
+    @Override
+    public void dispose() {}
+    
+    @Override
+    public boolean isLabelProperty(Object element, String property) {
+        return false;
+    }
+    
+    @Override
+    public void removeListener(ILabelProviderListener listener) {
+        fListeners.remove(listener);
+    }
+    
+    @Override
+    public void update(ViewerCell cell) {
+        Object element = cell.getElement();
+        StyledString styledText = getStyledText(element);
+        cell.setText(styledText.toString());
+        cell.setStyleRanges(styledText.getStyleRanges());
+        cell.setImage(getImage(element));
+        super.update(cell);
+    }
+
+    public static void appendTypeName(StyledString result, 
+            Type type) {
+        appendTypeName(result, type, null, TYPE_STYLER);
+    }
+    
+    public static void appendTypeName(StyledString result, 
+            Type type, Unit unit) {
+        appendTypeName(result, type, unit, TYPE_STYLER);
+    }
+    
+    public static void appendTypeName(StyledString result, 
+            Type type, Styler styler) {
+        appendTypeName(result, type, null, styler);
+    }
+    
+    public static void appendTypeName(StyledString result, 
+            Type type, Unit unit, Styler styler) {
+        try {
+            String typeName = type.asString(unit);
+            StringTokenizer tokens = 
+                    new StringTokenizer(typeName,
+                            "|&?[]{}*+=-<>(),. ",true);
+            while (tokens.hasMoreTokens()) {
+                String token = tokens.nextToken();
+                if (Character.isLetter(token.charAt(0))) {
+                    result.append(token, styler);
+                }
+                else {
+                    result.append(token);
+                }
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static int getDecorationAttributes(Object entity) {
+        try {
+            if (entity instanceof IProject) {
+                int decorationAttributes = 0;
+                IProject project = (IProject) entity;
+                switch (getMaxProblemMarkerSeverity(
+                        project, DEPTH_INFINITE)) {
+                        case IMarker.SEVERITY_ERROR:
+                            decorationAttributes |= ERROR;
+                            break;
+                        case IMarker.SEVERITY_WARNING:
+                            decorationAttributes |= WARNING;
+                            break;
+                }
+                return decorationAttributes;
+            }
+            if (entity instanceof IPackageFragment) {
+                IPackageFragment pf = 
+                        (IPackageFragment) entity;
+                IFolder folder = null;
+                try {
+                    folder = (IFolder) 
+                            pf.getCorrespondingResource();
+                }
+                catch (JavaModelException e) {}
+                if (folder != null) {
+                    final BaseIdeModule moduleOfRootPackage = 
+                            getModule(folder);
+                    int sev = getMaxProblemMarkerSeverity(
+                            folder, DEPTH_INFINITE,
+                            new IMarkerFilter() {
+                        @Override
+                        public boolean select(IMarker marker) {
+                            IResource r = marker.getResource();
+                            if (r instanceof IFile) {
+                                IFile f = (IFile) r;
+                                Package currentPackage = 
+                                        getPackage(f);
+                                if (moduleOfRootPackage != null && 
+                                        currentPackage != null) {
+                                    return moduleOfRootPackage.equals(
+                                            currentPackage.getModule());
+                                }
+                            }
+                            return false;
+                        }
+                    });
+                    switch (sev) {
+                    case SEVERITY_ERROR:
+                        return ERROR;
+                    case SEVERITY_WARNING:
+                        return WARNING;
+                    default: 
+                        return 0;
+                    }
+                }
+            }
+            if (entity instanceof IResource) {
+                IResource resource = (IResource) entity;
+                int sev = getMaxProblemMarkerSeverity(
+                        resource, DEPTH_ONE);
+                switch (sev) {
+                case SEVERITY_ERROR:
+                    return ERROR;
+                case SEVERITY_WARNING:
+                    return WARNING;
+                default: 
+                    return 0;
+                }
+            }
+            if (entity instanceof Declaration) {
+                Declaration dec = (Declaration) entity;
+                return getDecorationAttributes(dec);
+            }
+            if (entity instanceof Node) {
+                Node treeNode = (Node) entity;
+                return getNodeDecorationAttributes(treeNode);
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public static int getNodeDecorationAttributes(Node node) {
+        int result = 0;
+        if (node instanceof Tree.Declaration || 
+                node instanceof Tree.Import) {
+            ErrorCollectionVisitor ev = 
+                    new ErrorCollectionVisitor(node, true);
+            node.visit(ev);
+            boolean warnings=false;
+            boolean errors=false;
+            for (Message m: ev.getErrors()) {
+                if (m instanceof UsageWarning) {
+                    warnings = true;
+                }
+                else {
+                    errors = true;
+                }
+            }
+            if (errors) {
+                result |= ERROR;
+            }
+            else if (warnings) {
+                result |= WARNING;
+            }
+
+            if (node instanceof Tree.Declaration) {
+                Tree.Declaration dec = 
+                        (Tree.Declaration) node;
+                result |= getDecorationAttributes(
+                        dec.getDeclarationModel());
+            }
+            if (node instanceof Tree.AnyMethod) {
+                Tree.AnyMethod am =
+                        (Tree.AnyMethod) node;
+                if (!am.getParameterLists().isEmpty()) {
+                    result |= getRunAttribute(
+                            am.getDeclarationModel(), 
+                            am.getParameterLists()
+                                .get(0));
+                }
+            }
+            if (node instanceof Tree.ClassDefinition) {
+                Tree.ClassDefinition cd =
+                        (Tree.ClassDefinition) node;
+                result |= getRunAttribute(
+                        cd.getDeclarationModel(), 
+                        cd.getParameterList());
+            }
+        }
+        else if (node instanceof Tree.SpecifierStatement) {
+            Tree.SpecifierStatement ss = 
+                    (Tree.SpecifierStatement) node;
+            Tree.Term bme = ss.getBaseMemberExpression();
+            Declaration model;
+            if (bme instanceof Tree.StaticMemberOrTypeExpression) {
+                Tree.StaticMemberOrTypeExpression smte = 
+                        (Tree.StaticMemberOrTypeExpression) bme;
+                model = smte.getDeclaration();
+            }
+            else if (bme instanceof Tree.ParameterizedExpression) {
+                Tree.ParameterizedExpression pe = 
+                        (Tree.ParameterizedExpression) bme;
+                Tree.Primary primary = pe.getPrimary();
+                Tree.BaseMemberExpression pbe = 
+                        (Tree.BaseMemberExpression) primary;
+                model = pbe.getDeclaration();
+            }
+            else {
+                 throw new RuntimeException("unexpected node type");
+            }
+            if (model!=null) {
+                Declaration refined = 
+                        types_.get_()
+                            .getRefinedDeclaration(model);
+                if (refined!=null) {
+                    result |= refined.isFormal() ? 
+                            IMPLEMENTS : REFINES;
+                }
+            }
+        }
+        return result;
+    }
+    
+    private static int getRunAttribute(Declaration dec,
+            Tree.ParameterList parameterList) {
+        if (dec!=null 
+                && dec.isShared() 
+                && dec.isToplevel()
+                && parameterList!=null //TODO: not quite right, what about default constructors?
+                && parameterList.getParameters()
+                    .isEmpty()) {
+            return RUN;
+        }
+        else {
+            return 0;
+        }
+    }
+
+    private static int getDecorationAttributes(Declaration model) {
+            if (model == null) {
+                return 0;
+            }
+            
+            int result = 0;
+            if (model.isDeprecated()) {
+                result |= DEPRECATED;
+            }
+            if (model.isFormal()) {
+                result |= FORMAL;
+            }
+            if (model.isDefault()) {
+                result |= DEFAULT;
+            }
+            if (model.isNative()) {
+                result |= NATIVE;
+            }
+            if (model instanceof TypeDeclaration && 
+                    ((TypeDeclaration) model).isSealed()) {
+                result |= SEALED;
+            }
+            if (model.isAnnotation()) {
+                result |= ANNOTATION;
+            }
+            if ((model instanceof Value) && 
+                    ((Value) model).isVariable()) {
+                result |= VARIABLE;
+            }
+            if (model instanceof Class && 
+                    ((Class) model).isAbstract()) {
+                result |= ABSTRACT;
+            }
+            if (model instanceof Class && 
+                    ((Class) model).isFinal()) {
+                result |= FINAL;
+            }
+
+            if (model instanceof TypeDeclaration) {
+                TypeDeclaration td = 
+                        (TypeDeclaration) model;
+                if(td.getCaseTypes()!=null) {
+                    result |= ENUM;
+                }
+                if (td.isAlias()) {
+                    result |= ALIAS;
+                }
+            }
+            if (model.isActual()) {
+                Declaration refined = 
+                        types_.get_()
+                            .getRefinedDeclaration(model);
+                if (refined!=null) {
+                    result |= refined.isFormal() ? 
+                            IMPLEMENTS : REFINES;
+                }
+            }
+            return result;
+        }
+
+    static interface IMarkerFilter {
+        boolean select(IMarker marker);
+    }
+    
+    static IMarkerFilter acceptAllMarkers = 
+            new IMarkerFilter() {
+        @Override
+        public boolean select(IMarker marker) {
+            return true;
+        }
+    };
+    
+    /**
+     * Returns the maximum problem marker severity for the given resource, and, if
+     * depth is IResource.DEPTH_INFINITE, its children. The return value will be
+     * one of IMarker.SEVERITY_ERROR, IMarker.SEVERITY_WARNING, IMarker.SEVERITY_INFO
+     * or 0, indicating that no problem markers exist on the given resource.
+     * @param depth TODO
+     */
+    static int getMaxProblemMarkerSeverity(IResource res, 
+            int depth, IMarkerFilter markerFilter) {
+        if (res == null || !res.isAccessible())
+            return 0;
+    
+        boolean hasWarnings = false; // if resource has errors, will return error image immediately
+        IMarker[] markers = null;
+        try {
+            markers = res.findMarkers(IMarker.PROBLEM, true, depth);
+        } 
+        catch (CoreException e) {
+            e.printStackTrace();
+        }
+        if (markers == null)
+            return 0; // don't know - say no errors/warnings/infos
+    
+        for (int i= 0; i < markers.length; i++) {
+            IMarker m = markers[i];
+            if (markerFilter.select(m)) {
+                int priority = m.getAttribute(IMarker.SEVERITY, -1);
+                if (priority == IMarker.SEVERITY_WARNING) {
+                    hasWarnings = true;
+                } 
+                else if (priority == IMarker.SEVERITY_ERROR) {
+                    return IMarker.SEVERITY_ERROR;
+                }
+            }
+        }
+        return hasWarnings ? IMarker.SEVERITY_WARNING : 0;
+    }
+
+    /**
+     * Returns the maximum problem marker severity for the given resource, and, if
+     * depth is IResource.DEPTH_INFINITE, its children. The return value will be
+     * one of IMarker.SEVERITY_ERROR, IMarker.SEVERITY_WARNING, IMarker.SEVERITY_INFO
+     * or 0, indicating that no problem markers exist on the given resource.
+     * @param depth TODO
+     */
+    static int getMaxProblemMarkerSeverity(IResource res, int depth) {
+        return getMaxProblemMarkerSeverity(res, depth, acceptAllMarkers);
+    }
+    
+    private static String getPackageLabel(Package packageModel) {
+        String name = packageModel.getQualifiedNameString();
+        if (name.isEmpty()) {
+            return "(default package)";
+        }
+        return name;
+    }
+    
+    private static String getModuleLabel(Module moduleModel) {
+        String name = moduleModel.getNameAsString();
+        if (name.isEmpty() || 
+                name.equals(Module.DEFAULT_MODULE_NAME)) {
+            return "(default module)";
+        }
+        return name;
+    }
+    
+    public static String getModuleLabel(Declaration dec) {
+        Unit unit = dec.getUnit();
+        return unit==null ? "(unknown module)" : 
+            getModuleLabel(unit.getPackage().getModule());
+    }
+    
+    public static String getPackageLabel(Declaration dec) {
+        Unit unit = dec.getUnit();
+        return unit==null ? "(unknown package)" : 
+            getPackageLabel(unit.getPackage());
+    }
+    
+    private static String getRefinementIconKey(Declaration dec) {
+        if (dec.isParameter()) {
+            return CEYLON_ARGUMENT;
+        }
+        else {
+            return dec.isFormal() ? 
+                CEYLON_FORMAL_REFINEMENT : 
+                CEYLON_DEFAULT_REFINEMENT;
+        }
+    }
+
+    public static Image getRefinementIcon(Declaration dec) {
+        return getDecoratedImage(null, 
+                getRefinementIconKey(dec), 
+                false, false);
+    }
+    
+}

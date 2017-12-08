@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.eclipse.ceylon.ide.eclipse</groupId>
+        <artifactId>plugins</artifactId>
+        <version>1.3.4-SNAPSHOT</version>
+    </parent>
+    <artifactId>org.eclipse.ceylon.ide.eclipse.ui</artifactId>
+
+    <properties>
+    </properties>
+    
+    <packaging>eclipse-plugin</packaging>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>cleanCeylonModule</id>
+                        <phase>clean</phase>
+                        <configuration>
+                            <target>
+                                <ant dir="${project.basedir}"
+                                    target="clean" />
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                  <execution>
+                    <id>getListOfEcliseDependencies</id>
+                    <phase>initialize</phase>
+                    <goals>
+                      <goal>run</goal>
+                    </goals>
+                    <configuration>
+                      <exportAntProperties>true</exportAntProperties>
+                      <target>
+                            <tempfile destdir="${project.basedir}/target" prefix="bundlesToDownload" property="bundlesToDownloadFile" createfile="true" deleteonexit="true"/>
+                            <ant dir="${project.basedir}"
+                                target="dumpBundlesToDownload">
+                                <property name="file" value="${bundlesToDownloadFile}"/>
+                            </ant>
+                            <loadfile property="dependenciesToFetch" srcfile="${bundlesToDownloadFile}"/>
+                      </target>
+                    </configuration>
+                  </execution>
+                  <execution>
+                    <id>get-jdt-debug-version</id>
+                    <phase>initialize</phase>
+                    <goals>
+                      <goal>run</goal>
+                    </goals>
+                    <configuration>
+                      <exportAntProperties>true</exportAntProperties>
+                      <target>
+                        <dependencyfilesets prefix="mydeps."/>
+                        <pathconvert pathsep="" property="jdtVersion" refid="mydeps.p2.eclipse-plugin:org.eclipse.jdt.debug:jar:jdimodel.jar">
+                            <mapper type="regexp" from="org\.eclipse\.jdt\.debug-(.+)\.jar(\\|/)jdimodel.jar" to="\1"/>
+                        </pathconvert>
+                      </target>
+                    </configuration>
+                  </execution>
+                    <execution>
+                        <id>compileCeylonModule</id>
+                        <phase>process-sources</phase>
+                        <configuration>
+                            <target>
+                                <ant dir="${project.basedir}"
+                                    target="renameBundles">
+                                    <property name="repository" value="${project.basedir}/target/repo"/>
+                                </ant>
+                                <ant dir="${project.basedir}"
+                                    target="generate-eclipseDependenciesModule"/>
+                                <ant dir="${project.basedir}"
+                                    target="compile" />
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>testCeylonModule</id>
+                        <phase>test</phase>
+                        <configuration>
+                            <target>
+                                <ant dir="${project.basedir}"
+                                    target="test" />
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.10</version>
+                <configuration>
+                    <overWriteIfNewer>true</overWriteIfNewer>
+                    <overWriteReleases>true</overWriteReleases>
+                    <overWriteSnapshots>true</overWriteSnapshots>
+                    <outputDirectory>${project.basedir}/target/repo/plugins</outputDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <excludeClassifiers>jdi.jar,jdimodel.jar</excludeClassifiers>
+                            <includeArtifactIds>${dependenciesToFetch}</includeArtifactIds>
+                        </configuration>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>copy</id>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <excludeClassifiers>jdi.jar,jdimodel.jar</excludeClassifiers>
+                            <artifactItems>
+                                <artifactItem>
+                                  <groupId>p2.osgi.bundle</groupId>
+                                  <artifactId>org.eclipse.jdt.debug</artifactId>
+                                  <version>${jdtVersion}</version>
+                                  <type>jar</type>
+                                  <outputDirectory>${project.basedir}/target/repo/plugins</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

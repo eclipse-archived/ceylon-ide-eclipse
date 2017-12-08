@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            configTypeID="org.eclipse.ceylon.test.eclipse.plugin.ceylonTestLaunchConfigurationType"
+            icon="icons/ceylon_test.png"
+            id="org.eclipse.ceylon.test.eclipse.plugin.ceylonTestLaunch.png">
+      </launchConfigurationTypeImage>
+      <launchConfigurationTypeImage
+            configTypeID="org.eclipse.ceylon.test.eclipse.plugin.ceylonTestJsLaunchConfigurationType"
+            icon="icons/ceylon_test.png"
+            id="org.eclipse.ceylon.test.eclipse.plugin.ceylonTestJsLaunch.png">
+      </launchConfigurationTypeImage>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="org.eclipse.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigTabGroup"
+            id="org.eclipse.ceylon.test.eclipse.plugin.ceylonTestLaunchConfigurationTabGroup"
+            type="org.eclipse.ceylon.test.eclipse.plugin.ceylonTestLaunchConfigurationType">
+         <launchMode
+               description="Run Ceylon Test"
+               mode="run">
+         </launchMode>
+         <launchMode
+               description="Debug Ceylon Test"
+               mode="debug"
+               perspective="org.eclipse.debug.ui.DebugPerspective">
+         </launchMode>
+      </launchConfigurationTabGroup>
+      <launchConfigurationTabGroup
+            class="org.eclipse.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchConfigTabGroup"
+            id="org.eclipse.ceylon.test.eclipse.plugin.ceylonTestJsLaunchConfigurationTabGroup"
+            type="org.eclipse.ceylon.test.eclipse.plugin.ceylonTestJsLaunchConfigurationType">
+         <launchMode
+               description="Run Ceylon Test JavaScript"
+               mode="run">
+         </launchMode>
+         <launchMode
+               description="Debug Ceylon Test JavaScript"
+               mode="debug"
+               perspective="org.eclipse.debug.ui.DebugPerspective">
+         </launchMode>
+      </launchConfigurationTabGroup>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            class="org.eclipse.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchShortcut"
+            icon="icons/ceylon_test.png"
+            id="org.eclipse.ceylon.test.eclipse.plugin.ceylonTestLaunchShortcut"
+            label="Ceylon Test"
+            modes="run, debug">
+         <contextualLaunch>
+            <enablement>
+               <with
+                     variable="selection">
+                  <iterate>
+                     <test
+                           property="org.eclipse.ceylon.ide.eclipse.ui.canLaunchAsCeylonJavaModule">
+                     </test>
+                     <test
+                           forcePluginActivation="true"
+                           property="org.eclipse.ceylon.test.eclipse.plugin.canLaunchAsCeylonTest">
+                     </test>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+               id="org.eclipse.ceylon.test.eclipse.plugin.ceylonTestLaunchConfigurationType">
+         </configurationType>
+         <description
+               description="Run Ceylon Test"
+               mode="run">
+         </description>
+         <description
+               description="Debug Ceylon Test"
+               mode="debug">
+         </description>
+      </shortcut>
+      <shortcut
+            class="org.eclipse.ceylon.test.eclipse.plugin.launch.CeylonTestJsLaunchShortcut"
+            icon="icons/ceylon_test.png"
+            id="org.eclipse.ceylon.test.eclipse.plugin.ceylonTestJsLaunchShortcut"
+            label="Ceylon Test JavaScript"
+            modes="run, debug">
+                  <contextualLaunch>
+            <enablement>
+               <with
+                     variable="selection">
+                  <iterate>
+                     <test
+                           property="org.eclipse.ceylon.ide.eclipse.ui.canLaunchAsCeylonJavaScriptModule">
+                     </test>
+                     <test
+                           forcePluginActivation="true"
+                           property="org.eclipse.ceylon.test.eclipse.plugin.canLaunchAsCeylonTest">
+                     </test>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+               id="org.eclipse.ceylon.test.eclipse.plugin.ceylonTestJsLaunchConfigurationType">
+         </configurationType>
+         <description
+               description="Run Ceylon Test JavaScript"
+               mode="run">
+         </description>
+         <description
+               description="Debug Ceylon Test JavaScript"
+               mode="debug">
+         </description>
+      </shortcut>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="org.eclipse.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchDelegate"
+            id="org.eclipse.ceylon.test.eclipse.plugin.ceylonTestLaunchConfigurationType"
+            modes="run, debug"
+            name="Ceylon Test"
+            sourceLocatorId="org.eclipse.ceylon.ide.eclipse.ui.launching.sourceLocator.CeylonSourceLookupDirector"
+            sourcePathComputerId="org.eclipse.ceylon.ide.eclipse.ui.launching.sourceLookup.ceylonSourcePathComputer">
+      </launchConfigurationType>
+      <launchConfigurationType
+            delegate="org.eclipse.ceylon.test.eclipse.plugin.launch.CeylonTestLaunchDelegate"
+            id="org.eclipse.ceylon.test.eclipse.plugin.ceylonTestJsLaunchConfigurationType"
+            modes="run, debug"
+            name="Ceylon Test JavaScript"
+            sourceLocatorId="org.eclipse.ceylon.ide.eclipse.ui.launching.sourceLocator.CeylonSourceLookupDirector"
+            sourcePathComputerId="org.eclipse.ceylon.ide.eclipse.ui.launching.sourceLookup.ceylonSourcePathComputer">
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="org.eclipse.ceylon.test.eclipse.plugin.launch.CeylonTestPropertyTester"
+            id="org.eclipse.ceylon.test.eclipse.plugin.ceylonTestPropertyTester"
+            namespace="org.eclipse.ceylon.test.eclipse.plugin"
+            properties="canLaunchAsCeylonTest"
+            type="java.lang.Object">
+      </propertyTester>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            category="org.eclipse.ceylon.ide.eclipse.ui.views"
+            class="org.eclipse.ceylon.test.eclipse.plugin.ui.TestRunViewPart"
+            icon="icons/ceylon_test.png"
+            id="org.eclipse.ceylon.test.eclipse.plugin.testview"
+            name="Ceylon Test">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+         <perspectiveExtension
+            targetID="org.eclipse.ceylon.ide.eclipse.ui.perspective">
+            <viewShortcut id="org.eclipse.ceylon.test.eclipse.plugin.testview"/>
+         </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.eclipse.ceylon.test.eclipse.plugin.CeylonTestPreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.statusHandlers">
+      <statusHandler
+            class="org.eclipse.ceylon.test.eclipse.plugin.launch.CeylonTestDependencyStatusHandler"
+            code="1001"
+            id="org.eclipse.ceylon.test.eclipse.plugin.ceylonTestDependencyStatusHandler"
+            plugin="org.eclipse.ceylon.test.eclipse.plugin">
+      </statusHandler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup
+            class="org.eclipse.ceylon.test.eclipse.plugin.CeylonTestSturtup">
+      </startup>
+   </extension>
+
+</plugin>

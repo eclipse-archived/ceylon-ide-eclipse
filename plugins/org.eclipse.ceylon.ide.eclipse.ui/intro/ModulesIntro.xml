@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cheatsheet title="Introduction to Ceylon Modules">
+
+    <intro>
+        <description>
+            This cheat sheet shows you how to create a new Ceylon project, a
+            Ceylon module contained in that project, add a dependency to a 
+            Ceylon platform module in Ceylon Herd, and finally export the
+            module to an external Ceylon module repository. You will need
+            an Internet connection to connect to Herd.
+        </description>
+    </intro>
+
+    <item title="Open the Ceylon Perspective" skip="true">
+        <action pluginId="org.eclipse.ui.cheatsheets"
+            class="org.eclipse.ui.internal.cheatsheets.actions.OpenPerspective"
+            param1="org.eclipse.ceylon.ide.eclipse.ui.perspective" />
+        <description>
+            We need to be in the Ceylon Perspective. Select
+            <b>Window > Open Perspective > Other ... > Ceylon</b> from the 
+            menu bar at the top of the workbench, or click below. (If you're 
+            already in the Java perspective, you can skip this step.)
+        </description>
+    </item>
+
+    <item title="Create a Ceylon project" dialog="true">
+        <description>
+            First, we&apos;ll create a project using the New Ceylon Project
+            wizard. Select 
+            <b>File > New > Ceylon Project</b> or click below.
+            <br/>
+            <br/>
+            Call the project "dice", or whatever you like, and click 
+            <b>Finish</b>.
+        </description>
+        <command required="false"
+            serialization="org.eclipse.ui.newWizard(newWizardId=org.eclipse.ceylon.ide.eclipse.ui.newProjectWizard)" />
+    </item>
+
+    <item title="Create a Ceylon module" dialog="true">
+        <description>
+            Next, we&apos;ll create the Ceylon module using the New Ceylon 
+            Module wizard. Select
+            <b>File > New > Ceylon Module</b> or click below.
+            <br/>
+            <br/>
+            Call the module "dice", or whatever you like, choose the source 
+            folder of the project we just created, and finally click 
+            <b>Finish</b>.
+        </description>
+        <command required="false"
+            serialization="org.eclipse.ui.newWizard(newWizardId=org.eclipse.ceylon.ide.eclipse.ui.newModuleWizard)" />
+    </item>
+
+    <item title="Add a module dependency">
+        <description>
+            Open the file "module.ceylon", and add the following line to
+            the module descriptor, just before the closing brace:
+            <br/>
+            <br/>
+            <b>import ceylon.math "1.2.0";</b>
+            <br/>
+            <br/>
+            Remember to save the file.
+            <br/>
+            <br/>
+            Alternatively, you can add this dependency by selecting your
+            module in the Ceylon Explorer and then selecting
+            <b>File > Properties</b>, selecting <b>Ceylon Module</b>, 
+            clicking <b>Add imports...</b>, and choosing the module 
+            "ceylon.math" in the popup dialog. 
+        </description>
+    </item>
+
+    <item title="Add code to the run function">
+        <description>
+            Next, in the Ceylon editor that opened automatically, add the
+            following "import" statement, at the top of the file:
+            <br/>
+            <br/>
+            <b>import ceylon.math.float { random }</b>
+            <br/>
+            <br/>
+            Now add the following code to the body of the "run" function:
+            <br/>
+            <br/>
+            <b>print("You rolled ``(random()*6).integer+1`` ``(random()*6).integer+1``");</b>
+            <br/>
+            <br/>
+            Remember to save the file.
+        </description>
+    </item>
+
+    <item title="Export the module" dialog="true">
+        <description>
+            Finally, select the project in the Ceylon Explorer and select 
+            <b>File > Export... > Ceylon > Ceylon Module to Module Repository</b>
+            or click below.
+            <br/>
+            <br/>
+            Choose the project we just created, and a Ceylon module repository 
+            on your filesystem. Click <b>Finish</b> to export our new module to 
+            the module repository.
+            <br/>
+            <br/> 
+            You can now run the module on the Ceylon module runtime using 
+            the <b>ceylon</b> command line tool.
+        </description>
+        <command
+              required="false"
+              serialization="org.eclipse.ui.file.export(exportWizardId=org.eclipse.ceylon.ide.eclipse.ui.exportModuleWizard)"/>
+    </item>
+
+</cheatsheet>

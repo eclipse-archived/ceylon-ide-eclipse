@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.eclipse.ceylon.ide.eclipse.feature"
+      label="%featureName"
+      version="1.3.4.qualifier"
+      provider-name="%providerName"
+      plugin="org.eclipse.ceylon.ide.eclipse.ui">
+
+   <description url="http://ceylon-lang.org/documentation/current/ide/">
+      %description
+   </description>
+
+   <copyright>
+      %copyright
+   </copyright>
+
+   <license url="license.html">
+      Red Hat, Inc. licenses these features and plugins to you under certain open source licenses (or aggregations of such licenses), which in a particular case may include the Eclipse Public License, the GNU Lesser General Public License, and/or certain other open source licenses. For precise licensing details, consult the corresponding source code, or contact Red Hat Legal Affairs, 1801 Varsity Drive, Raleigh NC 27606 USA.
+   </license>
+
+   <requires>
+      <import feature="org.eclipse.ceylon.dist.feature" version="1.3.4" match="equivalent"/>
+      <import feature="ceylon.tool.converter.java2ceylon.feature" version="1.3.4" match="equivalent"/>
+      <import feature="org.eclipse.ceylon.ide.common.feature" version="1.3.4" match="equivalent"/>
+      <import feature="org.eclipse.zest" version="1.5.0" match="greaterOrEqual"/>
+   </requires>
+
+   <plugin
+         id="org.eclipse.ceylon.ide.eclipse.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.ceylon.test.eclipse.plugin"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.ceylon.ide.eclipse.ui.jdt.debug.fragment"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+</feature>

@@ -1,0 +1,336 @@
+/********************************************************************************
+ * Copyright (c) 2011-2017 Red Hat Inc. and/or its affiliates and others
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 1.0 which is available at
+ * http://www.eclipse.org/legal/epl-v10.html.
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+package org.eclipse.ceylon.ide.eclipse.code.correct;
+
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CodeCompletions.getRefinementTextFor;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CompletionUtil.overloads;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.RefinementCompletionProposal.FORMAL_REFINEMENT;
+import static org.eclipse.ceylon.ide.eclipse.code.complete.RefinementCompletionProposal.getRefinedProducedReference;
+import static org.eclipse.ceylon.ide.eclipse.code.correct.ImportProposals.importProposals;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getCurrentEditor;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.utilJ2C;
+import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6;
+import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.ltk.core.refactoring.DocumentChange;
+import org.eclipse.ltk.core.refactoring.PerformChangeOperation;
+import org.eclipse.ltk.core.refactoring.TextChange;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.text.edits.InsertEdit;
+import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.ui.IEditorPart;
+
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree.ClassDefinition;
+import org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor;
+import org.eclipse.ceylon.ide.eclipse.util.Highlights;
+import org.eclipse.ceylon.ide.common.util.FindBodyContainerVisitor;
+import org.eclipse.ceylon.model.typechecker.model.ClassOrInterface;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.DeclarationWithProximity;
+import org.eclipse.ceylon.model.typechecker.model.Reference;
+import org.eclipse.ceylon.model.typechecker.model.Scope;
+import org.eclipse.ceylon.model.typechecker.model.TypeDeclaration;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
+
+class RefineFormalMembersProposal
+        implements ICompletionProposal,
+                   ICompletionProposalExtension6 {
+
+    private final Tree.CompilationUnit rootNode;
+    private final String description;
+    private Node node;
+    
+    public RefineFormalMembersProposal(Node node, 
+            Tree.CompilationUnit rootNode,
+            String description) {
+        this.node = node;
+        this.description = description;
+        this.rootNode = rootNode;
+    }
+    
+    @Override
+    public Point getSelection(IDocument doc) {
+        return null;
+    }
+
+    @Override
+    public Image getImage() {
+        return FORMAL_REFINEMENT;
+    }
+
+    @Override
+    public String getDisplayString() {
+        return description;
+    }
+
+    @Override
+    public StyledString getStyledDisplayString() {
+        String hint =
+                CorrectionUtil.shortcut(
+                        "org.eclipse.ceylon.ide.eclipse.ui.action.refineFormalMembers");
+        return Highlights.styleProposal(getDisplayString(), false)
+                .append(hint, StyledString.QUALIFIER_STYLER);
+    }
+
+    @Override
+    public IContextInformation getContextInformation() {
+        return null;
+    }
+
+    @Override
+    public String getAdditionalProposalInfo() {
+        //TODO: list the members that will be refined!
+        return null;
+    }
+
+    @Override
+    public void apply(IDocument doc) {
+        try {
+            refineFormalMembers(doc);
+        } 
+        catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    @Deprecated
+    // replaced by RefineFormalMembersQuickFix.ceylon
+    private void refineFormalMembers(IDocument document) 
+            throws ExecutionException {
+        if (rootNode==null) return;
+        TextChange change = 
+                new DocumentChange("Refine Members",
+                        document);
+        change.setEdit(new MultiTextEdit());
+        //TODO: copy/pasted from CeylonQuickFixAssistant
+        Tree.Body body;
+        int offset;
+        if (node instanceof Tree.ClassDefinition) {
+            ClassDefinition classDefinition =
+                    (Tree.ClassDefinition) node;
+            body = classDefinition.getClassBody();
+            offset = -1;
+        }
+        else if (node instanceof Tree.InterfaceDefinition) {
+            Tree.InterfaceDefinition interfaceDefinition =
+                    (Tree.InterfaceDefinition) node;
+            body = interfaceDefinition.getInterfaceBody();
+            offset = -1;
+        }
+        else if (node instanceof Tree.ObjectDefinition) {
+            Tree.ObjectDefinition objectDefinition =
+                    (Tree.ObjectDefinition) node;
+            body = objectDefinition.getClassBody();
+            offset = -1;
+        }
+        else if (node instanceof Tree.ObjectExpression) {
+            Tree.ObjectExpression objectExpression =
+                    (Tree.ObjectExpression) node;
+            body = objectExpression.getClassBody();
+            offset = -1;
+        }
+        else if (node instanceof Tree.ClassBody || 
+                node instanceof Tree.InterfaceBody) {
+            body = (Tree.Body) node;
+            IEditorPart editor = getCurrentEditor();
+            if (editor instanceof CeylonEditor) {
+                CeylonEditor ce = (CeylonEditor) editor;
+                offset = ce.getSelection().getOffset();
+            }
+            else {
+                offset = -1;
+            }
+        }
+        else {
+            return;
+        }
+        if (body==null) {
+            return;
+        }
+        boolean isInterface = 
+                body instanceof Tree.InterfaceBody;
+        List<Tree.Statement> statements = 
+                body.getStatements();
+        String indent;
+//        String bodyIndent = getIndent(body, document);
+        String bodyIndent = utilJ2C().indents().getIndent(node, document);
+        String delim = utilJ2C().indents().getDefaultLineDelimiter(document);
+        if (statements.isEmpty()) {
+            indent = delim + bodyIndent + utilJ2C().indents().getDefaultIndent();
+            if (offset<0) {
+                offset = body.getStartIndex()+1;
+            }
+        }
+        else {
+            Tree.Statement statement = 
+                    statements.get(statements.size()-1);
+            indent = delim + utilJ2C().indents().getIndent(statement, document);
+            if (offset<0) {
+                offset = statement.getEndIndex();
+            }
+        }
+        StringBuilder result = new StringBuilder();
+        Set<Declaration> already =
+                new HashSet<Declaration>();
+        ClassOrInterface ci = 
+                (ClassOrInterface)
+                    node.getScope();
+        Unit unit = node.getUnit();
+        Set<String> ambiguousNames = new HashSet<String>();
+        //TODO: does not return unrefined overloaded  
+        //      versions of a method with one overlaad
+        //      already refined
+        Collection<DeclarationWithProximity> proposals = 
+                ci.getMatchingMemberDeclarations(unit, ci, "", 0)
+                    .values();
+        for (DeclarationWithProximity dwp: proposals) {
+            Declaration dec = dwp.getDeclaration();
+            for (Declaration d: overloads(dec)) {
+                try {
+                    if (d.isFormal() && 
+                            ci.isInheritedFromSupertype(d)) {
+                        appendRefinementText(isInterface,
+                                indent, result, ci, unit, d);
+                        importProposals().importSignatureTypes(d, rootNode, already);
+                        ambiguousNames.add(d.getName());
+                    }
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        for (TypeDeclaration superType: 
+                ci.getSupertypeDeclarations()) {
+            for (Declaration m: superType.getMembers()) {
+                try {
+                    if (m.getName()!=null && m.isShared()) {
+                        Declaration r = 
+                                ci.getMember(m.getName(),
+                                        null, false);
+                        if ((r==null || 
+                                !r.refines(m) && 
+                                !r.getContainer().equals(ci)) && 
+                                ambiguousNames.add(m.getName())) {
+                            appendRefinementText(isInterface,
+                                    indent, result, ci, unit, m);
+                            importProposals().importSignatureTypes(m, rootNode, already);
+                        }
+                    }
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        
+        try {
+            if (document.getChar(offset)=='}' && 
+                    result.length()>0) {
+                result.append(delim)
+                    .append(bodyIndent);
+            }
+        } 
+        catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+        importProposals().applyImports(change, already, rootNode, document);
+        change.addEdit(new InsertEdit(offset, result.toString()));
+        change.initializeValidationData(null);
+        try {
+            getWorkspace()
+                .run(new PerformChangeOperation(change),
+                        new NullProgressMonitor());
+        }
+        catch (CoreException ce) {
+            ce.printStackTrace();
+        }
+    }
+
+    @Deprecated
+    private void appendRefinementText(boolean isInterface, 
+            String indent, StringBuilder result, 
+            ClassOrInterface ci, Unit unit, Declaration member) {
+        Reference pr = 
+                getRefinedProducedReference(ci, member);
+        String rtext = 
+                getRefinementTextFor(member, pr, unit, 
+                        isInterface, ci, indent, true);
+        result.append(indent)
+            .append(rtext)
+            .append(indent);
+    }
+    
+    @Deprecated
+    static void addRefineFormalMembersProposal(
+            Collection<ICompletionProposal> proposals, 
+            Node n, Tree.CompilationUnit rootNode,
+            boolean ambiguousError) {
+        for (ICompletionProposal p: proposals) {
+            if (p instanceof RefineFormalMembersProposal) {
+                return;
+            }
+        }
+        Node node;
+        if (n instanceof Tree.ClassBody ||
+                n instanceof Tree.InterfaceBody ||
+                n instanceof Tree.ClassDefinition ||
+                n instanceof Tree.InterfaceDefinition ||
+                n instanceof Tree.ObjectDefinition ||
+                n instanceof Tree.ObjectExpression) {
+            node = n;
+        }
+        else {
+            FindBodyContainerVisitor v =
+                    new FindBodyContainerVisitor(n);
+            v.visit(rootNode);
+            node = v.getDeclaration();
+        }
+        if (node!=null) {
+            Scope scope = node.getScope();
+            if (scope instanceof ClassOrInterface) {
+                ClassOrInterface ci =
+                        (ClassOrInterface) scope;
+                String name = ci.getName();
+                if (name==null) {
+                    return;
+                }
+                else if (name.startsWith("anonymous#")) {
+                    name = "anonymous class";
+                }
+                else {
+                    name = "'" + name + "'";
+                }
+                String desc =
+                        ambiguousError ?
+                            "Refine inherited ambiguous and formal members of " + name:
+                            "Refine inherited formal members of " + name;
+                proposals.add(new RefineFormalMembersProposal(node, rootNode, desc));
+            }
+        }
+    }
+
+}

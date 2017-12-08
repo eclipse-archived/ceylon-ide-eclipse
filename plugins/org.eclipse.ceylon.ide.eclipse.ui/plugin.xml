@@ -1,0 +1,4034 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+   <extension-point id="ceylonBuildHook" name="Ceylon Build Hook" 
+                    schema="schema/ceylonBuildHook.exsd"/>
+
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+       <content-type
+             id="org.eclipse.ceylon.ide.eclipse.ui.ceylonSource"
+             file-extensions="ceylon" 
+             name="Ceylon Source File"
+             base-type="org.eclipse.core.runtime.text"/>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            name="Ceylon Editor"
+            icon="icons/unit_obj.png"
+            extensions="ceylon" 
+            default="true" 
+            class="org.eclipse.ceylon.ide.eclipse.code.editor.CeylonEditor"
+            contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor">
+          <contentTypeBinding
+                contentTypeId="org.eclipse.ceylon.ide.eclipse.ui.ceylonSource"/>
+      </editor>
+   </extension>
+   
+   <extension
+         point="org.eclipse.compare.contentViewers">
+      <viewer
+            extensions="ceylon"
+            class="org.eclipse.ceylon.ide.eclipse.code.viewer.CeylonTextViewerCreator"
+            id="org.eclipse.ceylon.ide.eclipse.ui.contentViewer">
+      </viewer>
+      <contentTypeBinding
+            contentTypeId="org.eclipse.ceylon.ide.eclipse.ui.ceylonSource"
+            contentViewerId="org.eclipse.ceylon.ide.eclipse.ui.contentViewer">
+      </contentTypeBinding>
+   </extension>
+   <extension
+      point="org.eclipse.compare.contentMergeViewers">
+      <viewer
+            extensions="ceylon"
+            label="Ceylon Source Compare"
+            class="org.eclipse.ceylon.ide.eclipse.code.viewer.CeylonContentViewerCreator"
+            id="org.eclipse.ceylon.ide.eclipse.ui.contentMergeViewer">
+      </viewer>
+      <contentTypeBinding
+            contentTypeId="org.eclipse.ceylon.ide.eclipse.ui.ceylonSource"
+            contentMergeViewerId="org.eclipse.ceylon.ide.eclipse.ui.contentMergeViewer">
+      </contentTypeBinding>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.ide.projectNatureImages">
+         <image
+               icon="icons/constr_ovr.png"
+               id="org.eclipse.ceylon.ide.eclipse.ui.projectNatureImage"
+               natureId="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature">
+         <description>
+            A Ceylon project
+         </description>
+         </image>
+   </extension>
+   
+   <!-- this works but I don't trust it b/c it is actually 
+        ambiguous ... there is another DocumentProvider for
+        IURIEditorInputs -->
+   <!--extension point="org.eclipse.ui.editors.documentProviders"> 
+      <provider
+         class="org.eclipse.ceylon.ide.eclipse.code.editor.SourceArchiveDocumentProvider" 
+         inputTypes="org.eclipse.ui.IURIEditorInput" 
+         id="org.eclipse.ceylon.ide.eclipse.ui.documentProvider.src"> 
+      </provider> 
+   </extension--> 
+
+   <extension
+         id="ceylonNature"
+         name="Ceylon Nature"
+         point="org.eclipse.core.resources.natures">
+      <requires-nature
+            id="org.eclipse.jdt.core.javanature"/>
+      <builder
+            id="org.eclipse.ceylon.ide.eclipse.ui.ceylonBuilder"/>
+      <runtime>
+         <run class="org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature"/>
+      </runtime>
+   </extension>
+   
+   <extension
+         id="ceylonBuilder"
+         name="Ceylon Builder"
+         point="org.eclipse.core.resources.builders">
+      <builder>
+         <run class="org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder"/>
+      </builder>
+   </extension>
+   
+   <extension
+         id="ceylonProblem"
+         name="Ceylon Error"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension
+         id="ceylonModuleDependencyProblem"
+         name="Ceylon Module Dependency Error"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.ceylon.ide.eclipse.ui.ceylonProblem"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension
+         id="ceylonCharsetProblem"
+         name="Ceylon Character Encoding Error"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension
+         id="ceylonConfigProblem"
+         name="Ceylon Config Synchronization Error"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.jdt.core.buildpath_problem"/>
+      <persistent value="true"/>
+   </extension>
+  
+   <extension
+         id="invalidOverridesProblem"
+         name="Ceylon Invalid Overrides File Error"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension
+         id="ceylonProblem.backend"
+         name="Ceylon Backend Error"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension
+         id="ceylonTask"
+         name="Ceylon Task"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.taskmarker"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension 
+         point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+            class="org.eclipse.ceylon.ide.eclipse.code.correct.MarkerResolutionGenerator"
+            markerType="org.eclipse.ceylon.ide.eclipse.ui.ceylonProblem"/>
+      <markerResolutionGenerator
+            class="org.eclipse.ceylon.ide.eclipse.code.correct.MarkerResolutionGenerator"
+            markerType="org.eclipse.ceylon.ide.eclipse.ui.ceylonCharsetProblem"/>
+      <markerResolutionGenerator
+            class="org.eclipse.ceylon.ide.eclipse.code.correct.MarkerResolutionGenerator"
+            markerType="org.eclipse.ceylon.ide.eclipse.ui.ceylonConfigProblem"/>
+      <markerResolutionGenerator
+            class="org.eclipse.ceylon.ide.eclipse.code.correct.MarkerResolutionGenerator"
+            markerType="org.eclipse.ceylon.ide.eclipse.ui.ceylonModuleDependencyProblem"/>
+    </extension>
+
+   <extension
+         point="org.eclipse.search.searchResultViewPages">
+      <viewPage
+            class="org.eclipse.ceylon.ide.eclipse.code.search.CeylonSearchResultPage"
+            searchResultClass="org.eclipse.ceylon.ide.eclipse.code.search.CeylonSearchResult"
+            id="org.eclipse.search.searchResultViewPage"/>
+   </extension>
+   
+   <extension
+         point="org.eclipse.search.searchPages">
+      <page
+            id="org.eclipse.ceylon.ide.eclipse.ui.searchPage"
+            class="org.eclipse.ceylon.ide.eclipse.code.search.CeylonSearchDialogPage"
+            canSearchEnclosingProjects="true"
+            enabled="true"
+            extensions="ceylon:90"
+            sizeHint="460,160"
+            icon="icons/search_src.png"
+            showScopeSection="true"
+            label="Ceylon Search"/>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.newWizards">
+       <category
+             id="org.eclipse.ceylon.ide.eclipse.ui.category" 
+             name="Ceylon"/>
+       <wizard
+             id="org.eclipse.ceylon.ide.eclipse.ui.newUnitWizard"
+             icon="icons/newunit.png"
+             name="Ceylon Source File"
+             category="org.eclipse.ceylon.ide.eclipse.ui.category"
+             hasPages="true"
+             canFinishEarly="false"
+             class="org.eclipse.ceylon.ide.eclipse.code.wizard.NewUnitWizard">
+           <description>Create a Ceylon compilation unit that will contain Ceylon source</description>
+           <selection class="org.eclipse.core.resources.IResource"/> 
+       </wizard>
+       <wizard
+             id="org.eclipse.ceylon.ide.eclipse.ui.newProjectWizard"
+             icon="icons/newprj.png"
+             name="Ceylon Project" 
+             finalPerspective="org.eclipse.ceylon.ide.eclipse.ui.perspective"
+             category="org.eclipse.ceylon.ide.eclipse.ui.category"
+             hasPages="true"
+             canFinishEarly="false"
+             class="org.eclipse.ceylon.ide.eclipse.code.wizard.NewProjectWizard"
+             project="true">
+           <description>Create a Ceylon project</description>
+       </wizard>
+       <wizard
+             id="org.eclipse.ceylon.ide.eclipse.ui.newModuleWizard"
+             icon="icons/newmodule.png"
+             name="Ceylon Module"
+             category="org.eclipse.ceylon.ide.eclipse.ui.category"
+             hasPages="true"
+             canFinishEarly="false"
+             class="org.eclipse.ceylon.ide.eclipse.code.wizard.NewModuleWizard">
+           <description>Create a runnable Ceylon module with module and package descriptors</description>
+           <selection class="org.eclipse.core.resources.IResource"/> 
+       </wizard>
+       <wizard
+             id="org.eclipse.ceylon.ide.eclipse.ui.newPackageWizard"
+             icon="icons/newpack.png"
+             name="Ceylon Package"
+             category="org.eclipse.ceylon.ide.eclipse.ui.category"
+             hasPages="true"
+             canFinishEarly="false"
+             class="org.eclipse.ceylon.ide.eclipse.code.wizard.NewPackageWizard">
+           <description>Create a Ceylon package with a package descriptor</description>
+           <selection class="org.eclipse.core.resources.IResource"/> 
+       </wizard>
+       <wizard
+            id="org.eclipse.jdt.ui.wizards.NewSourceFolderCreationWizard"
+            icon="icons/newsrcfolder.png"
+            name="Source Folder"
+            category="org.eclipse.ceylon.ide.eclipse.ui.category"
+            hasPages="true"
+            canFinishEarly="false"
+            class="org.eclipse.jdt.internal.ui.wizards.NewSourceFolderCreationWizard">
+           <description>Create a source folder for Ceylon or Java code</description>
+           <selection class="org.eclipse.core.resources.IResource"/> 
+       </wizard>
+       <!--primaryWizard
+             id="org.eclipse.ceylon.ide.eclipse.ui.newUnitWizard"/>
+       <primaryWizard
+             id="org.eclipse.ceylon.ide.eclipse.ui.newProjectWizard"/>
+       <primaryWizard
+             id="org.eclipse.ceylon.ide.eclipse.ui.newModuleWizard"/>
+       <primaryWizard
+             id="org.eclipse.ceylon.ide.eclipse.ui.newPackageWizard"/>
+       <primaryWizard
+             id="org.eclipse.jdt.ui.wizards.NewSourceFolderCreationWizard"/-->
+   </extension>
+   
+   <extension 
+       point="org.eclipse.ui.exportWizards">
+      <category id="ceylon" name="Ceylon"/>
+      <wizard 
+            id="org.eclipse.ceylon.ide.eclipse.ui.exportModuleWizard" 
+            name="Ceylon Module to Module Repository"
+            class="org.eclipse.ceylon.ide.eclipse.code.wizard.ExportModuleWizard"
+            category="ceylon" 
+            icon="/icons/exportmod_wiz.png">
+          <description>Export a Ceylon module to a module repository.</description>
+          <selection class="org.eclipse.core.resources.IResource"/> 
+      </wizard> 
+      <wizard 
+            id="org.eclipse.ceylon.ide.eclipse.ui.exportJarWizard" 
+            name="Java Archive to Module Repository"
+            class="org.eclipse.ceylon.ide.eclipse.code.wizard.ExportJarWizard"
+            category="ceylon" 
+            icon="/icons/exportjar_wiz.png">
+          <description>Export a Java archive to a module repository.</description>
+          <selection class="org.eclipse.core.resources.IResource"/> 
+      </wizard> 
+   </extension> 
+   
+   <extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerSeverity="2"
+            name="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation"
+            super="org.eclipse.ui.workbench.texteditor.error"/>
+      <type
+            markerSeverity="2"
+            name="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation.error"
+            super="org.eclipse.ui.workbench.texteditor.error"/>
+      <type
+            markerSeverity="1"
+            name="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation.warning"
+            super="org.eclipse.ui.workbench.texteditor.warning"/>
+      <type
+            markerSeverity="0"
+            name="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation.info"
+            super="org.eclipse.ui.workbench.texteditor.info"/>
+      <type 
+            markerSeverity="0"
+            name="org.eclipse.ceylon.ide.eclipse.ui.todo"/>
+      <!--type 
+            markerSeverity="0"
+            name="org.eclipse.ceylon.ide.eclipse.ui.run"/-->
+      <type
+            markerSeverity="0"
+            name="org.eclipse.ceylon.ide.eclipse.ui.declarationAnnotation"/>
+      <type
+            markerSeverity="0"
+            name="org.eclipse.ceylon.ide.eclipse.ui.occurrenceAnnotation"/>
+      <type
+            markerSeverity="0"
+            name="org.eclipse.ceylon.ide.eclipse.ui.assignmentAnnotation"/>
+      <type
+            markerSeverity="0"
+            name="org.eclipse.ceylon.ide.eclipse.ui.refinement"/>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+         
+      <specification
+            annotationType="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation.error"
+            label="Ceylon Compilation Error"
+            symbolicIcon="error"
+            presentationLayer="6"
+            contributesToHeader="true"
+            includeOnPreferencePage="true"
+            
+            isGoToNextNavigationTarget="true"
+            isGoToNextNavigationTargetKey="errorAnnotationIsGotoNextKey"
+            isGoToPreviousNavigationTarget="true"
+            isGoToPreviousNavigationTargetKey="errorAnnotationIsGotoPrevKey"
+            showInNextPrevDropdownToolbarAction="true"
+
+            colorPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation.error.color"
+            textPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation.error.text"
+            textStylePreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation.error.textStyle"
+            highlightPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation.error.highlight"
+            verticalRulerPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation.error.ruler"
+            overviewRulerPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation.error.overview"
+            
+            colorPreferenceValue="255,0,128"
+            textPreferenceValue="true"
+            textStylePreferenceValue="PROBLEM_UNDERLINE"
+            highlightPreferenceValue="false"
+            verticalRulerPreferenceValue="true"
+            overviewRulerPreferenceValue="true"/>
+      
+      <specification
+            annotationType="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation.warning"
+            label="Ceylon Compilation Warning"
+            symbolicIcon="warning"
+            presentationLayer="5"
+            contributesToHeader="true"
+            includeOnPreferencePage="true"
+            
+            isGoToNextNavigationTarget="true"
+            isGoToNextNavigationTargetKey="warningAnnotationIsGotoNextKey"
+            isGoToPreviousNavigationTarget="true"
+            isGoToPreviousNavigationTargetKey="warningAnnotationIsGotoPrevKey"
+            showInNextPrevDropdownToolbarAction="true"
+
+            colorPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation.warning.color"
+            textPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation.warning.text"
+            textStylePreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation.warning.textStyle"
+            highlightPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation.warning.highlight"
+            verticalRulerPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation.warning.ruler"
+            overviewRulerPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.parseAnnotation.warning.overview"
+            
+            colorPreferenceValue="244,200,45"
+            textPreferenceValue="true"
+            textStylePreferenceValue="PROBLEM_UNDERLINE"
+            highlightPreferenceValue="false"
+            verticalRulerPreferenceValue="true"
+            overviewRulerPreferenceValue="true"/>
+      
+      <specification
+            annotationType="org.eclipse.ceylon.ide.eclipse.ui.refinement"
+            label="Ceylon Refinement Indicators"
+            annotationImageProvider="org.eclipse.ceylon.ide.eclipse.code.editor.RefinementAnnotationImageProvider"
+            icon="icons/over_co.png"
+            presentationLayer="4"
+            contributesToHeader="true"
+            includeOnPreferencePage="true"
+            
+            colorPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.refinement.color"
+            textPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.refinement.text"
+            textStylePreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.refinement.textStyle"
+            highlightPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.refinement.highlight"
+            verticalRulerPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.refinement.ruler"
+            overviewRulerPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.refinement.overview"
+            
+            colorPreferenceValue="224,224,224"
+            textPreferenceValue="false"
+            textStylePreferenceValue="NONE"
+            highlightPreferenceValue="false"
+            verticalRulerPreferenceValue="true"
+            overviewRulerPreferenceValue="false"/>
+      
+      <!--specification
+            annotationType="org.eclipse.ceylon.ide.eclipse.ui.run"
+            label="Ceylon Runnable Indicators"
+            icon="icons/run_exc.png"
+            presentationLayer="4"
+            contributesToHeader="true"
+            includeOnPreferencePage="true"
+            
+            colorPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.run.color"
+            textPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.run.text"
+            textStylePreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.run.textStyle"
+            highlightPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.run.highlight"
+            verticalRulerPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.run.ruler"
+            overviewRulerPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.run.overview"
+
+            colorPreferenceValue="224,224,224"
+            textPreferenceValue="false"
+            textStylePreferenceValue="NONE"
+            highlightPreferenceValue="false"
+            verticalRulerPreferenceValue="true"
+            overviewRulerPreferenceValue="true"/--> <!-- was: 0,120,255 -->
+      
+      <specification
+            annotationType="org.eclipse.ceylon.ide.eclipse.ui.todo"
+            label="Ceylon Tasks"
+            symbolicIcon="task"
+            presentationLayer="3"
+            contributesToHeader="true"
+            includeOnPreferencePage="true"
+            
+            isGoToNextNavigationTarget="true"
+            isGoToNextNavigationTargetKey="todoAnnotationIsGotoNextKey"
+            isGoToPreviousNavigationTarget="true"
+            isGoToPreviousNavigationTargetKey="todoAnnotationIsGotoPrevKey"
+            showInNextPrevDropdownToolbarAction="true"
+
+            colorPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.todo.color"
+            textPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.todo.text"
+            textStylePreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.todo.textStyle"
+            highlightPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.todo.highlight"
+            verticalRulerPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.todo.ruler"
+            overviewRulerPreferenceKey="org.eclipse.ceylon.ide.eclipse.ui.todo.overview"
+
+            colorPreferenceValue="255,128,0"
+            textPreferenceValue="false"
+            textStylePreferenceValue="NONE"
+            highlightPreferenceValue="false"
+            verticalRulerPreferenceValue="true"
+            overviewRulerPreferenceValue="true"/> <!-- was: 0,120,255 -->
+      
+      <specification
+            annotationType="org.eclipse.ceylon.ide.eclipse.ui.occurrenceAnnotation"
+            label="Ceylon References"
+            presentationLayer="2"
+            contributesToHeader="false"
+            includeOnPreferencePage="true"
+            icon="icons/occ_match.png"
+                        
+            isGoToNextNavigationTarget="false"
+            isGoToNextNavigationTargetKey="occurrenceAnnotationIsGotoNextKey"
+            isGoToPreviousNavigationTarget="false"
+            isGoToPreviousNavigationTargetKey="occurrenceAnnotationIsGotoPrevKey"
+            showInNextPrevDropdownToolbarActionKey="occurrenceAnnotationIsShownInDropdown"
+            showInNextPrevDropdownToolbarAction="true"
+            
+            colorPreferenceKey="occurrenceColorPreference"
+            textPreferenceKey="occurrenceTextPreference"
+            textStylePreferenceKey="occurrenceAnnotationTextStyleKey"
+            highlightPreferenceKey="occurrenceHighlightKey"
+            verticalRulerPreferenceKey="occurrenceVerticalRulerPreference"
+            overviewRulerPreferenceKey="occurrenceOverviewRulerPreference"
+            
+            colorPreferenceValue="206,236,245"
+            textPreferenceValue="false"
+            textStylePreferenceValue="NONE"
+            highlightPreferenceValue="true"
+            verticalRulerPreferenceValue="false"
+            overviewRulerPreferenceValue="true"/>
+            <!-- colorPreferenceValue="206,236,245"
+                 colorPreferenceValue="224,240,224" 
+                 colorPreferenceValue="224,224,240" -->
+      
+      <specification
+            annotationType="org.eclipse.ceylon.ide.eclipse.ui.declarationAnnotation"
+            label="Ceylon Declarations"
+            presentationLayer="2"
+            contributesToHeader="false"
+            includeOnPreferencePage="true"
+            icon="icons/occ_match.png"
+                        
+            isGoToNextNavigationTarget="false"
+            isGoToNextNavigationTargetKey="declarationAnnotationIsGotoNextKey"
+            isGoToPreviousNavigationTarget="false"
+            isGoToPreviousNavigationTargetKey="declarationAnnotationIsGotoPrevKey"
+            showInNextPrevDropdownToolbarActionKey="declarationAnnotationIsShownInDropdown"
+            showInNextPrevDropdownToolbarAction="true"
+            
+            colorPreferenceKey="declarationColorPreference"
+            textPreferenceKey="declarationTextPreference"
+            textStylePreferenceKey="declarationAnnotationTextStyleKey"
+            highlightPreferenceKey="declarationHighlightKey"
+            verticalRulerPreferenceKey="declarationVerticalRulerPreference"
+            overviewRulerPreferenceKey="declarationOverviewRulerPreference"
+            
+            colorPreferenceValue="255,221,221"
+            textPreferenceValue="false"
+            textStylePreferenceValue="NONE"
+            highlightPreferenceValue="true"
+            verticalRulerPreferenceValue="false"
+            overviewRulerPreferenceValue="true"/>
+            <!-- colorPreferenceValue="206,236,245"
+                 colorPreferenceValue="224,240,224" 
+                 colorPreferenceValue="224,224,240" -->
+      
+      <specification
+            annotationType="org.eclipse.ceylon.ide.eclipse.ui.assignmentAnnotation"
+            label="Ceylon Assignments"
+            presentationLayer="2"
+            contributesToHeader="false"
+            includeOnPreferencePage="true"
+            icon="icons/occ_match.png"
+                        
+            isGoToNextNavigationTarget="false"
+            isGoToNextNavigationTargetKey="assignmentAnnotationIsGotoNextKey"
+            isGoToPreviousNavigationTarget="false"
+            isGoToPreviousNavigationTargetKey="assignmentAnnotationIsGotoPrevKey"
+            showInNextPrevDropdownToolbarActionKey="assignmentAnnotationIsShownInDropdown"
+            showInNextPrevDropdownToolbarAction="true"
+            
+            colorPreferenceKey="assignmentColorPreference"
+            textPreferenceKey="assignmentTextPreference"
+            textStylePreferenceKey="assignmentAnnotationTextStyleKey"
+            highlightPreferenceKey="assignmentHighlightKey"
+            verticalRulerPreferenceKey="assignmentVerticalRulerPreference"
+            overviewRulerPreferenceKey="assignmentOverviewRulerPreference"
+            
+            colorPreferenceValue="255,239,213"
+            textPreferenceValue="false"
+            textStylePreferenceValue="NONE"
+            highlightPreferenceValue="true"
+            verticalRulerPreferenceValue="false"
+            overviewRulerPreferenceValue="true"/>
+            
+   </extension>
+   
+   <extension
+         point="org.eclipse.compare.structureCreators">
+       <structureCreator
+           extensions="ceylon"
+           class="org.eclipse.ceylon.ide.eclipse.code.outline.CeylonStructureCreator"
+           id="org.eclipse.ceylon.ide.eclipse.ui.compare"/>
+       <contentTypeBinding
+             contentTypeId="org.eclipse.ceylon.ide.eclipse.ui.ceylonSource"
+             structureCreatorId="org.eclipse.ceylon.ide.eclipse.ui.compare"/>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            targetID="org.eclipse.ceylon.ide.eclipse.ui.editor"
+            id="org.eclipse.ceylon.ide.eclipse.ui.rulerActions">
+         <action
+               label="Select Ruler"
+               class="org.eclipse.ceylon.ide.eclipse.code.editor.SelectRulerAction"
+               actionID="RulerClick"
+               id="org.eclipse.ceylon.ide.eclipse.ui.action.selectRuler"/>
+      </editorContribution>
+      <editorContribution
+            targetID="org.eclipse.ceylon.ide.eclipse.ui.editor"
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.BreakpointRulerActions">
+         <action
+               label="Add breakpoint"
+               class="org.eclipse.debug.ui.actions.RulerToggleBreakpointActionDelegate"
+               actionID="RulerDoubleClick"
+               id="org.eclipse.jdt.debug.ui.actions.ManageBreakpointRulerAction">
+         </action>
+      </editorContribution>
+      <!--editorContribution
+            targetID="org.eclipse.ceylon.ide.eclipse.ui.editor"
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.markOccurrences">
+         <action
+               class="org.eclipse.ceylon.ide.eclipse.code.editor.MarkOccurrencesAction"
+               icon="icons/mark_occurrences.png"
+               id="org.eclipse.ceylon.ide.eclipse.ui.action.MarkOccurrences"
+               label="&amp;Toggle Mark Occurrences"
+               state="true"
+               style="toggle"
+               toolbarPath="org.eclipse.ui.edit.text.actionSet.presentation/Presentation"
+               tooltip="Highlight References to Ceylon declaration"/>
+      </editorContribution-->
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            id="org.eclipse.ceylon.ide.eclipse.ui.actionSet.markOccurrences"
+            label="Ceylon Occurrence Marking"
+            visible="false">
+         <action
+               class="org.eclipse.ceylon.ide.eclipse.code.editor.MarkOccurrencesAction"
+               icon="icons/mark_occurrences.png"
+               id="org.eclipse.ceylon.ide.eclipse.ui.action.markOccurrences"
+               label="&amp;Toggle Mark Occurrences"
+               state="true"
+               style="toggle"
+               toolbarPath="org.eclipse.ui.edit.text.actionSet.presentation/Presentation"
+               tooltip="Highlight References to Ceylon Declaration"/>
+      </actionSet>
+   </extension>
+   <extension
+         point="org.eclipse.ui.actionSetPartAssociations">
+      <actionSetPartAssociation
+            targetID="org.eclipse.ceylon.ide.eclipse.ui.actionSet.markOccurrences">
+         <part id="org.eclipse.ceylon.ide.eclipse.ui.editor"/>
+      </actionSetPartAssociation>
+   </extension>
+      
+   <extension
+         point="org.eclipse.ui.commands">
+       <category
+          description="Ceylon IDE actions"
+          id="org.eclipse.ceylon.ide.eclipse.ui"
+          name="Ceylon">
+       </category>    
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.openSelectedDeclaration"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Go to selected declaration"
+            name="Go to Selected Declaration"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.openRefinedDeclaration"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Go to refined declaration"
+            name="Go to Refined Declaration"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.openDeclaration"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Open toplevel declaration"
+            name="Open Declaration"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.openDeclarationInHierarchy"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Open toplevel declaration in hierarchy view"
+            name="Open in Type Hierarchy View"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.ceylonSearch"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Open search screen"
+            name="Ceylon Search"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.switchToRecent"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Open recently edited file"
+            name="Recently Edited Files"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.welcome"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Open welcome page"
+            name="Ceylon Welcome"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Show the quick outline for the editor input"
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.showOutline"
+            name="Quick Outline"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.hierarchy"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Show popup hierarchy view"
+            name="Quick Type Hierarchy"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.code"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Show popup definition view"
+            name="Peek Definition"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.findReferences"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Show popup references view"
+            name="Quick Find References"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.showInHierarchyView"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Show in hierarchy view"
+            name="Show in Ceylon Hierarchy View"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.findReferences"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Find references to selected declaration"
+            name="Find References"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.findAssignments"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Find references to selected declaration"
+            name="Find Assignments"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.findRefinements"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Find refinements of selected member"
+            name="Find Refinements"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.findSubtypes"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Find subtypes of selected type"
+            name="Find Subtypes"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.cleanImports"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Organize import statements in current file"
+            name="Organize Imports"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.pasteAsCeylon"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Paste Java as Ceylon"
+            name="Paste Java as Ceylon"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.moveDeclarationToNewUnit"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Move selected declaration to new unit"
+            name="Move to New Source File"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.moveDeclarationToUnit"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Move selected declaration to another unit"
+            name="Move to Source File"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.rename"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Rename selected declaration"
+            name="Rename"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.createAlias"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Create an alias for selected type"
+            name="Introduce Type Alias"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.enterAlias"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Enter alias for imported declaration"
+            name="Enter Alias"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.delete"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Safely delete the selected declaration"
+            name="Safe Delete"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.inline"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Inline selected function, value, or type alias"
+            name="Inline"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.changeParameters"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Change parameters of selected function or class"
+            name="Change Parameter List"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.collectParameters"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Collect selected parameters into a class"
+            name="Collect Parameters"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.moveOut"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Move function or class to outer scope"
+            name="Move Out"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.makeReceiver"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Move function or class to selected parameter"
+            name="Make Receiver"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.extractFunction"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Extract selected expression to a function"
+            name="Extract Function"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.extractInterface"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Extract selected members to new interface"
+            name="Extract Interface"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.extractValue"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Extract selected expression to a value"
+            name="Extract Value"/>
+       <command
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.extractParameter"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Extract selected expression to a parameter"
+            name="Extract Parameter"/>
+       <command
+             categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+             description="Reveal inferred types"
+             id="org.eclipse.ceylon.ide.eclipse.ui.action.revealInferredType"
+             name="Reveal Inferred Types"/>
+       <command
+             categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+             description="Create a new Ceylon source file"
+             id="org.eclipse.ceylon.ide.eclipse.ui.action.newUnit"
+             name="New Ceylon Source File"/>
+       <command
+             categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+             description="Create a new Ceylon package"
+             id="org.eclipse.ceylon.ide.eclipse.ui.action.newPackage"
+             name="New Ceylon Package"/>
+       <command
+             categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+             description="Create a new Ceylon module"
+             id="org.eclipse.ceylon.ide.eclipse.ui.action.newModule"
+             name="New Ceylon Module"/>
+       <command
+             categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+             description="Create a new Ceylon project"
+             id="org.eclipse.ceylon.ide.eclipse.ui.action.newProject"
+             name="New Ceylon Project"/>
+       <command
+             categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+             description="Open refactor quick menu"
+             id="org.eclipse.ceylon.ide.eclipse.ui.menu.refactorQuickMenu"
+             name="Refactor Menu"/>
+       <command
+             categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+             description="Open navigate quick menu"
+             id="org.eclipse.ceylon.ide.eclipse.ui.menu.navigateQuickMenu"
+             name="Navigate Menu"/>
+       <command
+             categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+             description="Open find quick menu"
+             id="org.eclipse.ceylon.ide.eclipse.ui.menu.findQuickMenu"
+             name="Find Menu"/>
+       <command
+             categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+             description="Open source quick menu"
+             id="org.eclipse.ceylon.ide.eclipse.ui.menu.sourceQuickMenu"
+             name="Source Menu"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            name="Collapse Imports"
+            description="Collapses import list in the current source file"
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.folding.collapseImports"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            name="Collapse Comments"
+            description="Collapses all multi-line comments in the current source file"
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.folding.collapseComments"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Comments/uncomments the current selection or the current source line"
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.toggleComment"
+            name="Toggle Comment"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Comments the current selection"
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.addBlockComment"
+            name="Add Block Comment"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Uncomments the current selection"
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.removeBlockComment"
+            name="Remove Block Comment"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Format the source code"
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.formatSource"
+            name="Format"/>
+      <command
+            name="Go to Matching Fence"
+            description="Moves the cursor to the matching fence character, if any"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.gotoMatchingFence"/>
+      <!--command
+            name="Go to Previous Navigation Target"
+            description="Go to Previous Navigation Target"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.gotoPreviousTarget"/>
+      <command
+            name="Go to Next Navigation Target"
+            description="Go to Next Navigation Target"
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.gotoNextTarget"/-->
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Re-indent the selected text"
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.correctIndentation"
+            name="Correct Indentation"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Terminate the statement at the current line and close brackets"
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.terminateStatement"
+            name="Terminate Statement"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Format the statements in the enclosing block"
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.formatBlock"
+            name="Format Block"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Select the innermost enclosing word or construct"
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.selectEnclosing"
+            name="Expand Selection"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Restore the previous selection"
+            id="org.eclipse.ceylon.ide.eclipse.ui.editor.restorePrevious"
+            name="Undo Expand Selection"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Invert boolean"
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.invertBoolean"
+            name="Invert Boolean"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Assign expression to new local"
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.assignToLocal"
+            name="Quick Assist - Assign To Local"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Assign expression to new local"
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.assignToFor"
+            name="Quick Assist - Iterate In For Loop"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Destructure expression"
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.destructure"
+            name="Quick Assist - Destructure Expression"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Print expression"
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.print"
+            name="Quick Assist - Print Expression"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Refine inherited formal members"
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.refineFormalMembers"
+            name="Quick Assist - Refine Formal Members"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Refine inherited formal members"
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.refineEqualsHash"
+            name="Quick Assist - Refine Equals and Hash"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Add initializer parameters"
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.addParameterList"
+            name="Quick Assist - Add Parameter List"/>
+      <command
+            categoryId="org.eclipse.ceylon.ide.eclipse.ui"
+            description="Add default constructor"
+            id="org.eclipse.ceylon.ide.eclipse.ui.action.addConstructor"
+            name="Quick Assist - Add Default Constructor"/>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.open.OpenSelectedDeclarationHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.openSelectedDeclaration"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.open.OpenRefinedDeclarationHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.openRefinedDeclaration"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.open.OpenDeclarationHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.openDeclaration"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.open.OpenDeclarationInHierarchyHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.openDeclarationInHierarchy"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.search.OpenCeylonSearchPageAction"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.ceylonSearch"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.ui.WelcomeAction"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.welcome"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.editor.RecentFilesHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.switchToRecent"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.search.FindReferencesHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.findReferences"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.search.FindAssignmentsHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.findAssignments"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.search.FindRefinementsHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.findRefinements"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.search.FindSubtypesHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.findSubtypes"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.imports.CleanImportsHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.cleanImports"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.editor.PasteAsCeylonHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.pasteAsCeylon"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.MoveToNewUnitHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.moveDeclarationToNewUnit"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.MoveToUnitHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.moveDeclarationToUnit"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.RenameHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.rename"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.AliasHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.createAlias"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.EnterAliasHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.enterAlias"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.DeleteHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.delete"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.InlineHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.inline"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.ChangeParametersHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.changeParameters"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.CollectParametersHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.collectParameters"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.ExtractParameterHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.extractParameter"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.ExtractValueHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.extractValue"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.ExtractFunctionHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.extractFunction"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.ExtractInterfaceHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.extractInterface"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.MoveOutHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.moveOut"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.MakeReceiverHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.makeReceiver"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.RevealInferredTypeHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.revealInferredType"/>
+      <handler
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.newUnit">
+            <class class="org.eclipse.ceylon.ide.eclipse.code.wizard.NewHandler">
+                <parameter name="wizardId" value="org.eclipse.ceylon.ide.eclipse.ui.newUnitWizard"/>
+            </class>
+      </handler>
+      <handler
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.newPackage">
+            <class class="org.eclipse.ceylon.ide.eclipse.code.wizard.NewHandler">
+                <parameter name="wizardId" value="org.eclipse.ceylon.ide.eclipse.ui.newPackageWizard"/>
+            </class>
+      </handler>
+      <handler
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.newModule">
+            <class class="org.eclipse.ceylon.ide.eclipse.code.wizard.NewHandler">
+                <parameter name="wizardId" value="org.eclipse.ceylon.ide.eclipse.ui.newModuleWizard"/>
+            </class>
+      </handler>
+      <handler
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.newProject">
+            <class class="org.eclipse.ceylon.ide.eclipse.code.wizard.NewHandler">
+                <parameter name="wizardId" value="org.eclipse.ceylon.ide.eclipse.ui.newProjectWizard"/>
+            </class>
+      </handler>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.InvertBooleanHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.invertBoolean"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.correct.AssignToLocalHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.assignToLocal"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.correct.AssignToForHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.assignToFor"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.correct.DestructureHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.destructure"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.correct.PrintHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.print"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.correct.RefineFormalMembersHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.refineFormalMembers"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.correct.RefineEqualsHashHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.refineEqualsHash"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.correct.AddConstructorHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.addConstructor"/>
+      <handler
+            class="org.eclipse.ceylon.ide.eclipse.code.correct.AddParameterListHandler"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.addParameterList"/>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.contexts">
+      <context
+            id="org.eclipse.ceylon.ide.eclipse.ui.context"
+            name="Editing Ceylon Source" 
+            parentId="org.eclipse.ui.textEditorScope" 
+            description="Editing Ceylon Source"/>
+      <context
+            id="org.eclipse.ceylon.ide.eclipse.ui.perspectiveContext"
+            name="Working in Ceylon Perspective" 
+            parentId="org.eclipse.ui.contexts.window" 
+            description="Working in Ceylon Perspective"/>
+      <context
+            id="org.eclipse.ceylon.ide.eclipse.ui.wizardContext"
+            name="Working in Ceylon Perspective or Editing Ceylon Source"
+            description="Working in Ceylon Perspective or Editing Ceylon Source"/>
+   </extension>
+            
+   <!-- Platform-independent key binding -->
+   
+   <extension
+         point="org.eclipse.ui.bindings">
+         
+      <!-- Open Declaration + Open Type popups -->
+      <key
+            sequence="M1+M2+T"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.openDeclaration"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.perspectiveContext"/>
+      <key
+            sequence="M1+M2+H"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.openDeclarationInHierarchy"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.perspectiveContext"/>
+      <key
+            sequence="F3"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.openSelectedDeclaration"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="SHIFT+F3"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.openRefinedDeclaration"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="F4"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.showInHierarchyView"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      
+      <!-- Ouline, Heirarchy, and Code popups -->
+      <key
+            sequence="M1+O"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.showOutline"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="M1+T"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.hierarchy"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="M1+P"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.code"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="M1+G"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.findReferences"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+            
+      <!-- Find -->
+      <key
+            sequence="M1+M2+G"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.findReferences"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="M1+M2+U A"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.findAssignments"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="M1+M2+U R"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.findRefinements"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="M1+M2+U S"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.findSubtypes"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      
+      <!-- New Wizards -->
+      <key
+            sequence="Ctrl+Alt+N F"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.newUnit"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.wizardContext"/>
+      <key
+            sequence="Ctrl+Alt+N P"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.newPackage"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.wizardContext"/>
+      <key
+            sequence="Ctrl+Alt+N M"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.newModule"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.wizardContext"/>
+      <key
+            sequence="Ctrl+Alt+N N"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.newProject"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.wizardContext"/>
+      
+      <!-- Source actions -->
+      <key
+            sequence="M1+M2+O"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.cleanImports"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="M1+M2+I"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.revealInferredType"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+M2+BS"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.delete"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            
+      <!-- Edit actions -->
+      <key
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.toggleComment"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+/"/>
+      <key
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.correctIndentation"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+I"/>
+      <key
+            sequence="M1+;"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.terminateStatement"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+'"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.formatBlock"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+M2+F"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.formatSource"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      
+      <!-- Navigation actions -->
+      <key
+            sequence="M1+M2+P"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.gotoMatchingFence"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      
+      <!-- Quick fixes/assists -->
+      <key
+            sequence="M1+2 L"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.assignToLocal"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+2 E"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.assignToFor"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+2 D"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.destructure"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+2 P"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.print"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+2 F"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.refineFormalMembers"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+2 H"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.refineEqualsHash"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+2 I"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.addParameterList"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+2 C"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.addConstructor"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      
+   </extension>
+   
+   <!-- Now, platform-dependent key binding -->
+   
+   <extension
+         point="org.eclipse.ui.bindings">
+      
+      <sequenceModifier
+            find="M2+M3" replace="M1+M3" 
+            platforms="cocoa,carbon"/>
+            
+      <!-- Quick menus -->
+      <key
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.menu.refactorQuickMenu"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M3+T"/>
+      <key
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.menu.findQuickMenu"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M3+F"/>
+      <key
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.menu.navigateQuickMenu"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M3+V"/>
+      <key
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.menu.sourceQuickMenu"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M3+S"/>
+      
+      <key
+            sequence="M2+M3+E"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.switchToRecent"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            
+      <!-- Refactorings -->
+      <key
+            sequence="M2+M3+R"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.rename"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="M2+M3+Y"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.enterAlias"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="M2+M3+I"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.inline"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="M2+M3+C"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.changeParameters"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="M2+M3+L"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.extractValue"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="M2+M3+M"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.extractFunction"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="M2+M3+O"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.moveOut"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="M2+M3+P"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.makeReceiver"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="M2+M3+U"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.moveDeclarationToNewUnit"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            sequence="M2+M3+J"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.moveDeclarationToUnit"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"/>
+      <key
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.action.invertBoolean"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M3+B">
+      </key>
+            
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.bindings">
+         
+      <!-- Navigation actions -->
+      <key
+            sequence="M2+M3+ARROW_UP"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.selectEnclosing"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M2+M3+ARROW_DOWN"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.restorePrevious"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            platform="carbon"
+            sequence="CTRL+SHIFT+PAGE_UP"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.selectEnclosing"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            platform="carbon"
+            sequence="CTRL+SHIFT+PAGE_DOWN"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.restorePrevious"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      
+      <!--key
+            sequence="M1+M2+ARROW_UP"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.gotoPreviousTarget"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+M2+ARROW_DOWN"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.gotoNextTarget"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/-->
+            
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.bindings">
+      
+      <sequenceModifier
+            find="M1+M2" replace="M1+M4" 
+            platforms="cocoa,carbon"/>
+      
+      <!-- Edit actions -->
+      <key
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.addBlockComment"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+/"/>
+      <key
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.context"
+            commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.removeBlockComment"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+\"/>
+      
+      <!-- Show View actions -->
+      <sequenceModifier
+            find="M2+M3" replace="M1+M3"
+            platforms="cocoa,carbon"/>
+      <key
+            commandId="org.eclipse.ui.views.showView"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.perspectiveContext"
+            sequence="M2+M3+Q P">
+          <parameter
+              id="org.eclipse.ui.views.showView.viewId"
+              value="org.eclipse.ceylon.ide.eclipse.ui.view.CeylonExplorer">
+          </parameter>
+      </key>      
+      <key
+            commandId="org.eclipse.ui.views.showView"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.perspectiveContext"
+            sequence="M2+M3+Q T">
+          <parameter
+              id="org.eclipse.ui.views.showView.viewId"
+              value="org.eclipse.ceylon.ide.eclipse.ui.view.HierarchyView">
+          </parameter>
+      </key>
+      <key
+            commandId="org.eclipse.ui.views.showView"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.perspectiveContext"
+            sequence="M2+M3+Q D">
+          <parameter
+              id="org.eclipse.ui.views.showView.viewId"
+              value="org.eclipse.ceylon.ide.eclipse.ui.view.DocumentationView">
+          </parameter>
+      </key>
+      <key
+            commandId="org.eclipse.ui.views.showView"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ceylon.ide.eclipse.ui.perspectiveContext"
+            sequence="M2+M3+Q E">
+          <parameter
+              id="org.eclipse.ui.views.showView.viewId"
+              value="org.eclipse.ceylon.ide.eclipse.ui.view.ModuleSearch">
+          </parameter>
+      </key>
+   </extension>         
+   
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:window?before=additions">
+            <command
+                  label="Quick &amp;Switch Editor" 
+                  commandId="org.eclipse.ui.window.openEditorDropDown"
+                  id="org.eclipse.ceylon.ide.eclipse.ui.menu.openEditorDropDown"/>
+            <command
+                  label="Recently Edited &amp;Files" 
+                  commandId="org.eclipse.ceylon.ide.eclipse.ui.action.switchToRecent"
+                  id="org.eclipse.ceylon.ide.eclipse.ui.menu.switchToRecent"/>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:navigate?before=open.ext">
+            <separator
+                  visible="true"
+                  name="aboveOpen"/>
+            <command
+                  label="Open &amp;Resource..." 
+                  commandId="org.eclipse.ui.navigate.openResource"
+                  icon="icons/openrsrc.png"
+                  id="org.eclipse.ceylon.ide.eclipse.ui.menu.openResource"/>
+            <command
+                  label="Open &amp;Declaration..." 
+                  commandId="org.eclipse.ceylon.ide.eclipse.ui.action.openDeclaration"
+                  icon="icons/opentype.png"
+                  id="org.eclipse.ceylon.ide.eclipse.ui.menu.openDeclaration"/>
+            <command
+                  label="Open in &amp;Type Hierarchy View..." 
+                  commandId="org.eclipse.ceylon.ide.eclipse.ui.action.openDeclarationInHierarchy"
+                  id="org.eclipse.ceylon.ide.eclipse.ui.menu.openDeclarationInHierarchy"/>
+            <separator
+                  visible="true"
+                  name="sep8"/>
+            <dynamic id="selectedDeclaration"
+                      class="org.eclipse.ceylon.ide.eclipse.code.open.SelectedDeclarationMenuItems">
+              <visibleWhen>
+                  <with variable="activeEditorId">
+                      <equals value="org.eclipse.ceylon.ide.eclipse.ui.editor"/>
+                  </with>
+              </visibleWhen>
+            </dynamic>
+            <separator
+                  name="sep4" 
+                  visible="true"/>
+            <command
+                  label="Show Repository &amp;Explorer..." 
+                  commandId="org.eclipse.ui.views.showView"
+                  icon="icons/repositories.png"
+                  id="org.eclipse.ceylon.ide.eclipse.ui.toolbar.showRepositoryExplorer">
+                  <parameter
+                        name="org.eclipse.ui.views.showView.viewId"
+                        value="org.eclipse.ceylon.ide.eclipse.ui.view.ModuleSearch"/>
+            </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
+            <toolbar
+                  label="Ceylon Open Dialogs"
+                  id="org.eclipse.ceylon.ide.eclipse.ui.toolbar.ceylon.open">
+            <command
+                  label="Open Resource..." 
+                  commandId="org.eclipse.ui.navigate.openResource"
+                  icon="icons/openrsrc.png"
+                  tooltip="Open Resource"
+                  id="org.eclipse.ceylon.ide.eclipse.ui.toolbar.openResource"/>
+            <command
+                  label="Open Declaration..." 
+                  commandId="org.eclipse.ceylon.ide.eclipse.ui.action.openDeclaration"
+                  icon="icons/opentype.png"
+                  tooltip="Open Declaration"
+                  id="org.eclipse.ceylon.ide.eclipse.ui.toolbar.openDeclaration"/>
+            <command
+                  label="Show Repository Explorer..." 
+                  commandId="org.eclipse.ui.views.showView"
+                  icon="icons/repositories.png"
+                  tooltip="Show Repository Explorer"
+                  id="org.eclipse.ceylon.ide.eclipse.ui.toolbar.showRepositoryExplorer">
+                  <parameter
+                        name="org.eclipse.ui.views.showView.viewId"
+                        value="org.eclipse.ceylon.ide.eclipse.ui.view.ModuleSearch"/>
+            </command>
+            </toolbar>
+      </menuContribution>
+      <menuContribution
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
+            <toolbar
+                  label="Ceylon New Wizards"
+                  id="org.eclipse.ceylon.ide.eclipse.ui.toolbar.ceylon.new">
+              <visibleWhen>
+                  <with variable="activeContexts">
+                      <iterate ifEmpty="false" operator="or">
+                          <equals value="org.eclipse.ceylon.ide.eclipse.ui.wizardContext"/>
+                      </iterate>
+                 </with>
+              </visibleWhen>
+            <command
+                  label="New Ceylon Source File..." 
+                  commandId="org.eclipse.ceylon.ide.eclipse.ui.action.newUnit"
+                  icon="icons/newunit.png"
+                  tooltip="New Ceylon Source File"
+                  id="org.eclipse.ceylon.ide.eclipse.ui.toolbar.newUnit">
+              <visibleWhen>
+                  <with variable="activeContexts">
+                      <iterate ifEmpty="false" operator="or">
+                          <equals value="org.eclipse.ceylon.ide.eclipse.ui.wizardContext"/>
+                      </iterate>
+                 </with>
+              </visibleWhen>
+            </command>
+            <command
+                  label="New Ceylon Package..." 
+                  commandId="org.eclipse.ceylon.ide.eclipse.ui.action.newPackage"
+                  icon="icons/newpack.png"
+                  tooltip="New Ceylon Package"
+                  id="org.eclipse.ceylon.ide.eclipse.ui.toolbar.newPackage">
+              <visibleWhen>
+                  <with variable="activeContexts">
+                      <iterate ifEmpty="false" operator="or">
+                          <equals value="org.eclipse.ceylon.ide.eclipse.ui.wizardContext"/>
+                      </iterate>
+                 </with>
+              </visibleWhen>
+            </command>
+            <command
+                  label="New Ceylon Module..." 
+                  commandId="org.eclipse.ceylon.ide.eclipse.ui.action.newModule"
+                  icon="icons/newmodule.png"
+                  tooltip="New Ceylon Module"
+                  id="org.eclipse.ceylon.ide.eclipse.ui.toolbar.newModule">
+              <visibleWhen>
+                  <with variable="activeContexts">
+                      <iterate ifEmpty="false" operator="or">
+                          <equals value="org.eclipse.ceylon.ide.eclipse.ui.wizardContext"/>
+                      </iterate>
+                 </with>
+              </visibleWhen>
+            </command>
+            <command
+                  label="New Ceylon Project..."
+                  commandId="org.eclipse.ceylon.ide.eclipse.ui.action.newProject"
+                  icon="icons/newprj.png"
+                  tooltip="New Ceylon Project"
+                  id="org.eclipse.ceylon.ide.eclipse.ui.toolbar.newProject">
+              <visibleWhen>
+                  <with variable="activeContexts">
+                      <iterate ifEmpty="false" operator="or">
+                          <equals value="org.eclipse.ceylon.ide.eclipse.ui.wizardContext"/>
+                      </iterate>
+                 </with>
+              </visibleWhen>
+            </command>
+            </toolbar>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:edit?after=selectAll">
+            <command 
+                  id="selectEnclosing"
+                  commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.selectEnclosing"
+                  label="&amp;Expand Selection">
+              <visibleWhen>
+                  <with variable="activeEditorId">
+                      <equals value="org.eclipse.ceylon.ide.eclipse.ui.editor"/>
+                  </with>
+              </visibleWhen>
+            </command>
+            <command 
+                  id="restorePrevious"
+                  commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.restorePrevious"
+                  label="Undo Expand Se&amp;lection">
+              <visibleWhen>
+                  <with variable="activeEditorId">
+                      <equals value="org.eclipse.ceylon.ide.eclipse.ui.editor"/>
+                  </with>
+              </visibleWhen>
+            </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:navigate?after=additions">
+            <command
+                  id="gotoMatchingFence"
+                  label="Go to &amp;Matching Bracket"
+                  commandId="org.eclipse.ceylon.ide.eclipse.ui.editor.gotoMatchingFence">
+              <visibleWhen>
+                  <with variable="activeEditorId">
+                      <equals value="org.eclipse.ceylon.ide.eclipse.ui.editor"/>
+                  </with>
+              </visibleWhen>
+            </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu?after=edit">
+          <menu
+                label="&amp;Source"
+                id="org.eclipse.ceylon.ide.eclipse.ui.menu.source">
+              <visibleWhen>
+                  <with variable="activeEditorId">
+                      <equals value="org.eclipse.ceylon.ide.eclipse.ui.editor"/>
+                  </with>
+              </visibleWhen>
+            <dynamic id="source"
+                  class="org.eclipse.ceylon.ide.eclipse.code.editor.SourceMenuItems"/>
+          </menu>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu?after=org.eclipse.ceylon.ide.eclipse.ui.menu.source">
+          <menu
+                label="Refac&amp;tor"
+                id="org.eclipse.ceylon.ide.eclipse.ui.menu.refactor">
+              <visibleWhen>
+                  <with variable="activeEditorId">
+                      <equals value="org.eclipse.ceylon.ide.eclipse.ui.editor"/>
+                  </with>
+              </visibleWhen>
+            <dynamic id="refactor"
+                  class="org.eclipse.ceylon.ide.eclipse.code.refactor.RefactorMenuItems"/>
+          </menu>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:org.eclipse.ceylon.ide.eclipse.ui.editor.EditorContext?after=group.open">
+            <menu
+                  id="file"
+                  label="File">
+            <command 
+                  commandId="org.eclipse.ui.file.save"
+                  label="&amp;Save"/>
+            <command 
+                  commandId="org.eclipse.ui.file.close"
+                  label="&amp;Close"/>
+            <command 
+                  commandId="org.eclipse.ui.file.revert"
+                  label="&amp;Revert"/>
+            <separator
+                  visible="true"
+                  name="sep"/>
+            <command 
+                  commandId="org.eclipse.ui.file.properties"
+                  label="&amp;Properties"/>
+            </menu>
+            <menu
+                  id="edit"
+                  label="Edit">
+            <command 
+                  commandId="org.eclipse.ui.edit.undo"
+                  label="&amp;Undo"/>
+            <command 
+                  commandId="org.eclipse.ui.edit.redo"
+                  label="&amp;Redo"/>
+            <separator 
+                  visible="true"
+                  name="sep2"/>
+            <command 
+                  commandId="org.eclipse.ui.edit.cut"
+                  label="Cu&amp;t"/>
+            <command 
+                  commandId="org.eclipse.ui.edit.copy"
+                  label="&amp;Copy"/>
+            <command 
+                  commandId="org.eclipse.ui.edit.paste"
+                  label="&amp;Paste"/>
+            </menu>
+            <separator
+                  visible="true"
+                  name="sep00"/>
+            <menu
+                  id="debugSession"
+                  label="Debug">
+              <visibleWhen>
+                    <systemTest
+                          property="org.eclipse.jdt.debug.ui.debuggerActive"
+                          value="true">
+                    </systemTest>
+              </visibleWhen>
+            <command 
+                  commandId="org.eclipse.debug.ui.commands.StepInto"
+                  label="Step Into"/>
+            <command 
+                  commandId="org.eclipse.debug.ui.commands.StepOver"
+                  label="Step Over"/>
+            <command 
+                  commandId="org.eclipse.debug.ui.commands.StepReturn"
+                  label="Step Return"/>
+            <command 
+                  commandId="org.eclipse.debug.ui.commands.RunToLine"
+                  label="Run to Line"/>
+            </menu>
+            <separator
+                  visible="true"
+                  name="sep0"/>
+            <dynamic
+                  id="navigate"
+                  class="org.eclipse.ceylon.ide.eclipse.code.outline.NavigateMenuItems"/>
+            <menu label="Switch">
+            <command
+                  id="openEditorDropDown"
+                  label="Quick &amp;Switch Editor" 
+                  commandId="org.eclipse.ui.window.openEditorDropDown"/>
+            <command
+                  label="Recently Edited &amp;Files" 
+                  commandId="org.eclipse.ceylon.ide.eclipse.ui.action.switchToRecent"
+                  id="org.eclipse.ceylon.ide.eclipse.ui.menu.switchToRecent"/>
+            </menu>
+     </menuContribution>
+      <menuContribution
+            locationURI="popup:org.eclipse.ceylon.ide.eclipse.ui.editor.EditorContext?after=group.edit">
+            <separator
+                  visible="true"
+                  name="sep5"/>
+            <dynamic id="find"
+                  class="org.eclipse.ceylon.ide.eclipse.code.search.FindMenuItems"/>
+            <separator
+                  visible="true"
+                  name="sep4"/>
+            <dynamic id="source"
+                  class="org.eclipse.ceylon.ide.eclipse.code.editor.SourceMenuItems"/>
+            <dynamic id="refactor"
+                  class="org.eclipse.ceylon.ide.eclipse.code.refactor.RefactorMenuItems"/>
+            <dynamic id="new"
+                  class="org.eclipse.ceylon.ide.eclipse.code.editor.NewMenuItems"/>
+            <separator
+                  visible="true"
+                  name="sep9"/>
+      </menuContribution>
+      <menuContribution
+         locationURI="menu:org.eclipse.ui.main.menu?after=navigate">
+         <menu
+               label="Se&amp;arch"
+               id="org.eclipse.search.menu">
+             <separator name="internalDialogGroup"/>
+             <command
+                   id="ceylonSearch"
+                   commandId="org.eclipse.ceylon.ide.eclipse.ui.action.ceylonSearch"
+                   label="&amp;Ceylon..."
+                   icon="icons/search_src.png"/>
+             <separator name="dialogGroup"/>
+             <separator
+                    visible="true"
+                    name="findGroup"/>
+             <dynamic id="find"
+                    class="org.eclipse.ceylon.ide.eclipse.code.search.FindMenuItems">
+               <visibleWhen>
+                  <with variable="activeEditorId">
+                      <equals value="org.eclipse.ceylon.ide.eclipse.ui.editor"/>
+                  </with>
+               </visibleWhen>
+             </dynamic>
+             <separator name="fileSearchContextMenuActionsGroup" visible="true"/>
+             <separator name="occurencesActionsGroup" visible="true"/>
+             <separator name="extraSearchGroup" visible="true"/>
+             <separator name="contextMenuActionsGroup" visible="true"/>
+        </menu>
+      </menuContribution>
+      <menuContribution
+         locationURI="menu:help?after=intro">
+             <separator name="sep" visible="true"/>
+             <command
+                   id="ceylonWelcome"
+                   commandId="org.eclipse.ceylon.ide.eclipse.ui.action.welcome"
+                   label="Welcome to &amp;Ceylon"
+                   icon="icons/ceylon_icon.png"/>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="org.eclipse.ceylon.ide.eclipse.core.launch.ModuleLaunchDelegate"
+            delegateDescription=""
+            delegateName="Ceylon Java Application Launcher"
+            id="org.eclipse.ceylon.ide.eclipse.ui.launching.ceylonJavaModule"
+            modes="run, debug"
+            name="Ceylon Java Application"
+            sourceLocatorId="org.eclipse.ceylon.ide.eclipse.ui.launching.sourceLocator.CeylonSourceLookupDirector"
+            sourcePathComputerId="org.eclipse.ceylon.ide.eclipse.ui.launching.sourceLookup.ceylonSourcePathComputer">
+      </launchConfigurationType>
+      <launchConfigurationType
+            delegate="org.eclipse.ceylon.ide.eclipse.core.launch.ModuleLaunchDelegate"
+            delegateDescription=""
+            delegateName="Ceylon JavaScript Application Launcher"
+            id="org.eclipse.ceylon.ide.eclipse.ui.launching.ceylonJavaScriptModule"
+            modes="run, debug"
+            name="Ceylon JavaScript Application"
+            sourceLocatorId="org.eclipse.ceylon.ide.eclipse.ui.launching.sourceLocator.CeylonSourceLookupDirector"
+            sourcePathComputerId="org.eclipse.ceylon.ide.eclipse.ui.launching.sourceLookup.ceylonSourcePathComputer">
+      </launchConfigurationType>
+      <launchConfigurationType
+            delegate="org.eclipse.ceylon.ide.eclipse.core.launch.JarPackagedCeylonLaunchConfigurationDelegate"
+            delegateDescription="Assembles the whole Ceylon application as a single jar file, and runs via Java"
+            delegateName="Ceylon Assembly Launcher"
+            id="org.eclipse.ceylon.ide.eclipse.ui.launching.jarPackagedCeylonApplication"
+            modes="run, debug"
+            name="Ceylon Assembly"
+            sourceLocatorId="org.eclipse.ceylon.ide.eclipse.ui.launching.sourceLocator.CeylonSourceLookupDirector"
+            sourcePathComputerId="org.eclipse.ceylon.ide.eclipse.ui.launching.sourceLookup.ceylonSourcePathComputer">
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            type="org.eclipse.ceylon.ide.eclipse.ui.launching.ceylonJavaModule"
+            class="org.eclipse.ceylon.ide.eclipse.core.launch.CeylonModuleTabGroup"
+            id="org.eclipse.ceylon.ide.eclipse.ui.launchConfigurations.ceylonJavaModule">
+            <launchMode 
+                  mode="debug"
+                  perspective="org.eclipse.debug.ui.DebugPerspective"
+                  description="Debug a Ceylon program on the JVM">
+            </launchMode>
+            <launchMode
+                  mode="run"
+                  description="Run a Ceylon program on the JVM">
+            </launchMode>
+      </launchConfigurationTabGroup>
+      <launchConfigurationTabGroup
+            type="org.eclipse.ceylon.ide.eclipse.ui.launching.ceylonJavaScriptModule"
+            class="org.eclipse.ceylon.ide.eclipse.core.launch.CeylonModuleTabGroup"
+            id="org.eclipse.ceylon.ide.eclipse.ui.launchConfigurations.ceylonJavaScriptModule">
+            <launchMode 
+                  mode="debug"
+                  perspective="org.eclipse.debug.ui.DebugPerspective"
+                  description="Debug a Ceylon program on node.js">
+            </launchMode>
+            <launchMode
+                  mode="run"
+                  description="Run a Ceylon program on node.js">
+            </launchMode>
+      </launchConfigurationTabGroup>        
+      <launchConfigurationTabGroup
+            type="org.eclipse.ceylon.ide.eclipse.ui.launching.jarPackagedCeylonApplication"
+            class="org.eclipse.ceylon.ide.eclipse.core.launch.JarPackagedCeylonLaunchConfigurationTabGroup"
+            id="org.eclipse.ceylon.ide.eclipse.ui.launchConfigurations.jarPackagedCeylonApplication">
+            <launchMode 
+                  mode="debug"
+                  perspective="org.eclipse.debug.ui.DebugPerspective"
+                  description="Debug a Ceylon assembly on the JVM">
+            </launchMode>
+            <launchMode
+                  mode="run"
+                  description="Run a Ceylon assembly on the JVM">
+            </launchMode>
+      </launchConfigurationTabGroup>
+   </extension>
+   <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            id="org.eclipse.ceylon.ide.eclipse.ui.launching.ceylonJavaModuleImage"
+            configTypeID="org.eclipse.ceylon.ide.eclipse.ui.launching.ceylonJavaModule"
+            icon="icons/launch.png">
+      </launchConfigurationTypeImage>
+      <launchConfigurationTypeImage
+            id="org.eclipse.ceylon.ide.eclipse.ui.launching.ceylonJavascriptModuleImage"
+            configTypeID="org.eclipse.ceylon.ide.eclipse.ui.launching.ceylonJavaScriptModule"
+            icon="icons/launch.png">
+      </launchConfigurationTypeImage>  
+      <launchConfigurationTypeImage
+            id="org.eclipse.ceylon.ide.eclipse.ui.launching.jarPackagedCeylonApplicationImage"
+            configTypeID="org.eclipse.ceylon.ide.eclipse.ui.launching.jarPackagedCeylonApplication"
+            icon="icons/fatjar.png">
+      </launchConfigurationTypeImage>  
+   </extension>
+   
+   <extension point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            label="Ceylon Java Application"
+            icon="icons/launch.png"
+            modes="run, debug"
+            class="org.eclipse.ceylon.ide.eclipse.core.launch.CeylonJavaModuleShortcut"
+            description="Launch a Ceylon program on the JVM"
+            id="org.eclipse.ceylon.ide.eclipse.ui.launcher.javaModuleShortcut">
+         <description 
+               description="Run a Ceylon program on the JVM"
+               mode="run">
+         </description>
+         <description
+               description="Debug a Ceylon program on the JVM"
+               mode="debug">
+         </description>
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <test
+                           forcePluginActivation="true"
+                           property="org.eclipse.ceylon.ide.eclipse.ui.canLaunchAsCeylonJavaModule">
+                     </test>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+            id="org.eclipse.ceylon.ide.eclipse.ui.launching.ceylonJavaModule">
+         </configurationType>
+      </shortcut>
+      <shortcut
+            label="Ceylon JavaScript Application"
+            icon="icons/launch.png"
+            modes="run, debug"
+            class="org.eclipse.ceylon.ide.eclipse.core.launch.CeylonJsModuleShortcut"
+            description="Launch a Ceylon program on node.js"
+            id="org.eclipse.ceylon.ide.eclipse.ui.launcher.javaScriptModuleShortcut">
+         <description 
+               description="Run a Ceylon program on node.js"
+               mode="run">
+         </description>
+         <description
+               description="Debug a Ceylon program on node.js"
+               mode="debug">
+         </description>
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <test
+                           forcePluginActivation="true"
+                           property="org.eclipse.ceylon.ide.eclipse.ui.canLaunchAsCeylonJavaScriptModule">
+                     </test>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+            id="org.eclipse.ceylon.ide.eclipse.ui.launching.ceylonJavaScriptModule">
+         </configurationType>
+      </shortcut>         
+      <shortcut
+            label="Ceylon Fat Jar"
+            icon="icons/fatjar.png"
+            modes="run, debug"
+            class="org.eclipse.ceylon.ide.eclipse.core.launch.FatJarPackagedCeylonLaunchShortcut"
+            description="Assemble and launch a Ceylon program packaged as a fat jar"
+            id="org.eclipse.ceylon.ide.eclipse.ui.launcher.fatJarPackagedModuleShortcut">
+         <description 
+               description="Package and run a Ceylon program as a fat jar"
+               mode="run">
+         </description>
+         <description
+               description="Package and debug a Ceylon program as a fat jar"
+               mode="debug">
+         </description>
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <and>
+                         <test
+                               forcePluginActivation="true"
+                               property="org.eclipse.ceylon.ide.eclipse.ui.canLaunchAsCeylonJavaModule">
+                         </test>
+                         <or>
+                             <instanceof value="org.eclipse.ceylon.ide.eclipse.code.navigator.SourceModuleNode"/>
+                             <adapt type="org.eclipse.core.resources.IResource">
+                                 <instanceof value="org.eclipse.core.resources.IResource"/>
+                             </adapt>
+                         </or>
+                     </and>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+            id="org.eclipse.ceylon.ide.eclipse.ui.launching.jarPackagedCeylonApplication">
+         </configurationType>
+      </shortcut>
+      <shortcut
+            label="Ceylon Assembly"
+            icon="icons/fatjar.png"
+            modes="run, debug"
+            class="org.eclipse.ceylon.ide.eclipse.core.launch.AssemblyPackagedCeylonLaunchShortcut"
+            description="Assemble and launch a Ceylon program on the JVM"
+            id="org.eclipse.ceylon.ide.eclipse.ui.launcher.assemblyPackagedModuleShortcut">
+         <description 
+               description="Assemble and run a Ceylon program on the JVM"
+               mode="run">
+         </description>
+         <description
+               description="Assemble and debug a Ceylon program on the JVM"
+               mode="debug">
+         </description>
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <and>
+                         <test
+                               forcePluginActivation="true"
+                               property="org.eclipse.ceylon.ide.eclipse.ui.canLaunchAsCeylonJavaModule">
+                         </test>
+                         <or>
+                             <instanceof value="org.eclipse.ceylon.ide.eclipse.code.navigator.SourceModuleNode"/>
+                             <adapt type="org.eclipse.core.resources.IResource">
+                                 <instanceof value="org.eclipse.core.resources.IResource"/>
+                             </adapt>
+                         </or>
+                     </and>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+            id="org.eclipse.ceylon.ide.eclipse.ui.launching.jarPackagedCeylonApplication">
+         </configurationType>
+      </shortcut>
+      <shortcut
+            label="Ceylon WildFly Swarm Application"
+            icon="icons/fatjar.png"
+            modes="run, debug"
+            class="org.eclipse.ceylon.ide.eclipse.core.launch.SwarmPackagedCeylonLaunchShortcut"
+            description="Assemble and launch a Ceylon application using Wildfly Swarm"
+            id="org.eclipse.ceylon.ide.eclipse.ui.launcher.swarmPackagedModuleShortcut">
+         <description 
+               description="Package and run a Ceylon application using Wildfly Swarm"
+               mode="run">
+         </description>
+         <description
+               description="Package and debug a Ceylon application using Wildfly Swarm"
+               mode="debug">
+         </description>
+         <contextualLaunch>
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <and>
+                         <test
+                               forcePluginActivation="true"
+                               property="org.eclipse.ceylon.ide.eclipse.ui.canLaunchAsCeylonJavaModule">
+                         </test>
+                         <test
+                               forcePluginActivation="true"
+                               property="org.eclipse.ceylon.ide.eclipse.ui.canLaunchAsCeylonSwarmPackagedJavaModule">
+                         </test>
+                         <or>
+                             <instanceof value="org.eclipse.ceylon.ide.eclipse.code.navigator.SourceModuleNode"/>
+                             <adapt type="org.eclipse.core.resources.IResource">
+                                 <instanceof value="org.eclipse.core.resources.IResource"/>
+                             </adapt>
+                         </or>
+                     </and>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+            id="org.eclipse.ceylon.ide.eclipse.ui.launching.jarPackagedCeylonApplication">
+         </configurationType>
+      </shortcut>
+   </extension>
+   
+   <extension point="org.eclipse.ui.console.consolePatternMatchListeners">
+       <consolePatternMatchListener
+             regex="at .+\(.+\.ceylon\:\d+\)"
+             id="org.eclipse.ceylon.ide.eclipse.ui.consolePatternMatchListener"
+             class="org.eclipse.ceylon.ide.eclipse.core.launch.CeylonPatternMatchListenerDelegate">
+         <enablement>
+            <or>
+               <test property="org.eclipse.ui.console.consoleTypeTest" value="org.eclipse.debug.ui.ProcessConsoleType"/>
+               <test property="org.eclipse.ui.console.consoleTypeTest" value="javaStackTraceConsole"/>
+            </or>
+         </enablement>
+       </consolePatternMatchListener>
+   </extension>
+
+   <extension point="org.eclipse.ui.propertyPages">
+       <page
+           id="org.eclipse.ceylon.ide.eclipse.ui.preferences"
+           name="Ceylon Build"
+           class="org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonProjectPropertiesPage">
+         <enabledWhen>
+            <adapt type="org.eclipse.core.resources.IProject"/>
+         </enabledWhen>
+       </page>
+       <page
+           id="org.eclipse.ceylon.ide.eclipse.ui.preferences.warnings"
+           category="org.eclipse.ceylon.ide.eclipse.ui.preferences"
+           name="Warnings"
+           class="org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonWarningsPropertiesPage">
+         <enabledWhen>
+             <adapt type="org.eclipse.core.resources.IProject">
+                 <test property="org.eclipse.core.resources.projectNature" 
+                          value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature" />
+             </adapt>
+         </enabledWhen>
+       </page>
+       <page
+           id="org.eclipse.ceylon.ide.eclipse.ui.preferences.repos" 
+           category="org.eclipse.ceylon.ide.eclipse.ui.preferences"
+           name="Module Repositories"
+           class="org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonRepoPropertiesPage">
+         <enabledWhen>
+             <adapt type="org.eclipse.core.resources.IProject">
+                 <test property="org.eclipse.core.resources.projectNature" 
+                          value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature" />
+             </adapt>
+         </enabledWhen>
+       </page>
+       <page 
+           id="org.eclipse.ceylon.ide.eclipse.ui.preferences.paths" 
+           category="org.eclipse.ceylon.ide.eclipse.ui.preferences"
+           name="Build Paths"
+           class="org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonBuildPathsPropertiesPage">
+         <enabledWhen>
+             <adapt type="org.eclipse.core.resources.IProject">
+                 <test property="org.eclipse.core.resources.projectNature" 
+                          value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature" />
+             </adapt>
+         </enabledWhen>
+       </page>
+       <page 
+           id="org.eclipse.ceylon.ide.eclipse.ui.moduleProperties"
+           name="Ceylon Module"
+           class="org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonModulePropertiesPage">
+         <enabledWhen>
+            <or>
+              <adapt
+                 type="org.eclipse.jdt.core.IPackageFragment">
+	              <test 
+	                 value="true"
+	                 forcePluginActivation="true"
+	                 property="org.eclipse.ceylon.ide.eclipse.ui.module"/>
+              </adapt>   
+              <adapt
+                  type="org.eclipse.core.resources.IFile">
+                  <test 
+	                  value="true"
+	                  forcePluginActivation="true"
+	                  property="org.eclipse.ceylon.ide.eclipse.ui.module"/>
+              </adapt>
+            </or>
+         </enabledWhen>
+       </page>
+       <page
+           id="org.eclipse.ceylon.ide.eclipse.ui.preferences.style.formatter"
+           name="Ceylon Code Formatter"
+           class="org.eclipse.ceylon.ide.eclipse.code.style.FormatterPreferencePage">
+         <enabledWhen>
+             <adapt type="org.eclipse.core.resources.IProject">
+                 <test property="org.eclipse.core.resources.projectNature" 
+                          value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature" />
+             </adapt>
+         </enabledWhen>
+       </page>              
+   </extension>
+   <extension point="org.eclipse.ui.preferencePages">
+       <page
+           id="org.eclipse.ceylon.ide.eclipse.ui.preferences"
+           name="Ceylon"
+           class="org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferencePage">
+       </page>
+       <page
+           id="org.eclipse.ceylon.ide.eclipse.ui.preferences.editor"
+           name="Editor"
+           class="org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonEditorPreferencePage"
+           category="org.eclipse.ceylon.ide.eclipse.ui.preferences">
+           <!--category="org.eclipse.ui.preferencePages.Editors"-->
+       <keywordReference id="org.eclipse.ui.editors.general"/>
+       <keywordReference
+             id="org.eclipse.ceylon.ide.eclipse.ui.keywords.editor">
+       </keywordReference>
+       </page>
+       <page
+           id="org.eclipse.ceylon.ide.eclipse.ui.preferences.filters"
+           name="Filtering"
+           class="org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonFiltersPreferencePage"
+           category="org.eclipse.ceylon.ide.eclipse.ui.preferences">
+       <keywordReference id="org.eclipse.ui.editors.general"/>
+       <keywordReference
+             id="org.eclipse.ceylon.ide.eclipse.ui.keywords.filters">
+       </keywordReference>
+       </page>
+       <page
+           id="org.eclipse.ceylon.ide.eclipse.ui.preferences.refactoring"
+           name="Refactoring"
+           class="org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonRefactoringPreferencePage"
+           category="org.eclipse.ceylon.ide.eclipse.ui.preferences.editor">
+       <keywordReference id="org.eclipse.ui.editors.general"/>
+       <keywordReference
+             id="org.eclipse.ceylon.ide.eclipse.ui.keywords.refactoring">
+       </keywordReference>
+       </page>
+       <page
+           id="org.eclipse.ceylon.ide.eclipse.ui.preferences.completion"
+           name="Completion"
+           class="org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonCompletionPreferencePage"
+           category="org.eclipse.ceylon.ide.eclipse.ui.preferences.editor">
+       <keywordReference id="org.eclipse.ui.editors.general"/>
+       <keywordReference
+             id="org.eclipse.ceylon.ide.eclipse.ui.keywords.completion">
+       </keywordReference>
+       </page>
+       <page
+           id="org.eclipse.ceylon.ide.eclipse.ui.preferences.outlines"
+           name="Outlines, Hierarchies, and Search Results"
+           class="org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonOutlinesPreferencePage"
+           category="org.eclipse.ceylon.ide.eclipse.ui.preferences">
+       <keywordReference id="org.eclipse.ui.editors.general"/>
+       <keywordReference
+             id="org.eclipse.ceylon.ide.eclipse.ui.keywords.outlines">
+       </keywordReference>
+       </page>
+       <page
+           id="org.eclipse.ceylon.ide.eclipse.ui.preferences.open"
+           name="Open Dialogs"
+           class="org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonOpenDialogsPreferencePage"
+           category="org.eclipse.ceylon.ide.eclipse.ui.preferences">
+       <keywordReference id="org.eclipse.ui.editors.general"/>
+       <keywordReference
+             id="org.eclipse.ceylon.ide.eclipse.ui.keywords.open">
+       </keywordReference>
+       </page>
+       <page
+           id="org.eclipse.ceylon.ide.eclipse.ui.preferences.save"
+           name="Save Actions"
+           class="org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonSaveActionsPreferencePage"
+           category="org.eclipse.ceylon.ide.eclipse.ui.preferences.editor">
+       <keywordReference id="org.eclipse.ui.editors.general"/>
+       <keywordReference
+             id="org.eclipse.ceylon.ide.eclipse.ui.keywords.save">
+       </keywordReference>
+       </page>
+      <page
+            name="Debugging"
+            class="org.eclipse.ceylon.ide.eclipse.core.debug.preferences.CeylonStepFilterPreferencePage"
+            id="org.eclipse.ceylon.ide.eclipse.ui.preferences.debug.filters"
+            category="org.eclipse.ceylon.ide.eclipse.ui.preferences">
+            <!--category="org.eclipse.jdt.debug.ui.JavaDebugPreferencePage"-->
+           <keywordReference
+                 id="org.eclipse.ceylon.ide.eclipse.ui.keywords.debug">
+           </keywordReference>
+      </page>
+       
+   </extension>
+   <extension point="org.eclipse.ui.keywords">
+   <keyword
+         label="folding typing brackets braces parentheses quotes backticks paste imports"
+         id="org.eclipse.ceylon.ide.eclipse.ui.keywords.editor"/>
+   <keyword
+         label="refactoring linked mode"
+         id="org.eclipse.ceylon.ide.eclipse.ui.keywords.refactoring"/>
+   <keyword
+         label="filters"
+         id="org.eclipse.ceylon.ide.eclipse.ui.keywords.filters"/>
+   <keyword
+         label="completion linked mode proposals filters"
+         id="org.eclipse.ceylon.ide.eclipse.ui.keywords.completion"/>
+   <keyword
+         label="open declaration filters"
+         id="org.eclipse.ceylon.ide.eclipse.ui.keywords.open"/>
+   <keyword
+         label="outline hierarchy labels match highlighting"
+         id="org.eclipse.ceylon.ide.eclipse.ui.keywords.outlines"/>
+   <keyword
+         label="save actions imports format"
+         id="org.eclipse.ceylon.ide.eclipse.ui.keywords.save"/>
+   <keyword
+         label="ceylon debug"
+         id="org.eclipse.ceylon.ide.eclipse.ui.keywords.debug"/>
+   </extension>
+   <extension point="org.eclipse.core.expressions.propertyTesters">
+       <propertyTester
+           properties="module"
+           namespace="org.eclipse.ceylon.ide.eclipse.ui"
+           type="org.eclipse.jdt.core.IPackageFragment"
+           id="org.eclipse.ceylon.ide.eclipse.ui.IPackageFragmentTester"
+           class="org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPackageFragmentPropertyTester"/>
+       <propertyTester
+           properties="module"
+           namespace="org.eclipse.ceylon.ide.eclipse.ui"
+           type="org.eclipse.core.resources.IFile"
+           id="org.eclipse.ceylon.ide.eclipse.ui.IFileTester"
+           class="org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonFilePropertyTester"/>
+       <propertyTester
+           properties="module"
+           namespace="org.eclipse.ceylon.ide.eclipse.ui"
+           type="org.eclipse.ui.IEditorInput"
+           id="org.eclipse.ceylon.ide.eclipse.ui.IEditorInputTester"
+           class="org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonEditorInputPropertyTester"/>
+   </extension>
+   
+   <extension point="org.eclipse.ui.intro.configExtension">
+       <configExtension
+           configId="org.eclipse.ui.intro.universalConfig"
+           content="intro/overview.xml"/>  
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.cheatsheets.cheatSheetContent">
+      <category
+            id="org.eclipse.ceylon.ide.eclipse.ui.category"
+            name="Ceylon">
+      </category>
+      <cheatsheet
+            category="org.eclipse.ceylon.ide.eclipse.ui.category"
+            composite="false"
+            contentFile="intro/HelloWorld.xml"
+            id="org.eclipse.ceylon.ide.eclipse.ui.cheatsheet.hello"
+            name="Hello World with Ceylon">
+         <description>
+            Write and run a Hello World program in Ceylon
+         </description>
+      </cheatsheet>
+      <cheatsheet
+            category="org.eclipse.ceylon.ide.eclipse.ui.category"
+            composite="false"
+            contentFile="intro/ModulesIntro.xml"
+            id="org.eclipse.ceylon.ide.eclipse.ui.cheatsheet.module"
+            name="Introduction to Ceylon Modules">
+         <description>
+            Create a Ceylon module and export it to a module 
+            repository
+         </description>
+      </cheatsheet>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="org.eclipse.ceylon.ide.eclipse.ui.CeylonPerspectiveFactory"
+            id="org.eclipse.ceylon.ide.eclipse.ui.perspective"
+            name="Ceylon"
+            icon="icons/ceylon_icon.png">
+          <description>Ceylon development perspective</description>
+      </perspective>
+   </extension>
+   
+   <extension point="org.eclipse.ui.startup">
+     <startup class="org.eclipse.ceylon.ide.eclipse.ui.CeylonStartup"/>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.ceylon.ide.eclipse.ui.perspective">
+            <view id="org.eclipse.ceylon.ide.eclipse.ui.view.ModuleSearch"
+                  relative="org.eclipse.ui.editorss"
+                  visible="false"
+                  minimized="true"
+                  ratio="0.68"
+                  relationship="right"/>
+            <view id="org.eclipse.ceylon.ide.eclipse.ui.view.DependencyGraphView"
+                  relative="org.eclipse.ceylon.ide.eclipse.ui.view.ModuleSearch"
+                  visible="false"
+                  relationship="stack"/>
+            <view id="org.eclipse.ui.views.ProblemView"
+                  relative="org.eclipse.ui.editorss"
+                  ratio="0.73"
+                  relationship="bottom"/>
+            <view id="org.eclipse.ui.views.TaskList"
+                  relative="org.eclipse.ui.views.ProblemView"
+                  visible="false"
+                  relationship="stack"/>
+            <view id="org.eclipse.search.ui.views.SearchView"
+                  relative="org.eclipse.ui.views.ProblemView"
+                  visible="false"
+                  relationship="stack"/>
+            <view id="org.eclipse.ceylon.ide.eclipse.ui.view.DocumentationView"
+                  relative="org.eclipse.ui.views.ProblemView"
+                  visible="true"
+                  relationship="stack"/>
+            <view id="org.eclipse.ui.console.ConsoleView"
+                  relative="org.eclipse.ui.views.ProblemView"
+                  relationship="right"
+                  ratio="0.6"/>
+            <view id="org.eclipse.ui.views.ProgressView"
+                  relative="org.eclipse.ui.console.ConsoleView"
+                  visible="false"
+                  relationship="stack"/>
+            <view id="org.eclipse.ceylon.ide.eclipse.ui.view.CeylonExplorer"
+                  relative="org.eclipse.ui.editorss"
+                  closeable="false"
+                  ratio="0.22"
+                  relationship="left"/>
+            <view id="org.eclipse.ui.navigator.ProjectExplorer"
+                  relative="org.eclipse.ceylon.ide.eclipse.ui.view.CeylonExplorer"
+                  visible="false"
+                  relationship="stack"/>
+            <view id="org.eclipse.ui.views.ResourceNavigator"
+                  relative="org.eclipse.ceylon.ide.eclipse.ui.view.CeylonExplorer"
+                  visible="false"
+                  relationship="stack"/>
+            <view id="org.eclipse.ui.views.ContentOutline"
+                  relative="org.eclipse.ui.editorss"
+                  ratio="0.72"
+                  relationship="right"/>
+            <view id="org.eclipse.ceylon.ide.eclipse.ui.view.HierarchyView"
+                  relative="org.eclipse.ui.views.ContentOutline"
+                  visible="true"
+                  relationship="stack"/>
+            <actionSet
+                  id="org.eclipse.debug.ui.launchActionSet"/>
+            <actionSet
+                  id="org.eclipse.ui.edit.text.actionSet.presentation"/>
+            <newWizardShortcut
+                  id="org.eclipse.ceylon.ide.eclipse.ui.newUnitWizard"/>
+            <newWizardShortcut
+                  id="org.eclipse.ceylon.ide.eclipse.ui.newProjectWizard"/>
+            <newWizardShortcut
+                  id="org.eclipse.ceylon.ide.eclipse.ui.newModuleWizard"/>
+            <newWizardShortcut
+                  id="org.eclipse.ceylon.ide.eclipse.ui.newPackageWizard"/>
+            <newWizardShortcut
+                  id="org.eclipse.jdt.ui.wizards.NewSourceFolderCreationWizard"/>
+            <perspectiveShortcut 
+                  id="org.eclipse.debug.ui.DebugPerspective"/>
+            <perspectiveShortcut 
+                  id="org.eclipse.jdt.ui.JavaPerspective"/>
+            <showInPart id="org.eclipse.ceylon.ide.eclipse.ui.view.CeylonExplorer"/>
+            <showInPart id="org.eclipse.team.ui.GenericHistoryView"/>
+            <showInPart id="org.eclipse.ui.navigator.ProjectExplorer"/>
+            <showInPart id="org.eclipse.ui.views.ResourceNavigator"/>
+            <showInPart id="org.eclipse.ceylon.ide.eclipse.ui.view.ModuleSearch"/>
+            <showInPart id="org.eclipse.ceylon.ide.eclipse.ui.view.DependencyGraphView"/>
+            <!--showInPart id="org.eclipse.jdt.ui.PackageExplorer"/-->
+            <viewShortcut id="org.eclipse.ceylon.ide.eclipse.ui.view.CeylonExplorer"/>
+            <viewShortcut id="org.eclipse.ceylon.ide.eclipse.ui.view.ModuleSearch"/>
+            <viewShortcut id="org.eclipse.ceylon.ide.eclipse.ui.view.DependencyGraphView"/>
+            <viewShortcut id="org.eclipse.ui.views.ContentOutline"/>
+            <viewShortcut id="org.eclipse.ceylon.ide.eclipse.ui.view.HierarchyView"/>
+            <viewShortcut id="org.eclipse.ceylon.ide.eclipse.ui.view.DocumentationView"/>
+            <viewShortcut id="org.eclipse.ui.console.ConsoleView"/>
+            <viewShortcut id="org.eclipse.ui.views.ProblemView"/>
+            <viewShortcut id="org.eclipse.ui.views.TaskList"/>
+            <viewShortcut id="org.eclipse.ui.console.ConsoleView"/>
+            <viewShortcut id="org.eclipse.ui.views.ProgressView"/>
+            <viewShortcut id="org.eclipse.search.ui.views.SearchView"/>
+            <viewShortcut id="org.eclipse.ui.navigator.ProjectExplorer"/>
+            <viewShortcut id="org.eclipse.ui.views.ResourceNavigator"/>
+            <!--viewShortcut id="org.eclipse.jdt.ui.PackageExplorer"/-->
+      </perspectiveExtension>
+      <perspectiveExtension targetID="*">
+            <perspectiveShortcut 
+                  id="org.eclipse.ceylon.ide.eclipse.ui.perspective"/>
+      </perspectiveExtension>
+      <!--perspectiveExtension 
+              targetID="org.eclipse.jdt.ui.JavaPerspective">
+            <newWizardShortcut
+                  id="org.eclipse.ceylon.ide.eclipse.ui.newUnitWizard"/>
+            <newWizardShortcut
+                  id="org.eclipse.ceylon.ide.eclipse.ui.newProjectWizard"/>
+            <newWizardShortcut
+                  id="org.eclipse.ceylon.ide.eclipse.ui.newModuleWizard"/>
+            <newWizardShortcut
+                  id="org.eclipse.ceylon.ide.eclipse.ui.newPackageWizard"/>
+            <perspectiveShortcut 
+                  id="org.eclipse.ceylon.ide.eclipse.ui.perspective"/>
+      </perspectiveExtension>
+      <perspectiveExtension 
+              targetID="org.eclipse.debug.ui.DebugPerspective">
+            <perspectiveShortcut 
+                  id="org.eclipse.ceylon.ide.eclipse.ui.perspective"/>
+      </perspectiveExtension-->
+   </extension>
+      
+   <extension point="org.eclipse.ui.themes">
+    <themeElementCategory
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme" 
+        label="Ceylon">
+        <description>
+            Ceylon editor
+        </description>
+    </themeElementCategory>
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.keywords" 
+        label="Keywords"
+        value="76,76,76">
+        <description>
+            Color for highlighting Ceylon keywords
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.interpolation" 
+        label="String interpolation delimiters"
+        value="COLOR_BLUE">
+        <description>
+            Color for highlighting string interpolation delimiters
+        </description>
+    </colorDefinition>
+    <colorDefinition
+          categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+          id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.typeLiterals" 
+          label="Metamodel expression delimiters"
+          value="COLOR_BLACK">
+       <description>
+          Color for highlighting metamodel expression delimiters
+       </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.annotations" 
+        label="Annotations"
+        value="51,153,204">
+        <description>
+            Color for highlighting annotation identifiers
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.identifiers" 
+        label="Other unqualified identifiers"
+        value="0,51,153">
+        <description>
+            Color for highlighting unqualified identifiers
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.members" 
+        label="Other qualified identifiers"
+        value="102,51,153">
+        <description>
+            Color for highlighting qualified identifiers
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.types" 
+        label="Type identifiers"
+        value="153,0,102">
+        <description>
+            Color for highlighting type identifiers
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.packages" 
+        label="Package identifiers"
+        value="COLOR_DARK_GRAY">
+        <description>
+            Color for highlighting module and package identifiers
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.numbers" 
+        label="Numeric literals"
+        value="COLOR_BLUE">
+        <description>
+            Color for highlighting numeric literals
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.strings" 
+        label="String literals"
+        value="COLOR_BLUE">
+        <description>
+            Color for highlighting string literals
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.characters" 
+        label="Character literals"
+        value="COLOR_BLUE">
+        <description>
+            Color for highlighting character literals
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.comments" 
+        label="Comments"
+        value="COLOR_DARK_GRAY">
+        <description>
+            Color for highlighting comments
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.annotationstrings" 
+        label="Strings in annotations"
+        value="COLOR_DARK_CYAN">
+        <description>
+            Color for highlighting strings in annotations
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.todos" 
+        label="Todos"
+        value="255,128,0">
+        <description>
+            Color for highlighting TODOs and FIXes.
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.semis" 
+        label="Semicolons"
+        value="COLOR_BLACK">
+        <description>
+            Color for highlighting semicolons.
+        </description>
+    </colorDefinition>
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.braces" 
+        label="Braces"
+        value="COLOR_BLACK">
+        <description>
+            Color for highlighting braces.
+        </description>
+    </colorDefinition>
+
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.outlineTypes" 
+        label="Return types in outline view"
+        value="102,102,51">
+        <description>
+            Color for displaying return types in outline view.
+        </description>
+    </colorDefinition>
+
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.matches" 
+        label="Match highlighting in proposals"
+        value="0,128,255"><!--"204,255,102"-->
+        <description>
+            Color for highlighting textual matches within proposal lists and Open dialogs.
+        </description>
+    </colorDefinition>
+
+    <colorDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.theme.matchingBracketsColor" 
+        label="Matching brackets, braces, parens"
+        value="0,120,255">
+        <description>
+            Color for highlighting matching braces, brackets, and parens. 
+(Takes effect after closing Ceylon editor.)
+        </description>
+    </colorDefinition>
+
+    <fontDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.editorFont" 
+        label="Editor Text Font"
+        defaultsTo="org.eclipse.jface.textfont">
+        <description>
+            Font for displaying code in the Ceylon editor and documentation hover
+        </description>
+    </fontDefinition>
+    <fontDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.hoverFont" 
+        label="Hover Text Font"
+        defaultsTo="org.eclipse.jface.dialogfont">
+        <description>
+            Font for displaying text in the Ceylon documentation hover
+        </description>
+    </fontDefinition>
+    <fontDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.completionFont" 
+        label="Completion Proposal Font"
+        defaultsTo="org.eclipse.jface.dialogfont">
+        <description>
+            Font for displaying proposals in the completion popup
+        </description>
+    </fontDefinition>
+    <fontDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.openFont" 
+        label="Open Dialog Label Font"
+        defaultsTo="org.eclipse.jface.dialogfont">
+        <description>
+            Font for displaying labels in Open dialogs
+        </description>
+    </fontDefinition>
+    <fontDefinition
+        categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+        id="org.eclipse.ceylon.ide.eclipse.ui.outlineFont" 
+        label="Outline Label Font"
+        defaultsTo="org.eclipse.jface.dialogfont">
+        <description>
+            Font for displaying labels in outline and hierarchy views
+        </description>
+    </fontDefinition>
+    <colorDefinition
+          categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+          id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.initializerAnnotation"
+          label="Initializer annotation"
+          value="255,153,153"><!--COLOR_GREEN-->
+       <description>
+          Color for highlighting initializer section.
+       </description>
+    </colorDefinition>
+    <colorDefinition
+          categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+          id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.rangeIndicatorAnnotation"
+          label="Range indicator annotation"
+          value="COLOR_LIST_SELECTION">
+       <description>
+          Color for highlighting a particular range of text lines.
+       </description>
+    </colorDefinition>
+    <colorDefinition
+          categoryId="org.eclipse.ceylon.ide.eclipse.ui.theme"
+          id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.documentationBackground"
+          label="Documentation background color"
+          value="COLOR_WHITE">
+       <description>
+          Background color for documentation hover and view.
+       </description>
+    </colorDefinition>
+    
+    <theme id="org.eclipse.ceylon.ide.eclipse.ui.theme.alt" 
+        name="Ceylon Alt">
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.initializerAnnotation"
+            value="255,153,153"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.rangeIndicatorAnnotation"
+            value="COLOR_LIST_SELECTION"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.matches"
+            value="0,128,255"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.matchingBracketsColor"
+            value="0,120,255"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.keywords"
+            value="0,51,102"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.interpolation"
+            value="102,102,51"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.annotations"
+            value="153,102,102"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.identifiers"
+            value="51,41,204"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.members"
+            value="51,51,255"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.types"
+            value="255,51,0"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.numbers"
+            value="102,0,204"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.strings"
+            value="102,102,51"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.characters"
+            value="102,102,51"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.comments"
+            value="128,128,128"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.packages"
+            value="128,128,128"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.annotationstrings"
+            value="153,153,153"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.semis"
+            value="0,0,0"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.braces"
+            value="0,0,0"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.typeLiterals"
+            value="0,0,0"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.documentationBackground"
+            value="255,255,255"/>
+    </theme>
+    
+    <theme id="org.eclipse.ceylon.ide.eclipse.ui.theme.darkAlt" 
+        name="Ceylon Dark Alt">
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.initializerAnnotation"
+            value="153,102,0"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.rangeIndicatorAnnotation"
+            value="51,0,0"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.matches"
+            value="102,255,255"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.matchingBracketsColor"
+            value="102,255,255"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.keywords"
+            value="255,255,255"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.semis"
+            value="102,102,102"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.braces"
+            value="255,255,255"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.typeLiterals"
+            value="255,255,255"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.interpolation"
+            value="0,255,0"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.annotations"
+            value="153,102,102"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.identifiers"
+            value="0,128,255"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.members"
+            value="102,102,255"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.types"
+            value="255,0,128"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.numbers"
+            value="0,255,0"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.strings"
+            value="0,255,0"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.characters"
+            value="0,255,0"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.comments"
+            value="119,110,113"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.packages"
+            value="204,102,255"/>
+        <colorOverride 
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.annotationstrings"
+            value="128,128,128"/>
+        <colorOverride
+            id="org.eclipse.ceylon.ide.eclipse.ui.theme.color.documentationBackground"
+            value="32,32,32"/>
+    </theme>
+    
+    </extension>
+    
+    <extension
+        id="org.eclipse.ceylon.ide.eclipse.ui.cpcontainer.RuntimeContainer"
+        name="Ceylon Language Module Container"
+        point="org.eclipse.jdt.core.classpathContainerInitializer">
+        <classpathContainerInitializer
+            class="org.eclipse.ceylon.ide.eclipse.core.classpath.CeylonLanguageModuleInitializer"
+            id="org.eclipse.ceylon.ide.eclipse.ui.cpcontainer.RUNTIME_CONTAINER">
+        </classpathContainerInitializer>
+    </extension>
+    
+    <extension
+        id="org.eclipse.ceylon.ide.eclipse.ui.cpcontainer.Container"
+        name="Ceylon Application Modules Container"
+        point="org.eclipse.jdt.core.classpathContainerInitializer">
+        <classpathContainerInitializer
+            class="org.eclipse.ceylon.ide.eclipse.core.classpath.CeylonProjectModulesInitializer"
+            id="org.eclipse.ceylon.ide.eclipse.ui.cpcontainer.CEYLON_CONTAINER">
+        </classpathContainerInitializer>
+    </extension>
+    
+    <extension
+          point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
+          <hyperlinkDetector
+                targetId="org.eclipse.jdt.ui.javaCode"
+                id="org.eclipse.ceylon.ide.eclipse.ui.javaHyperlinkDetector"
+                name="Navigate to Ceylon Code"
+                class="org.eclipse.ceylon.ide.eclipse.code.resolve.JavaToCeylonHyperlinkDetector">
+          </hyperlinkDetector>
+    </extension>
+
+   <extension
+         point="org.eclipse.ui.popupMenus">
+     <objectContribution
+           objectClass="org.eclipse.ceylon.ide.eclipse.code.outline.CeylonOutlineNode"
+           id="org.eclipse.ceylon.ide.eclipse.ui.outline.findActions">
+         <action
+               label="Move to &amp;New Source File..."
+               class="org.eclipse.ceylon.ide.eclipse.code.refactor.MoveToNewUnitHandler"
+               enablesFor="1"
+               icon="icons/file_change.png"
+               id="moveToNewUnit"
+               menubarPath="refactor"
+               definitionId="org.eclipse.ceylon.ide.eclipse.ui.action.moveDeclarationToNewUnit"/>
+         <action
+               label="Move to &amp;Source File..."
+               class="org.eclipse.ceylon.ide.eclipse.code.refactor.MoveToUnitHandler"
+               enablesFor="1"
+               icon="icons/file_change.png"
+               id="moveToUnit"
+               menubarPath="refactor"
+               definitionId="org.eclipse.ceylon.ide.eclipse.ui.action.moveDeclarationToUnit"/>
+         <action
+               label="&amp;Rename..."
+               class="org.eclipse.ceylon.ide.eclipse.code.refactor.RenameAction"
+               enablesFor="1"
+               icon="icons/correction_rename.png"
+               id="rename"
+               menubarPath="refactor"
+               definitionId="org.eclipse.ceylon.ide.eclipse.ui.action.rename"/>
+         <action
+               label="Find Refinements"
+               class="org.eclipse.ceylon.ide.eclipse.code.search.FindRefinementsAction"
+               enablesFor="1"
+               icon="icons/search_decl_obj.png"
+               id="findRefinements"
+               menubarPath="find"
+               definitionId="org.eclipse.ceylon.ide.eclipse.ui.action.findRefinements"/>
+         <action
+               label="Find Subtypes"
+               class="org.eclipse.ceylon.ide.eclipse.code.search.FindSubtypesAction"
+               enablesFor="1"
+               icon="icons/search_decl_obj.png"
+               id="findSubtypes"
+               menubarPath="find"
+               definitionId="org.eclipse.ceylon.ide.eclipse.ui.action.findSubtypes"/>
+         <action
+               label="Find Assignments"
+               class="org.eclipse.ceylon.ide.eclipse.code.search.FindAssignmentsAction"
+               enablesFor="1"
+               icon="icons/search_ref_obj.png"
+               id="findAssignments"
+               menubarPath="find"
+               definitionId="org.eclipse.ceylon.ide.eclipse.ui.action.findAssignments"/>
+         <action
+               label="&amp;Find References"
+               class="org.eclipse.ceylon.ide.eclipse.code.search.FindReferencesAction"
+               enablesFor="1"
+               icon="icons/search_ref_obj.png"
+               id="findReferences"
+               menubarPath="find"
+               definitionId="org.eclipse.ceylon.ide.eclipse.ui.action.findReferences"/>
+         <action
+               label="Show in Type &amp;Hierarchy View"
+               class="org.eclipse.ceylon.ide.eclipse.code.outline.ShowInHierarchyAction"
+               enablesFor="1"
+               icon="icons/class_hi.png"
+               id="showInHierarchy"
+               menubarPath="showIn"
+               definitionId="org.eclipse.ceylon.ide.eclipse.ui.action.showInHierarchyView"/>
+     </objectContribution>
+     
+     <objectContribution
+           objectClass="org.eclipse.ceylon.ide.eclipse.code.outline.CeylonOutlineNode"
+           id="org.eclipse.ceylon.ide.eclipse.ui.outline.launchActions">
+         <action
+               label="Debug As Ceylon JavaScript Application"
+               class="org.eclipse.ceylon.ide.eclipse.core.launch.DebugAsJsAction"
+               enablesFor="1"
+               icon="icons/launch.png"
+               id="debugAsJs"
+               menubarPath="additions"/>
+          <visibility>
+              <objectState name="jsRunnable" value="true"/>
+          </visibility>
+     </objectContribution>
+     <objectContribution
+           objectClass="org.eclipse.ceylon.ide.eclipse.code.outline.CeylonOutlineNode"
+           id="org.eclipse.ceylon.ide.eclipse.ui.outline.launchActions">
+         <action
+               label="Debug As Ceylon Java Application"
+               class="org.eclipse.ceylon.ide.eclipse.core.launch.DebugAsJavaAction"
+               enablesFor="1"
+               icon="icons/launch.png"
+               id="debugAsJava"
+               menubarPath="additions"/>
+          <visibility>
+              <objectState name="javaRunnable" value="true"/>
+          </visibility>
+     </objectContribution>
+     
+     <objectContribution
+           objectClass="org.eclipse.ceylon.ide.eclipse.code.outline.CeylonOutlineNode"
+           id="org.eclipse.ceylon.ide.eclipse.ui.outline.launchActions">
+         <action
+               label="Run As Ceylon JavaScript Application"
+               class="org.eclipse.ceylon.ide.eclipse.core.launch.RunAsJsAction"
+               enablesFor="1"
+               icon="icons/launch.png"
+               id="runAsJs"
+               menubarPath="additions"/>
+          <visibility>
+              <objectState name="jsRunnable" value="true"/>
+          </visibility>
+     </objectContribution>
+     <objectContribution
+           objectClass="org.eclipse.ceylon.ide.eclipse.code.outline.CeylonOutlineNode"
+           id="org.eclipse.ceylon.ide.eclipse.ui.outline.launchActions">
+         <action
+               label="Run As Ceylon Java Application"
+               class="org.eclipse.ceylon.ide.eclipse.core.launch.RunAsJavaAction"
+               enablesFor="1"
+               icon="icons/launch.png"
+               id="runAsJava"
+               menubarPath="additions"/>
+          <visibility>
+              <objectState name="javaRunnable" value="true"/>
+          </visibility>
+     </objectContribution>
+     
+     <objectContribution
+           objectClass="org.eclipse.core.resources.IProject"
+           adaptable="true"
+           nameFilter="*"
+           id="org.eclipse.ceylon.ide.eclipse.ui.nonCeylonProjectContextMenu">
+         <action
+               class="org.eclipse.ceylon.ide.eclipse.core.builder.EnableCeylonNature"
+               id="org.eclipse.ceylon.ide.eclipse.ui.actions.enableNatureAction"
+               label="Enable Ceylon Builder"
+               menubarPath="org.eclipse.ui.projectConfigure/additions"
+               tooltip="Enable the Ceylon builder for this project">
+         </action>
+        <visibility>
+          <and>
+            <objectState name="open" value="true"/>
+            <not>
+              <objectState name="nature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature"/>
+            </not>
+          </and>
+        </visibility>
+     </objectContribution>
+
+     <objectContribution
+           objectClass="org.eclipse.core.resources.IProject"
+           adaptable="true"
+           nameFilter="*"
+           id="org.eclipse.ceylon.ide.eclipse.ui.ceylonProjectContextMenu">
+         <action
+               class="org.eclipse.ceylon.ide.eclipse.core.classpath.ResetSourceAttachmentsHandler"
+               id="org.eclipse.ceylon.ide.eclipse.ui.actions.resetSourceAttachments"
+               label="Reset Source Attachments"
+               menubarPath="group.build"
+               tooltip="Reset the source attachments for Ceylon module binary archives">
+         </action>
+        <visibility>
+          <and>
+            <objectState name="open" value="true"/>
+            <objectState name="nature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature"/>
+          </and>
+        </visibility>
+     </objectContribution>
+
+     <objectContribution
+           objectClass="org.eclipse.core.resources.IProject"
+           adaptable="true"
+           nameFilter="*"
+           id="org.eclipse.ceylon.ide.eclipse.ui.ceylonProjectContextMenu">
+         <action
+               class="org.eclipse.ceylon.ide.eclipse.code.wizard.CreateBootstrapFilesHandler"
+               id="org.eclipse.ceylon.ide.eclipse.ui.actions.createBootstrapFiles"
+               label="Create Ceylon Bootstrap Files"
+               menubarPath="group.build"
+               tooltip="Create the Ceylon bootstrap files">
+         </action>
+        <visibility>
+          <and>
+            <objectState name="open" value="true"/>
+            <objectState name="nature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature"/>
+          </and>
+        </visibility>
+     </objectContribution>
+
+      <objectContribution
+            objectClass="org.eclipse.jdt.debug.core.IJavaStackFrame"
+            id="org.eclipse.ceylon.ide.eclipse.ui.ReceivingStackFrameActions">
+         <filter
+               name="ReceivingStackFrameActionFilter"
+               value="isReceivingType">
+         </filter>
+         <action
+               label="%openRecTypeHierarchy.label"
+               helpContextId="open_receiving_type_hierarchy_action_context"
+               tooltip="%openRecTypeHierarchy.tooltip"
+               class="org.eclipse.ceylon.ide.eclipse.core.debug.actions.CeylonOpenReceivingTypeHierarchyAction"
+               menubarPath="emptyEditGroup"
+               enablesFor="1"
+               id="org.eclipse.ceylon.ide.eclipse.ui.actions.OpenReceivingTypeHierarchy"
+               overrideActionId="org.eclipse.jdt.debug.ui.actions.OpenReceivingTypeHierarchy">
+         </action>
+         <action
+               label="%openRecType.label"
+               helpContextId="open_on_receiving_type_action_context"
+               tooltip="%openRecType.tooltip"
+               class="org.eclipse.ceylon.ide.eclipse.core.debug.actions.CeylonOpenReceivingTypeAction"
+               menubarPath="emptyEditGroup"
+               enablesFor="1"
+               id="org.eclipse.ceylon.ide.eclipse.ui.actions.OpenReceivingType"
+               overrideActionId="org.eclipse.jdt.debug.ui.actions.OpenReceivingType">
+         </action>
+      </objectContribution>
+      
+      <objectContribution
+            objectClass="org.eclipse.jdt.debug.core.IJavaStackFrame"
+            id="org.eclipse.ceylon.ide.eclipse.ui.DeclaringStackFrameActions">
+         <action
+               label="%openDeclTypeHierarchy.label"
+               helpContextId="open_declaring_type_hierarchy_action_context"
+               tooltip="%openDeclTypeHierarchy.tooltip"
+               class="org.eclipse.ceylon.ide.eclipse.core.debug.actions.CeylonOpenDeclaringTypeHierarchyAction"
+               menubarPath="emptyEditGroup"
+               enablesFor="1"
+               id="org.eclipse.ceylon.ide.eclipse.ui.actions.OpenDeclaringTypeHierarchy"
+               overrideActionId="org.eclipse.jdt.debug.ui.actions.OpenDeclaringTypeHierarchy">
+         </action>
+         <action
+               label="%openDeclType.label"
+               helpContextId="open_on_declaring_type_action_context"
+               tooltip="%openDeclType.tooltip"
+               class="org.eclipse.ceylon.ide.eclipse.core.debug.actions.CeylonOpenDeclaringTypeAction"
+               menubarPath="emptyEditGroup"
+               enablesFor="1"
+               id="org.eclipse.ceylon.ide.eclipse.ui.actions.OpenDeclaringType"
+               overrideActionId="org.eclipse.jdt.debug.ui.actions.OpenDeclaringType">
+         </action>
+      </objectContribution>
+      
+      <objectContribution
+            objectClass="org.eclipse.jdt.debug.core.IJavaVariable"
+            id="org.eclipse.ceylon.ide.eclipse.ui.FilteredJavaVariableActions">
+         <filter
+               name="PrimitiveVariableActionFilter"
+               value="isPrimitive">
+         </filter>
+         <filter
+               name="ConcreteVariableActionFilter"
+               value="isConcrete">
+         </filter>
+         <action
+               label="%openConcreteVarTypeHierarchy.label"
+               helpContextId="open_variable_concrete_type_hierarchy_action_context"
+               tooltip="%openConcreteVarTypeHierarchy.tooltip"
+               class="org.eclipse.ceylon.ide.eclipse.core.debug.actions.CeylonOpenVariableConcreteTypeHierarchyAction"
+               menubarPath="emptyNavigationGroup"
+               enablesFor="1"
+               id="org.eclipse.ceylon.ide.eclipse.ui.actions.OpenVariableConcreteTypeHierarchy"
+               overrideActionId="org.eclipse.jdt.debug.ui.actions.OpenVariableConcreteTypeHierarchy">
+         </action>
+         <action
+               label="%openConcreteVarType.label"
+               helpContextId="open_variable_concrete_type_action_context"
+               tooltip="%openConcreteVarType.tooltip"
+               class="org.eclipse.ceylon.ide.eclipse.core.debug.actions.CeylonOpenVariableConcreteTypeAction"
+               menubarPath="emptyNavigationGroup"
+               enablesFor="1"
+               id="org.eclipse.ceylon.ide.eclipse.ui.actions.OpenVariableConcreteType"
+               overrideActionId="org.eclipse.jdt.debug.ui.actions.OpenVariableConcreteType">
+         </action>
+      </objectContribution>
+      
+      <objectContribution
+            objectClass="org.eclipse.jdt.debug.core.IJavaVariable"
+            id="org.eclipse.ceylon.ide.eclipse.ui.FilteredJavaVariableActions">
+         <visibility>
+            <and>
+            <not>
+               <objectState
+                     name="JavaVariableFilter"
+                     value="isReferenceListVariable">
+               </objectState>
+            </not>
+            <not>
+               <objectState
+                     name="JavaVariableFilter"
+                     value="isPlaceholderValue">
+               </objectState>
+            </not>
+            </and>
+         </visibility>
+         <filter
+               name="PrimitiveVariableActionFilter"
+               value="isPrimitive">
+         </filter>
+         <action
+               label="%openDeclVarTypeHierarchy.label"
+               helpContextId="open_variable_declared_type_hierarchy_action_context"
+               tooltip="%openDeclVarTypeHierarchy.tooltip"
+               class="org.eclipse.ceylon.ide.eclipse.core.debug.actions.CeylonOpenVariableDeclaredTypeHierarchyAction"
+               menubarPath="emptyNavigationGroup"
+               enablesFor="1"
+               id="org.eclipse.ceylon.ide.eclipse.ui.actions.OpenVariableDeclaredTypeHierarchy"
+               overrideActionId="org.eclipse.jdt.debug.ui.actions.OpenVariableDeclaredTypeHierarchy">
+         </action>
+         <action
+               label="%openDeclVarType.label"
+               helpContextId="open_on_variable_type_action_context"
+               tooltip="%openDeclVarType.tooltip"
+               class="org.eclipse.ceylon.ide.eclipse.core.debug.actions.CeylonOpenVariableDeclaredTypeAction"
+               menubarPath="emptyNavigationGroup"
+               enablesFor="1"
+               id="org.eclipse.ceylon.ide.eclipse.ui.actions.OpenVariableDeclaredType"
+               overrideActionId="org.eclipse.jdt.debug.ui.actions.OpenVariableDeclaredType">
+         </action>
+      </objectContribution>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="Ceylon"
+            id="org.eclipse.ceylon.ide.eclipse.ui.views"/>
+      <view
+            category="org.eclipse.ceylon.ide.eclipse.ui.views"
+            class="org.eclipse.ui.navigator.resources.ProjectExplorer"
+            icon="icons/package.png"
+            id="org.eclipse.ceylon.ide.eclipse.ui.view.CeylonExplorer"
+            name="Ceylon Explorer"/>
+      <view
+            category="org.eclipse.ceylon.ide.eclipse.ui.views"
+            class="org.eclipse.ceylon.ide.eclipse.code.modulesearch.ModuleSearchViewPart"
+            icon="icons/repositories.png"
+            id="org.eclipse.ceylon.ide.eclipse.ui.view.ModuleSearch"
+            name="Ceylon Repository Explorer"/>
+      <view
+            category="org.eclipse.ceylon.ide.eclipse.ui.views"
+            class="org.eclipse.ceylon.ide.eclipse.code.outline.HierarchyView"
+            icon="icons/class_hi.png"
+            id="org.eclipse.ceylon.ide.eclipse.ui.view.HierarchyView"
+            name="Ceylon Type Hierarchy"/>
+      <view
+            category="org.eclipse.ceylon.ide.eclipse.ui.views"
+            class="org.eclipse.ceylon.ide.eclipse.code.hover.DocumentationView"
+            icon="icons/overview.png"
+            id="org.eclipse.ceylon.ide.eclipse.ui.view.DocumentationView"
+            name="Ceylon Documentation"/>
+      <view
+            category="org.eclipse.ceylon.ide.eclipse.ui.views"
+            class="org.eclipse.ceylon.ide.eclipse.code.moduledependencies.DependencyGraphView"
+            icon="icons/module_obj.png"
+            id="org.eclipse.ceylon.ide.eclipse.ui.view.DependencyGraphView"
+            name="Ceylon Module Dependencies"/>
+   </extension>
+
+    <extension point="org.eclipse.ltk.core.refactoring.renameParticipants">
+      <renameParticipant
+        id="org.eclipse.ceylon.ide.eclipse.code.refactor.RenameJavaElementRefactoringParticipant"
+        name="Rename participant for Ceylon source"
+        class="org.eclipse.ceylon.ide.eclipse.code.refactor.RenameJavaElementRefactoringParticipant">
+        <enablement>
+          <with variable="affectedNatures">
+            <iterate operator="or">
+              <equals value="org.eclipse.jdt.core.javanature"/>
+            </iterate>
+          </with>
+          <with variable="element">
+             <instanceof value="org.eclipse.jdt.core.IMember"/>
+          </with>
+        </enablement>
+      </renameParticipant>
+      <renameParticipant
+        id="org.eclipse.ceylon.ide.eclipse.code.refactor.RenamePackageRefactoringParticipant"
+        name="Rename package participant for Ceylon source"
+        class="org.eclipse.ceylon.ide.eclipse.code.refactor.RenamePackageRefactoringParticipant">
+        <enablement>
+          <with variable="affectedNatures">
+            <iterate operator="or">
+              <equals value="org.eclipse.jdt.core.javanature"/>
+            </iterate>
+          </with>
+          <with variable="element">
+             <instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+          </with>
+        </enablement>
+      </renameParticipant>
+    </extension>
+    <extension
+          point="org.eclipse.ltk.core.refactoring.copyParticipants">
+      <copyParticipant
+            id="org.eclipse.ceylon.ide.eclipse.code.refactor.CopyPackageRefactoringParticipant"
+            name="Copy package participant for Ceylon source"
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.CopyPackageRefactoringParticipant">
+        <enablement>
+          <with variable="affectedNatures">
+            <iterate operator="or">
+              <equals value="org.eclipse.jdt.core.javanature"/>
+            </iterate>
+          </with>
+          <with variable="element">
+             <instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+          </with>
+        </enablement>
+      </copyParticipant>
+      <copyParticipant
+            id="org.eclipse.ceylon.ide.eclipse.code.refactor.CopyFileRefactoringParticipant"
+            name="Copy file participant for Ceylon source"
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.CopyFileRefactoringParticipant">
+        <enablement>
+          <with variable="affectedNatures">
+            <iterate operator="or">
+              <equals value="org.eclipse.jdt.core.javanature"/>
+            </iterate>
+          </with>
+          <with variable="element">
+             <instanceof value="org.eclipse.core.resources.IFile"/>
+          </with>
+        </enablement>
+      </copyParticipant>
+    </extension>
+    <extension
+          point="org.eclipse.ltk.core.refactoring.moveParticipants">
+      <moveParticipant
+            id="org.eclipse.ceylon.ide.eclipse.code.refactor.MoveFileRefactoringParticipant"
+            name="Move file participant for Ceylon source"
+            class="org.eclipse.ceylon.ide.eclipse.code.refactor.MoveFileRefactoringParticipant">
+        <enablement>
+          <with variable="affectedNatures">
+            <iterate operator="or">
+              <equals value="org.eclipse.jdt.core.javanature"/>
+            </iterate>
+          </with>
+          <with variable="element">
+             <instanceof value="org.eclipse.core.resources.IFile"/>
+          </with>
+        </enablement>
+      </moveParticipant>
+    </extension>
+    
+    <extension
+          point="org.eclipse.core.expressions.propertyTesters">
+       <propertyTester
+             class="org.eclipse.ceylon.ide.eclipse.core.launch.CeylonRunPropertyTester"
+             id="org.eclipse.ceylon.ide.eclipse.core.launch.ceylonRunPropertyTester"
+             namespace="org.eclipse.ceylon.ide.eclipse.ui"
+             properties="canLaunchAsCeylonJavaModule, canLaunchAsCeylonJavaScriptModule, canLaunchAsCeylonSwarmPackagedJavaModule"
+             type="java.lang.Object">
+       </propertyTester>    
+    </extension>
+
+    <extension
+          id="JavaProjectStateMirror"
+          name="Java Project State Mirror"
+          point="org.eclipse.jdt.core.compilationParticipant">
+       <compilationParticipant
+             class="org.eclipse.ceylon.ide.eclipse.core.builder.JavaProjectStateMirror"
+             id="JavaProjectStateMirror"
+             modifiesEnvironment="false"
+             createsProblems="false"
+             requiredSourceLevel="1.6">
+          <managedMarker markerType="org.eclipse.jdt.apt.core.compile.problem"/>
+       </compilationParticipant>
+    </extension>
+    
+    <extension
+          point="org.eclipse.jdt.ui.queryParticipants">
+          <queryParticipant
+                name="Ceylon references"
+                nature="org.eclipse.jdt.core.javanature"
+                id="org.eclipse.ceylon.ide.eclipse.code.javaQueryParticipant"
+                class="org.eclipse.ceylon.ide.eclipse.code.search.JavaQueryParticipant">
+          </queryParticipant>
+    </extension>
+   <extension point="org.eclipse.debug.core.sourcePathComputers">
+   		<sourcePathComputer
+   			id="org.eclipse.ceylon.ide.eclipse.ui.launching.sourceLookup.ceylonSourcePathComputer"
+   			class="org.eclipse.ceylon.ide.eclipse.core.launch.CeylonSourcePathComputer">
+   		</sourcePathComputer>
+   </extension>
+   <extension point="org.eclipse.debug.core.sourceLocators">
+   		<sourceLocator
+   			id="org.eclipse.ceylon.ide.eclipse.ui.launching.sourceLocator.CeylonSourceLookupDirector"
+   			class="org.eclipse.ceylon.ide.eclipse.core.launch.CeylonSourceLookupDirector"
+   			name="Ceylon Source Lookup Director">
+   		</sourceLocator>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchDelegates">
+      <launchDelegate
+            delegate="org.eclipse.ceylon.ide.eclipse.core.launch.CeylonAwareJavaLaunchDelegate"
+            id="org.eclipse.ceylon.ide.eclipse.ui.launching.javaApplicationLauncher"
+            modes="run,debug"
+            delegateDescription="The Eclipse JDT Java Application Launcher supports running and debugging local Java applications that contain or use Ceylon code."
+            name="Ceylon-aware Eclipse JDT"
+            type="org.eclipse.jdt.launching.localJavaApplication"/>
+      <launchDelegate
+            delegate="org.eclipse.ceylon.ide.eclipse.core.launch.CeylonAwareJavaRemoteApplicationLaunchConfigurationDelegate"
+            id="org.eclipse.ceylon.ide.eclipse.ui.launching.javaRemoteApplicationLauncher"
+            modes="debug"
+            delegateDescription="The Eclipse JDT Java Remote Launcher supports attaching to and debugging remote Java applications that contain or use Ceylon code."
+            name="Ceylon-aware Eclipse JDT"
+            type="org.eclipse.jdt.launching.remoteJavaApplication"/>
+      <launchDelegate
+            delegate="org.eclipse.ceylon.ide.eclipse.core.launch.CeylonAwareJUnitLaunchConfigurationDelegate"
+            id="org.eclipse.ceylon.ide.eclipse.ui.launching.junitLauncher"
+            modes="run,debug"
+            delegateDescription="The Eclipse JUnit Launcher supports running and debugging JUnit tests and test suites that contain or use Ceylon code."
+            name="Ceylon-aware Eclipse JUnit"
+            type="org.eclipse.jdt.junit.launchconfig"/>
+      <launchDelegate
+            delegate="org.eclipse.ceylon.ide.eclipse.core.launch.CeylonAwareEclipseApplicationLaunchConfiguration"
+            id="org.eclipse.ceylon.ide.eclipse.ui.launching.workbenchLauncher"
+            modes="debug"
+            delegateDescription="The Eclipse Application launcher is used to run or debug a separate instance of an Eclipse application that contains or use Ceylon code."
+            name="Ceylon-aware Eclipse Application"
+            type="org.eclipse.pde.ui.RuntimeWorkbench"/>
+      <launchDelegate
+            delegate="org.eclipse.ceylon.ide.eclipse.core.launch.CeylonAwarePDEJUnitLaunchConfigurationDelegate"
+            id="org.eclipse.ceylon.ide.eclipse.ui.launching.PDEJunitLaunchConfig"
+            modes="debug"
+            delegateDescription="The JUnit Plugin Test launcher is used to run and debug test suites for plug-in projects that contain or use Ceylon code."
+            name="Ceylon-aware JUnit Plugin Test"
+            type="org.eclipse.pde.ui.JunitLaunchConfig"/>
+      <launchDelegate
+            delegate="org.eclipse.ceylon.ide.eclipse.core.launch.CeylonAwareSWTBotJUnitLaunchConfigurationDelegate"
+            id="org.eclipse.ceylon.ide.eclipse.ui.launching.SWTBotJunitLaunchConfig"
+            modes="debug"
+            delegateDescription="This test launcher is used to run and debug SWTBot tests that contain or use Ceylon code."
+            name="Ceylon-aware SWTBot Test"
+            type="org.eclipse.swtbot.eclipse.ui.launcher.JunitLaunchConfig"/>
+   </extension>
+
+    <!-- don't use this approach because Eclipse's 
+         label decorators are really slow due to
+         asynchronicity -->
+    <!--extension point="org.eclipse.ui.decorators">
+          <decorator
+                label="Ceylon Label Decorator"
+                state="true"
+                lightweight="true"
+                class="org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelDecorator"
+                id="org.eclipse.ceylon.ide.eclipse.code.outline.decorator">
+                <enablement>
+                <objectClass
+                      name="java.lang.Object">
+                </objectClass>
+                </enablement>
+          </decorator>
+    </extension-->
+
+   <extension point="org.eclipse.core.runtime.adapters">
+		<factory 
+            class="org.eclipse.ceylon.ide.eclipse.core.adapters.JavaElementAdapterFactory" 
+            adaptableType="org.eclipse.jdt.core.IJavaElement">
+            
+            <adapter type="org.eclipse.ceylon.ide.common.model.IUnit"/>
+            <adapter type="org.eclipse.ceylon.ide.common.model.IJavaModelAware"/>
+            <adapter type="org.eclipse.ceylon.ide.common.model.BaseIdeModule"/>
+            <adapter type="org.eclipse.ceylon.model.typechecker.model.Package"/>
+		</factory>
+
+		<factory 
+            class="org.eclipse.ceylon.ide.eclipse.core.adapters.CeylonModelAdapterFactory" 
+            adaptableType="org.eclipse.ceylon.ide.eclipse.core.model.IUnit">
+            
+            <adapter type="org.eclipse.core.resources.IFile"/>
+            <adapter type="org.eclipse.jdt.core.IJavaElement"/>
+		</factory>
+
+		<factory 
+            class="org.eclipse.ceylon.ide.eclipse.core.adapters.ResourceAdapterFactory" 
+            adaptableType="org.eclipse.core.resources.IResource">
+            <adapter type="org.eclipse.ceylon.ide.common.model.IUnit"/>
+            <adapter type="org.eclipse.ceylon.ide.common.model.IResourceAware"/>
+            <adapter type="org.eclipse.ceylon.ide.common.model.BaseIdeModule"/>
+            <adapter type="org.eclipse.ceylon.model.typechecker.model.Package"/>
+		</factory>
+   </extension>     	
+
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="org.eclipse.ceylon.ide.eclipse.core.propertyTesters.InCeylonRootFolderPropertyTester"
+            id="org.eclipse.ceylon.ide.eclipse.ui.javaElementInCeylonRootFolderPropertyTester"
+            namespace="org.eclipse.ceylon.ide.eclipse.ui"
+            properties="isInCeylonSourceFolder,isInCeylonResourceFolder"
+            type="org.eclipse.jdt.core.IJavaElement">
+      </propertyTester>
+      <propertyTester
+            class="org.eclipse.ceylon.ide.eclipse.core.propertyTesters.InCeylonRootFolderPropertyTester"
+            id="org.eclipse.ceylon.ide.eclipse.ui.resourceInCeylonRootFolderPropertyTester"
+            namespace="org.eclipse.ceylon.ide.eclipse.ui"
+            properties="isInCeylonSourceFolder,isInCeylonResourceFolder"
+            type="org.eclipse.core.resources.IResource">
+      </propertyTester>
+      <propertyTester
+            class="org.eclipse.ceylon.ide.eclipse.core.propertyTesters.InCeylonProjectPropertyTester"
+            id="org.eclipse.ceylon.ide.eclipse.ui.javaElementInCeylonProjectPropertyTester"
+            namespace="org.eclipse.ceylon.ide.eclipse.ui"
+            properties="isInCeylonProject"
+            type="org.eclipse.jdt.core.IJavaElement">
+      </propertyTester>
+   </extension>
+
+	<extension
+			point="org.eclipse.ui.navigator.viewer">
+		<viewerContentBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+			<includes>
+				<contentExtension pattern="org.eclipse.ceylon.ide.eclipse.ui.ceylonContent" />
+				<contentExtension pattern="org.eclipse.ceylon.ide.eclipse.ui.navigator.filters.*" />	
+				<contentExtension pattern="org.eclipse.ceylon.ide.eclipse.ui.navigator.ceylonLinkHelper" />	
+			</includes>
+		</viewerContentBinding>
+	</extension>
+	
+	<extension
+			point="org.eclipse.ui.navigator.navigatorContent">
+		<navigatorContent
+				activeByDefault="true"
+				contentProvider="org.eclipse.ceylon.ide.eclipse.code.navigator.CeylonNavigatorContentProvider"
+				icon="icons/constr_ovr.png"
+				id="org.eclipse.ceylon.ide.eclipse.ui.ceylonContent"
+				labelProvider="org.eclipse.ceylon.ide.eclipse.code.navigator.CeylonNavigatorLabelProvider"
+				name="%commonNavigatorContentName"
+				priority="high">			
+			<triggerPoints>
+			    <or>
+					<adapt type="org.eclipse.core.resources.IProject">
+  						<test property="org.eclipse.core.resources.projectNature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature" />
+  					</adapt>
+				    <instanceof value="org.eclipse.ceylon.ide.eclipse.code.navigator.ModuleNode"/>				    
+				    <instanceof value="org.eclipse.ceylon.ide.eclipse.code.navigator.RepositoryNode"/>				    
+					<and>
+						<or>
+						    <instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+						    <instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
+						</or>
+						<test property="org.eclipse.jdt.core.isInJavaProjectWithNature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature"/>
+						<test forcePluginActivation="true"
+							property="org.eclipse.ceylon.ide.eclipse.ui.isInCeylonSourceFolder"/>
+					</and>
+				    <instanceof value="org.eclipse.ceylon.ide.eclipse.core.external.CeylonArchiveFileStore"/>				    				    
+ 				</or>
+			</triggerPoints>
+			<possibleChildren>
+				<or>
+					<adapt type="org.eclipse.core.resources.IProject">
+  						<test property="org.eclipse.core.resources.projectNature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature" />
+  					</adapt>
+					<and>
+						<or>
+						    <instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+					    	<instanceof value="org.eclipse.core.resources.IFile"/>
+						</or>
+						<adapt type="org.eclipse.core.resources.IResource">
+	  						<test property="org.eclipse.core.resources.projectNature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature" />
+	  					</adapt>
+						<test forcePluginActivation="true"
+							property="org.eclipse.ceylon.ide.eclipse.ui.isInCeylonSourceFolder"/>
+					</and>
+					<and>
+					    <instanceof value="org.eclipse.jdt.internal.core.JarPackageFragmentRoot"/>
+						<test property="org.eclipse.jdt.core.isInJavaProjectWithNature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature"/>
+					</and>
+				    <instanceof value="org.eclipse.ceylon.ide.eclipse.code.navigator.ModuleNode"/>				    
+				    <instanceof value="org.eclipse.ceylon.ide.eclipse.code.navigator.RepositoryNode"/>
+				    <instanceof value="org.eclipse.ceylon.ide.eclipse.core.external.CeylonArchiveFileStore"/>				    				    
+				</or>
+			</possibleChildren> 
+
+			<actionProvider
+		         class="org.eclipse.ceylon.ide.eclipse.code.navigator.CeylonNavigatorOpenActionProvider"
+		         id="org.eclipse.ceylon.ide.eclipse.code.navigator.actions.OpenActions"
+		         overrides="org.eclipse.jdt.ui.navigator.actions.OpenActions"> 
+				<enablement>
+					<or>
+						<and>
+							<instanceof value="org.eclipse.jdt.core.IJavaElement" />
+	  						<test forcePluginActivation="true"
+	  						property="org.eclipse.ceylon.ide.eclipse.ui.isInCeylonProject"/>
+						</and>
+						<instanceof value="org.eclipse.core.resources.IStorage" />
+					    <instanceof value="org.eclipse.ceylon.ide.eclipse.core.external.CeylonArchiveFileStore"/>				    				    
+					</or>
+				</enablement>
+		    </actionProvider> 
+
+			<actionProvider
+					class="org.eclipse.ceylon.ide.eclipse.code.navigator.CeylonNavigatorStandardActionsProvider"
+					id="org.eclipse.ceylon.ide.eclipse.code.navigator.actions.StandardActions"
+					overrides="org.eclipse.jdt.ui.navigator.actions.StandardActions"> 
+				<enablement>
+					<or>   
+						<and>
+							<instanceof value="org.eclipse.core.resources.IResource" />
+							<test property="org.eclipse.core.resources.projectNature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature" />
+						</and>
+						<and>
+							<instanceof value="org.eclipse.jdt.core.IJavaElement" />
+	  						<test forcePluginActivation="true"
+	  						property="org.eclipse.ceylon.ide.eclipse.ui.isInCeylonProject"/>
+						</and>
+						<instanceof value="org.eclipse.ceylon.ide.eclipse.code.navigator.ExternalModuleNode"/>
+					</or>
+				</enablement>
+			</actionProvider> 
+
+			<override
+					policy="InvokeAlwaysRegardlessOfSuppressedExt"
+					suppressedExtensionId="org.eclipse.jdt.java.ui.javaContent"/>
+		    <commonWizard
+		          menuGroupId="org.eclipse.ceylon.ide.eclipse.ui"
+		          type="new"
+		          wizardId="org.eclipse.jdt.ui.wizards.NewSourceFolderCreationWizard">
+				<enablement>
+					<or> 
+						<adapt type="org.eclipse.core.resources.IProject">
+  							<test property="org.eclipse.core.resources.projectNature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature" />
+  						</adapt>
+					</or>
+				</enablement>
+			</commonWizard>
+
+		    <commonWizard
+		        menuGroupId="org.eclipse.ceylon.ide.eclipse.ui"
+		        type="new"
+		        wizardId="org.eclipse.ceylon.ide.eclipse.ui.newPackageWizard">
+		     	<enablement>
+		        	<or>
+						<adapt type="org.eclipse.core.resources.IProject">
+  							<test property="org.eclipse.core.resources.projectNature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature" />
+  						</adapt>
+						<and>
+							<adapt type="org.eclipse.core.resources.IResource">
+		  						<test property="org.eclipse.core.resources.projectNature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature" />
+	  						</adapt>
+	  						<adapt type="org.eclipse.jdt.core.IJavaElement"> 
+								<or>
+							    	<instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+							    	<instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
+								</or>
+								<test forcePluginActivation="true"
+									property="org.eclipse.ceylon.ide.eclipse.ui.isInCeylonSourceFolder"/>
+	  						</adapt>
+						</and>
+		        	</or>
+		     	</enablement>
+		  	</commonWizard>
+
+		    <commonWizard
+		        menuGroupId="org.eclipse.ceylon.ide.eclipse.ui"
+		        type="new"
+		        wizardId="org.eclipse.ceylon.ide.eclipse.ui.newModuleWizard">
+		     	<enablement>
+		        	<or>
+						<adapt type="org.eclipse.core.resources.IProject">
+  							<test property="org.eclipse.core.resources.projectNature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature" />
+  						</adapt>
+						<and>
+							<adapt type="org.eclipse.core.resources.IResource">
+		  						<test property="org.eclipse.core.resources.projectNature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature" />
+	  						</adapt>
+	  						<adapt type="org.eclipse.jdt.core.IJavaElement"> 
+								<or>
+							    	<instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+							    	<instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
+								</or>
+								<test forcePluginActivation="true"
+									property="org.eclipse.ceylon.ide.eclipse.ui.isInCeylonSourceFolder"/>
+	  						</adapt>
+						</and>
+		        	</or>
+		     	</enablement>
+		  	</commonWizard>
+
+		    <commonWizard
+		        menuGroupId="org.eclipse.ceylon.ide.eclipse.ui"
+		        type="new"
+		        wizardId="org.eclipse.ceylon.ide.eclipse.ui.newUnitWizard">
+		     	<enablement>
+		        	<or>
+						<adapt type="org.eclipse.core.resources.IProject">
+  							<test property="org.eclipse.core.resources.projectNature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature" />
+  						</adapt>
+						<and>
+							<adapt type="org.eclipse.core.resources.IResource">
+		  						<test property="org.eclipse.core.resources.projectNature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature" />
+	  						</adapt>
+	  						<adapt type="org.eclipse.jdt.core.IJavaElement"> 
+								<or>
+							    	<instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+							    	<instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
+								</or>
+								<test forcePluginActivation="true"
+									property="org.eclipse.ceylon.ide.eclipse.ui.isInCeylonSourceFolder"/>
+	  						</adapt>
+						</and>
+		        	</or>
+		     	</enablement>
+		  	</commonWizard>
+            <dropAssistant
+                class="org.eclipse.ceylon.ide.eclipse.code.navigator.CeylonDropAdapterAssistant"
+                id="org.eclipse.ceylon.ide.eclipse.ui.dropAssistant">
+                <possibleDropTargets>
+                    <or>
+                        <instanceof value="org.eclipse.core.resources.IResource"/>
+                        <and>
+                            <instanceof value="org.eclipse.jdt.core.IJavaElement"/>
+                            <instanceof value="org.eclipse.ceylon.ide.eclipse.code.navigator.SourceModuleNode"/>
+                        </and>
+                    </or>
+                </possibleDropTargets>
+            </dropAssistant>
+		</navigatorContent>
+      <navigatorContent
+            activeByDefault="true"
+            id="org.eclipse.ceylon.ide.eclipse.ui.workingSets"
+            name="%workingsets.extension.name"
+            appearsBefore="org.eclipse.ui.navigator.resources.workingSets"
+            priority="higher"
+            sortOnly="true">
+         <commonSorter
+               class="org.eclipse.ceylon.ide.eclipse.code.navigator.CeylonWorkingSetSorter"
+               id="org.eclipse.ceylon.ide.eclipse.ui.navigator.workingSets.sorter">
+            <parentExpression>
+                    <instanceof value="org.eclipse.ui.IWorkingSet"/>
+            </parentExpression>
+       </commonSorter>
+            <commonSorter
+                    class="org.eclipse.ceylon.ide.eclipse.code.navigator.CeylonElementSorter"
+                    id="org.eclipse.ceylon.ide.eclipse.ui.ceylonElementSorter">
+                <parentExpression>
+                    <or>
+                        <adapt type="org.eclipse.core.resources.IProject">
+                            <test property="org.eclipse.core.resources.projectNature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature" />
+                        </adapt>
+                        <instanceof value="org.eclipse.ceylon.ide.eclipse.code.navigator.ModuleNode"/>
+                        <instanceof value="org.eclipse.ceylon.ide.eclipse.code.navigator.RepositoryNode"/>
+                        <and>
+                            <or>
+                                <instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+                                <instanceof value="org.eclipse.jdt.core.IPackageFragmentRoot"/>
+                            </or>
+                            <test property="org.eclipse.jdt.core.isInJavaProjectWithNature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature"/>
+                            <test forcePluginActivation="true"
+                                property="org.eclipse.ceylon.ide.eclipse.ui.isInCeylonSourceFolder"/>
+                        </and>
+                        <instanceof value="org.eclipse.ceylon.ide.eclipse.core.external.CeylonArchiveFileStore"/>
+                    </or>
+                </parentExpression>
+            </commonSorter>
+               
+      </navigatorContent>
+		
+  		<commonFilter
+		        activeByDefault="true"
+		        class="org.eclipse.ceylon.ide.eclipse.code.navigator.EmptyLibraryContainerFilter"
+		        name="Empty Library Containers"
+		        description="Filter out empty 'Referenced Libraries' nodes"
+		        id="org.eclipse.ceylon.ide.eclipse.ui.navigator.filters.EmptyLibraryContainerFilter"/>
+  		<commonFilter
+		        activeByDefault="true"
+		        class="org.eclipse.ceylon.ide.eclipse.code.navigator.NonEssentialEmptyPackageFilter"
+		        name="Empty Ceylon packages"
+		        description="Hides all empty packages"
+		        id="org.eclipse.ceylon.ide.eclipse.ui.navigator.filters.HideEmptyPackages"/>
+  		<commonFilter
+		        activeByDefault="true"
+		        class="org.eclipse.ceylon.ide.eclipse.code.navigator.NonEssentialEmptyInnerPackageFilter"
+		        name="Empty Ceylon parent packages"
+		        description="Hides empty packages which do not contain files but other sub-folders. E.g. given a package 'org.junit' where 'org' does not contain any files, this filter will hide the package 'org' but not the package 'org.junit'"
+		        id="org.eclipse.ceylon.ide.eclipse.ui.navigator.filters.HideEmptyInnerPackages"/>
+  		<commonFilter
+		        activeByDefault="true"
+		        class="org.eclipse.ceylon.ide.eclipse.code.navigator.EmptyModuleRepositoryFilter"
+		        name="Empty Ceylon module repositories"
+		        description="Hides Ceylon module repositories that doesn't contain any module used by the project"
+		        id="org.eclipse.ceylon.ide.eclipse.ui.navigator.filters.HideEmptyModuleRepository"/>
+  		<commonFilter
+		        activeByDefault="true"
+		        class="org.eclipse.ceylon.ide.eclipse.code.navigator.OutputRepositoryFolderFilter"
+		        name="Ceylon output repository folder"
+		        description="Hides the folder used as the Ceylon output repository"
+		        id="org.eclipse.ceylon.ide.eclipse.ui.navigator.filters.HideOutputRepositoryFolder"/>
+    </extension>
+  	<extension
+       point="org.eclipse.ui.navigator.linkHelper">
+		<linkHelper
+	          class="org.eclipse.ceylon.ide.eclipse.code.navigator.CeylonFileLinkHelper"
+	          id="org.eclipse.ceylon.ide.eclipse.ui.navigator.ceylonLinkHelper">          
+			<editorInputEnablement>
+		    	<or> 
+		        	<instanceof value="org.eclipse.ui.IFileEditorInput" />
+		        </or>
+			</editorInputEnablement>
+			<selectionEnablement>
+				<or>
+					<instanceof value="org.eclipse.ceylon.ide.eclipse.core.external.CeylonArchiveFileStore" />
+					<and>
+						<adapt type="org.eclipse.core.resources.IResource" >
+							<test property="org.eclipse.core.resources.projectNature" value="org.eclipse.ceylon.ide.eclipse.ui.ceylonNature"/>
+						</adapt>
+						<or>
+							<instanceof value="org.eclipse.core.resources.IResource" />
+							<instanceof value="org.eclipse.jdt.core.IJavaElement" />
+							<instanceof value="org.eclipse.jdt.core.IJarEntryResource" /> 
+							<instanceof value="org.eclipse.jdt.internal.ui.packageview.PackageFragmentRootContainer" />
+						</or>
+					</and>
+				</or>			
+	    	</selectionEnablement>
+		</linkHelper>          
+	</extension>
+    <extension
+         id="org.eclipse.core.filesystem.zip"
+         point="org.eclipse.core.filesystem.filesystems">
+        <filesystem scheme="ceylonArchive">
+            <run class="org.eclipse.ceylon.ide.eclipse.core.external.CeylonArchiveFileSystem"/>
+        </filesystem>
+    </extension>
+    
+   <extension
+         point="org.eclipse.ui.navigator.viewer">
+       <viewer
+             helpContext="org.eclipse.ui.project_explorer_context"
+             viewerId="org.eclipse.ceylon.ide.eclipse.ui.view.CeylonExplorer">
+          <popupMenu
+                allowsPlatformContributions="true"
+                id="org.eclipse.ceylon.ide.eclipse.ui.view.CeylonExplorer#PopupMenu">  
+             <insertionPoint name="group.new"/>
+             <insertionPoint
+                   name="group.open"
+                   separator="true"/>
+             <insertionPoint name="group.openWith"/>   
+             <insertionPoint name="group.edit"
+                   separator="true"/>   
+             <insertionPoint name="group.reorganize" />         
+             <insertionPoint
+                   name="group.port"
+                   separator="true"/>     
+             <insertionPoint
+                   name="group.build"
+                   separator="true"/> 
+             <insertionPoint
+                   name="group.generate"
+                   separator="true"/> 
+             <insertionPoint
+                   name="group.search"
+                   separator="true"/>              
+             <insertionPoint
+                   name="additions"
+                   separator="true"/>              
+             <insertionPoint
+                   name="group.properties"
+                   separator="true"/>
+             
+          </popupMenu>
+          <options>
+             <property
+                   name="org.eclipse.ui.navigator.customizeViewDialogHelpContext"
+                   value="org.eclipse.ui.project_explorer_customization_dialog">
+             </property>
+          </options>
+       </viewer>
+       <viewerContentBinding 
+             viewerId="org.eclipse.ceylon.ide.eclipse.ui.view.CeylonExplorer">
+          <includes>
+       	    <contentExtension pattern="org.eclipse.ui.navigator.resourceContent" />		       	      
+	        <contentExtension pattern="org.eclipse.ui.navigator.resources.filters.*"/>
+			<contentExtension pattern="org.eclipse.ui.navigator.resources.linkHelper"/>
+			<contentExtension pattern="org.eclipse.ui.navigator.resources.workingSets"/>
+			<contentExtension pattern="org.eclipse.jdt.java.ui.javaContent" />
+			<contentExtension pattern="org.eclipse.jdt.java.ui.filters.*" />	
+			<contentExtension pattern="org.eclipse.jdt.java.ui.javaLinkHelper" />	
+			<contentExtension pattern="org.eclipse.ceylon.ide.eclipse.ui.ceylonContent" />
+			<contentExtension pattern="org.eclipse.ceylon.ide.eclipse.ui.navigator.filters.*" />
+			<contentExtension pattern="org.eclipse.ceylon.ide.eclipse.ui.navigator.ceylonLinkHelper" />	
+	     </includes>
+       </viewerContentBinding>
+       <viewerActionBinding
+            viewerId="org.eclipse.ceylon.ide.eclipse.ui.view.CeylonExplorer">
+         <includes>
+             <actionExtension pattern="org.eclipse.ui.navigator.resources.*" />
+         </includes>
+       </viewerActionBinding>
+       <dragAssistant
+             class="org.eclipse.ui.navigator.resources.ResourceDragAdapterAssistant"
+             viewerId="org.eclipse.ceylon.ide.eclipse.ui.view.CeylonExplorer"/>
+   </extension>
+    <extension
+          point="org.eclipse.ui.views.properties.tabbed.propertyContributor">
+       <propertyContributor
+             contributorId="org.eclipse.ceylon.ide.eclipse.ui.view.CeylonExplorer"
+             labelProvider="org.eclipse.ui.internal.navigator.resources.workbench.TabbedPropertySheetTitleProvider">
+          <propertyCategory category="general"/>
+          <propertyCategory category="core"/>
+          <propertyCategory category="appearance"/>
+          <propertyCategory category="resource"/>
+          <propertyCategory category="advanced"/>
+       </propertyContributor>
+    </extension>
+    <extension
+          point="org.eclipse.ui.views.properties.tabbed.propertyTabs">
+       <propertyTabs contributorId="org.eclipse.ceylon.ide.eclipse.ui.view.CeylonExplorer">
+          <propertyTab
+                label="%Resource"
+                category="resource"
+                id="CommonNavigator.tab.Resource"/>
+       </propertyTabs>
+    </extension>
+    <extension
+          point="org.eclipse.ui.views.properties.tabbed.propertySections">
+       <propertySections contributorId="org.eclipse.ceylon.ide.eclipse.ui.view.CeylonExplorer">
+          <propertySection
+                class="org.eclipse.ui.views.properties.tabbed.AdvancedPropertySection"
+                id="CommonNavigator.section.Resource"
+                tab="CommonNavigator.tab.Resource">
+             <input type="java.lang.Object"/>
+          </propertySection>
+       </propertySections>
+    </extension>
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer"/>
+        <initializer class="org.eclipse.ceylon.ide.eclipse.core.debug.preferences.CeylonDebugPreferenceInitializer"/>
+    </extension>
+    <extension
+       point="org.eclipse.jdt.debug.breakpointListeners">
+       <breakpointListener
+          class="org.eclipse.ceylon.ide.eclipse.core.debug.BreakpointMethodFilter"
+          id="org.eclipse.ceylon.ide.eclipse.ui.BreakpointMethodFilter"
+          filter="*">
+       </breakpointListener>
+    </extension>
+    
+    <extension point="org.eclipse.e4.ui.css.swt.theme">
+        <stylesheet
+              uri="css/dark.css">
+              <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark"/>
+        </stylesheet>
+    </extension>
+</plugin>

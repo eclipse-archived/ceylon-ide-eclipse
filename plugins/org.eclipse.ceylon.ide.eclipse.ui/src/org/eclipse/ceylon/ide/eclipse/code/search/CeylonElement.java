@@ -1,0 +1,251 @@
+/********************************************************************************
+ * Copyright (c) 2011-2017 Red Hat Inc. and/or its affiliates and others
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 1.0 which is available at
+ * http://www.eclipse.org/legal/epl-v10.html.
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+package org.eclipse.ceylon.ide.eclipse.code.search;
+
+import static org.eclipse.ceylon.ide.eclipse.code.complete.CodeCompletions.getQualifiedDescriptionFor;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getImageKeyForNode;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getNodeDecorationAttributes;
+import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getStyledLabelForNode;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.PARAMS_IN_OUTLINES;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.PARAM_TYPES_IN_OUTLINES;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.RETURN_TYPES_IN_OUTLINES;
+import static org.eclipse.ceylon.ide.eclipse.code.preferences.CeylonPreferenceInitializer.TYPE_PARAMS_IN_OUTLINES;
+import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getImportedName;
+import static org.eclipse.ceylon.ide.eclipse.java2ceylon.Java2CeylonProxies.vfsJ2C;
+
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.swt.graphics.Font;
+
+import org.eclipse.ceylon.compiler.typechecker.io.VirtualFile;
+import org.eclipse.ceylon.compiler.typechecker.tree.Node;
+import org.eclipse.ceylon.compiler.typechecker.tree.Tree;
+import org.eclipse.ceylon.ide.eclipse.ui.CeylonPlugin;
+import org.eclipse.ceylon.ide.eclipse.util.ModelProxy;
+import org.eclipse.ceylon.ide.common.vfs.ResourceVirtualFile;
+import org.eclipse.ceylon.model.typechecker.model.Declaration;
+import org.eclipse.ceylon.model.typechecker.model.Package;
+import org.eclipse.ceylon.model.typechecker.model.Unit;
+
+public class CeylonElement {
+    
+    private VirtualFile file; //TODO: is this really the best thing to use nowadays?
+    private String qualifiedName;
+    private int line;
+    private int decline;
+    private String imageKey;
+    private String packageLabel;
+    private StyledString label;
+    private int decorations;
+    private int startOffset;
+    private int endOffset;
+    private final ModelProxy proxy;
+    private final CeylonSearchMatch.Type type;
+    
+    public CeylonSearchMatch.Type getType() {
+        return type;
+    }
+    
+    public CeylonElement(Node node, VirtualFile file, int line,
+            CeylonSearchMatch.Type type) {
+        //the file and line number, which get 
+        //displayed in the search results page
+        this.file = file;
+        this.line = line;
+        this.type = type;
+        
+        //store enough information to be able to
+        //locate the model again if we run a search
+        //for usages of the container from the search
+        //results view
+        startOffset = node.getStartIndex();
+        endOffset = node.getEndIndex();
+        
+        //compute and cache everything we need to 
+        //display the search result, without holding 
+        //onto a hard ref to the container node
+        imageKey = getImageKeyForNode(node);
+        label = getStyledLabelForNode(node);
+        
+        Unit unit = node.getUnit();
+        if (unit==null) {
+            packageLabel = "(unknown package)";
+        }
+        else {
+            Package pack = unit.getPackage();
+            String name = pack.getQualifiedNameString();
+            packageLabel = name.isEmpty() ? 
+                    "(default package)" : name;
+        }
+        //TODO: this winds up caching error decorations,
+        //      so it's not really very good
+        decorations = getNodeDecorationAttributes(node);
+        
+        if (node instanceof Tree.Declaration) {
+            Tree.Declaration decl = (Tree.Declaration) node;
+            Declaration d = decl.getDeclarationModel();
+            proxy = new ModelProxy(d);
+        }
+        else {
+            proxy = null;
+        }
+        
+        if (node instanceof Tree.Declaration) {
+            Tree.Declaration decl = (Tree.Declaration) node;
+            Declaration dec = decl.getDeclarationModel();
+            qualifiedName = dec.getQualifiedNameString();
+            decline = decl.getToken().getLine();
+        }
+        else if (node instanceof Tree.PackageDescriptor) {
+            qualifiedName = 
+                    unit.getPackage()
+                        .getNameAsString();
+        }
+        else if (node instanceof Tree.ModuleDescriptor) {
+            qualifiedName = 
+                    unit.getPackage()
+                        .getModule()
+                        .getNameAsString();
+        }
+        else if (node instanceof Tree.CompilationUnit) {
+            qualifiedName = 
+                    unit.getPackage()
+                        .getNameAsString() 
+                    + '/' + unit.getFilename();
+        }
+        else if (node instanceof Tree.Import) {
+            Tree.Import imp = (Tree.Import) node;
+            String name = getImportedName(imp);
+            qualifiedName = 
+                    unit.getPackage()
+                        .getNameAsString() 
+                    + '/' + unit.getFilename() 
+                    + '#' + name;
+        }
+        else if (node instanceof Tree.ImportModule) {
+            Tree.ImportModule imp = (Tree.ImportModule) node;
+            String name = getImportedName(imp);
+            qualifiedName = 
+                    unit.getPackage()
+                        .getNameAsString() 
+                    + '/' + unit.getFilename() 
+                    + '@' + name;
+        }
+    }
+    
+    public String getImageKey() {
+        return imageKey;
+    }
+    
+    public String getPackageLabel() {
+        return packageLabel;
+    }
+    
+    public StyledString getLabel() {
+        return getLabel(null, null);
+    }
+    
+    public StyledString getLabel(String prefix, Font font) {
+        if (proxy==null) {
+            return label;
+        }
+        else {
+            IPreferenceStore prefs = CeylonPlugin.getPreferences();
+            return getQualifiedDescriptionFor(
+                    proxy.get(), 
+                    prefs.getBoolean(TYPE_PARAMS_IN_OUTLINES),
+                    prefs.getBoolean(PARAMS_IN_OUTLINES),
+                    prefs.getBoolean(PARAM_TYPES_IN_OUTLINES),
+                    prefs.getBoolean(RETURN_TYPES_IN_OUTLINES),
+                    prefix, font);
+        }
+    }
+    
+    public int getDecorations() {
+        return decorations;
+    }
+    
+    public int getLocation() {
+        return line;
+    }
+    
+    public VirtualFile getVirtualFile() {
+        return file;
+    }
+    
+    public IFile getFile() {
+        if (vfsJ2C().instanceOfIFileVirtualFile(file)) {
+            return vfsJ2C().getIFileVirtualFile(file).getNativeResource();
+        }
+        else {
+            return null;
+        }
+    }
+    
+    //for no good reason that I can see, ResourceVirtualFiles
+    //return a project-relative path from getPath()
+    @SuppressWarnings("rawtypes")
+    public String getPathString() {
+        if (file instanceof ResourceVirtualFile) {
+            ResourceVirtualFile rvf = 
+                    (ResourceVirtualFile) file;
+            Object nativeResource = rvf.getNativeResource();
+            if (nativeResource instanceof IResource) {
+                return ((IResource)nativeResource)
+                            .getFullPath()
+                            .toPortableString();
+            }
+        }
+        return file.getPath();
+    }
+    
+    public int getStartOffset() {
+        return startOffset;
+    }
+    
+    public int getEndOffset() {
+        return endOffset;
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof CeylonElement) {
+            CeylonElement that = (CeylonElement) obj;
+            if (!file.equals(that.file)) {
+                return false;
+            }
+            if (qualifiedName!=null && that.qualifiedName!=null) {
+                return qualifiedName.equals(that.qualifiedName) &&
+                        //handle overloaded methods
+                        decline == that.decline;
+            }
+            else if (qualifiedName==null && that.qualifiedName==null) {
+                return line==that.line;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+    
+    @Override
+    public int hashCode() {
+        return file.getName().hashCode() ^
+                (qualifiedName==null ? 
+                        0 : qualifiedName.hashCode());
+    }
+    
+}

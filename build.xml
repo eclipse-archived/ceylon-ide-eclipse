@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ceylon-ide-eclipse" default="help" basedir="." xmlns:mvn="antlib:org.apache.maven.artifact.ant">
+
+    <tstamp>
+        <format property="NOW" pattern="yyyyMMddHHmm" />
+    </tstamp>
+
+    <property file="build.properties"/>
+    <property name="ceylon.executable" value="${dist.bin.dir}/ceylon"/>
+
+    <condition property="batExt" value=".bat">
+        <os family="windows" />
+    </condition>
+    <property name="batExt" value=""/>
+
+    <path id="maven-ant-tasks.classpath" path="${basedir}/lib/maven-ant-tasks-2.1.3.jar" />
+    <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+        uri="antlib:org.apache.maven.artifact.ant"
+        classpathref="maven-ant-tasks.classpath" />
+
+    <target name="help">
+        <echo>Options for building the Ceylon IDE plugins:
+    ant clean              - Cleans the build environment
+        </echo>
+    </target>
+
+    <property name="build-against" location="current-master"/>
+
+    <target name="build"
+            description="Builds the IDE plugin">
+        <echo>${ceylon.executable}</echo>
+        <echo>${ceylon.ant.lib}</echo>
+        <exec executable="mvn${batExt}" dir="${basedir}" failonerror="true">
+            <arg value="clean" />
+        	<arg value="install" />
+            <arg value="-Dtycho.localArtifacts=ignore" />
+        	<arg value="-DskipTests" />
+            <arg value="-Dbuild-against=${build-against}"/>
+            <arg value="-Dceylon.executable=${ceylon.executable}" />
+            <arg value="-Dceylon.ant.lib=${ceylon.ant.lib}"/>
+        </exec>
+    </target>
+
+    <target name="clean"
+            description="Cleans the build environment">
+        <!--mvn:mvn pom="${basedir}/pom.xml" mavenVersion="3.2.2" fork="true" dir="${basedir}" failonerror="true">
+            <arg value="clean" />
+        </mvn:mvn-->
+    </target>
+</project>

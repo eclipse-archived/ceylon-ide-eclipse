@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.eclipse.ceylon.ide.eclipse</groupId>
+		<artifactId>tests</artifactId>
+		<version>1.3.4-SNAPSHOT</version>
+	</parent>
+	<artifactId>org.eclipse.ceylon.ide.eclipse.ui.test</artifactId> 
+	
+	<packaging>eclipse-test-plugin</packaging>
+    
+    <build>
+      <plugins>
+	      <plugin>
+	        <groupId>org.eclipse.tycho</groupId>
+	        <artifactId>tycho-surefire-plugin</artifactId>	        
+	        <executions>
+                <execution>
+                    <id>default-test</id>
+                    <phase>integration-test</phase>
+                    <goals>
+                      <goal>test</goal>
+                    </goals>
+                    <inherited>true</inherited>
+                    <configuration>
+                      <useUIHarness>true</useUIHarness>
+                      <useUIThread>true</useUIThread>                      
+                      <includes>
+                          <include>org/eclipse/ceylon/ide/eclipse/ui/test/CeylonIdeExampleTest.class</include>
+                      </includes>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>Standalone SWT tests</id>
+                    <phase>integration-test</phase>
+                    <goals>
+                      <goal>test</goal>
+                    </goals>
+                    <inherited>false</inherited>
+                    <configuration>
+                      <useUIHarness>true</useUIHarness>
+                      <useUIThread>false</useUIThread>
+                      <includes>
+                          <include>org/eclipse/ceylon/ide/eclipse/ui/test/swtbot/*Tests.class</include>
+                      </includes>
+                    </configuration>
+                </execution>
+		        <execution>
+		            <id>Headless tests</id>
+		            <phase>integration-test</phase>
+		            <goals>
+		              <goal>test</goal>
+		            </goals>
+		            <inherited>false</inherited>
+		            <configuration>
+		              <useUIHarness>false</useUIHarness>
+		              <useUIThread>false</useUIThread>
+		              
+		              <includes>
+                          <include>org/eclipse/ceylon/ide/eclipse/ui/test/headless/*Tests.class</include>
+		              </includes>
+		            </configuration>
+		        </execution>
+                <execution>                 
+                    <id>Headless tests With Source Loading</id>
+                    <phase>integration-test</phase>
+                    <goals>
+                      <goal>test</goal>
+                    </goals>
+                    <inherited>false</inherited>
+                    <configuration>
+                      <useUIHarness>false</useUIHarness>
+                      <useUIThread>false</useUIThread>
+	                  <argLine>${tycho.testArgLine} ${platformSystemProperties} -Dceylon.loadBinariesFirst=false</argLine>
+                      <includes>
+                          <include>org/eclipse/ceylon/ide/eclipse/ui/test/headless/ModelAndPhasedUnitsTests.class</include>
+                      </includes>
+                      <reportsDirectory>${project.build.directory}/surefire-reports-loadFomrSources</reportsDirectory>
+                    </configuration>
+                </execution>
+                <execution>                 
+                    <id>BuildLifecycleFirstStep</id>
+                    <phase>integration-test</phase>
+                    <goals>
+                      <goal>test</goal>
+                    </goals>
+                    <inherited>false</inherited>
+                    <configuration>
+                      <useUIHarness>true</useUIHarness>
+                      <useUIThread>false</useUIThread>
+                      <includes>
+                          <include>org/eclipse/ceylon/ide/eclipse/ui/test/buildlifecycle/BuildLifecycleTestFirstStart.class</include>
+                      </includes>
+                    </configuration>
+                </execution>
+                <execution>                 
+                    <id>BuildLifecycleSecondStep</id>
+                    <phase>integration-test</phase>
+                    <goals>
+                      <goal>test</goal>
+                    </goals>
+                    <inherited>false</inherited>
+                    <configuration>
+                      <useUIHarness>true</useUIHarness>
+                      <useUIThread>false</useUIThread>
+                      <deleteOsgiDataDirectory>false</deleteOsgiDataDirectory>                      
+                      <includes>
+                          <include>org/eclipse/ceylon/ide/eclipse/ui/test/buildlifecycle/BuildLifecycleTestSecondStart.class</include>
+                      </includes>
+                    </configuration>
+                </execution>
+	        </executions>
+          </plugin>
+		  <plugin>
+            <groupId>org.codehaus.groovy.maven</groupId>
+            <artifactId>gmaven-plugin</artifactId>
+            <version>1.0</version>
+		    <executions>
+		        <execution>
+		            <id>cleanTestReports</id>
+		            <phase>pre-integration-test</phase>
+		            <goals>
+		                <goal>execute</goal>
+		            </goals>
+		            <configuration>
+		                <source>
+def dir = new File(project.basedir, 'target/surefire-reports') 
+if (dir.exists()) {
+  dir.eachFile
+    { File file -> file.delete() } }
+		                </source>
+		            </configuration>
+		        </execution>
+                <execution>
+                    <id>summarizeTests</id>
+                    <phase>post-integration-test</phase>
+                    <goals>
+                        <goal>execute</goal>
+                    </goals>
+                    <configuration>
+                        <source>
+int errors = 0
+int failures = 0
+def dir = new File(project.basedir, 'target/surefire-reports') 
+if (dir.exists()) {
+	dir.eachFileMatch (~/.*\.xml/)
+	    { File file ->
+	        println(file.absolutePath)
+	        def root = new XmlParser().parse(file)
+	        failures += root.attribute('failures').toInteger()
+	        errors += root.attribute('errors').toInteger() }
+	if (errors + failures > 0) fail("\nTests have $failures failures and $errors errors")
+}
+                        </source>
+                    </configuration>
+                </execution>
+		    </executions>
+		</plugin>
+      </plugins>
+    </build>
+</project>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <description>
+      Ceylon IDE update site
+   </description>
+   <category-def name="ceylon-ide" label="Ceylon IDE">
+      <description>
+         Ceylon IDE
+      </description>
+   </category-def>
+   <category-def name="ceylon-ide-runtime-modules" label="Ceylon IDE Runtime bundles">
+      <description>
+         Runtime OSGI bundles containing the Ceylon modules required to develop the IDE.
+      </description>
+   </category-def>
+   <feature url="features/org.eclipse.ceylon.ide.eclipse.feature_0.0.0.jar" id="org.eclipse.ceylon.ide.eclipse.feature" version="0.0.0">
+      <category name="ceylon-ide"/>
+   </feature>
+   <feature url="features/org.eclipse.ceylon.ide.eclipse.android.feature_0.0.0.jar" id="org.eclipse.ceylon.ide.eclipse.android.feature" version="0.0.0">
+      <category name="ceylon-ide"/>
+   </feature>
+   <feature id="org.eclipse.ceylon.dist.feature" version="1.3.4.qualifier">
+      <category name="ceylon-ide-runtime-modules"/>
+   </feature>
+   <feature id="ceylon.tool.converter.java2ceylon.feature" version="1.3.4.qualifier">
+      <category name="ceylon-ide-runtime-modules"/>
+   </feature>
+   <feature id="org.eclipse.ceylon.ide.common.feature" version="1.3.4.qualifier">
+      <category name="ceylon-ide-runtime-modules"/>
+   </feature>
+   <bundle id="ceylon.formatter" version="1.3.4.qualifier">
+      <category name="ceylon-ide-runtime-modules"/>
+   </bundle>
+   <bundle id="ceylon.file" version="1.3.4.qualifier">
+      <category name="ceylon-ide-runtime-modules"/>
+   </bundle>
+   <bundle id="ceylon.interop.java" version="1.3.4.qualifier">
+      <category name="ceylon-ide-runtime-modules"/>
+   </bundle>
+   <bundle id="ceylon.collection" version="1.3.4.qualifier">
+      <category name="ceylon-ide-runtime-modules"/>
+   </bundle>
+</site>

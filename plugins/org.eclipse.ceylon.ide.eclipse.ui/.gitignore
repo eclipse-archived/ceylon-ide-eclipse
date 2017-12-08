@@ -1,0 +1,8 @@
+target
+.settings
+**/*.index
+/modules/
+/.exploded/
+/generated-source/
+/eclipse-sources-repo/
+**/.DS_Store

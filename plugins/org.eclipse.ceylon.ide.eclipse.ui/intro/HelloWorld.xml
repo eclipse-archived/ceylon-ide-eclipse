@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cheatsheet title="Hello World with Ceylon">
+
+	<intro>
+		<description>
+			This cheat sheet shows you how to create a new Ceylon project, a
+			Ceylon compilation unit contained in that project, and finally run
+			the Ceylon program.
+		</description>
+	</intro>
+
+	<item title="Open the Ceylon Perspective" skip="true">
+		<action pluginId="org.eclipse.ui.cheatsheets"
+			class="org.eclipse.ui.internal.cheatsheets.actions.OpenPerspective"
+			param1="org.eclipse.ceylon.ide.eclipse.ui.perspective" />
+		<description>
+			We need to be in the Ceylon Perspective. Select
+			<b>Window > Open Perspective > Other ... > Ceylon</b> from the 
+			menu bar at the top of the workbench, or click below. (If you're 
+			already in the Ceylon perspective, you can skip this step.)
+		</description>
+	</item>
+
+	<item title="Create a Ceylon project" dialog="true">
+		<description>
+			First, we&apos;ll create a project using the New Ceylon Project
+			wizard. Select 
+			<b>File > New > Ceylon Project</b> or click below.
+			<br/>
+			<br/>
+			Call the project "hello", or whatever you like, and click 
+			<b>Finish</b>.
+		</description>
+		<command required="false"
+			serialization="org.eclipse.ui.newWizard(newWizardId=org.eclipse.ceylon.ide.eclipse.ui.newProjectWizard)" />
+	</item>
+
+	<item title="Create a Ceylon compilation unit" dialog="true">
+		<description>
+			Next, we&apos;ll need a Ceylon source file, which we'll create
+			using the New Ceylon Source File wizard. Select
+			<b>File > New > Ceylon Source File</b> or click below.
+			<br/>
+			<br/>
+			Call the unit "hello", or whatever you like, select the option
+			<b>Create toplevel class or function declaration</b>, choose the 
+			source folder of the project we just created, and finally click 
+			<b>Finish</b>.
+			<br/>
+			<br/>
+			Note that if you give the compilation unit an initial lowercase
+			name, the wizard will fill in a function declaration. If you give
+			it an initial uppercase name, the wizard will fill in a class 
+			declaration. For the purposes of this tutorial, it doesn't really 
+			matter which.
+		</description>
+		<command required="false"
+			serialization="org.eclipse.ui.newWizard(newWizardId=org.eclipse.ceylon.ide.eclipse.ui.newUnitWizard)" />
+	</item>
+
+	<item title="Add the code to the runnable function">
+		<description>
+			Next, in the Ceylon editor that opened automatically, add the
+			following code to the body of the "hello" function (or "Hello"
+			class):
+			<br/>
+			<br/>
+			<b>print("hello world");</b>
+			<br/>
+			<br/>
+			Note that the function or class must be annotated <b>shared</b> 
+			to mark it as runnable.
+			<br/>
+			<br/>
+			Remember to save the file.
+		</description>
+	</item>
+
+	<item title="Run the program">
+		<description>
+			Now let's run the program. Select the project or compilation
+			unit in the Ceylon Explorer and select
+			<b>Run > Run As > Ceylon Java Application</b>.
+			You should see the message in the console.
+		</description>
+	</item>
+
+</cheatsheet>

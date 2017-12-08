@@ -1,0 +1,9 @@
+*~
+*.idx
+*.index
+/.settings
+/.project
+plugins/org.eclipse.ceylon.test.eclipse.plugin/bin/
+plugins/org.eclipse.ceylon.ide.eclipse.ui/defaultRepository/**/*.index
+/required-bundle-proxies/
+**/.DS_Store

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../../ceylon-ide-eclipse.all.iml" filepath="$PROJECT_DIR$/../../ceylon-ide-eclipse.all.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../site/ceylon.site.iml" filepath="$PROJECT_DIR$/../../site/ceylon.site.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../features/org.eclipse.ceylon.ide.eclipse.android.feature/org.eclipse.ceylon.ide.eclipse.android.feature.iml" filepath="$PROJECT_DIR$/../../features/org.eclipse.ceylon.ide.eclipse.android.feature/org.eclipse.ceylon.ide.eclipse.android.feature.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../org.eclipse.ceylon.ide.eclipse.android.plugin/org.eclipse.ceylon.ide.eclipse.android.plugin.iml" filepath="$PROJECT_DIR$/../org.eclipse.ceylon.ide.eclipse.android.plugin/org.eclipse.ceylon.ide.eclipse.android.plugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../features/org.eclipse.ceylon.ide.eclipse.feature/org.eclipse.ceylon.ide.eclipse.feature.iml" filepath="$PROJECT_DIR$/../../features/org.eclipse.ceylon.ide.eclipse.feature/org.eclipse.ceylon.ide.eclipse.feature.iml" />
+      <module fileurl="file://$PROJECT_DIR$/org.eclipse.ceylon.ide.eclipse.ui.iml" filepath="$PROJECT_DIR$/org.eclipse.ceylon.ide.eclipse.ui.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../org.eclipse.ceylon.ide.eclipse.ui.jdt.debug.fragment/org.eclipse.ceylon.ide.eclipse.ui.jdt.debug.fragment.iml" filepath="$PROJECT_DIR$/../org.eclipse.ceylon.ide.eclipse.ui.jdt.debug.fragment/org.eclipse.ceylon.ide.eclipse.ui.jdt.debug.fragment.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../tests/org.eclipse.ceylon.ide.eclipse.ui.test/org.eclipse.ceylon.ide.eclipse.ui.test.iml" filepath="$PROJECT_DIR$/../../tests/org.eclipse.ceylon.ide.eclipse.ui.test/org.eclipse.ceylon.ide.eclipse.ui.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../org.eclipse.ceylon.test.eclipse.plugin/org.eclipse.ceylon.test.eclipse.plugin.iml" filepath="$PROJECT_DIR$/../org.eclipse.ceylon.test.eclipse.plugin/org.eclipse.ceylon.test.eclipse.plugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../features/features.iml" filepath="$PROJECT_DIR$/../../features/features.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../plugins.iml" filepath="$PROJECT_DIR$/../plugins.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../tests/tests.iml" filepath="$PROJECT_DIR$/../../tests/tests.iml" />
+    </modules>
+  </component>
+</project>
