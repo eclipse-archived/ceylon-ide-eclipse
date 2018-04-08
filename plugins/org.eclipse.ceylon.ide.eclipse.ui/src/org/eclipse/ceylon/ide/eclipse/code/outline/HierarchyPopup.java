@@ -20,6 +20,7 @@ import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_HIER;
 import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_SUB;
 import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CEYLON_SUP;
 import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.triggersBinding;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getEnterBinding;
 import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getReferencedDeclaration;
 
 import java.util.StringTokenizer;
@@ -187,7 +188,7 @@ public class HierarchyPopup extends TreeViewPopup {
     @Override
     protected String getStatusFieldText() {
         String selectHint = 
-                EditorUtil.getEnterBinding() + 
+                getEnterBinding() + 
                 " to open";
         TriggerSequence binding = getCommandBinding();
         if (binding==null) {

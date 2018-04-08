@@ -22,6 +22,7 @@ import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.CONFIG_LABELS;
 import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.HIDE_PRIVATE;
 import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.SORT_ALPHA;
 import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.triggersBinding;
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getEnterBinding;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
 import java.util.ArrayList;
@@ -452,7 +453,7 @@ public class OutlinePopup extends TreeViewPopup {
     @Override
     protected String getStatusFieldText() {
         String selectHint = 
-                EditorUtil.getEnterBinding() + 
+                getEnterBinding() + 
                 " to open";
         TriggerSequence binding = getCommandBinding();
         if (binding==null) {

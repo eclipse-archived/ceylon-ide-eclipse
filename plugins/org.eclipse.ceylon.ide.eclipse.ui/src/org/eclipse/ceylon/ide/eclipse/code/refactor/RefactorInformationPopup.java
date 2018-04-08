@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.ceylon.ide.eclipse.code.refactor;
 
+import static org.eclipse.ceylon.ide.eclipse.util.EditorUtil.getEnterBinding;
 import static org.eclipse.jface.text.link.ILinkedModeListener.UPDATE_CARET;
 import static org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn;
 
