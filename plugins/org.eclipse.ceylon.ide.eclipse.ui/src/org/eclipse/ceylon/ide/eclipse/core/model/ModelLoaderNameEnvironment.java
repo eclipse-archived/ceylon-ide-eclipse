@@ -50,7 +50,7 @@ import org.eclipse.ceylon.ide.eclipse.core.builder.CeylonNature;
 
 public class ModelLoaderNameEnvironment extends SearchableEnvironment {
     public ModelLoaderNameEnvironment(IJavaProject javaProject) throws JavaModelException {
-        super((JavaProject)javaProject, (WorkingCopyOwner) null);
+        super((JavaProject)javaProject, (org.eclipse.jdt.core.ICompilationUnit[]) null);
     }
 
     public IJavaProject getJavaProject() {
@@ -267,7 +267,7 @@ public class ModelLoaderNameEnvironment extends SearchableEnvironment {
     }
     
     @Override
-    protected NameEnvironmentAnswer find(String typeName, String packageName) {
+    protected NameEnvironmentAnswer find(String typeName, String packageName, IPackageFragmentRoot[] moduleContext) {
         if (packageName == null)
             packageName = IPackageFragment.DEFAULT_PACKAGE_NAME;
         if (this.owner != null) {
@@ -275,7 +275,8 @@ public class ModelLoaderNameEnvironment extends SearchableEnvironment {
             if (source != null) {
                 ICompilationUnit cu = new BasicCompilationUnit(source.toCharArray(), 
                         CharOperation.splitOn('.', packageName.toCharArray()), 
-                        typeName + org.eclipse.jdt.internal.core.util.Util.defaultJavaExtension());
+                        typeName + org.eclipse.jdt.internal.core.util.Util.defaultJavaExtension(),
+                        (IJavaElement) null);
                 return new NameEnvironmentAnswer(cu, null);
             }
         }
