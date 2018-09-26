@@ -103,7 +103,7 @@ public class CeylonStartup implements IStartup {
         final String version = System.getProperty("java.version");
         if (!version.startsWith("1.7") && 
             !version.startsWith("1.8") && 
-            !version.startsWith("1.9")) {
+            !version.startsWith("9")) {
             final Display display = getWorkbench().getDisplay();
             display.asyncExec(new Runnable() {
                 @Override
@@ -111,7 +111,7 @@ public class CeylonStartup implements IStartup {
                     ErrorDialog.openError(
                             display.getActiveShell(),
                             "Ceylon IDE does not support this JVM",  
-                            "Ceylon IDE requires Java 1.7 or 1.8.", 
+                            "Ceylon IDE supports Java versions from 7 to 9.", 
                             new Status(IStatus.ERROR, PLUGIN_ID, 
                                     "Eclipse is running on a Java " 
                                             + version + " VM.", 
