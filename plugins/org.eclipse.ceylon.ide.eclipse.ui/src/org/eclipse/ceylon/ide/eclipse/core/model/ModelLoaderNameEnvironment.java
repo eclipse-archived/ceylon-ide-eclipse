@@ -14,7 +14,9 @@ import static org.eclipse.ceylon.ide.eclipse.core.builder.CeylonBuilder.isInCeyl
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.internal.jobs.InternalJob;
@@ -235,30 +237,36 @@ public class ModelLoaderNameEnvironment extends SearchableEnvironment {
     }
     
     private static Constructor<NameEnvironmentAnswer> nameEnvironmentAnswerFromSoureTypesConstructor = null;
-    private static boolean hasAdditionalStringParameter = false;
     
+    @SuppressWarnings("unchecked")
     private static void loadNameEnvironmentAnswerFromSoureTypesConstructor() throws NoSuchMethodException, SecurityException {
         if (nameEnvironmentAnswerFromSoureTypesConstructor == null) {
-            Constructor<NameEnvironmentAnswer> c = null;
-            try {
-                c = NameEnvironmentAnswer.class.getConstructor((new ISourceType[0]).getClass(), AccessRestriction.class);
-            } catch (NoSuchMethodException e) {
-                c = NameEnvironmentAnswer.class.getConstructor((new ISourceType[0]).getClass(), AccessRestriction.class, String.class);
-                hasAdditionalStringParameter = true;
+            Class<?> sourceTypeArrayClass = (new ISourceType[0]).getClass();
+            for (Constructor<?> c : NameEnvironmentAnswer.class.getConstructors()) {
+                Class<?>[] paramTypes = c.getParameterTypes();
+                if (paramTypes.length >= 2) {
+                    if (paramTypes[0].equals(sourceTypeArrayClass) &&
+                        paramTypes[1].equals(AccessRestriction.class)) {
+                        c.setAccessible(true);
+                        nameEnvironmentAnswerFromSoureTypesConstructor = (Constructor<NameEnvironmentAnswer>) c;
+                        return;
+                    }
+                }
             }
-            c.setAccessible(true);
-            nameEnvironmentAnswerFromSoureTypesConstructor = c;
+            throw new NoSuchMethodError("No 'NameEnvironmentAnswer' constructor start with parameter types: ISourceType[], AccessRestriction."
+                + "\nPlease check that you use a compatible Eclipse version.");
         }
     }
     
     private static NameEnvironmentAnswer createNameEnvironmentAnswerFromSoureTypes(ISourceType[] sourceTypes) {
         try {
             loadNameEnvironmentAnswerFromSoureTypesConstructor();
-            if (hasAdditionalStringParameter) {
-                return nameEnvironmentAnswerFromSoureTypesConstructor.newInstance(sourceTypes, null, null);
-            } else {
-                return nameEnvironmentAnswerFromSoureTypesConstructor.newInstance(sourceTypes, null);
+            List<Object> params = new ArrayList<Object>();
+            params.add(sourceTypes);
+            for (int i=0; i<nameEnvironmentAnswerFromSoureTypesConstructor.getParameterCount()-1; i++) {
+                params.add(null);
             }
+            return nameEnvironmentAnswerFromSoureTypesConstructor.newInstance(params.toArray());
         } catch (IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException | SecurityException | InstantiationException e) {
             e.printStackTrace();
