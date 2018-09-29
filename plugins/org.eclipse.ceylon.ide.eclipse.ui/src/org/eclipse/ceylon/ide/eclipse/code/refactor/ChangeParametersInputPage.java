@@ -13,7 +13,6 @@ package org.eclipse.ceylon.ide.eclipse.code.refactor;
 import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.appendTypeName;
 import static org.eclipse.ceylon.ide.eclipse.code.outline.CeylonLabelProvider.getImageForDeclaration;
 import static org.eclipse.ceylon.ide.eclipse.util.Nodes.getReferencedNode;
-import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static org.eclipse.jface.viewers.ArrayContentProvider.getInstance;
 import static org.eclipse.swt.layout.GridData.FILL_BOTH;
 import static org.eclipse.swt.layout.GridData.FILL_HORIZONTAL;
@@ -109,7 +108,7 @@ public class ChangeParametersInputPage extends UserInputWizardPage {
         Label title = new Label(result, SWT.LEFT);  
         Declaration dec = refactoring.getDeclaration();
         String name = dec.getName();
-        if (name == null && isConstructor(dec)) {
+        if (name == null && dec.isConstructor()) {
             Scope container = dec.getContainer();
             if (container instanceof Declaration) {
                 Declaration cd = (Declaration) container;

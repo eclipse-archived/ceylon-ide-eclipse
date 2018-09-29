@@ -10,7 +10,6 @@
 package org.eclipse.ceylon.ide.eclipse.code.correct;
 
 import static org.eclipse.ceylon.ide.eclipse.ui.CeylonResources.REORDER;
-import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 
 import java.util.Collection;
 
@@ -53,7 +52,7 @@ class ChangeParametersProposal implements ICompletionProposal,
     @Override
     public String getDisplayString() {
         String name = dec.getName();
-        if (name == null && isConstructor(dec)) {
+        if (name == null && dec.isConstructor()) {
             Scope container = dec.getContainer();
             if (container instanceof Declaration) {
                 Declaration cd = (Declaration) container;

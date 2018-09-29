@@ -24,7 +24,6 @@ import static org.eclipse.ceylon.ide.eclipse.util.Highlights.PACKAGE_STYLER;
 import static org.eclipse.ceylon.ide.eclipse.util.Highlights.STRING_STYLER;
 import static org.eclipse.ceylon.ide.eclipse.util.Highlights.TYPE_ID_STYLER;
 import static org.eclipse.ceylon.ide.eclipse.util.Highlights.TYPE_STYLER;
-import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 import static org.eclipse.core.resources.IMarker.SEVERITY_ERROR;
 import static org.eclipse.core.resources.IMarker.SEVERITY_WARNING;
@@ -452,7 +451,7 @@ public class CeylonLabelProvider extends StyledCellLabelProvider
         else if (d instanceof Interface) {
             return shared ? CEYLON_INTERFACE : CEYLON_LOCAL_INTERFACE;
         }
-        if (isConstructor(d)) {
+        if (d.isConstructor()) {
             return shared ? CEYLON_CONSTRUCTOR : CEYLON_CONSTRUCTOR;
         }
         else if (d instanceof TypeParameter) {

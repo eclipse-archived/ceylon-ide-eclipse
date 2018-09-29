@@ -23,7 +23,6 @@ import static org.eclipse.ceylon.ide.eclipse.util.Highlights.TYPE_STYLER;
 import static org.eclipse.ceylon.ide.eclipse.util.Highlights.styleIdentifier;
 import static org.eclipse.ceylon.ide.common.util.OccurrenceLocation.EXTENDS;
 import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.intersectionOfSupertypes;
-import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isConstructor;
 import static org.eclipse.ceylon.model.typechecker.model.ModelUtil.isTypeUnknown;
 
 import java.util.Collections;
@@ -868,7 +867,7 @@ public class CodeCompletions {
         if (d instanceof TypeAlias && d.isAnonymous()) {
             return;
         }
-        if (isConstructor(d)) {
+        if (d.isConstructor()) {
             result.append("new");
         }
         else if (d instanceof Class) {
@@ -972,7 +971,7 @@ public class CodeCompletions {
     
     private static void appendDeclarationDescription(
             Declaration d, StyledString result) {
-        if (isConstructor(d)) {
+        if (d.isConstructor()) {
             result.append("new", KW_STYLER);
         }
         else if (d instanceof Class) {
@@ -1269,9 +1268,9 @@ public class CodeCompletions {
 
     private static boolean isObjectField(Declaration m) {
         String name = m.getName();
-        return name!=null &&
-                (name.equals("hash") ||
-                 name.equals("string"));
+        return name!=null 
+            && (name.equals("hash") 
+             || name.equals("string"));
     }
 
     private static void appendMembersToEquals(Unit unit,
@@ -1281,7 +1280,7 @@ public class CodeCompletions {
         Type nt = unit.getNullValueDeclaration().getType();
         for (Declaration m: ci.getMembers()) {
             if (m instanceof Value && 
-                    !isObjectField(m) && !isConstructor(m)) {
+                    !isObjectField(m) && !m.isConstructor()) {
                 Value value = (Value) m;
                 if (!value.isTransient()) {
                     if (!nt.isSubtypeOf(value.getType())) {
@@ -1312,7 +1311,7 @@ public class CodeCompletions {
         Type nt = unit.getNullValueDeclaration().getType();
         for (Declaration m: ci.getMembers()) {
             if (m instanceof Value && 
-                    !isObjectField(m) && !isConstructor(m)) {
+                    !isObjectField(m) && !m.isConstructor()) {
                 Value value = (Value) m;
                 if (!value.isTransient() && 
                         !nt.isSubtypeOf(value.getType())) {
@@ -1333,7 +1332,7 @@ public class CodeCompletions {
         Type nt = unit.getNullValueDeclaration().getType();
         for (Declaration m: ci.getMembers()) {
             if (m instanceof Value && 
-                    !isObjectField(m) && !isConstructor(m)) {
+                    !isObjectField(m) && !m.isConstructor()) {
                 Value value = (Value) m;
                 if (!value.isTransient() && 
                         !nt.isSubtypeOf(value.getType())) {
@@ -1349,7 +1348,7 @@ public class CodeCompletions {
         Type nt = unit.getNullValueDeclaration().getType();
         for (Declaration m: ci.getMembers()) {
             if (m instanceof Value && 
-                    !isObjectField(m) && !isConstructor(m)) {
+                    !isObjectField(m) && !m.isConstructor()) {
                 Value value = (Value) m;
                 if (!value.isTransient() && 
                         !nt.isSubtypeOf(value.getType())) {

@@ -117,7 +117,7 @@ public class InvocationCompletionProposal extends CompletionProposal {
 //                    Declaration m = ndwp.getDeclaration();
 //                    if ((m instanceof FunctionOrValue ||
 //                            m instanceof Class) &&
-//                            !isConstructor(m)) {
+//                            !m.isConstructor()) {
 //                        if (m.isAbstraction()) {
 //                            for (Declaration o:
 //                                    m.getOverloads()) {
@@ -145,7 +145,7 @@ public class InvocationCompletionProposal extends CompletionProposal {
 //                            .getMembers();
 //                for (Declaration m: members) {
 //                    if (m instanceof FunctionOrValue &&
-//                            isConstructor(m) &&
+//                            m.isConstructor() &&
 //                            m.isShared() &&
 //                            m.getName()!=null) {
 //                        addSecondLevelProposal(
@@ -1099,7 +1099,7 @@ public class InvocationCompletionProposal extends CompletionProposal {
 //                    }
 //                    for (Declaration m: clazz.getMembers()) {
 //                        if (m instanceof FunctionOrValue &&
-//                                isConstructor(m) &&
+//                                m.isConstructor() &&
 //                                m.isShared() &&
 //                                m.getName()!=null) {
 //                            props.add(new NestedCompletionProposal(
