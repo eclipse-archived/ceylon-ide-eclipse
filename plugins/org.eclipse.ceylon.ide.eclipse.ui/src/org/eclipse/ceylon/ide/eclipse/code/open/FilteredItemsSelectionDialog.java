@@ -914,7 +914,12 @@ public abstract class FilteredItemsSelectionDialog extends
         content.setLayout(GridLayoutFactory.fillDefaults().numColumns(3).equalWidth(false).spacing(0, 0).create());
         content.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
         statusArea.setContent(content);
-                
+        
+        statusArea.setBackground(parent.getBackground());
+        statusArea.setForeground(parent.getForeground());
+        content.setBackground(parent.getBackground());
+        content.setForeground(parent.getForeground());
+        
         setStatusAreaVisible(toggleStatusLineAction==null ||
                 toggleStatusLineAction.isChecked());
         
